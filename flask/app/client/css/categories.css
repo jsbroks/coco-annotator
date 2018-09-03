@@ -1,0 +1,29 @@
+
+.card-img-overlay {
+    padding: 0 10px 0 0;
+}
+
+.icon-more {
+    width: 10%;
+    margin: 3px 0;
+    padding: 0;
+    float: right;
+    color: black;
+}
+
+.help-icon {
+    color: darkblue;
+    font-size: 20px;
+    display: inline;
+}
+
+.card-body {
+    padding: 10px 10px 0 10px;
+}
+
+.color-icon {
+    display: inline;
+    width: 10%;
+    margin: 0;
+    padding-right: 10px;
+}

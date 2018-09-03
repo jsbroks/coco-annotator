@@ -1,0 +1,199 @@
+define(['Vue', 'axios'], function (Vue, axios) {
+
+    Vue.component('tool-panel', {
+        model: {
+            prop: 'selected',
+            event: 'change'
+        },
+        props: {
+            selected: {
+                type: String,
+                required: true
+            },
+            current: {
+                type: Object,
+                required: true
+            }
+        },
+        data: function () {
+            return {
+                lastSelected: 'Selected',
+                activeColor: '#2ecc71',
+                tools: {
+                    Select: {
+                        class: 'fa fa-hand-pointer-o fa-x',
+                        color: 'white'
+                    },
+                    // Move: {class: 'fa fa-arrows fa-x', color: 'white'},
+                    Polygon: {
+                        class: 'fa fa-pencil fa-x',
+                        description: 'Polygon/Lasso',
+                        disabled: true,
+                        color: 'white',
+                        hr: true
+                    },
+                    // Points: {class: 'fa fa-dot-circle-o fa-x', description: 'Key Points', color: 'white'},
+                    // Bush: {class: 'fa fa-paint-brush fa-x', color: 'white'},
+                    // Wand: {class: 'fa fa-magic fa-x', color: 'white'},
+                    // Eraser: {class: 'fa fa-eraser fa-x', color: 'white'},
+                    // Undo: {class: 'fa fa-undo fa-x', color: 'white', hr: true},
+
+                    Fit: {
+                        class: 'fa fa-align-center fa-x',
+                        description: 'Center Image',
+                        color: 'white'
+                    },
+                    HideRight: {
+                        class: 'fa fa-sign-in fa-x',
+                        description: 'Toggle Right Panel',
+                        color: 'white',
+                        hr: true
+                    },
+
+                    Save: {
+                        class: 'fa fa-floppy-o fa-x',
+                        color: 'white'
+                    },
+                    Download: {
+                        class: 'fa fa-download fa-x',
+                        description: 'Download Image and Coco',
+                        color: 'white'
+                    },
+                    Delete: {
+                        class: 'fa fa-trash-o fa-x',
+                        description: 'Delete Image and Annotations',
+                        color: 'white'
+                    },
+                    // Settings: {class: 'fa fa-gear fa-x', color: 'white'},
+                    // Extra: {class: 'fa fa-ellipsis-h fa-x', color: 'white'},
+                }
+            }
+        },
+        template: `
+            <div>
+                <hr>
+                <div v-for="key in Object.keys( tools )" class="tool">
+            
+                    <i :class="tools[key].class"
+                        :id="key"
+                        :style="{ color: tools[key].disabled ? 'gray' : tools[key].color }"
+                        @click="click(key)"
+                        aria-hidden="true"
+                        data-toggle="tooltip"
+                        :title="tools[key].description"
+                        data-placement="auto"></i>
+                    
+                    <hr v-if="tools[key].hr">
+                </div>
+            </div>
+        `,
+        watch: {
+            selected: function (newAction, oldAction) {
+                this.lastSelected = oldAction;
+                this.tools[oldAction].color = 'white';
+                this.tools[newAction].color = this.activeColor;
+            },
+            current: function (newCurrent, oldCurrent) {
+                this.setDisableStates(newCurrent)
+            }
+        },
+        methods: {
+            setDisableStates: function (current) {
+                if (current == null || (current.category === -1 && current.annotation === -1)) {
+                    this.disablePolygon()
+                } else {
+                    this.enablePolygon()
+                }
+            },
+            click: function (action) {
+                switch (action.toLowerCase()) {
+                    case 'settings':
+                        this.feedback(action);
+                        break;
+
+                    case 'save':
+                        this.feedback(action);
+                        this.$parent.save();
+                        break;
+
+                    case 'download':
+                        this.feedback(action);
+                        this.$parent.downloadCoco();
+                        break;
+
+                    case 'hideright':
+                        this.hideRight(this.tools[action]);
+                        break;
+
+                    case 'fit':
+                        this.feedback(action);
+                        this.$parent.fit();
+                        break;
+
+                    case 'undo':
+                        this.feedback(action);
+                        break;
+
+                    case 'delete':
+                        this.feedback(action);
+                        this.$parent.deleteImage();
+                        break;
+
+                    default:
+                        if (!this.tools[action].disabled)
+                            this.$emit('change', action)
+                }
+            },
+
+            feedback: async function (tool) {
+                this.tools[tool].color = this.activeColor;
+                setTimeout(() => this.tools[tool].color = 'white', 300)
+            },
+
+            hideRight: function (tool) {
+                if (this.$parent.panels.right.show) {
+                    tool.color = this.activeColor;
+                } else {
+                    tool.color = 'white';
+                }
+
+                this.$parent.panels.right.show = !this.$parent.panels.right.show;
+            },
+
+            disablePolygon: function () {
+                //$('#Polygon').attr("title", this.tools.Polygon.description + " (select a layer)");
+                this.tools.Polygon.disabled = true;
+
+                if (this.selected === 'Polygon')
+                    this.$emit('change', this.lastSelected);
+            },
+            enablePolygon: function () {
+
+                // $('#Polygon').attr("title", this.tools.Polygon.description);
+                this.tools.Polygon.disabled = false;
+            }
+
+        },
+        created() {
+
+            for (let key in this.tools) {
+                if (!this.tools.hasOwnProperty(key)) continue;
+
+                if (key === this.selected) {
+                    this.tools[key].color = this.activeColor;
+                } else {
+                    this.tools[key].color = 'white';
+                }
+
+                if (!this.tools[key].hasOwnProperty('description')) {
+                    this.tools[key].description = key;
+                }
+            }
+
+        },
+        mounted() {
+            this.setDisableStates();
+            $('[data-toggle="tooltip"]').tooltip();
+        }
+    });
+});

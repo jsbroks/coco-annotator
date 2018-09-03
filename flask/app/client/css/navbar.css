@@ -1,0 +1,15 @@
+.navbar {
+    background-color: #383c4a;
+}
+
+.fa {
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.status-icon {
+    margin: 3px 5px 0 0;
+    float:left
+}

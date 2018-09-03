@@ -1,0 +1,8 @@
+flask
+flask-cors
+flask-restplus
+flask-mongoengine
+numpy
+cython
+scikit-image
+watchdog==0.8.3

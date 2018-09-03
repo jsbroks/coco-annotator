@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ super() }}
+    <link rel="stylesheet" href="/client/css/images.css">
+{% endblock %}
+
+{% block body %}
+    {% raw %}
+    <div class="album py-5 bg-light">
+        <div class="container" style="padding-top: 30px">
+            <h2 class="text-center">Dataset of {{ dataset.name }}</h2>
+            <p class="text-center">
+                Total of <strong>{{ imageCount }}</strong> images displayed on <strong>{{ pages }}</strong> pages.
+            </p>
+            <!--
+            <div v-if="subdirectories.length > 0" class="text-center">
+                <h5>Subdirectories</h5>
+                <button v-for="subdirectory in subdirectories"
+                        class="btn badge badge-pill badge-primary category-badge"
+                        style="margin: 2px" @click="folders.push(subdirectory)">{{ subdirectory }}
+                </button>
+            </div>
+            -->
+            <p class="text-center" v-if="images.length < 1">You need to upload some images!</p>
+            <div v-else>
+                <!--
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item" aria-current="page"></li>
+                    <li class="breadcrumb-item" aria-current="page">{{ dataset.name }}</li>
+                    <li v-for="folder in folders" class="breadcrumb-item" aria-current="page">{{ folder }}</li>
+                </ol>
+                -->
+
+                <hr>
+                                <pagination :pages="pages" @pagechange="updatePage"></pagination>
+                            <ol class="breadcrumb">
+                <div class="row">
+                    <image-card
+                            v-for="image in images"
+                            :key="image.id"
+                            :image="image"
+                    ></image-card>
+                </div>
+                <hr>
+            </div>
+        </div>
+    </div>
+    {% endraw %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script data-main="/client/images-main.js" src="/client/lib/require.js"></script>
+{% endblock %}

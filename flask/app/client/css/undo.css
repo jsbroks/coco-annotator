@@ -1,0 +1,16 @@
+.remove-top-border {
+    border: none !important;
+}
+
+.fa {
+    margin: 0;
+    padding: 2px;
+}
+
+.undo-icon:hover {
+    color: green;
+}
+
+.delete-icon:hover {
+    color: red;
+}
