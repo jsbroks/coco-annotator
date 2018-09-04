@@ -18,6 +18,7 @@ format. The annotation process is delivered though an initiative and customizabl
 - [Getting Started](https://github.com/jsbroks/coco-annotator#getting-started)
   - [Prerequisites](https://github.com/jsbroks/coco-annotator#prerequisites)
   - [Installing](https://github.com/jsbroks/coco-annotator#installing)
+- [Usage](https://github.com/jsbroks/coco-annotator#usage)
   - [Editor](https://github.com/jsbroks/coco-annotator#editor)
     - [Tool Bar](https://github.com/jsbroks/coco-annotator#tool-bar)
     - [Annotation Bar](https://github.com/jsbroks/coco-annotator#annotation-bar)
@@ -49,6 +50,8 @@ docker-compose up --build
 Give it a few minutes to build the docker image.
 
 Now, you can now access the website (<http://localhost:5000/>).
+
+# Usage
 
 ## Editor
 
