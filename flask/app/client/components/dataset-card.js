@@ -13,11 +13,12 @@ define(['Vue', 'axios'], function (Vue, axios) {
         },
         data: function () {
             return {
-
+                    selectedCategories: []
             }
         },
         template: `
             <div class="col-md-3">
+            
                 <div class="card mb-4 box-shadow">
                     <img @click="onImageClick" :src="imageUrl" class="card-img-top"
                         style="width: 100%; display: block;">
@@ -42,13 +43,50 @@ define(['Vue', 'axios'], function (Vue, axios) {
                         </div>
                         
                         <div class="dropdown-menu" :aria-labelledby="'dropdownDataset' + dataset.id">
-                            <a class="dropdown-item" @click="onEditClick">Edit</a>
+                            <a class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id"
+                                @click="selectedCategories = dataset.categories">
+                                Edit
+                            </a>
                             <a class="dropdown-item" @click="onDeleteClick">Delete</a>
                             <a class="dropdown-item" @click="onCocoDownloadClick">Download COCO</a>
                         </div>
                     </div>
                 </div>
+                
+                <div class="modal fade" tabindex="-1" role="dialog" :id="'datasetEdit' + dataset.id">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ dataset.name }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+ 
+                                    <div class="form-group">
+                                        <label>
+                                            Categories <i v-if="categories.length == 0">(No categories found)</i>
+                                        </label>
+                                        <select v-model="selectedCategories" multiple class="form-control">
+                                            <option v-for="category in categories" :key="category.id" :value="category.id">
+                                                {{ category.name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </form>  
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-success" @click="onSave" data-dismiss="modal">Save</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+                 
             </div>
+            
         `,
         computed: {
             imageUrl: function () {
@@ -77,9 +115,6 @@ define(['Vue', 'axios'], function (Vue, axios) {
             }
         },
         methods: {
-            onEditClick: function () {
-
-            },
             onImageClick: function () {
                 if (this.dataset.numberImages > 0) {
                     document.location.pathname = '/images/' + this.dataset.id;
@@ -99,6 +134,15 @@ define(['Vue', 'axios'], function (Vue, axios) {
                     .then(repsonse => {
                         this.$parent.updatePage()
                     });
+            },
+            onSave: function () {
+                this.dataset.categories = this.selectedCategories;
+                console.log(axios.baseURL);
+                axios.post('/api/dataset/' + this.dataset.id, {
+                    'categories': this.selectedCategories
+                }).then(response => {
+
+                });
             },
 
             /**

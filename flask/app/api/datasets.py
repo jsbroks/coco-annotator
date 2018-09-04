@@ -1,7 +1,7 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
-from ..util import query_util, coco_util, color_util
+from ..util import query_util, coco_util
 from ..models import *
 
 import datetime
@@ -19,16 +19,18 @@ dataset_create.add_argument('categories', type=list, required=False, location='j
 page_data = reqparse.RequestParser()
 page_data.add_argument('page', default=1, type=int)
 page_data.add_argument('limit', default=20, type=int)
-page_data.add_argument('folder', required=False, default='',
-                       help='Folder for data')
+page_data.add_argument('folder', required=False, default='', help='Folder for data')
 
 delete_data = reqparse.RequestParser()
 delete_data.add_argument('fully', default=False, type=bool,
                          help="Fully delete dataset (no undo)")
 
 coco_upload = reqparse.RequestParser()
-coco_upload.add_argument('coco', location='files', type=FileStorage, required=True,
-                         help='Json coco')
+coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco')
+
+
+update_dataset = reqparse.RequestParser()
+update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
 
 
 @api.route('/')
@@ -55,12 +57,29 @@ class Dataset(Resource):
 class DatasetId(Resource):
 
     def delete(self, dataset_id):
-        """ Deletes category by ID"""
+        """ Deletes dataset by ID"""
         dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
         dataset.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
+        return {"success": True}
+
+    @api.expect(update_dataset)
+    def post(self, dataset_id):
+        """ Updates dataset by ID """
+        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        args = update_dataset.parse_args()
+        categories = args.get('categories')
+
+        if categories is not None:
+            dataset.categories = categories
+
+        dataset.update(set__categories=dataset.categories)
+
         return {"success": True}
 
 
