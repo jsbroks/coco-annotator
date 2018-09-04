@@ -10,7 +10,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
         template: `
             <div class="col-md-3">
                 <div class="card mb-4 box-shadow">
-                    <img class="card-img-top" @click="openAnnotator" style="width: 100%; display: block;"
+                    <img class="card-img-top" @click="openAnnotator" style="width: 100%; display: block"
                         :src="imageUrl">
 
                     <div class="card-body">
@@ -26,9 +26,6 @@ define(['Vue', 'axios'], function (Vue, axios) {
                             {{ image.annotations }} annotations.
                         </p>
                         <p v-else>Image has no annotations</p>
-                        
-                        <!--<span v-for="category in dataset.categories"-->
-                            <!--class="badge badge-pill badge-primary">{{ category.name }}</span>-->
                         
                         <div class="dropdown-menu" :aria-labelledby="'dropdownImage' + image.id">
                             <a class="dropdown-item" @click="onDeleteClick">Delete</a>
@@ -67,7 +64,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
         },
         computed: {
             imageUrl: function () {
-                return '/api/image/' + this.image.id;
+                return '/api/image/' + this.image.id + '?width=250';
             }
         },
         created () {

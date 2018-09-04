@@ -91,7 +91,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
         computed: {
             imageUrl: function () {
                 return this.dataset.numberImages > 0 ?
-                    '/api/image/' + this.dataset.first_image_id : '/client/img/no-image.png'
+                    '/api/image/' + this.dataset.first_image_id + '?width=250' : '/client/img/no-image.png'
             },
             listCategories: function () {
                 let list = [];

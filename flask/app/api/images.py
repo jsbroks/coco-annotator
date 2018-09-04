@@ -24,6 +24,8 @@ image_upload.add_argument('folder', required=False, default='',
 
 image_download = reqparse.RequestParser()
 image_download.add_argument('asAttachment', type=bool, required=False, default=False)
+image_download.add_argument('width', type=int, required=False, default=0)
+image_download.add_argument('height', type=int, required=False, default=0)
 
 
 @api.route('/')
@@ -76,13 +78,27 @@ class ImageId(Resource):
         """ Returns category by ID """
         args = image_download.parse_args()
         as_attachment = args['asAttachment']
+        width = args['width']
+        height = args['height']
 
-        image = ImageModel.objects(id=image_id, deleted=False)
+        image = ImageModel.objects(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
 
-        return send_file(image.first().path, attachment_filename=image.first().file_name, as_attachment=as_attachment)
+        if width < 1:
+            width = image.width
+
+        if height < 1:
+            height = image.height
+
+        pil_image = Image.open(image.path)
+        pil_image.thumbnail((width, height), Image.ANTIALIAS)
+        image_io = io.BytesIO()
+        pil_image.save(image_io, 'JPEG', quality=70)
+        image_io.seek(0)
+
+        return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
 
     def delete(self, image_id):
         """ Deletes an image by ID """
