@@ -7,8 +7,8 @@
 
 A web based image annotation tool used to create training data for machine learning. It provides many distinct features
 including the ability to label an image segment (or part of a segment), track object instances, labeling objects with
-disconnected visible parts and efficiently storing the annotation and instances information in the well-know COCO
-format. The annotation process is delivered though an initiative and customizable interface similar to PhotoShop.
+disconnected visible parts and efficiently storing the annotation and instances information in the well-know [COCO
+format](http://cocodataset.org/#format-data). The annotation process is delivered though an initiative and customizable interface similar to PhotoShop.
 
 <p align="center"><img src="https://i.imgur.com/k7n24Xy.gif"></p>
 
@@ -63,7 +63,7 @@ Tools are found on the left sidbar used for applying operations to the image.
 
 ##### Selection Tool
 
-Edit or find assocated annotations by hovering or clicking segemtations in the viewer. `Click` any point to modify its location. `Shift-Click` any point to delete it from its assoicated segmentation.
+Edit or find assocated annotations by hovering or clicking segments in the viewer. `Click` any point to modify its location. `Shift-Click` any point to delete it from its assoicated segmentation.
 
 ##### Polygon/Lasso Tool
 
