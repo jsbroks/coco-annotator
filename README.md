@@ -10,7 +10,7 @@ including the ability to label an image segment (or part of a segment), track ob
 disconnected visible parts and efficiently storing the annotation and instances information in the well-know [COCO
 format](http://cocodataset.org/#format-data). The annotation process is delivered though an initiative and customizable interface similar to PhotoShop.
 
-<p align="center"><img src="https://i.imgur.com/qce0qzk.gif"></p>
+<p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
 
 
 ## Table of Contents
