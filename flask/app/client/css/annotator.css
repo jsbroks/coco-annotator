@@ -47,13 +47,13 @@
 }
 
 .sidebar-section {
+    width: 100%;
     padding-left: 5px;
     padding-right: 5px;
     overflow: auto;
 }
 
 .sidebar-title {
-    margin: 5px;
     color: white;
 }
 
@@ -155,3 +155,8 @@ img {
     padding: 0;
 }
 
+.image-arrows {
+    color: white;
+    position: relative;
+    margin: 0 10px 15px 10px;
+}

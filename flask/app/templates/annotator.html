@@ -15,7 +15,15 @@
 
     <aside v-show="panels.right.show" class="right-panel shadow-lg">
         <hr>
-        <h6 class="sidebar-title text-center">{{ image.filename }}</h6>
+        <div>
+            <i v-show="image.previous != null" class="fa fa-arrow-left image-arrows" style="float:left"></i>
+            <i v-show="image.next != null" class="fa fa-arrow-right image-arrows" style="float:right"></i>
+
+            <h6 class="sidebar-title text-center">
+                <span class="d-inline-block text-truncate" style="max-width: 73%;">{{ image.filename }}</span>
+            </h6>
+        </div>
+
         <div class="sidebar-section" style="max-height: 57%">
             <p v-if="categories.length == 0" style="color: lightgray; font-size: 12px">
                 No categories have been added to this image.
@@ -27,6 +35,7 @@
                 </category>
             </div>
         </div>
+
         <hr>
         <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
         <div class="sidebar-section tool-section" style="max-height: 30%; color: lightgray">

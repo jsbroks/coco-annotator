@@ -58,6 +58,8 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 metadata: {},
                 categories: [],
                 dataset: 0,
+                previous: null,
+                next: null,
             },
             status: {
                 saving: {state: true, message: 'Saving data'},
