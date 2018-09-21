@@ -7,11 +7,13 @@ define("tools", [
     "paper",
     "polygonTool",
     "selectTool",
-    "eraserTool"
+    "eraserTool",
+    "wandTool"
 ], function (paper,
              polygonTool,
              selectTool,
-             eraserTool) {
+             eraserTool,
+             wandTool) {
 
     return {
         vue: null,
@@ -24,6 +26,8 @@ define("tools", [
                 strokeColor: ''
             });
 
+            wandTool.initTool(vue.image);
+
             vue.polygon.toggleGuidance = polygonTool.toggleGuidance;
 
             vue.tool.onMouseDrag = (event) => {
@@ -33,6 +37,8 @@ define("tools", [
                 if (vue.activeTool.toLowerCase() === 'select')
                     selectTool.onMouseDrag(event);
 
+                if (vue.activeTool.toLowerCase() === 'wand')
+                    wandTool.onMouseDrag(event, vue.wand, vue.compoundPath);
             };
 
             vue.tool.onMouseDown = (event) => {
@@ -41,6 +47,9 @@ define("tools", [
 
                 if (vue.activeTool.toLowerCase() === 'select')
                     selectTool.onMouseDown(event, vue.paper);
+
+                if (vue.activeTool.toLowerCase() === 'wand')
+                    wandTool.onMouseDown(event, vue.wand, vue.compoundPath);
             };
 
             vue.tool.onMouseMove = (event) => {

@@ -27,6 +27,10 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     strokeWidth: this.strokeWidth
                 }
             },
+            wand: {
+                threshold: 10,
+                blur: 0.1,
+            },
             eraser: {
                 bush: null,
             },
@@ -210,8 +214,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 this.paper.activate();
                 this.paper.view.setAutoUpdate(false);
 
-                tools.initTools(this);
-
                 let img = new Image();
                 this.status.image.state = false;
                 img.onload = () => {
@@ -223,6 +225,8 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                     this.image.raster.sendToBack();
                     this.fit();
+
+                    tools.initTools(this);
 
                     let categories = this.$refs.category;
                     if (categories != null) {
