@@ -39,12 +39,13 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
                 points.map(pt => ({x: pt.x + .5, y: pt.y + .5}));
                 // SIMPLY
 
-                let polygon = new paper.Path(points, {fillColor: 'black'});
-
+                let polygon = new paper.Path(points);
+                polygon.closed = true;
+                polygon.fillColor = 'red';
 
             }
         },
-        
+
         onMouseDown: function (event, wand, compoundPath, paper) {
 
             let x = Math.round((this.imageInfo.width / 2) + event.point.x);
