@@ -107,7 +107,20 @@
             <!-- Wand -->
 
             <div v-show="activeTool.toLowerCase() === 'wand'">
-
+                <div class="input-group tool-input-group">
+                    <div class="input-group-prepend tool-option-pre">
+                        <span class="input-group-text tool-option-font">Threshold</span>
+                    </div>
+                    <input v-model.number="wand.threshold" type="number" min="0" max="100" step="1"
+                           class="form-control tool-option-input">
+                </div>
+                <div class="input-group tool-input-group">
+                    <div class="input-group-prepend tool-option-pre">
+                        <span class="input-group-text tool-option-font">Blur (Raidan)</span>
+                    </div>
+                    <input v-model.number="wand.blur" type="number" min="0" max="100" step="1"
+                           class="form-control tool-option-input">
+                </div>
             </div>
         </div>
 
