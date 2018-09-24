@@ -38,7 +38,7 @@ define("tools", [
                     selectTool.onMouseDrag(event);
 
                 if (vue.activeTool.toLowerCase() === 'wand')
-                    wandTool.onMouseDrag(event, vue.wand, vue.compoundPath);
+                    wandTool.onMouseDrag(event, vue);
             };
 
             vue.tool.onMouseDown = (event) => {
@@ -49,7 +49,7 @@ define("tools", [
                     selectTool.onMouseDown(event, vue.paper);
 
                 if (vue.activeTool.toLowerCase() === 'wand')
-                    wandTool.onMouseDown(event, vue.wand, vue.compoundPath);
+                    wandTool.onMouseDown(event, vue);
             };
 
             vue.tool.onMouseMove = (event) => {

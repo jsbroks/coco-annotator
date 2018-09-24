@@ -28,8 +28,9 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 }
             },
             wand: {
-                threshold: 10,
-                blur: 0.1,
+                threshold: 15,
+                blur: 5,
+                simplify: 5,
             },
             eraser: {
                 bush: null,
@@ -289,6 +290,16 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 link.click();
                 link.remove();
             },
+
+            setCompoundPath: function (compound) {
+                let category = this.current.category;
+                let annotation = this.current.annotation;
+
+                if (category === -1) return;
+                if (annotation === -1) return;
+
+                this.getCategory(category).getAnnotation(annotation).setCompoundPath(compound);
+            }
         },
         watch: {
             'polygon.pathOptions.strokeWidth': function (newStroke, oldStroke) {
@@ -308,27 +319,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                 return this.getCategory(category).getAnnotation(annotation).getCompoundPath();
             },
-            // Function to return categories in the image categories field
-            // showCategories: function () {
-            //     let list = [];
-            //
-            //     if (!this.image.hasOwnProperty('categories')) return [];
-            //     if (this.image.categories.length === 0) return [];
-            //     this.image.categories.forEach(category => {
-            //
-            //         let elements = this.categories.filter(element => {
-            //             if (element.id === category) {
-            //                 return element;
-            //             }
-            //         });
-            //
-            //         if (elements.length === 1) {
-            //             list.push(elements[0])
-            //         }
-            //     });
-            //
-            //     return list
-            // },
         },
         created () {
             paper.install(window);

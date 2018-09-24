@@ -25,7 +25,7 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
             this.imageInfo.data = tempCtx.getImageData(0, 0, raster.width, raster.height);
         },
         // Modified: https://github.com/Hitachi-Automotive-And-Industry-Lab/semantic-segmentation-editor/blob/master/imports/editor/2d/tools/SseFloodTool.js
-        flood: function (x, y, thr, rad) {
+        flood: function (x, y, thr, rad, simplify) {
             let image = {
                 data: this.imageInfo.data.data,
                 width: this.imageInfo.width,
@@ -34,10 +34,11 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
             };
 
             let mask = MagicWand.floodFill(image, x, y, thr);
-            console.log(mask);
+            rad = rad < 1 ? 1 : Math.abs(rad);
             mask = MagicWand.gaussBlurOnlyBorder(mask, rad);
 
             let contours = MagicWand.traceContours(mask).filter(x => !x.inner);
+            contours = MagicWand.simplifyContours(contours, simplify, 30);
 
             if (contours[0]) {
 
@@ -45,17 +46,20 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
                 let centerY = image.height/2;
 
                 let points = contours[0].points;
-                points = points.map(pt => ({x: pt.x - centerX, y: pt.y - centerY}));
-                // SIMPLY
+                points = points.map(pt => ({x: pt.x + 0.5 - centerX, y: pt.y - centerY}));
 
                 let polygon = new paper.Path(points);
                 polygon.closed = true;
-                polygon.fillColor = 'red';
 
+                return polygon;
             }
+            return null;
         },
 
-        onMouseDown: function (event, wand, compoundPath, paper) {
+        onMouseDown: function (event, vue) {
+
+            let wand = vue.wand;
+            let compound = vue.compoundPath;
 
             let x = Math.round((this.imageInfo.width / 2) + event.point.x);
             let y = Math.round((this.imageInfo.height / 2) + event.point.y);
@@ -66,24 +70,21 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
                 || y < 0) {
                 return;
             }
-            console.log(MagicWand);
-            console.log(x, y, this.imageInfo);
-            this.flood(x, y, wand.threshold, wand.blur);
+            console.log(x,y);
+
+            let path = this.flood(x, y, wand.threshold, wand.blur, wand.simplify);
+
+            if (event.modifiers.shift) {
+                vue.setCompoundPath(compound.subtract(path));
+            } else {
+                vue.setCompoundPath(compound.unite(path));
+            }
+            path.remove();
+
         },
 
-        onMouseDrag: function (event, wand, compoundPath, paper) {
-            let x = Math.round((this.imageInfo.width / 2) + event.point.x);
-            let y = Math.round((this.imageInfo.height / 2) + event.point.y);
-
-            if (x > this.imageInfo.width
-                || y > this.imageInfo.height
-                || x < 0
-                || y < 0) {
-                return;
-            }
-            console.log(MagicWand);
-            console.log(x, y, this.imageInfo);
-            this.flood(x, y, wand.threshold, wand.blur);
+        onMouseDrag: function (event, vue) {
+            this.onMouseDown(event, vue)
         }
     };
 });
