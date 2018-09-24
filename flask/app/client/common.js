@@ -8,6 +8,7 @@ requirejs.config({
         paper: 'paper-0.11.5',
         axios: 'axios-0.18.0',
         magicWand: 'magic-wand',
+        simplify: 'simplify',
 
         // Tools
         polygonTool: 'tools/polygon',

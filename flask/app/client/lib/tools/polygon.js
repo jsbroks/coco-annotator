@@ -3,7 +3,7 @@
  *
  * @author Justin Brooks
  */
-define("polygonTool", ["paper"], function(paper) {
+define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
 
     return {
         /**
@@ -38,14 +38,20 @@ define("polygonTool", ["paper"], function(paper) {
             if (polygon.path == null) return false;
             if (compound == null) return false;
 
-            let simplify = polygon.tolerance.simplify;
-            let flatten = polygon.tolerance.flatten;
-
             polygon.path.closePath();
-            if (polygon.simplify) {
-                polygon.path.simplify(simplify);
-                polygon.path.flatten(flatten);
+            if (polygon.simplify > 0) {
+                let points = [];
+
+                polygon.path.segments.forEach(seg => { points.push({x: seg.point.x, y: seg.point.y})});
+                let previous = points.length;
+                points = simplify(points, polygon.simplify, true);
+
+                console.log("Reduced by "  + (previous - points.length) + " points.");
+                polygon.path.remove();
+                polygon.path = new paper.Path(points);
             }
+
+
 
             for (let i = 0 ; i < compound.children.length; i++) {
 

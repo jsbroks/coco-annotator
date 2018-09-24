@@ -88,18 +88,11 @@
                            :style="{'border-color': polygon.pathOptions.strokeColor}"
                            class="form-control tool-option-input">
                 </div>
-                <div v-show="polygon.simplify" class="input-group tool-input-group">
+                <div class="input-group tool-input-group">
                     <div class="input-group-prepend tool-option-pre">
-                        <span class="input-group-text tool-option-font">Simplify tolerance </span>
+                        <span class="input-group-text tool-option-font">Simplify Tolerance </span>
                     </div>
-                    <input v-model.number="polygon.tolerance.simplify" type="number" min="0" max="1000" step="5"
-                           class="form-control tool-option-input">
-                </div>
-                <div v-show="polygon.simplify" class="input-group tool-input-group">
-                    <div class="input-group-prepend tool-option-pre">
-                        <span class="input-group-text tool-option-font">Flatten tolerance </span>
-                    </div>
-                    <input v-model.number="polygon.tolerance.flatten" type="number" min="0" max="1000" step="1"
+                    <input v-model.number="polygon.simplify" type="number" min="0" max="1000" step="5"
                            class="form-control tool-option-input">
                 </div>
             </div>

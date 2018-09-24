@@ -17,7 +17,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 completeDistance: 5,
                 path: null,
                 guidance: true,
-                simplify: true,
+                simplify: 1,
                 tolerance: {
                     simplify: 1,
                     flatten: 1,
@@ -52,8 +52,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 }
             },
             categories: [],
-            dataset: {
-            },
+            dataset: {},
             image: {
                 ratio: 0,
                 rotate: 0,
