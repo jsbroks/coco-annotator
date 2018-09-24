@@ -38,7 +38,6 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
             if (polygon.path == null) return false;
             if (compound == null) return false;
 
-            polygon.path.closePath();
             if (polygon.simplify > 0) {
                 let points = [];
 
@@ -50,8 +49,7 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
                 polygon.path.remove();
                 polygon.path = new paper.Path(points);
             }
-
-
+            polygon.path.closePath();
 
             for (let i = 0 ; i < compound.children.length; i++) {
 
