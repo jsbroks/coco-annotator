@@ -12,9 +12,10 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
          * @param {object} polygon - Polygon tool from main vue instance
          * @param {int} minLength - Required minimal points before auto complete
          * @param {object} compound - Paper CompoundPath to add polygon too
-         * @returns {boolean} - Successfully completed
+         * @param {function} setter - Setter for the compound path
+         * @returns {object} - Successfully completed
          */
-        autoComplete: function (polygon, minLength, compound) {
+        autoComplete: function (polygon, minLength, compound, setter) {
             if (polygon.path == null) return false;
             if (polygon.path.segments.length < minLength) return false;
 
@@ -22,7 +23,7 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
             let first = polygon.path.firstSegment.point;
 
             if (last.isClose(first, polygon.completeDistance)) {
-                return this.complete(polygon, compound);
+                return this.complete(polygon, compound, setter);
             }
 
             return false;
@@ -32,9 +33,10 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
          * Closes current polygon
          *
          * @param {object} polygon - Polygon to close
-         * @param {object} compound - Paper CompoundPath to add polygon too
+         * @param {object} compound - Compound path
+         * @param {function} setter - Setter for the compound path
          */
-        complete: function (polygon, compound) {
+        complete: function (polygon, compound, setter) {
             if (polygon.path == null) return false;
             if (compound == null) return false;
 
@@ -49,24 +51,12 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
                 polygon.path.remove();
                 polygon.path = new paper.Path(points);
             }
+
             polygon.path.closePath();
 
-            for (let i = 0 ; i < compound.children.length; i++) {
-
-                let path = compound.children[i];
-                let crossings = path.getCrossings(polygon.path);
-
-                if (crossings.length > 1) {
-                    let newPath = path.unite(polygon.path);
-                    polygon.path.remove();
-                    compound.children[i].remove();
-                    polygon.path = newPath;
-                }
-            }
-
-            compound.addChild(polygon.path);
+            setter(compound.unite(polygon.path));
+            polygon.path.remove();
             polygon.path = null;
-
             return true;
         },
 
@@ -74,17 +64,18 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
          * Add points to polygon, auto complete if distance is close
          *
          * @param {event} event - Paper event
-         * @param {object} polygon - Polygon to modify
-         * @param {object} compound - Paper CompoundPath to add polygon too if completed
+         * @param {object} vue - Vue object
          */
-        onMouseDown: function (event, polygon, compound) {
+        onMouseDown: function (event, vue) {
+            let polygon = vue.polygon;
+            let compound = vue.compoundPath;
 
             if (polygon.path == null) {
                 polygon.path = this._createPath(polygon.pathOptions);
             }
 
             polygon.path.add(event.point);
-            if (this.autoComplete(polygon, 3, compound)) return;
+            if (this.autoComplete(polygon, 3, compound, vue.setCompoundPath)) return;
             if (polygon.guidance) polygon.path.add(event.point);
         },
 
@@ -92,9 +83,9 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
          * Nothing
          *
          * @param {event} event - Paper event
-         * @param {object} polygon - Polygon to modify
+         * @param {object} vue - Vue object
          */
-        onMouseUp: function (event, polygon) {
+        onMouseUp: function (event, vue) {
 
         },
 
@@ -103,13 +94,15 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
          * polygon tool is active.
          *
          * @param {event} event - Paper event
-         * @param {object} polygon - Polygon to modify
-         * @param {object} compound - Paper CompoundPath to add polygon too if completed
+         * @param {object} vue - Vue object
          */
-        onMouseDrag: function (event, polygon, compound) {
+        onMouseDrag: function (event, vue) {
+            let polygon = vue.polygon;
+            let compound = vue.compoundPath;
+
             if (polygon.path == null) { return }
             polygon.path.add(event.point);
-            this.autoComplete(polygon, 30, compound);
+            this.autoComplete(polygon, 30, compound, vue.setCompoundPath);
         },
 
         /**

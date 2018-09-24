@@ -32,7 +32,7 @@ define("tools", [
 
             vue.tool.onMouseDrag = (event) => {
                 if (vue.activeTool.toLowerCase() === 'polygon')
-                    polygonTool.onMouseDrag(event, vue.polygon, vue.compoundPath);
+                    polygonTool.onMouseDrag(event, vue);
 
                 if (vue.activeTool.toLowerCase() === 'select')
                     selectTool.onMouseDrag(event);
@@ -43,7 +43,7 @@ define("tools", [
 
             vue.tool.onMouseDown = (event) => {
                 if (vue.activeTool.toLowerCase() === 'polygon')
-                    polygonTool.onMouseDown(event, vue.polygon, vue.compoundPath);
+                    polygonTool.onMouseDown(event, vue);
 
                 if (vue.activeTool.toLowerCase() === 'select')
                     selectTool.onMouseDown(event, vue.paper);
@@ -65,7 +65,7 @@ define("tools", [
 
             vue.tool.onMouseUp = (event) => {
                 if (vue.activeTool.toLowerCase() === 'polygon')
-                    polygonTool.onMouseMove(event, vue.polygon);
+                    polygonTool.onMouseMove(event, vue);
 
                 if (vue.activeTool.toLowerCase() === 'select')
                     selectTool.onMouseUp(event)

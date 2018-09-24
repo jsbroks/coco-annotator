@@ -27,7 +27,8 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
             return {
                 isVisible: true,
                 color: this.annotation.color,
-                compoundPath: null
+                compoundPath: null,
+                isEmpty: true // Cannot make this a compute because vue can't track it.
             }
         },
         template: `
@@ -122,6 +123,8 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 this.setColor();
                 this.compoundPath.data.annotationId = this.index;
                 this.$parent.group.addChild(this.compoundPath);
+
+                this.isEmpty = this.compoundPath.isEmpty();
             },
 
             deleteAnnotation: function () {
@@ -142,11 +145,14 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 if (this.compoundPath == null) {
                     this.createCompoundPath()
                 }
+                this.isEmpty = this.compoundPath.isEmpty();
                 return this.compoundPath;
             },
             setCompoundPath: function (compoundPath) {
                 this.compoundPath.remove();
                 this.compoundPath = compoundPath;
+
+                this.isEmpty = this.compoundPath.isEmpty();
             },
             setColor: function () {
                 if (this.compoundPath == null) return;
@@ -171,7 +177,7 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 }
 
                 return annotationData;
-            }
+            },
         },
         watch: {
             color: function (newColor, oldColor) {
@@ -200,16 +206,6 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                     return '#4b624c';
 
                 return 'inherit';
-            },
-            isEmpty: function () {
-                if (this.compoundPath == null) return true;
-                if (!this.compoundPath.hasChildren()) return true;
-                this.compoundPath.children.forEach(child => {
-                    if (!child.isEmpty()) {
-                        return false;
-                    }
-                });
-                return false;
             },
         },
         created () {
