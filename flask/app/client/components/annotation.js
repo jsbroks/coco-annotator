@@ -144,6 +144,10 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 }
                 return this.compoundPath;
             },
+            setCompoundPath: function (compoundPath) {
+                this.compoundPath.remove();
+                this.compoundPath = compoundPath;
+            },
             setColor: function () {
                 if (this.compoundPath == null) return;
 

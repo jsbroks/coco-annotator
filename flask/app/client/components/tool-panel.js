@@ -34,7 +34,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
                     },
                     // Points: {class: 'fa fa-dot-circle-o fa-x', description: 'Key Points', color: 'white'},
                     // Bush: {class: 'fa fa-paint-brush fa-x', color: 'white'},
-                    // Wand: {class: 'fa fa-magic fa-x', color: 'white'},
+                    Wand: {class: 'fa fa-magic fa-x', disabled: true, color: 'white', hr: true},
                     // Eraser: {class: 'fa fa-eraser fa-x', color: 'white'},
                     // Undo: {class: 'fa fa-undo fa-x', color: 'white', hr: true},
 
@@ -100,9 +100,14 @@ define(['Vue', 'axios'], function (Vue, axios) {
         methods: {
             setDisableStates: function (current) {
                 if (current == null || (current.category === -1 && current.annotation === -1)) {
-                    this.disablePolygon()
+                    this.tools.Polygon.disabled = true;
+                    this.tools.Wand.disabled = true;
+
+                    if (['Polygon', 'Wand'].indexOf(this.selected) >= 0)
+                        this.$emit('change', this.lastSelected);
                 } else {
-                    this.enablePolygon()
+                    this.tools.Polygon.disabled = false;
+                    this.tools.Wand.disabled = false;
                 }
             },
             click: function (action) {
@@ -158,21 +163,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
                 }
 
                 this.$parent.panels.right.show = !this.$parent.panels.right.show;
-            },
-
-            disablePolygon: function () {
-                //$('#Polygon').attr("title", this.tools.Polygon.description + " (select a layer)");
-                this.tools.Polygon.disabled = true;
-
-                if (this.selected === 'Polygon')
-                    this.$emit('change', this.lastSelected);
-            },
-            enablePolygon: function () {
-
-                // $('#Polygon').attr("title", this.tools.Polygon.description);
-                this.tools.Polygon.disabled = false;
             }
-
         },
         created() {
 
