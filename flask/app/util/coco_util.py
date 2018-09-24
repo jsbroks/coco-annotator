@@ -22,7 +22,11 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     segments = []
     center = [image_width/2, image_height/2]
 
-    compound_path = paperjs[1]
+    if paperjs[0] == "Path":
+        compound_path = {"children": [paperjs]}
+    else:
+        compound_path = paperjs[1]
+    
     children = compound_path.get('children', [])
 
     for child in children:

@@ -1,13 +1,11 @@
 from flask_restplus import Namespace, Api, Resource, fields, reqparse
-from werkzeug.datastructures import FileStorage
 from flask import jsonify, send_file, request
 
-import sys
 from ..util import query_util
 from ..util import coco_util
 from ..models import *
 
-import numpy as np
+import sys
 
 
 api = Namespace('annotator', description='Annotator related operations')
@@ -46,7 +44,6 @@ class AnnotatorData(Resource):
 
                     width = db_annotation.width
                     height = db_annotation.height
-
                     segmentation, area, bbox = coco_util.\
                         paperjs_to_coco(width, height, paperjs_object)
 
