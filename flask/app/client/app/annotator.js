@@ -65,6 +65,10 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 previous: null,
                 next: null,
             },
+            keys: {
+                ctrl: false,
+                shift: false,
+            },
             status: {
                 saving: {state: true, message: 'Saving data'},
                 downloading: {state: true, message: 'Download annotations'},
@@ -75,10 +79,34 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
         methods: {
             onkeydown: function (e) {
 
+                if (e.target.tagName.toLowerCase() === "input") return;
+                if (e.target.tagName.toLowerCase() === "textarea") return;
+
+                if (e.key.toLowerCase() === "control") this.keys.ctrl = true;
+                if (e.key.toLowerCase() === "shift") this.keys.shift = true;
+
+                if (e.key.toLowerCase() === "s" && this.keys.ctrl) this.save();
+                if (e.key.toLowerCase() === "d" && this.keys.ctrl) this.downloadCoco();
+                if (e.key.toLowerCase() === "r" && this.keys.ctrl) location.reload();
+
+                if (e.key.toLowerCase() === "w") this.activeTool = "Wand";
+                if (e.key.toLowerCase() === "p") this.activeTool = "Polygon";
+                if (e.key.toLowerCase() === "s") this.activeTool = "Select";
+                if (e.key.toLowerCase() === "c") this.fit();
+
+                e.preventDefault();
+                return false;
             },
 
             onkeyup: function (e) {
-                console.log(e.key)
+                if (e.target.tagName.toLowerCase() === "input") return;
+                if (e.target.tagName.toLowerCase() === "textarea") return;
+
+                if (e.key.toLowerCase() === "control") this.keys.ctrl = false;
+                if (e.key.toLowerCase() === "shift") this.keys.shift = false;
+
+                e.preventDefault();
+                return false;
             },
 
             onCategoryClick: function (indices) {

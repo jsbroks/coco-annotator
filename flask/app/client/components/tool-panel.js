@@ -22,25 +22,32 @@ define(['Vue', 'axios'], function (Vue, axios) {
                 tools: {
                     Select: {
                         class: 'fa fa-hand-pointer-o fa-x',
+                        description: 'Select (S)',
                         color: 'white'
                     },
                     // Move: {class: 'fa fa-arrows fa-x', color: 'white'},
                     Polygon: {
                         class: 'fa fa-pencil fa-x',
-                        description: 'Polygon/Lasso',
+                        description: 'Polygon/Lasso (P)',
                         disabled: true,
                         color: 'white',
                         hr: true
                     },
                     // Points: {class: 'fa fa-dot-circle-o fa-x', description: 'Key Points', color: 'white'},
                     // Bush: {class: 'fa fa-paint-brush fa-x', color: 'white'},
-                    Wand: {class: 'fa fa-magic fa-x', disabled: true, color: 'white', hr: true},
+                    Wand: {
+                        class: 'fa fa-magic fa-x',
+                        disabled: true,
+                        color: 'white',
+                        description: 'Polygon/Lasso (W)',
+                        hr: true
+                    },
                     // Eraser: {class: 'fa fa-eraser fa-x', color: 'white'},
                     // Undo: {class: 'fa fa-undo fa-x', color: 'white', hr: true},
 
                     Fit: {
                         class: 'fa fa-align-center fa-x',
-                        description: 'Center Image',
+                        description: 'Center Image (C)',
                         color: 'white'
                     },
                     HideRight: {
@@ -52,11 +59,12 @@ define(['Vue', 'axios'], function (Vue, axios) {
 
                     Save: {
                         class: 'fa fa-floppy-o fa-x',
-                        color: 'white'
+                        color: 'white',
+                        description: 'Save (Ctrl+S)'
                     },
                     Download: {
                         class: 'fa fa-download fa-x',
-                        description: 'Download Image and Coco',
+                        description: 'Download Image and Coco (Ctrl+D)',
                         color: 'white'
                     },
                     Delete: {
@@ -89,6 +97,13 @@ define(['Vue', 'axios'], function (Vue, axios) {
         `,
         watch: {
             selected: function (newAction, oldAction) {
+
+                if (this.tools[newAction].disabled) {
+                    // Tool is disabled
+                    this.$parent.activeTool = oldAction;
+                    return;
+                }
+
                 this.lastSelected = oldAction;
                 this.tools[oldAction].color = 'white';
                 this.tools[newAction].color = this.activeColor;
