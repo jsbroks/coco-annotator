@@ -11,7 +11,6 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
         mask: null,
         initTool: function(image) {
             let raster = image.raster;
-            console.log(image);
             this.imageInfo.width = raster.width;
             this.imageInfo.height = raster.height;
             this.imageInfo.bytes = 4;
@@ -70,7 +69,6 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
                 || y < 0) {
                 return;
             }
-            console.log(x,y);
 
             let path = this.flood(x, y, wand.threshold, wand.blur, wand.simplify);
 
@@ -79,7 +77,8 @@ define("wandTool", ["paper", "magicWand"], function(paper) {
             } else {
                 vue.setCompoundPath(compound.unite(path));
             }
-            path.remove();
+
+            if (path != null) path.remove();
 
         },
 
