@@ -14,6 +14,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             shapeOpacity: 0.5,
             polygon: {
                 toggleGuidance: null,
+                deleteCurrent: null,
                 completeDistance: 5,
                 path: null,
                 guidance: true,

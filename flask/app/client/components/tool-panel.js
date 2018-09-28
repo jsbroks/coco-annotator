@@ -39,7 +39,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
                         class: 'fa fa-magic fa-x',
                         disabled: true,
                         color: 'white',
-                        description: 'Polygon/Lasso (W)',
+                        description: 'Magic Wand (W)',
                         hr: true
                     },
                     // Eraser: {class: 'fa fa-eraser fa-x', color: 'white'},

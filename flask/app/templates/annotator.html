@@ -69,6 +69,9 @@
                     Save Polygon
                 </button>
                 -->
+                <button class="btn btn-outline-light tool-input-button" @click="polygon.deleteCurrent(polygon)">
+                    Delete Polygon
+                </button>
                 <button :class="{ 'btn btn-outline-light':true,'tool-input-button': true, 'active': polygon.guidance }"
                         @click="polygon.toggleGuidance(polygon)">
                     Guidance

@@ -29,6 +29,7 @@ define("tools", [
             wandTool.initTool(vue.image);
 
             vue.polygon.toggleGuidance = polygonTool.toggleGuidance;
+            vue.polygon.deleteCurrent = polygonTool.deletePolygon;
 
             vue.tool.onMouseDrag = (event) => {
                 if (vue.activeTool.toLowerCase() === 'polygon')

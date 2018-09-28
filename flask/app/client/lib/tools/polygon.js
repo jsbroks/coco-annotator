@@ -137,6 +137,12 @@ define("polygonTool", ["paper", "simplify"], function(paper, simplify) {
 
         },
 
+        deletePolygon: function (polygon) {
+            if (polygon.path  == null) return;
+            polygon.path.remove();
+            polygon.path = null;
+        },
+
         _createPath: function (options) {
             return new paper.Path(options);
         },
