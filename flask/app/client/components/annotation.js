@@ -165,6 +165,9 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 // this.compoundPath.strokeColor = 'hsl(' + h + ',' + s + '%,' + l + '%)'
             },
             export: function () {
+
+                if (this.compoundPath == null) this.createCompoundPath();
+
                 let annotationData = {
                     id: this.annotation.id,
                     color: this.color,

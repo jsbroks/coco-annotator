@@ -188,7 +188,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             /**
              * API calls
              */
-
             getData: function () {
                 this.status.data.state = false;
 
