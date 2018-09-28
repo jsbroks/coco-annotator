@@ -237,12 +237,11 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                         data.categories.push(category.export())
                     });
                 }
-                console.log(this.activeTool);
+
                 axios.post('/api/annotator/data', JSON.stringify(data))
                     .then(() => {
                         this.status.saving.state = true;
                         if (callback != null) callback();
-                        console.log(this.activeTool);
                     }).catch(function (error) {
                         console.log(error);
                     });
