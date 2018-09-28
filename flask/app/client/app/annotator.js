@@ -96,6 +96,12 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 if (e.key.toLowerCase() === "s") this.activeTool = "Select";
                 if (e.key.toLowerCase() === "c") this.fit();
 
+                if (activeTool.toLowerCase() === "polygon") {
+                    if (e.key.toLowerCase() === "delete") {
+                        this.polygon.deleteCurrent(this.polygon)
+                    }
+                }
+
                 e.preventDefault();
                 return false;
             },
