@@ -134,13 +134,23 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             onwheel: function (e) {
                 let view = this.paper.view;
 
-                let viewPosition = view.viewToProject(new paper.Point(e.offsetX, e.offsetY));
-                let transform = this.changeZoom(e.deltaY, viewPosition);
+                if (this.keys.ctrl) {
+                    // Pan up and down
+                    let delta = new paper.Point(0, 0.5*e.deltaY);
+                    this.paper.view.setCenter(view.center.add(delta));
+                } else if (this.keys.shift) {
+                    // Pan left and right
+                    let delta = new paper.Point(0.5*e.deltaY, 0);
+                    this.paper.view.setCenter(view.center.add(delta));
+                } else {
+                    let viewPosition = view.viewToProject(new paper.Point(e.offsetX, e.offsetY));
+                    let transform = this.changeZoom(e.deltaY, viewPosition);
 
-                if (transform.zoom < 10 && transform.zoom > 0.01) {
-                    this.polygon.pathOptions.strokeWidth = (1/(transform.zoom)) * 3;
-                    this.paper.view.zoom = transform.zoom;
-                    this.paper.view.center = view.center.add(transform.offset);
+                    if (transform.zoom < 10 && transform.zoom > 0.01) {
+                        this.polygon.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
+                        this.paper.view.zoom = transform.zoom;
+                        this.paper.view.center = view.center.add(transform.offset);
+                    }
                 }
 
                 e.preventDefault();
