@@ -85,7 +85,8 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 if (e.key.toLowerCase() === "control") this.keys.ctrl = true;
                 if (e.key.toLowerCase() === "shift") this.keys.shift = true;
 
-                if (e.key.toLowerCase() === "s" && this.keys.ctrl) this.save();
+                let activeTool = this.activeTool;
+                if (e.key.toLowerCase() === "s" && this.keys.ctrl) this.save(() => {this.activeTool = activeTool});
                 if (e.key.toLowerCase() === "d" && this.keys.ctrl) this.downloadCoco();
                 if (e.key.toLowerCase() === "r" && this.keys.ctrl) location.reload();
 
@@ -226,11 +227,12 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                         data.categories.push(category.export())
                     });
                 }
-
+                console.log(this.activeTool);
                 axios.post('/api/annotator/data', JSON.stringify(data))
                     .then(() => {
                         this.status.saving.state = true;
                         if (callback != null) callback();
+                        console.log(this.activeTool);
                     }).catch(function (error) {
                         console.log(error);
                     });
