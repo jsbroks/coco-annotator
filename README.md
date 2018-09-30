@@ -33,48 +33,6 @@ COCO Annotator provides many 2D image annotation features that other annotations
  - Allow custom metadata for each instance or object
  - Magic wand/select tool
 
-# Usage
-
-### Editor
-
-URL: `/annotate/<image_id>`
-
-#### Tool Bar
-
-Tools are found on the left sidbar used for applying operations to the image.
-
-##### Selection Tool
-
-Edit or find assocated annotations by hovering or clicking segments in the viewer. `Click` any point to modify its location. `Shift-Click` any point to delete it from its assoicated segmentation.
-
-##### Polygon/Lasso Tool
-
-The polygonal lasso effortless tool for creating for drawing free-form or rigid segments.
-
-Requires an annotation to be selected to which the polygon will be added too.
-
-##### Saving/Downloading Tools
-
-By default annotations are saved every minute to the database. Force save any new changes if all other async procoesses are complete. Status updates can be found in the top left of the navigation bar.
-
-By default your annotations will be saved every minute. It is highly recommended to always save before leaving a session. 
-
-##### Delete
-
-Partially deletes all annotations and image from the database. Deletions can be restored on the Undo page.
-
-#### Annotation Bar
-
-Located on the left hand side of the image, the Annotaiton Bar allows for viewing and changing information about the categories, annotations and currently selected tool.
-
-### Undo
-
-List all partially deleted items for quick and simple restoring.
-
-### API
-
-Information about each endpoint can be found at `/api/`.
-
 # Built With
 
 Thanks to all these wonderful libaries/frameworks:
