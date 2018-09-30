@@ -1,9 +1,20 @@
 <p align="center"><img src="https://i.imgur.com/AA7IdbQ.png"></p>
+
 <p align="center">
-  Coco Annotator is currently in the alpha stage of development. Please report any bugs and issues.
+  <a href="#features">Features</a> •
+  <a href="https://github.com/jsbroks/coco-annotator/wiki">Wiki Page</a> •
+  <a href="https://github.com/jsbroks/coco-annotator/wiki/Getting-Started">Getting Stated</a> •
+  <a href="https://github.com/jsbroks/coco-annotator/issues">Issues</a> •
+  <a href="#license">License</a>
 </p>
 
+
 ---
+
+
+[![GitHub Stars](https://img.shields.io/github/stars/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/stargazers) [![GitHub Issues](https://img.shields.io/github/issues/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/issues) 
+![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
+
 
 A web based image annotation tool used to create training data for machine learning. It provides many distinct features
 including the ability to label an image segment (or part of a segment), track object instances, labeling objects with
@@ -12,44 +23,15 @@ format](http://cocodataset.org/#format-data). The annotation process is delivere
 
 <p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
 
+## Features
 
-## Table of Contents
-
-- [Getting Started](https://github.com/jsbroks/coco-annotator#getting-started)
-  - [Prerequisites](https://github.com/jsbroks/coco-annotator#prerequisites)
-  - [Installing](https://github.com/jsbroks/coco-annotator#installing)
-- [Usage](https://github.com/jsbroks/coco-annotator#usage)
-  - [Editor](https://github.com/jsbroks/coco-annotator#editor)
-    - [Tool Bar](https://github.com/jsbroks/coco-annotator#tool-bar)
-    - [Annotation Bar](https://github.com/jsbroks/coco-annotator#annotation-bar)
-  - [Undo](https://github.com/jsbroks/coco-annotator#undo)
-  - [API](https://github.com/jsbroks/coco-annotator#api)
-- [Built With](https://github.com/jsbroks/coco-annotator#built-with)
-- [License](https://github.com/jsbroks/coco-annotator#getting-started)
-
-## Getting Started
-
-### Prerequisites
-
-[Docker](https://docs.docker.com/install/) and [docker-compose](https://docs.docker.com/compose/install/)
-is required. You can follow there documentation for installation in the links provided.
-
-### Installing
-
-Create a copy of this repository:
-```bash
-git clone https://github.com/jsbroks/coco-annotator
-cd coco-annotator
-```
-
-Run the application using docker compose:
-```bash
-docker-compose up --build
-```
-
-Give it a few minutes to build the docker image.
-
-Now, you can now access the website (<http://localhost:5000/>).
+COCO Annotator provides many 2D image annotation features that other annotations tool fall short:
+ - Directly export to COCO format
+ - Segmentation of objects
+ - Useful API endpoints to analyze data
+ - Import datasets already annotated in COCO format
+ - Allow custom metadata for each instance or object
+ - Magic wand/select tool
 
 # Usage
 
