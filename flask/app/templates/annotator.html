@@ -16,8 +16,10 @@
     <aside v-show="panels.right.show" class="right-panel shadow-lg">
         <hr>
         <div>
-            <i v-show="image.previous != null" class="fa fa-arrow-left image-arrows" style="float:left"></i>
-            <i v-show="image.next != null" class="fa fa-arrow-right image-arrows" style="float:right"></i>
+            <i v-show="image.previous != null" class="fa fa-arrow-left image-arrows" style="float:left"
+               @click="setAnnotateURL(image.previous)"></i>
+            <i v-show="image.next != null" class="fa fa-arrow-right image-arrows" style="float:right"
+               @click="setAnnotateURL(image.next)"></i>
 
             <h6 class="sidebar-title text-center">
                 <span class="d-inline-block text-truncate" style="max-width: 73%;">{{ image.filename }}</span>

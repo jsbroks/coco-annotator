@@ -62,6 +62,7 @@ class AnnotatorId(Resource):
 
     def get(self, image_id):
         """ Called when loading from the annotator client """
+
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:
@@ -70,12 +71,20 @@ class AnnotatorId(Resource):
         dataset = DatasetModel.objects(id=image.dataset_id).first()
         categories = CategoryModel.objects(deleted=False).in_bulk(dataset.categories).items()
 
+        images = list(ImageModel.objects(dataset_id=dataset.id, deleted=False).all())
+        image_index = images.index(image)
+        image_previous = None if image_index - 1 < 0 else images[image_index - 1].id
+        image_next = None if image_index + 1 == len(images) else images[image_index + 1].id
+
         data = {
             'image': query_util.fix_ids(image),
             'categories': [],
             'dataset': query_util.fix_ids(dataset),
             'settings': []
         }
+
+        data['image']['previous'] = image_previous
+        data['image']['next'] = image_next
 
         for category in categories:
             category = query_util.fix_ids(category[1])

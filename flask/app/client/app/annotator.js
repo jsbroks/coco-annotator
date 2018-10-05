@@ -200,12 +200,19 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                 axios.get('/api/annotator/data/' + this.image.id)
                     .then((response) => {
+
+                        // Set image data
                         this.image.metadata = response.data.image.metadata;
                         this.image.filename = response.data.image.file_name;
                         this.image.categories = response.data.image.categories;
+                        this.image.next = response.data.image.next;
+                        this.image.previous = response.data.image.previous;
+
+                        // Set other data
                         this.dataset = response.data.dataset;
                         this.categories = response.data.categories;
 
+                        // Update status
                         this.status.data.state = true;
                     })
             },
@@ -343,7 +350,11 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 if (annotation === -1) return;
 
                 this.getCategory(category).getAnnotation(annotation).setCompoundPath(compound);
-            }
+            },
+
+            setAnnotateURL: function (imageId) {
+                location.pathname = "/" + location.pathname.split("/")[1] + "/" + imageId;
+            },
         },
         watch: {
             'polygon.pathOptions.strokeWidth': function (newStroke, oldStroke) {
