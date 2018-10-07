@@ -33,10 +33,17 @@ class AnnotatorData(Resource):
                 continue
 
             for annotation in category.get('annotations', []):
+
                 annotation_id = annotation.get('id')
                 db_annotation = annotations.filter(id=annotation_id).first()
+
                 if db_annotation is None:
                     continue
+
+                db_annotation.update(
+                    set__metadata=annotation.get('metadata'),
+                    set__color=annotation.get('color')
+                )
 
                 paperjs_object = annotation.get('compoundPath', [])
 
@@ -52,7 +59,6 @@ class AnnotatorData(Resource):
                         set__area=area,
                         set__bbox=bbox,
                         set__paper_object=paperjs_object,
-                        set__metadata=annotation.get('metadata')
                     )
 
         return data

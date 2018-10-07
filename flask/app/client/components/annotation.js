@@ -203,7 +203,7 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                     color: this.color,
                     metadata: {}
                 };
-
+                console.log(this.color);
                 // Convert metadata
                 this.metadata.forEach(object => {
                     if (object.key.length > 0) {
@@ -215,8 +215,8 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                             annotationData.metadata[object.key] = object.value;
                     }
                 });
-                console.log(annotationData.metadata);
-                let json = this.compoundPath.exportJSON({asString: false, precision: 2});
+
+                let json = this.compoundPath.exportJSON({asString: false, precision: 1});
                 if (this.annotation.paper_object !== json) {
                     annotationData.compoundPath = json
                 }
@@ -262,7 +262,7 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 if (!this.annotation.metadata.hasOwnProperty(key)) continue;
 
                 let value = this.annotation.metadata[key];
-                this.metadata.add({key: key, value: value})
+                this.metadata.push({key: key, value: value.toString()})
             }
         }
     });
