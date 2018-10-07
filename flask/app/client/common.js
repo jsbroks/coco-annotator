@@ -23,6 +23,7 @@ requirejs.config({
         annotation: '../components/annotation',
         asyncStatus: '../components/async-status',
         pagination: '../components/pagination',
+        metadata: '../components/metadata',
 
         imageCard: '../components/image-card',
         datasetCard: '../components/dataset-card',

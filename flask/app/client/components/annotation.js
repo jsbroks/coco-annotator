@@ -1,4 +1,4 @@
-define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
+define(['Vue', 'paper', 'axios', 'metadata'], function (Vue, paper, axios) {
 
     Vue.component('annotation', {
         props: {
@@ -72,31 +72,7 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                                         </div>
                                     </div>
                                     
-                                    <i class="fa fa-plus" style="float: right; margin: 0 4px; color: green"
-                                        @click="createMetadata"></i>
-                                    <p style="margin: 0">Metadata</p>
-                                    
-                                    <div class="row">
-                                        <div class="col-sm"><p style="margin: 0; font-size: 10px">Key</p></div>
-                                        <div class="col-sm"><p style="margin: 0; font-size: 10px">Value</p></div>
-                                    </div>
-                                    <ul class="list-group" style="height: 50%;">
-                                        <li v-if="metadata.length == 0" class="list-group-item meta-item">
-                                            <i>No items in metadata.</i>
-                                        </li>
-                                        <li v-for="object in metadata" class="list-group-item meta-item">
-                                            <div class="row">
-                                       
-                                                <div class="col-sm">
-                                                    <input v-model="object.key" type="text" class="meta-input" placeholder="Key">
-                                                </div>
-                                            
-                                                <div class="col-sm">
-                                                    <input v-model="object.value" type="text" class="meta-input" placeholder="Value">
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                    <metadata v-model="annotation.metadata" ref="metadata"></metadata>
                                     
                                 </form>  
                             </div>
@@ -196,25 +172,11 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
 
                 if (this.compoundPath == null) this.createCompoundPath();
 
-                // Convert metadata into format
-
                 let annotationData = {
                     id: this.annotation.id,
                     color: this.color,
-                    metadata: {}
+                    metadata: this.$refs.metadata.export()
                 };
-
-                // Convert metadata
-                this.metadata.forEach(object => {
-                    if (object.key.length > 0) {
-                        if (!isNaN(object.value))
-                            annotationData.metadata[object.key] = parseInt(object.value);
-                        else if (object.value.toLowerCase() === "true" || object.value.toLowerCase() === "false")
-                            annotationData.metadata[object.key] = (object.value.toLowerCase() === 'true');
-                        else
-                            annotationData.metadata[object.key] = object.value;
-                    }
-                });
 
                 let json = this.compoundPath.exportJSON({asString: false, precision: 1});
                 if (this.annotation.paper_object !== json) {
@@ -223,9 +185,6 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
 
                 return annotationData;
             },
-            createMetadata: function () {
-                this.metadata.push({key: "", value: ""})
-            }
         },
         watch: {
             color: function (newColor, oldColor) {
@@ -256,14 +215,5 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                 return 'inherit';
             },
         },
-        created () {
-            // Generate metadata
-            for (var key in this.annotation.metadata) {
-                if (!this.annotation.metadata.hasOwnProperty(key)) continue;
-
-                let value = this.annotation.metadata[key];
-                this.metadata.push({key: key, value: value.toString()})
-            }
-        }
     });
 });
