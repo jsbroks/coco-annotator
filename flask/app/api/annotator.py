@@ -51,7 +51,8 @@ class AnnotatorData(Resource):
                         set__segmentation=segmentation,
                         set__area=area,
                         set__bbox=bbox,
-                        set__paper_object=paperjs_object
+                        set__paper_object=paperjs_object,
+                        set__metadata=annotation.get('metadata')
                     )
 
         return data
