@@ -203,13 +203,13 @@ define(['Vue', 'paper', 'axios'], function (Vue, paper, axios) {
                     color: this.color,
                     metadata: {}
                 };
-                console.log(this.color);
+
                 // Convert metadata
                 this.metadata.forEach(object => {
                     if (object.key.length > 0) {
                         if (!isNaN(object.value))
                             annotationData.metadata[object.key] = parseInt(object.value);
-                        if (object.value.toLowerCase() === "true" || object.value.toLowerCase() === "false")
+                        else if (object.value.toLowerCase() === "true" || object.value.toLowerCase() === "false")
                             annotationData.metadata[object.key] = (object.value.toLowerCase() === 'true');
                         else
                             annotationData.metadata[object.key] = object.value;
