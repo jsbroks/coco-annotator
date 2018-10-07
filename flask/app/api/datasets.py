@@ -31,6 +31,8 @@ coco_upload.add_argument('coco', location='files', type=FileStorage, required=Tr
 
 update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
+update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
+                            help="Default annotation metadata")
 
 
 @api.route('/')
@@ -74,11 +76,18 @@ class DatasetId(Resource):
 
         args = update_dataset.parse_args()
         categories = args.get('categories')
+        default_annotation_metadata = args.get('default_annotation_metadata')
 
         if categories is not None:
             dataset.categories = categories
 
-        dataset.update(set__categories=dataset.categories)
+        if default_annotation_metadata is not None:
+            dataset.default_annotation_metadata = default_annotation_metadata
+
+        dataset.update(
+            set__categories=dataset.categories,
+            default_annotation_metadata=dataset.default_annotation_metadata
+        )
 
         return {"success": True}
 

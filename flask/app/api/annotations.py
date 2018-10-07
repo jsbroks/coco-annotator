@@ -32,9 +32,8 @@ class Annotation(Resource):
         color = args.get('color')
 
         try:
-            annotation = AnnotationModel(image_id=image_id, category_id=category_id)
+            annotation = AnnotationModel(image_id=image_id, category_id=category_id, metadata=metadata)
             annotation.color = color_util.random_color_hex() if color is None else color
-            annotation.metadata = metadata
             annotation.save()
         except (ValueError, TypeError) as e:
             return {'message': str(e)}, 400

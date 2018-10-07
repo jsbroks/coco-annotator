@@ -1,4 +1,4 @@
-define(['Vue', 'axios'], function (Vue, axios) {
+define(['Vue', 'axios', 'metadata'], function (Vue, axios) {
 
     Vue.component('dataset-card', {
         props: {
@@ -13,7 +13,8 @@ define(['Vue', 'axios'], function (Vue, axios) {
         },
         data: function () {
             return {
-                    selectedCategories: []
+                selectedCategories: [],
+                defaultMetadata: this.dataset.default_annotation_metadata
             }
         },
         template: `
@@ -75,6 +76,10 @@ define(['Vue', 'axios'], function (Vue, axios) {
                                             </option>
                                         </select>
                                     </div>
+                                    
+                                    <metadata :metadata="defaultMetadata" title="Default Annotation Metadata"
+                                        keyName="Default Key" valueName="Default Value"
+                                        ref="defaultAnnotation"></metadata>
                                 </form>  
                             </div>
                             <div class="modal-footer">
@@ -137,9 +142,10 @@ define(['Vue', 'axios'], function (Vue, axios) {
             },
             onSave: function () {
                 this.dataset.categories = this.selectedCategories;
-                console.log(axios.baseURL);
+
                 axios.post('/api/dataset/' + this.dataset.id, {
-                    'categories': this.selectedCategories
+                    'categories': this.selectedCategories,
+                    'default_annotation_metadata': this.$refs.defaultAnnotation.export(),
                 }).then(response => {
 
                 });

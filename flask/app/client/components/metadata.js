@@ -1,19 +1,30 @@
 define(['Vue', 'axios'], function (Vue, axios) {
 
     Vue.component('metadata', {
-        model: {
-            prop: 'metadata',
-            event: 'change'
-        },
         props: {
             metadata: {
                 type: Object,
                 required: true
-            }
+            },
+            title: {
+                type: String,
+                required: false
+            },
+            keyName: {
+                type: String,
+                required: false
+            },
+            valueName: {
+                type: String,
+                required: false
+            },
         },
         data: function () {
             return {
-                metadataList: []
+                metadataList: [],
+                titleName: "Metadata",
+                titleKey: "Key",
+                titleValue: "Value"
             }
         },
         template: `
@@ -21,11 +32,11 @@ define(['Vue', 'axios'], function (Vue, axios) {
                 <i class="fa fa-plus" style="float: right; margin: 0 4px; color: green"
                     @click="createMetadata"></i>
                     
-                <p style="margin: 0">Metadata</p>
+                <p style="margin: 0">{{ this.titleName }}</p>
                                     
                 <div class="row">
-                    <div class="col-sm"><p style="margin: 0; font-size: 10px">Key</p></div>
-                    <div class="col-sm"><p style="margin: 0; font-size: 10px">Value</p></div>
+                    <div class="col-sm"><p style="margin: 0; font-size: 10px">{{titleKey}}</p></div>
+                    <div class="col-sm"><p style="margin: 0; font-size: 10px">{{titleValue}}</p></div>
                 </div>
                             
                 <ul class="list-group" style="height: 50%;">
@@ -36,11 +47,11 @@ define(['Vue', 'axios'], function (Vue, axios) {
                         <div class="row">
                                    
                             <div class="col-sm">
-                                <input v-model="object.key" type="text" class="meta-input" placeholder="Key">
+                                <input v-model="object.key" type="text" class="meta-input" :placeholder="titleKey">
                             </div>
                                                 
                             <div class="col-sm">
-                                <input v-model="object.value" type="text" class="meta-input" placeholder="Value">
+                                <input v-model="object.value" type="text" class="meta-input" :placeholder="titleValue">
                             </div>
                         </div>
                     </li>
@@ -64,24 +75,19 @@ define(['Vue', 'axios'], function (Vue, axios) {
                             metadata[object.key] = object.value;
                     }
                 });
-                console.log(metadata);
-                return metadata;
-            },
-            isJsonString: function (string) {
-                try {
-                    JSON.parse(string);
-                } catch (e) {
-                    return false;
-                }
 
-                return string;
+                return metadata;
             },
             createMetadata: function () {
                 this.metadataList.push({key: "", value: ""})
             }
         },
         created() {
-            console.log(this.metadata);
+
+            if (this.title != null) this.titleName = this.title;
+            if (this.valueName != null) this.titleValue = this.valueName;
+            if (this.keyName != null) this.titleKey = this.keyName;
+
             for (var key in this.metadata) {
                 if (!this.metadata.hasOwnProperty(key)) continue;
 

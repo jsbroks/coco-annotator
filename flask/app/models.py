@@ -18,6 +18,8 @@ class DatasetModel(db.DynamicDocument):
     directory = db.StringField()
     categories = db.ListField(default=[])
 
+    default_annotation_metadata = db.DictField(default={})
+
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
@@ -43,7 +45,6 @@ class ImageModel(db.DynamicDocument):
     height = db.IntField(required=True)
     file_name = db.StringField()
 
-    # categories = db.ListField(default=[])
     image_url = db.StringField()
     thumbnail_url = db.StringField()
 
@@ -54,13 +55,6 @@ class ImageModel(db.DynamicDocument):
 
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
-
-    def save(self, *args, **kwargs):
-
-        if self.dataset_id is not None:
-            self.categories = DatasetModel.objects(id=self.dataset_id).first().categories
-
-        return super(ImageModel, self).save(*args, **kwargs)
 
     @classmethod
     def create_from_path(cls, path):
@@ -91,6 +85,7 @@ class AnnotationModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     image_id = db.IntField(required=True)
     category_id = db.IntField(required=True)
+    dataset_id = db.IntField()
 
     segmentation = db.ListField()
     area = db.IntField(default=0)
@@ -116,13 +111,26 @@ class AnnotationModel(db.DynamicDocument):
             data['image_id'] = image_id
             data['width'] = image.width
             data['height'] = image.height
+            data['dataset_id'] = image.dataset_id
         else:
             raise ValueError("Invalid image id.")
 
         super(AnnotationModel, self).__init__(**data)
 
+    def save(self, *args, **kwargs):
+
+        if self.dataset_id is not None:
+            dataset = DatasetModel.objects(id=self.dataset_id).first()
+
+            if dataset is not None:
+                metadata = dataset.default_annotation_metadata.copy()
+                metadata.update(self.metadata)
+                self.metadata = metadata
+
+        return super(AnnotationModel, self).save(*args, **kwargs)
+
     def is_empty(self):
-        return len(self.segmentation) != 0 or self.area == 0
+        return len(self.segmentation) == 0 or self.area == 0
 
 
 class CategoryModel(db.DynamicDocument):

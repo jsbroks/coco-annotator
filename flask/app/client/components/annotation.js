@@ -72,7 +72,7 @@ define(['Vue', 'paper', 'axios', 'metadata'], function (Vue, paper, axios) {
                                         </div>
                                     </div>
                                     
-                                    <metadata v-model="annotation.metadata" ref="metadata"></metadata>
+                                    <metadata :metadata="annotation.metadata" ref="metadata"></metadata>
                                     
                                 </form>  
                             </div>
