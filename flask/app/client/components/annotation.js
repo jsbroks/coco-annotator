@@ -103,7 +103,7 @@ define(['Vue', 'paper', 'axios', 'metadata'], function (Vue, paper, axios) {
                         segments = null;
                     }
                 }
-
+                if (this.compoundPath != null) this.compoundPath.remove();
                 this.compoundPath = new paper.CompoundPath();
                 if (json != null) {
                     this.compoundPath.importJSON(this.annotation.paper_object);

@@ -23,7 +23,8 @@ define(['Vue', 'axios'], function (Vue, axios) {
                     Select: {
                         class: 'fa fa-hand-pointer-o fa-x',
                         description: 'Select (S)',
-                        color: 'white'
+                        color: 'white',
+                        hr: true
                     },
                     // Move: {class: 'fa fa-arrows fa-x', color: 'white'},
                     Polygon: {
@@ -31,7 +32,6 @@ define(['Vue', 'axios'], function (Vue, axios) {
                         description: 'Polygon/Lasso (P)',
                         disabled: true,
                         color: 'white',
-                        hr: true
                     },
                     // Points: {class: 'fa fa-dot-circle-o fa-x', description: 'Key Points', color: 'white'},
                     // Bush: {class: 'fa fa-paint-brush fa-x', color: 'white'},
@@ -42,7 +42,11 @@ define(['Vue', 'axios'], function (Vue, axios) {
                         description: 'Magic Wand (W)',
                         hr: true
                     },
-                    // Eraser: {class: 'fa fa-eraser fa-x', color: 'white'},
+                    Eraser: {
+                        class: 'fa fa-eraser fa-x',
+                        color: 'white',
+                        hr: true
+                    },
                     // Undo: {class: 'fa fa-undo fa-x', color: 'white', hr: true},
 
                     Fit: {

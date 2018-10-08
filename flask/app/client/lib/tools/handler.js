@@ -19,7 +19,6 @@ define("tools", [
         vue: null,
         initTools: function (vue) {
             this.vue = vue;
-
             vue.tool = new paper.Tool();
             vue.polygon.path = new paper.Path(vue.polygon.pathOptions);
             vue.polygon.bush = new paper.Path.Circle({
@@ -27,6 +26,7 @@ define("tools", [
             });
 
             wandTool.initTool(vue.image);
+            eraserTool.initTool(vue.eraser);
 
             vue.polygon.toggleGuidance = polygonTool.toggleGuidance;
             vue.polygon.deleteCurrent = polygonTool.deletePolygon;
@@ -40,6 +40,9 @@ define("tools", [
 
                 if (vue.activeTool.toLowerCase() === 'wand')
                     wandTool.onMouseDrag(event, vue);
+
+                if (vue.activeTool.toLowerCase() === 'eraser')
+                    eraserTool.onMouseDrag(event, vue);
             };
 
             vue.tool.onMouseDown = (event) => {
@@ -51,6 +54,9 @@ define("tools", [
 
                 if (vue.activeTool.toLowerCase() === 'wand')
                     wandTool.onMouseDown(event, vue);
+
+                if (vue.activeTool.toLowerCase() === 'eraser')
+                    eraserTool.onMouseDrag(event, vue);
             };
 
             vue.tool.onMouseMove = (event) => {
@@ -61,7 +67,7 @@ define("tools", [
                     selectTool.onMouseMove(event, vue.paper, vue.hover);
 
                 if (vue.activeTool.toLowerCase() === 'eraser')
-                    eraserTool.onMouseMove(event, vue.paper, vue.eraser);
+                    eraserTool.onMouseMove(event, vue.eraser.brush);
             };
 
             vue.tool.onMouseUp = (event) => {

@@ -25,7 +25,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 },
                 pathOptions: {
                     strokeColor: 'black',
-                    strokeWidth: this.strokeWidth
+                    strokeWidth: 1
                 }
             },
             wand: {
@@ -34,7 +34,13 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 simplify: 5,
             },
             eraser: {
-                bush: null,
+                brush: null,
+                minimumArea: 10,
+                pathOptions: {
+                    strokeColor: 'white',
+                    strokeWidth: 1,
+                    radius: 30,
+                }
             },
             current: {
                 category: -1,
@@ -102,6 +108,11 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     }
                 }
 
+                if (activeTool.toLowerCase() === "eraser") {
+                    if (e.key === "]") this.eraser.pathOptions.radius += 5;
+                    if (e.key === "[") this.eraser.pathOptions.radius -= 5;
+                }
+
                 e.preventDefault();
                 return false;
             },
@@ -127,6 +138,9 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             },
 
             getCategory: function (index) {
+                if (index == null) return null;
+                if (index < 0) return null;
+
                 let ref = this.$refs.category;
 
                 if (ref == null) return null;
@@ -154,7 +168,10 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     let transform = this.changeZoom(e.deltaY, viewPosition);
 
                     if (transform.zoom < 10 && transform.zoom > 0.01) {
+
                         this.polygon.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
+                        this.eraser.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
+
                         this.paper.view.zoom = transform.zoom;
                         this.paper.view.center = view.center.add(transform.offset);
                     }
@@ -176,6 +193,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 );
 
                 this.polygon.pathOptions.strokeWidth = (1/(this.paper.view.zoom)) * 3;
+                this.eraser.pathOptions.strokeWidth = (1/(this.paper.view.zoom)) * 3;
                 this.paper.view.setCenter(0, 0)
             },
 
@@ -357,10 +375,31 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             },
         },
         watch: {
-            'polygon.pathOptions.strokeWidth': function (newStroke, oldStroke) {
+            activeTool: function (newValue, oldValue) {
+                this.eraser.brush.visible = newValue.toLowerCase() === "eraser";
+            },
+            'polygon.pathOptions.strokeWidth': function (newStroke) {
                 if (this.paper == null) return;
                 if (this.polygon.path == null) return;
                 this.polygon.path.strokeWidth = newStroke;
+            },
+            'eraser.pathOptions.strokeWidth': function (newStroke) {
+                if (this.paper == null) return;
+                if (this.eraser.brush == null) return;
+                this.eraser.brush.strokeWidth = newStroke;
+            },
+            'eraser.pathOptions.radius': function (newRadius, oldRadius) {
+                if (this.paper == null) return;
+                if (this.eraser.brush == null) return;
+
+                let position = this.eraser.brush.position;
+                this.eraser.brush.remove();
+                this.eraser.brush = new paper.Path.Circle({
+                    center: position,
+                    strokeColor: this.eraser.pathOptions.strokeColor,
+                    strokeWidth: this.eraser.pathOptions.strokeWidth,
+                    radius: newRadius
+                });
             }
         },
         computed: {

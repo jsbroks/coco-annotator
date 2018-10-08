@@ -120,6 +120,17 @@
                            class="form-control tool-option-input">
                 </div>
             </div>
+
+            <!-- Eraser -->
+            <div v-show="activeTool.toLowerCase() === 'eraser'">
+                <div class="input-group tool-input-group">
+                    <div class="input-group-prepend tool-option-pre">
+                        <span class="input-group-text tool-option-font">Radius</span>
+                    </div>
+                    <input v-model.number="eraser.pathOptions.radius" type="number" min="0" step="10"
+                           class="form-control tool-option-input">
+                </div>
+            </div>
         </div>
 
     </aside>
