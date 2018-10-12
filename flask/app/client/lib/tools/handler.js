@@ -64,7 +64,7 @@ define("tools", [
                     polygonTool.onMouseMove(event, vue.polygon);
 
                 if (vue.activeTool.toLowerCase() === 'select')
-                    selectTool.onMouseMove(event, vue.paper, vue.hover);
+                    selectTool.onMouseMove(event, vue);
 
                 if (vue.activeTool.toLowerCase() === 'eraser')
                     eraserTool.onMouseMove(event, vue.eraser.brush);

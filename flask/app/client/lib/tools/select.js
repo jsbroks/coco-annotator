@@ -16,6 +16,22 @@ define("selectTool", ["paper"], function (paper) {
             class: paper.Path,
             tolerance: 2
         },
+        hoverText: function (position, hover, category, annotation) {
+
+            if (category == null || annotation == null) return;
+            position = position.add(50, 0);
+            if (hover.text == null) {
+                hover.text = new paper.PointText(position);
+                hover.text.justification = 'left';
+                hover.text.fillColor = 'black';
+                hover.text.content = annotation.color;
+                hover.text.strokeWidth = 0.5;
+                hover.text.strokeColor = 'white';
+
+            }
+            hover.text.position = position;
+            hover.text.bringToFront();
+        },
         onMouseUp: function (event) {
         },
         onMouseDown: function (event, canvas, hitOptions) {
@@ -50,8 +66,13 @@ define("selectTool", ["paper"], function (paper) {
             }
         },
 
-        onMouseMove: function (event, canvas, hover) {
+        onMouseMove: function (event, vue) {
+            let canvas = vue.paper;
+            let hover = vue.hover;
+            let text = vue.hover.text;
+
             canvas.project.activeLayer.selected = false;
+
             if (event.item
                 && event.item.opacity !== 0
                 && event.item.data.hasOwnProperty('categoryId')) {
@@ -66,16 +87,25 @@ define("selectTool", ["paper"], function (paper) {
                             && child.contains(event.point)
                             && child.data.hasOwnProperty('annotationId')) {
 
-                            // Child with clicked point
-                            child.selected = true;
                             hover.annotation = child.data.annotationId;
-                            return;
+                            child.selected = true;
+
+                            let category = vue.getCategory(hover.category);
+                            let annotation = category.getAnnotation(hover.annotation);
+                            this.hoverText(event.point, hover, category, annotation, hover);
+
+                            break;
                         }
                     }
                 }
             } else {
                 hover.category = -1;
                 hover.annotation = -1;
+
+                if (hover.text != null) {
+                    hover.text.remove();
+                    hover.text = null;
+                }
             }
         },
     };

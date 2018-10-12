@@ -45,7 +45,9 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             },
             hover: {
                 category: -1,
-                annotation: -1
+                annotation: -1,
+                text: null,
+                fontSize: 1,
             },
             panels: {
                 right: {
@@ -170,6 +172,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                         this.polygon.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
                         this.eraser.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
+                        if (this.text != null) this.text.fontSize = (1 / (transform.zoom)) * 3;
 
                         this.paper.view.zoom = transform.zoom;
                         this.paper.view.center = view.center.add(transform.offset);
@@ -193,6 +196,8 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                 this.polygon.pathOptions.strokeWidth = (1/(this.paper.view.zoom)) * 3;
                 this.eraser.pathOptions.strokeWidth = (1/(this.paper.view.zoom)) * 3;
+
+                this.hover.fontSize = (1/(this.paper.view.zoom)) * 3;
                 this.paper.view.setCenter(0, 0)
             },
 
@@ -387,6 +392,11 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 if (this.eraser.brush == null) return;
                 this.eraser.brush.strokeWidth = newStroke;
             },
+            'hover.fontSize': function (newSize) {
+                if (this.paper == null) return;
+                if (this.hover.text == null) return;
+                this.hover.text.fontSize = newSize;
+            },
             'eraser.pathOptions.radius': function (newRadius, oldRadius) {
                 if (this.paper == null) return;
                 if (this.eraser.brush == null) return;
@@ -399,7 +409,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     strokeWidth: this.eraser.pathOptions.strokeWidth,
                     radius: newRadius
                 });
-            }
+            },
         },
         computed: {
             compoundPath: function () {
