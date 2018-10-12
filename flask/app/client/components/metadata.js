@@ -87,7 +87,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
             if (this.title != null) this.titleName = this.title;
             if (this.valueName != null) this.titleValue = this.valueName;
             if (this.keyName != null) this.titleKey = this.keyName;
-            
+
             if (this.metadata != null) {
                 for (var key in this.metadata) {
                     if (!this.metadata.hasOwnProperty(key)) continue;
