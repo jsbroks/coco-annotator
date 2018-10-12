@@ -4,7 +4,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
         props: {
             metadata: {
                 type: Object,
-                required: true
+                required: false
             },
             title: {
                 type: String,
@@ -87,13 +87,15 @@ define(['Vue', 'axios'], function (Vue, axios) {
             if (this.title != null) this.titleName = this.title;
             if (this.valueName != null) this.titleValue = this.valueName;
             if (this.keyName != null) this.titleKey = this.keyName;
+            
+            if (this.metadata != null) {
+                for (var key in this.metadata) {
+                    if (!this.metadata.hasOwnProperty(key)) continue;
 
-            for (var key in this.metadata) {
-                if (!this.metadata.hasOwnProperty(key)) continue;
+                    let value = this.metadata[key];
+                    this.metadataList.push({key: key, value: value.toString()})
 
-                let value = this.metadata[key];
-                this.metadataList.push({key: key, value: value.toString()})
-
+                }
             }
         }
     });

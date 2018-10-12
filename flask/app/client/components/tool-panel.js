@@ -45,6 +45,7 @@ define(['Vue', 'axios'], function (Vue, axios) {
                     Eraser: {
                         class: 'fa fa-eraser fa-x',
                         color: 'white',
+                        description: 'Eraser (W)',
                         hr: true
                     },
                     // Undo: {class: 'fa fa-undo fa-x', color: 'white', hr: true},

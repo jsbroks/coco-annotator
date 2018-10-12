@@ -25,8 +25,9 @@ define("eraserTool", ["paper"], function (paper) {
             let category = vue.getCategory(vue.current.category);
 
             if (vue.eraser.brush.intersects(path)) {
+
                 let tempPath = path.subtract(vue.eraser.brush);
-                tempPath.flatten(1);
+                tempPath.flatten(vue.eraser.simplify);
 
                 category.getAnnotation(id).setCompoundPath(tempPath);
                 path = tempPath;

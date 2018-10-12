@@ -130,6 +130,13 @@
                     <input v-model.number="eraser.pathOptions.radius" type="number" min="0" step="10"
                            class="form-control tool-option-input">
                 </div>
+                <div class="input-group tool-input-group">
+                    <div class="input-group-prepend tool-option-pre">
+                        <span class="input-group-text tool-option-font">Simplify Tolerance </span>
+                    </div>
+                    <input v-model.number="eraser.simplify" type="number" min="0" max="100" step="1"
+                           class="form-control tool-option-input">
+                </div>
             </div>
         </div>
 

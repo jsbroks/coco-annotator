@@ -19,10 +19,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 path: null,
                 guidance: true,
                 simplify: 1,
-                tolerance: {
-                    simplify: 1,
-                    flatten: 1,
-                },
                 pathOptions: {
                     strokeColor: 'black',
                     strokeWidth: 1
@@ -36,6 +32,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             eraser: {
                 brush: null,
                 minimumArea: 10,
+                simplify: 5,
                 pathOptions: {
                     strokeColor: 'white',
                     strokeWidth: 1,
@@ -92,23 +89,25 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 if (e.key.toLowerCase() === "control") this.keys.ctrl = true;
                 if (e.key.toLowerCase() === "shift") this.keys.shift = true;
 
-                let activeTool = this.activeTool;
+                // Action shortcuts
                 if (e.key.toLowerCase() === "s" && this.keys.ctrl) this.save(() => {this.activeTool = activeTool});
                 if (e.key.toLowerCase() === "d" && this.keys.ctrl) this.downloadCoco();
                 if (e.key.toLowerCase() === "r" && this.keys.ctrl) location.reload();
 
+                // Tool shortcuts
                 if (e.key.toLowerCase() === "w") this.activeTool = "Wand";
                 if (e.key.toLowerCase() === "p") this.activeTool = "Polygon";
                 if (e.key.toLowerCase() === "s") this.activeTool = "Select";
+                if (e.key.toLowerCase() === "e") this.activeTool = "Eraser";
                 if (e.key.toLowerCase() === "c") this.fit();
 
-                if (activeTool.toLowerCase() === "polygon") {
+                if (this.activeTool.toLowerCase() === "polygon") {
                     if (e.key.toLowerCase() === "delete") {
                         this.polygon.deleteCurrent(this.polygon)
                     }
                 }
 
-                if (activeTool.toLowerCase() === "eraser") {
+                if (this.activeTool.toLowerCase() === "eraser") {
                     if (e.key === "]") this.eraser.pathOptions.radius += 5;
                     if (e.key === "[") this.eraser.pathOptions.radius -= 5;
                 }
