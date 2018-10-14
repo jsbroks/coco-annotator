@@ -44,10 +44,13 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 annotation: -1,
             },
             hover: {
+                text: null,
+                box: null,
+                textShift: 0,
+                fontSize: 0,
+                shift: 0,
                 category: -1,
                 annotation: -1,
-                text: null,
-                fontSize: 1,
             },
             panels: {
                 right: {
@@ -60,6 +63,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             categories: [],
             dataset: {},
             image: {
+                scale: 0,
                 ratio: 0,
                 rotate: 0,
                 id: null,
@@ -170,10 +174,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                     if (transform.zoom < 10 && transform.zoom > 0.01) {
 
-                        this.polygon.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
-                        this.eraser.pathOptions.strokeWidth = (1 / (transform.zoom)) * 3;
-                        if (this.text != null) this.text.fontSize = (1 / (transform.zoom)) * 3;
-
+                        this.image.scale = 1/(this.paper.view.zoom);
                         this.paper.view.zoom = transform.zoom;
                         this.paper.view.center = view.center.add(transform.offset);
                     }
@@ -194,10 +195,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     (canvas.height / parentY) * 0.85
                 );
 
-                this.polygon.pathOptions.strokeWidth = (1/(this.paper.view.zoom)) * 3;
-                this.eraser.pathOptions.strokeWidth = (1/(this.paper.view.zoom)) * 3;
-
-                this.hover.fontSize = (1/(this.paper.view.zoom)) * 3;
+                this.image.scale = 1/(this.paper.view.zoom);
                 this.paper.view.setCenter(0, 0)
             },
 
@@ -379,23 +377,31 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             },
         },
         watch: {
+
+            'image.scale': function (newScale, oldScale) {
+
+                if (this.paper == null) return;
+
+                this.hover.textShift = newScale * 40;
+                this.hover.fontSize = newScale * 15;
+
+                this.polygon.pathOptions.strokeWidth = newScale * 3;
+                this.eraser.pathOptions.strokeWidth = newScale * 3;
+
+                if (this.polygon.path != null) this.polygon.path.strokeWidth = this.polygon.pathOptions.strokeWidth;
+                if (this.eraser.brush != null) this.eraser.brush.strokeWidth = this.eraser.pathOptions.strokeWidth;
+                if (this.hover.text != null) {
+                    this.hover.text.fontSize = this.hover.fontSize;
+                    this.hover.shift = (this.hover.text.bounds.bottomRight.x - this.hover.text.bounds.bottomLeft.x)/2;
+
+                    let totalShift = this.hover.shift + this.hover.textShift;
+                    this.hover.text.position = this.hover.position.add(totalShift, 0);
+                    this.hover.box.bounds = this.hover.text.bounds;
+                }
+            },
+
             activeTool: function (newValue, oldValue) {
                 this.eraser.brush.visible = newValue.toLowerCase() === "eraser";
-            },
-            'polygon.pathOptions.strokeWidth': function (newStroke) {
-                if (this.paper == null) return;
-                if (this.polygon.path == null) return;
-                this.polygon.path.strokeWidth = newStroke;
-            },
-            'eraser.pathOptions.strokeWidth': function (newStroke) {
-                if (this.paper == null) return;
-                if (this.eraser.brush == null) return;
-                this.eraser.brush.strokeWidth = newStroke;
-            },
-            'hover.fontSize': function (newSize) {
-                if (this.paper == null) return;
-                if (this.hover.text == null) return;
-                this.hover.text.fontSize = newSize;
             },
             'eraser.pathOptions.radius': function (newRadius, oldRadius) {
                 if (this.paper == null) return;

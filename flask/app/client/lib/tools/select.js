@@ -16,20 +16,52 @@ define("selectTool", ["paper"], function (paper) {
             class: paper.Path,
             tolerance: 2
         },
-        hoverText: function (position, hover, category, annotation) {
+        generateStringFromMetadata: function (annotation) {
+            let string = " ";
+            let metadata = annotation.$refs.metadata.metadataList;
+
+            if (metadata == null || metadata.length === 0) {
+                string += "No Metadata\n";
+            } else {
+                string += "Metadata\n";
+                metadata.forEach(element => {
+                    if (element.key.length !== 0) {
+                        string += ' ' + element.key + ' = ' + element.value + '\n'
+                    }
+                })
+            }
+
+
+            return string.replace(/\n/g, " \n ").slice(0, -2);
+        },
+        hoverText: function (hover, category, annotation) {
 
             if (category == null || annotation == null) return;
-            position = position.add(50, 0);
+
+            let position = hover.position.add(hover.textShift, 0);
+
             if (hover.text == null) {
+                let content = this.generateStringFromMetadata(annotation);
+
                 hover.text = new paper.PointText(position);
                 hover.text.justification = 'left';
                 hover.text.fillColor = 'black';
-                hover.text.content = annotation.color;
-                hover.text.strokeWidth = 0.5;
-                hover.text.strokeColor = 'white';
+                hover.text.content = content;
 
+                hover.text.fontSize = hover.fontSize;
+
+                hover.box = new paper.Path.Rectangle(hover.text.bounds, 2);
+
+                hover.box.fillColor = 'white';
+                hover.box.strokeColor = 'white';
+                hover.box.opacity = 0.5;
+
+                hover.box.insertAbove(this.rect);
             }
-            hover.text.position = position;
+
+            hover.shift = (hover.text.bounds.bottomRight.x - hover.text.bounds.bottomLeft.x)/2;
+            hover.box.position = position.add(hover.shift, 0);
+            hover.text.position = position.add(hover.shift, 0);
             hover.text.bringToFront();
         },
         onMouseUp: function (event) {
@@ -87,12 +119,13 @@ define("selectTool", ["paper"], function (paper) {
                             && child.contains(event.point)
                             && child.data.hasOwnProperty('annotationId')) {
 
+                            hover.position = event.point;
                             hover.annotation = child.data.annotationId;
                             child.selected = true;
 
                             let category = vue.getCategory(hover.category);
                             let annotation = category.getAnnotation(hover.annotation);
-                            this.hoverText(event.point, hover, category, annotation, hover);
+                            this.hoverText(hover, category, annotation, hover);
 
                             break;
                         }
@@ -104,7 +137,9 @@ define("selectTool", ["paper"], function (paper) {
 
                 if (hover.text != null) {
                     hover.text.remove();
+                    hover.box.remove();
                     hover.text = null;
+                    hover.box = null;
                 }
             }
         },
