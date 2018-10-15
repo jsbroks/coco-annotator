@@ -1,10 +1,10 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
-from config import Config
 from flask import send_file
 
 from ..util import query_util, coco_util
+from ..config import Config
 from ..models import *
 
 import datetime

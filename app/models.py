@@ -1,6 +1,6 @@
 from flask_mongoengine import MongoEngine
 from .util import color_util
-from config import Config
+from .config import Config
 from PIL import Image
 
 import datetime

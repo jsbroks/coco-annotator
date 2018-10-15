@@ -8,5 +8,5 @@ class Config:
     MONGODB_SETTINGS = {'host': 'mongodb://database/flask'}
 
     DATASET_DIRECTORY = '/data/datasets/'
-    LOAD_IMAGES_ON_START = True
+    LOAD_IMAGES_ON_START = False
 

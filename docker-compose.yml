@@ -10,9 +10,11 @@ services:
         ports:
             - '5000:5000'
         volumes:
-            - './data/datasets:/data/datasets'
-            - './flask:/workspace/flask'
-        command: 'python3 /workspace/flask/run.py'
+            - './datasets:/data/datasets'
+            - './app:/workspace/app'
+        environment:
+          - FLASK_APP=app
+        command: 'flask run --host=0.0.0.0'
         depends_on:
             - database
     database:

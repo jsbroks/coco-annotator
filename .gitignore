@@ -1,2 +1,2 @@
-data/*
-!data/.gitkeep
+datasets/*
+!datasets/.gitkeep
