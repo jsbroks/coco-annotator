@@ -1,8 +1,9 @@
 
 class Config:
 
-    DEBUG = True
-    MONGOALCHEMY_DATABASE = 'library'
+    NAME = "COCO Annotator"
+    VERSION = "0.1"
+
     SWAGGER_UI_JSONEDITOR = True
     MAX_CONTENT_LENGTH = 15 * 1024 * 1024  # 15MB
     MONGODB_SETTINGS = {'host': 'mongodb://database/flask'}

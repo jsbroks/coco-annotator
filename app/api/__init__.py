@@ -8,13 +8,14 @@ from .datasets import api as ns_datasets
 from .images import api as ns_images
 from .undo import api as ns_undo
 
+from ..config import Config
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 
 api = Api(
     blueprint,
-    title="Coco Annotator",
-    version="0.1",
+    title=Config.NAME,
+    version=Config.VERSION,
 )
 
 api.namespaces.pop(0)

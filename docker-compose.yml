@@ -14,6 +14,7 @@ services:
             - './app:/workspace/app'
         environment:
           - FLASK_APP=app
+          - FLASK_ENV=development
         command: 'flask run --host=0.0.0.0'
         depends_on:
             - database
