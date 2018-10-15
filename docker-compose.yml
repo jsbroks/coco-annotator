@@ -1,4 +1,7 @@
 version: '3'
+volumes:
+    mongodb_data:
+        external: false
 services:
     flask:
         container_name: annotator_flask
@@ -19,7 +22,7 @@ services:
             - MONGO_DATA_DIR=/data/db
             - MONGO_LOG_DIR=/dev/null
         volumes:
-            - './data/db:/data/db'
+            - 'mongodb_data:/data/db'
         ports:
             - '27017:27017'
         command: 'mongod --smallfiles --logpath=/dev/null'
