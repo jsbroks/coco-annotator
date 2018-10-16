@@ -93,9 +93,11 @@ class ImageId(Resource):
             height = image.height
 
         pil_image = Image.open(image.path)
+
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
         image_io = io.BytesIO()
-        pil_image.save(image_io, 'JPEG', quality=70)
+        pil_image = pil_image.convert("RGB")
+        pil_image.save(image_io, "JPEG", quality=70)
         image_io.seek(0)
 
         return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
