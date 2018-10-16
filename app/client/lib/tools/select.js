@@ -31,11 +31,10 @@ define("selectTool", ["paper"], function (paper) {
                 })
             }
 
-
             return string.replace(/\n/g, " \n ").slice(0, -2);
         },
         hoverText: function (hover, category, annotation) {
-
+            if (!hover.showText) return;
             if (category == null || annotation == null) return;
 
             let position = hover.position.add(hover.textShift, 0);

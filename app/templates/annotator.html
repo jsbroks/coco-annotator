@@ -48,6 +48,10 @@
                 <button class="btn btn-outline-light tool-input-button" @click="fit">
                     Center Image
                 </button>
+                <button :class="{ 'btn btn-outline-light':true,'tool-input-button': true, 'active': hover.showText }"
+                        @click="hover.showText = !hover.showText">
+                    Show Hover Text
+                </button>
                 <div class="input-group tool-input-group">
                     <div class="input-group-prepend tool-option-pre">
                         <span class="input-group-text tool-option-font">Scroll Zoom </span>

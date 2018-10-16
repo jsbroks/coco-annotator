@@ -10,7 +10,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             mouseDown: false,
             activeTool: 'Select',
             zoom: 0.2,
-            hoverData: true,
             shapeOpacity: 0.5,
             polygon: {
                 toggleGuidance: null,
@@ -44,6 +43,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 annotation: -1,
             },
             hover: {
+                showText: true,
                 text: null,
                 box: null,
                 textShift: 0,
