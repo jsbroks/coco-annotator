@@ -89,33 +89,36 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
         methods: {
             onkeydown: function (e) {
 
+                let activeTool = this.activeTool;
+                let key = e.key.toLowerCase();
+
                 if (e.target.tagName.toLowerCase() === "input") return;
                 if (e.target.tagName.toLowerCase() === "textarea") return;
 
-                if (e.key.toLowerCase() === "control") this.keys.ctrl = true;
-                if (e.key.toLowerCase() === "shift") this.keys.shift = true;
+                if (key === "control") this.keys.ctrl = true;
+                if (key === "shift") this.keys.shift = true;
 
                 // Action shortcuts
-                if (e.key.toLowerCase() === "s" && this.keys.ctrl) this.save(() => {this.activeTool = activeTool});
-                if (e.key.toLowerCase() === "d" && this.keys.ctrl) this.downloadCoco();
-                if (e.key.toLowerCase() === "r" && this.keys.ctrl) location.reload();
+                if (key === "s" && this.keys.ctrl) this.save(() => {this.activeTool = activeTool});
+                if (key === "d" && this.keys.ctrl) this.downloadCoco();
+                if (key === "r" && this.keys.ctrl) location.reload();
 
                 // Tool shortcuts
-                if (e.key.toLowerCase() === "w") this.activeTool = "Wand";
-                if (e.key.toLowerCase() === "p") this.activeTool = "Polygon";
-                if (e.key.toLowerCase() === "s") this.activeTool = "Select";
-                if (e.key.toLowerCase() === "e") this.activeTool = "Eraser";
-                if (e.key.toLowerCase() === "c") this.fit();
+                if (key === "w") this.activeTool = "Wand";
+                if (key === "p") this.activeTool = "Polygon";
+                if (key === "s") this.activeTool = "Select";
+                if (key === "e") this.activeTool = "Eraser";
+                if (key === "c") this.fit();
 
                 if (this.activeTool.toLowerCase() === "polygon") {
-                    if (e.key.toLowerCase() === "delete") {
+                    if (key === "delete") {
                         this.polygon.deleteCurrent(this.polygon)
                     }
                 }
 
                 if (this.activeTool.toLowerCase() === "eraser") {
-                    if (e.key === "]") this.eraser.pathOptions.radius += 5;
-                    if (e.key === "[") this.eraser.pathOptions.radius -= 5;
+                    if (key=== "]") this.eraser.pathOptions.radius += 5;
+                    if (key === "[") this.eraser.pathOptions.radius -= 5;
                 }
 
                 e.preventDefault();

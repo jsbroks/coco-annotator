@@ -93,7 +93,11 @@ define(['Vue', 'axios'], function (Vue, axios) {
                     if (!this.metadata.hasOwnProperty(key)) continue;
 
                     let value = this.metadata[key];
-                    this.metadataList.push({key: key, value: value.toString()})
+
+                    if (value == null) value = "";
+                    else value = value.toString();
+
+                    this.metadataList.push({key: key, value: value})
 
                 }
             }
