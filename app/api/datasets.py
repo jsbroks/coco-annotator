@@ -109,7 +109,13 @@ class Dataset(Resource):
 
             count = images.count()
             dataset['numberImages'] = count
-            dataset['numberAnnotated'] = 0
+
+            count = 0
+            for image in images:
+                if AnnotationModel.objects(image_id=image.id, deleted=False).count() > 0:
+                    count = count + 1
+            dataset['numberAnnotated'] = count
+
             first = images.first()
             if first is not None:
                 dataset['first_image_id'] = images.first().id
