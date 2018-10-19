@@ -25,7 +25,7 @@ class DatasetModel(db.DynamicDocument):
 
     def save(self, *args, **kwargs):
 
-        directory = os.path.join(Config.DATASET_DIRECTORY, self.name.replace(' ', '_') + '/')
+        directory = os.path.join(Config.DATASET_DIRECTORY, self.name + '/')
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -69,7 +69,7 @@ class ImageModel(db.DynamicDocument):
 
         # TODO: Make more general
         # Get dataset name from path
-        dataset_name = path.split('/')[3].replace('_', ' ')
+        dataset_name = path.split('/')[3]
 
         dataset = DatasetModel.objects(name=dataset_name).first()
         if dataset is not None:
