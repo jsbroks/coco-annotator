@@ -23,7 +23,7 @@ format](http://cocodataset.org/#format-data). The annotation process is delivere
 
 <p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
 
-## Features
+# Features
 
 COCO Annotator provides many 2D image annotation features that other annotations tool fall short:
  - Directly export to COCO format
@@ -32,6 +32,11 @@ COCO Annotator provides many 2D image annotation features that other annotations
  - Import datasets already annotated in COCO format
  - Allow custom metadata for each instance or object
  - Magic wand/select tool
+
+# Backers
+
+<p align="center"><a href="http://robotics.uoguelph.ca/"><img src="http://robotics.uoguelph.ca/images/banner.jpg"></p></a>
+<p  align="center">Backed by the <a href="http://robotics.uoguelph.ca/">University of Guelph Robotics Institute</a> (<a href="https://github.com/uoguelph-ri">GitHub</a>)</p>
 
 # Built With
 
