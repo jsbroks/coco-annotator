@@ -22,6 +22,7 @@ disconnected visible parts and efficiently storing the annotation and instances 
 format](http://cocodataset.org/#format-data). The annotation process is delivered though an initiative and customizable interface similar to PhotoShop.
 
 <p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
+<p align="center"><i>Note: This video is from v0.1.0 and many new features have been added.</i></p>
 
 # Features
 
@@ -36,7 +37,7 @@ COCO Annotator provides many 2D image annotation features that other annotations
 # Backers
 
 <p align="center"><a href="http://robotics.uoguelph.ca/"><img src="http://robotics.uoguelph.ca/images/banner.jpg"></p></a>
-<p  align="center">Backed by the <a href="http://robotics.uoguelph.ca/">University of Guelph Robotics Institute</a> (<a href="https://github.com/uoguelph-ri">GitHub</a>)</p>
+<p  align="center">Backed by the <a href="http://robotics.uoguelph.ca/">The Robotics Institute @ Guelph</a> (<a href="https://github.com/uoguelph-ri">GitHub</a>)</p>
 
 # Built With
 
