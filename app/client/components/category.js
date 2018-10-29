@@ -201,7 +201,6 @@ define(['Vue', 'paper', 'axios', 'annotation'], function (Vue, paper, axios) {
             },
             opacity: function () {
                 if (this.group == null) return;
-
                 this.group.opacity = this.opacity;
             },
             isVisible: function (newVisible, oldVisible) {
@@ -249,7 +248,18 @@ define(['Vue', 'paper', 'axios', 'annotation'], function (Vue, paper, axios) {
                 return 'inherit';
             }
         },
+        created () {
+        },
         mounted () {
+            if (this.isCurrent) {
+                this.collapse('show');
+                let annotations = this.$refs.annotation;
+                if (annotations) {
+                    annotations.forEach(annotation => {
+                        annotation.setColor();
+                    });
+                }
+            }
             this.initCategory()
         }
     });

@@ -111,7 +111,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                 if (key === "c") this.fit();
 
                 if (this.activeTool.toLowerCase() === "polygon") {
-                    if (key === "delete") {
+                    if (key === "escape") {
                         this.polygon.deleteCurrent(this.polygon)
                     }
                 }
@@ -237,6 +237,7 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
                         // Update status
                         this.status.data.state = true;
+                        this.loadLocalStorage();
                     })
             },
             save: function (callback) {
@@ -267,6 +268,8 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     },
                     categories: []
                 };
+
+                this.setLocalStorage();
 
                 if (refs.category != null) {
                     refs.category.forEach((category) => {
@@ -299,7 +302,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                     });
 
                     this.image.raster.sendToBack();
-                    this.fit();
 
                     tools.initTools(this);
 
@@ -380,6 +382,68 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
                    location.pathname = "/" + location.pathname.split("/")[1] + "/" + imageId;
                 });
             },
+
+            setLocalStorage: function () {
+                // Data that doesn't depend on which image you are viewing
+                let data = {
+                    activeTool: this.activeTool,
+                    current: this.current,
+                };
+
+                localStorage.setItem("annotatorSettings", JSON.stringify(data));
+
+                let view = this.paper.view;
+                let viewData = JSON.parse(localStorage.getItem('annotatorView'));
+
+                // Data related to per image
+                data = {
+                    id: this.image.id,
+                    center: [view.center.x, view.center.y],
+                    zoom: this.paper.view.zoom,
+                };
+
+                if (viewData) {
+
+                    // keep the data of the last 100 images
+                    if (viewData.length > 100) viewData.shift();
+
+                    // If image already exists update it
+                    let index = viewData.findIndex(image => image.id === this.image.id);
+                    if (index === -1) {
+                        viewData.push(data);
+                    } else {
+                        viewData[index] = data;
+                    }
+                    localStorage.setItem("annotatorView", JSON.stringify(viewData));
+                } else {
+                    localStorage.setItem("annotatorView", JSON.stringify([data]));
+                }
+            },
+
+            loadLocalStorage: function () {
+                let settings =  JSON.parse(localStorage.getItem("annotatorSettings"));
+
+                if (settings == null) {
+                    this.fit();
+                    return;
+                }
+
+                this.current = settings.current;
+
+                let view = JSON.parse(localStorage.getItem('annotatorView'));
+                if (view == null) {
+                    this.fit();
+                    return;
+                }
+                view = view.filter(image => image.id === this.image.id);
+
+                if (view.length === 0) return;
+                view = view[0];
+                this.paper.view.center = new paper.Point(view.center);
+                this.paper.view.zoom = view.zoom;
+
+                this.image.scale = 1/(this.paper.view.zoom);
+            }
         },
         watch: {
 
@@ -453,7 +517,6 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
         destroyed() {
             window.removeEventListener('keydown', this.onKeydown);
             window.removeEventListener('keydup', this.onKeyup);
-
             clearInterval(this.autoSave);
         }
     });
