@@ -376,7 +376,9 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
             },
 
             setAnnotateURL: function (imageId) {
-                location.pathname = "/" + location.pathname.split("/")[1] + "/" + imageId;
+                this.save(() => {
+                   location.pathname = "/" + location.pathname.split("/")[1] + "/" + imageId;
+                });
             },
         },
         watch: {
