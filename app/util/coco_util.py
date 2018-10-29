@@ -133,13 +133,18 @@ def get_dataset_coco(dataset):
         'categories': [],
         'annotations': []
     }
+    
     for category in categories:
         category = fix_ids(category[1])
         del category['deleted']
         coco.get('categories').append(category)
 
     for image in images:
-        annotations = fix_ids(all_annotations.filter(image_id=image.id).all())
+        annotations = all_annotations.filter(image_id=image.id, deleted=False)
+        if annotations.count() == 0:
+            continue
+
+        annotations = fix_ids(annotations.all())
 
         for annotation in annotations:
             del annotation['deleted']
