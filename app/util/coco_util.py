@@ -133,14 +133,14 @@ def get_dataset_coco(dataset):
         'categories': [],
         'annotations': []
     }
-    
+
     for category in categories:
         category = fix_ids(category[1])
         del category['deleted']
         coco.get('categories').append(category)
 
     for image in images:
-        annotations = all_annotations.filter(image_id=image.id, deleted=False)
+        annotations = all_annotations.filter(image_id=image.id)
         if annotations.count() == 0:
             continue
 
@@ -158,6 +158,7 @@ def get_dataset_coco(dataset):
 
 
 def _fit(value, max_value, min_value):
+
     if value > max_value:
         return max_value
 

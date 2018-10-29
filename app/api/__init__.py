@@ -10,6 +10,7 @@ from .undo import api as ns_undo
 
 from ..config import Config
 
+# Create /api/ space
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 
 api = Api(
@@ -18,8 +19,10 @@ api = Api(
     version=Config.VERSION,
 )
 
+# Remove default namespace
 api.namespaces.pop(0)
 
+# Setup API namespaces
 api.add_namespace(ns_images)
 api.add_namespace(ns_annotations)
 api.add_namespace(ns_categories)
