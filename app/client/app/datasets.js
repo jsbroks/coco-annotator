@@ -55,7 +55,7 @@ define(['Vue', 'paper', 'axios', 'datasetCard', 'asyncStatus'],
         },
         computed: {
             createDirectory: function () {
-                return '/data/datasets/' + this.createName.replace(/ /g, "_")
+                return '/data/datasets/' + this.createName + '/';
             }
         },
 

@@ -45,13 +45,19 @@ class Annotation(Resource):
 class AnnotationId(Resource):
     def get(self, annotation_id):
         """ Returns annotation by ID """
-        return query_util.fix_ids(AnnotationModel.objects(id=annotation_id).first())
+        annotation = AnnotationModel.objects(id=annotation_id).first()
+
+        if annotation is None:
+            return {"message": "Invalid annotation id"}, 400
+
+        return query_util.fix_ids(annotation)
 
     def delete(self, annotation_id):
         """ Deletes an annotation by ID """
         annotation = AnnotationModel.objects(id=annotation_id).first()
+
         if annotation is None:
-            return {"message": "Invalid image id"}, 400
+            return {"message": "Invalid annotation id"}, 400
 
         annotation.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {'success': True}

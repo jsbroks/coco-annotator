@@ -5,7 +5,7 @@ class Config:
     VERSION = "0.1"
 
     SWAGGER_UI_JSONEDITOR = True
-    MAX_CONTENT_LENGTH = 15 * 1024 * 1024  # 15MB
+    MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024  # 1GB
     MONGODB_SETTINGS = {'host': 'mongodb://database/flask'}
 
     DATASET_DIRECTORY = '/data/datasets/'
