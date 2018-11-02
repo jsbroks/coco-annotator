@@ -26,10 +26,11 @@ define(['Vue', 'paper', 'axios', 'datasetCard', 'asyncStatus'],
                     .get('/api/dataset/data')
                     .then((response) => {
 
+                        this.page = response.data.pagination.page;
+                        this.pages = response.data.pagination.pages;
+
                         this.datasets = response.data.datasets;
                         this.categories = response.data.categories;
-                        this.page = response.data.page;
-                        this.pages = response.data.pages;
                         this.subdirectories = response.data.subdirectories;
 
                         this.status.data.state = true;

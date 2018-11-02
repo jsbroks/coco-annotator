@@ -1,7 +1,8 @@
 from flask_restplus import Namespace, Resource, reqparse
 
-from ..models import *
+from ..util.pagination_util import Pagination
 from ..util import query_util, color_util
+from ..models import *
 
 import datetime
 
@@ -70,33 +71,16 @@ class DatasetId(Resource):
         limit = args['limit']
         page = args['page']
 
-        categories = CategoryModel.objects(deleted=False).all()
+        categories = CategoryModel.objects(deleted=False)
 
-        count = len(categories)
-        pages = int((count-1) / limit) + 1
-
-        if page > pages:
-            page = pages
-
-        if page < 1:
-            page = 1
-
-        start = (page - 1) * limit
-        end = start + limit
-
-        if count < end:
-            end = count
-
-        categories = query_util.fix_ids(categories)[start:end]
+        pagination = Pagination(categories.count(), limit, page)
+        categories = query_util.fix_ids(categories[pagination.start:pagination.end])
 
         for category in categories:
             category['numberAnnotations'] = AnnotationModel.objects(deleted=False, category_id=category.get('id')).count()
 
         return {
-            "end": end,
-            "start": start,
-            "pages": pages,
+            "pagination": pagination.export(),
             "page": page,
-            "categoryCount": count,
             "categories": categories
         }

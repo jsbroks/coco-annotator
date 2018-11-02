@@ -33,8 +33,9 @@ define(['Vue', 'paper', 'axios', 'imageCard', 'pagination', 'asyncStatus'],
                         this.images = response.data.images;
                         this.dataset = response.data.dataset;
 
-                        this.imageCount = response.data.imageCount;
-                        this.pages = response.data.pages;
+                        this.imageCount = response.data.pagination.total;
+                        this.pages = response.data.pagination.pages;
+
                         this.subdirectories = response.data.subdirectories;
 
                         this.status.data.state = true;

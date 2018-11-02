@@ -4,6 +4,7 @@ define(['Vue', 'paper', 'axios', 'categoryCard', 'asyncStatus'],
     let categories = new Vue({
         el: '#app',
         data: {
+            categoryCount: 0,
             pages: 1,
             page: 1,
             limit: 50,
@@ -27,8 +28,9 @@ define(['Vue', 'paper', 'axios', 'categoryCard', 'asyncStatus'],
                     .then((response) => {
 
                         this.categories = response.data.categories;
-                        this.page = response.data.page;
-                        this.pages = response.data.pages;
+                        this.page = response.data.pagination.page;
+                        this.pages = response.data.pagination.pages;
+                        this.categoryCount = response.data.pagination.total;
 
                         this.status.data.state = true;
                     })

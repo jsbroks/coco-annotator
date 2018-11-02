@@ -1,8 +1,10 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
+from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
 from ..models import *
+
 
 import datetime
 import json
@@ -103,7 +105,11 @@ class Dataset(Resource):
         page = args['page']
         folder = args['folder']
 
-        datasets = query_util.fix_ids(DatasetModel.objects(deleted=False).all())
+        datasets = DatasetModel.objects(deleted=False)
+
+        pagination = Pagination(datasets.count(), limit, page)
+
+        datasets = query_util.fix_ids(datasets[pagination.start:pagination.end])
 
         for dataset in datasets:
             images = ImageModel.objects(dataset_id=dataset.get('id'), deleted=False)
@@ -112,35 +118,18 @@ class Dataset(Resource):
             dataset['numberImages'] = count
 
             count = 0
-            for image in images:
-                if AnnotationModel.objects(image_id=image.id, deleted=False).count() > 0:
-                    count = count + 1
+            # To many images slow down request to much
+            #for image in images:
+            #    if AnnotationModel.objects(image_id=image.id, deleted=False).count() > 0:
+            #        count = count + 1
             dataset['numberAnnotated'] = count
 
             first = images.first()
             if first is not None:
                 dataset['first_image_id'] = images.first().id
 
-        count = len(datasets)
-        pages = int((count-1) / limit) + 1
-
-        if page > pages:
-            page = pages
-
-        if page < 1:
-            page = 1
-
-        start = (page - 1) * limit
-        end = start + limit
-
-        if count < end:
-            end = count
-
         return {
-            "end": end,
-            "start": start,
-            "pages": pages,
-            "page": page,
+            "pagination": pagination.export(),
             "folder": folder,
             "datasets": datasets,
             "categories": query_util.fix_ids(CategoryModel.objects(deleted=False).all())
@@ -153,41 +142,34 @@ class DatasetDataId(Resource):
     @api.expect(page_data)
     def get(self, dataset_id):
         """ Endpoint called by image viewer client """
+
+        exec_start = datetime.datetime.now()
         args = page_data.parse_args()
         limit = args['limit']
         page = args['page']
         folder = args['folder']
 
+        # Check if dataset exists
         dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {'message', 'Invalid dataset id'}, 400
 
+        # Make sure folder starts with is in proper format
         if len(folder) > 0:
             folder = folder[0].strip('/') + folder[1:]
             if folder[-1] != '/':
                 folder = folder + '/'
 
+        # Get directory
         directory = os.path.join(dataset.directory, folder)
         if not os.path.exists(directory):
             return {'message': 'directory does not exist'}, 400
 
-        images = ImageModel.objects(dataset_id=dataset_id, deleted=False).only('id', 'file_name').all()
-        count = len(images)
-        pages = int((count-1) / limit) + 1
+        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False)\
+            .only('id', 'file_name')
 
-        if page > pages:
-            page = pages
-
-        if page < 1:
-            page = 1
-
-        start = (page - 1) * limit
-        end = start + limit
-
-        if count < end:
-            end = count
-
-        images = query_util.fix_ids(images)[start:end]
+        pagination = Pagination(images.count(), limit, page)
+        images = query_util.fix_ids(images[pagination.start:pagination.end])
 
         for image in images:
             image_id = image.get('id')
@@ -196,12 +178,10 @@ class DatasetDataId(Resource):
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f)]
 
+        delta = datetime.datetime.now() - exec_start
         return {
-            "end": end,
-            "start": start,
-            "pages": pages,
-            "page": page,
-            "imageCount": count,
+            "time_ms": int(delta.total_seconds() * 1000),
+            "pagination": pagination.export(),
             "images": images,
             "folder": folder,
             "directory": directory,

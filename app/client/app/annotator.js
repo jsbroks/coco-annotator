@@ -422,22 +422,24 @@ define(['Vue', 'paper', 'axios', 'tools', 'category', 'toolPanel', 'asyncStatus'
 
             loadLocalStorage: function () {
                 let settings =  JSON.parse(localStorage.getItem("annotatorSettings"));
+                let view = JSON.parse(localStorage.getItem('annotatorView'));
 
-                if (settings == null) {
+                if (settings == null || view == null) {
                     this.fit();
                     return;
                 }
 
                 this.current = settings.current;
 
-                let view = JSON.parse(localStorage.getItem('annotatorView'));
-                if (view == null) {
+                // Get current item position
+                view = view.filter(image => image.id === this.image.id);
+
+                if (view.length === 0) {
                     this.fit();
                     return;
                 }
-                view = view.filter(image => image.id === this.image.id);
 
-                if (view.length === 0) return;
+                // Set image position
                 view = view[0];
                 this.paper.view.center = new paper.Point(view.center);
                 this.paper.view.zoom = view.zoom;
