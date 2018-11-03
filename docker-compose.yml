@@ -3,6 +3,13 @@ volumes:
     mongodb_data:
         external: false
 services:
+#    frontend:
+#        container_name: annotator_vue
+#        build:
+#            context: .
+#            dockerfile: ./client/Dockerfile
+#        depends_on:
+#            - backend
     flask:
         container_name: annotator_flask
         build:
