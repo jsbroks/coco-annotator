@@ -1,2 +1,5 @@
 datasets/*
 !datasets/.gitkeep
+
+dist/*
+!dist/.gitkeep

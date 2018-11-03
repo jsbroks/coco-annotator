@@ -7,7 +7,6 @@ from watchdog.observers import Observer
 from .image_folder import ImageFolderHandler, load_images
 from .api import blueprint as api
 from .config import Config
-from .routes import client
 from .models import db
 
 import threading
@@ -36,7 +35,9 @@ def create_app():
     if Config.LOAD_IMAGES_ON_START:
         load_images(Config.DATASET_DIRECTORY)
 
-    return Flask(__name__)
+    return Flask(__name__,
+                 static_url_path='',
+                 static_folder='../dist')
 
 
 app = create_app()
@@ -48,6 +49,10 @@ db.init_app(app)
 
 app.wsgi_app = ProxyFix(app.wsgi_app)
 app.register_blueprint(api)
-app.register_blueprint(client)
+
+
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 
 

@@ -1,6 +1,4 @@
-ARG python_version=3.6
-
-FROM python:${python_version}
+FROM python:3.6
 
 RUN apt-get update && \
     apt-get install -y \
