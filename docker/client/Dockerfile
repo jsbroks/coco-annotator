@@ -5,7 +5,8 @@ RUN apt-get -y update \
 
 RUN npm install -g --quiet \
     @vue/cli@3.1.1 \
-    @vue/cli-service@3.1.2
+    @vue/cli-service@3.1.2 \
+    eslint
 
 WORKDIR /workspace/
 

@@ -27,10 +27,13 @@
   "eslintConfig": {
     "root": true,
     "env": {
+      "browser": true,
+      "es6": true,
       "node": true
     },
     "extends": [
       "plugin:vue/strongly-recommended",
+      "plugin:prettier/recommended",
       "@vue/prettier"
     ],
     "parserOptions": {
