@@ -26,7 +26,7 @@ export default new Router({
       component: Datasets
     },
     {
-      path: "/annotator",
+      path: "/annotator/:id",
       name: "annotator",
       component: Annotator
     }

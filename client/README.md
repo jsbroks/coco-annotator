@@ -1,29 +1,11 @@
-# client
+# Annotator Web Client
 
 ## Project setup
-```
-npm install
-```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+### Development Mode
 
-### Compiles and minifies for production
-```
-npm run build
-```
+`docker-compose up --build`
 
-### Run your tests
-```
-npm run test
-```
+### Production Mode
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+`docker-compose up -f docker-compose.prod.yml up --build`

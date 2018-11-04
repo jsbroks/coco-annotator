@@ -1,14 +1,33 @@
 <template>
-  <div>
+  <div style="display: block; height: inherit;">
+    <aside 
+      v-show="panels.show.left" 
+      class="left-panel shadow-lg"
+    >
+      <ToolBar 
+        v-model="activeTool" 
+        ref="toolBar" 
+        :current="current"
+      />
+    </aside>
+
+    <aside 
+      v-show="panels.show.right" 
+      class="right-panel shadow-lg"
+    >
+      <hr>
+      <div />
+    </aside>
+
     <div class="middle-panel">
       <div 
-        class="canvas" 
+        id="frame"
+        class="frame" 
         @wheel="onwheel"
       >
-        <canvas 
-          style="width: 100%; height: 100%" 
-          id="editor" 
-          :class="image.class" 
+        <canvas
+          class="canvas"
+          id="editor"
           ref="image" 
           resize
         />
@@ -21,12 +40,26 @@
 import paper from "paper";
 import axios from "axios";
 
+import ToolBar from "@/components/annotator/ToolBar";
+
 export default {
   name: "Annotator",
-  components: {},
+  components: { ToolBar },
   data() {
     return {
+      activeTool: "Select",
       paper: null,
+      current: {
+        category: -1,
+        annotation: -1
+      },
+      zoom: 0.2,
+      panels: {
+        show: {
+          left: true,
+          right: true
+        }
+      },
       image: {
         scale: 0,
         ratio: 0,
@@ -38,6 +71,8 @@ export default {
         next: null,
         filename: ""
       },
+      categories: [],
+      dataset: {},
       keys: {
         ctrl: false,
         shift: false
@@ -60,6 +95,7 @@ export default {
         let viewPosition = view.viewToProject(
           new paper.Point(e.offsetX, e.offsetY)
         );
+
         let transform = this.changeZoom(e.deltaY, viewPosition);
 
         if (transform.zoom < 10 && transform.zoom > 0.01) {
@@ -71,6 +107,20 @@ export default {
 
       e.preventDefault();
       return false;
+    },
+    fit: function() {
+      let canvas = document.getElementById("editor");
+
+      let parentX = this.image.raster.width;
+      let parentY = this.image.raster.height;
+
+      this.paper.view.zoom = Math.min(
+        (canvas.width / parentX) * 0.95,
+        (canvas.height / parentY) * 0.85
+      );
+
+      this.image.scale = 1 / this.paper.view.zoom;
+      this.paper.view.setCenter(0, 0);
     },
     changeZoom(delta, p) {
       let oldZoom = this.paper.view.zoom;
@@ -84,27 +134,49 @@ export default {
 
       return { zoom: zoom, offset: a };
     },
-    onkeydown(e) {},
-    onkeyup(e) {},
+    onkeydown(e) {
+      //let activeTool = this.activeTool;
+
+      let key = e.key.toLowerCase();
+
+      if (key === "control") this.keys.ctrl = true;
+      if (key === "shift") this.keys.shift = true;
+
+      // Action shortcuts
+      if (key === "r" && this.keys.ctrl) location.reload();
+    },
+    onkeyup(e) {
+      let key = e.key.toLowerCase();
+
+      if (key === "control") this.keys.ctrl = false;
+      if (key === "shift") this.keys.shift = false;
+
+      e.preventDefault();
+      return false;
+    },
     initCanvas() {
       let canvas = document.getElementById("editor");
-      this.paper = new paper.PaperScope();
 
+      this.paper = new paper.PaperScope();
       this.paper.setup(canvas);
+      this.paper.view.viewSize = [
+        this.paper.view.size.width,
+        window.innerHeight
+      ];
+
       this.paper.activate();
-      this.paper.view.setAutoUpdate(false);
 
       let img = new Image();
       //this.status.image.state = false;
 
       img.onload = () => {
         this.image.raster = new paper.Raster({
-          source: window.location.origin + this.image.url,
+          source: this.image.url,
           position: new paper.Point(0, 0)
         });
 
         this.image.raster.sendToBack();
-
+        this.fit();
         //tools.initTools(this);
 
         let categories = this.$refs.category;
@@ -113,32 +185,13 @@ export default {
             category.initCategory();
           });
         }
+
         this.image.ratio =
           (this.image.raster.width * this.image.raster.height) / 1000000;
+
         //this.status.image.state = true;
       };
       img.src = this.image.url;
-
-      this.paper.view.onFrame = () => {
-        // this.paper.project.getItems({
-        //     class: paper.Path,
-        //     match: function(path) {
-        //         path.visible = false;
-        //         return true
-        //     }
-        // });
-        //
-        // this.paper.project.getItems({
-        //     class: paper.Path,
-        //     overlapping: this.paper.view.bounds,
-        //     match: function(path) {
-        //         path.visible = true;
-        //         return true;
-        //     }
-        // });
-
-        this.paper.view.update();
-      };
     },
     getData() {
       //this.status.data.state = false;
@@ -161,18 +214,18 @@ export default {
     }
   },
   mounted() {
+    this.initCanvas();
+
+    window.addEventListener("keyup", (this.onKeyup = this.onkeyup.bind(this)));
     window.addEventListener(
       "keydown",
       (this.onKeydown = this.onkeydown.bind(this))
     );
-    window.addEventListener("keyup", (this.onKeyup = this.onkeyup.bind(this)));
-
-    this.initCanvas();
   },
   created() {
     paper.install(window);
 
-    this.image.id = 3;
+    this.image.id = parseInt(this.$route.params.id);
     this.image.url = "/api/image/" + this.image.id;
 
     this.getData();
@@ -187,16 +240,6 @@ export default {
 
 
 <style scoped>
-#app {
-  height: inherit;
-  width: inherit;
-  overflow: hidden;
-}
-
-.navbar {
-  background-color: #383c4a;
-}
-
 .left-panel {
   background-color: #4b5162;
   width: 40px;
@@ -216,18 +259,23 @@ export default {
 
 .middle-panel {
   display: block;
+  width: inherit;
   height: inherit;
-  widows: inherit;
   background-color: #7c818c;
   overflow: hidden;
   position: relative;
 }
 
+.frame {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .canvas {
-  align-items: center;
-  display: flex;
-  height: inherit;
-  width: inherit;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 #image {
@@ -243,18 +291,6 @@ export default {
 
 .sidebar-title {
   color: white;
-}
-
-html,
-body {
-  min-height: 100% !important;
-  height: 100%;
-  min-width: 100% !important;
-  width: 100%;
-}
-
-img {
-  max-width: 100%;
 }
 
 /* Tool section */
