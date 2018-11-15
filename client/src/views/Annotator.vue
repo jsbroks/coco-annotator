@@ -16,7 +16,41 @@
       class="right-panel shadow-lg"
     >
       <hr>
-      <div />
+      <FileTitle 
+        :previousimage="image.previous" 
+        :nextimage="image.next" 
+        :filename="image.filename"
+      />
+
+      <div 
+        class="sidebar-section" 
+        style="max-height: 57%"
+      >
+        <p 
+          v-if="categories.length == 0" 
+          style="color: lightgray; font-size: 12px"
+        >
+          No categories have been added to this image.
+        </p>
+        <div 
+          v-else 
+          id="accordion" 
+          style="overflow: auto; max-height: 100%"
+        >
+          <Category 
+            v-for="(category, index) in categories" 
+            :key="category.id + '-category'"
+            :category="category" 
+            :opacity="shapeOpacity" 
+            :hover="hover" 
+            :index="index"
+            @click="onCategoryClick" 
+            :current="current" 
+            ref="category"
+          />
+        </div>
+      </div>
+      
     </aside>
 
     <div class="middle-panel">
@@ -41,24 +75,38 @@ import paper from "paper";
 import axios from "axios";
 
 import ToolBar from "@/components/annotator/ToolBar";
+import FileTitle from "@/components/annotator/FileTitle";
+import Category from "@/components/annotator/Category";
 
 export default {
   name: "Annotator",
-  components: { ToolBar },
+  components: { ToolBar, FileTitle, Category },
+  props: {},
   data() {
     return {
       activeTool: "Select",
       paper: null,
-      current: {
-        category: -1,
-        annotation: -1
-      },
+      shapeOpacity: 0.5,
       zoom: 0.2,
       panels: {
         show: {
           left: true,
           right: true
         }
+      },
+      current: {
+        category: -1,
+        annotation: -1
+      },
+      hover: {
+        showText: true,
+        text: null,
+        box: null,
+        textShift: 0,
+        fontSize: 0,
+        shift: 0,
+        category: -1,
+        annotation: -1
       },
       image: {
         scale: 0,
@@ -211,6 +259,16 @@ export default {
         // Update status
         //this.status.data.state = true;
       });
+    },
+    onCategoryClick(indices) {
+      if (
+        this.current.annotation === indices.annotation &&
+        this.current.category === indices.category
+      ) {
+        this.current = { category: -1, annotation: -1 };
+      } else {
+        this.current = indices;
+      }
     }
   },
   mounted() {
@@ -225,7 +283,7 @@ export default {
   created() {
     paper.install(window);
 
-    this.image.id = parseInt(this.$route.params.id);
+    this.image.id = parseInt(this.$route.params.fileId);
     this.image.url = "/api/image/" + this.image.id;
 
     this.getData();
@@ -341,50 +399,7 @@ export default {
   width: 100%;
 }
 
-/* Images Section*/
-
 /* Categories/Annotations section */
-
-.category-icon {
-  display: block;
-  float: left;
-  margin: 0;
-  padding: 5px 10px 5px 10px;
-}
-
-.annotation-icon {
-  margin: 0;
-  padding: 3px;
-}
-
-.list-group-item {
-  height: 21px;
-  font-size: 13px;
-  padding: 2px;
-  background-color: #4b5162;
-}
-
-.card {
-  background-color: #404552;
-}
-
-.card-header {
-  display: block;
-  margin: 0;
-  padding: 0;
-}
-
-.btn-link {
-  margin: 0;
-  padding: 0;
-}
-
-.image-arrows {
-  color: white;
-  position: relative;
-  margin: 0 10px 15px 10px;
-}
-
 .meta-input {
   padding: 3px;
   background-color: inherit;
