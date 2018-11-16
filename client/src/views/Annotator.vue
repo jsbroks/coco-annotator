@@ -81,7 +81,12 @@ import Category from "@/components/annotator/Category";
 export default {
   name: "Annotator",
   components: { ToolBar, FileTitle, Category },
-  props: {},
+  props: {
+    identifier: {
+      type: [Number, String],
+      required: true
+    }
+  },
   data() {
     return {
       activeTool: "Select",
@@ -241,7 +246,7 @@ export default {
       };
       img.src = this.image.url;
     },
-    getData() {
+    getData(callback) {
       //this.status.data.state = false;
 
       axios.get("/api/annotator/data/" + this.image.id).then(response => {
@@ -258,6 +263,7 @@ export default {
 
         // Update status
         //this.status.data.state = true;
+        if (callback != null) callback();
       });
     },
     onCategoryClick(indices) {
@@ -271,6 +277,14 @@ export default {
       }
     }
   },
+  beforeRouteUpdate (to, from, next) {
+    this.image.id = parseInt(to.params.identifier);
+    this.image.url = "/api/image/" + this.image.id;
+    this.initCanvas();
+    this.getData();
+
+    next();
+  },
   mounted() {
     this.initCanvas();
 
@@ -281,9 +295,10 @@ export default {
     );
   },
   created() {
+
     paper.install(window);
 
-    this.image.id = parseInt(this.$route.params.fileId);
+    this.image.id = parseInt(this.identifier);
     this.image.url = "/api/image/" + this.image.id;
 
     this.getData();

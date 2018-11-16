@@ -1,5 +1,6 @@
 module.exports = {
   devServer: {
+    disableHostCheck: true,
     proxy: {
       "/api/*": {
         target: "http://flask:5000/api/",

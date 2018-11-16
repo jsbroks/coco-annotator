@@ -2,6 +2,10 @@ version: '3'
 volumes:
     mongodb_data:
         external: false
+networks:
+    cocoannotator:
+        external: false
+
 services:
     frontend:
         container_name: annotator_client
@@ -13,8 +17,8 @@ services:
         volumes:
             - './client:/workspace/client'
         command: 'npm run serve'
-        links:
-            - flask
+        networks:
+            - cocoannotator
         depends_on:
             - flask
     flask:
@@ -31,6 +35,8 @@ services:
           - FLASK_APP=app
           - FLASK_ENV=development
         command: 'flask run --host=0.0.0.0'
+        networks:
+            - cocoannotator
         depends_on:
             - database
     database:

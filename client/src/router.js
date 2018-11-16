@@ -9,7 +9,7 @@ import Datasets from "@/views/Datasets.vue";
 Vue.use(Router);
 
 export default new Router({
-  mode: "history",
+  // mode: "history",
   routes: [
     {
       path: "/",
@@ -27,9 +27,10 @@ export default new Router({
       component: Datasets
     },
     {
-      path: "/annotate/:fileId",
+      path: "/annotate/:identifier",
       name: "annotate",
-      component: Annotator
+      component: Annotator,
+      props: true
     }
   ]
 });

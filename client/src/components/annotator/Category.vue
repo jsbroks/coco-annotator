@@ -47,7 +47,8 @@
       </div>
     </div>
                 
-    <ul 
+    <ul
+      ref="collapse"
       :id="'collapse' + category.id" 
       class="collapse list-group"
       :aria-labelledby="'heading' + category.id"
@@ -69,8 +70,6 @@
 </template>
 
 <script>
-import $ from "jquery";
-
 import paper from "paper";
 import axios from "axios";
 
@@ -200,11 +199,16 @@ export default {
       return this.$refs.annotation[index];
     },
     collapse(state) {
+      
       $("#collapse" + this.category.id).collapse(state);
+      this.$forceUpdate();
+
       this.collapseAnimation = true;
+
       setTimeout(() => {
         this.collapseAnimation = false;
       }, 500);
+
     },
     setColor: function() {
       if (this.group != null) {

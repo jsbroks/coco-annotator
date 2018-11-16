@@ -4,14 +4,14 @@
       v-show="previousimage != null" 
       class="fa fa-arrow-left image-arrows" 
       style="float:left"
-      @click="routePreviousImage"
+      @click="route(previousimage)"
     />
 
     <i 
       v-show="nextimage != null" 
       class="fa fa-arrow-right image-arrows" 
       style="float:right"
-      @click="routeNextImage"
+      @click="route(nextimage)"
     />
 
     <h6 
@@ -44,14 +44,8 @@ export default {
     }
   },
   methods: {
-    routePreviousImage() {
-      this.route(this.previousimage);
-    },
-    routeNextImage() {
-      this.route(this.nextimage);
-    },
-    route(fileId) {
-      this.$router.push({ name: "annotate", params: { fileId } });
+    route(identifier) {
+      this.$router.push({ name: "annotate", params: { identifier } });
     }
   }
 };
