@@ -1,12 +1,13 @@
 <template>
   <div>
+    <div style="padding-top: 55px"></div>
+    
     <div 
-      class="album py-5" 
-      style="height: 100%; width: 100%"
+      class="album py-5 bg-light" 
+      style="overflow: scroll; height: 100vh"
     >
       <div 
         class="container" 
-        style="padding-top: 30px"
       >
 
         <h2 class="text-center">
@@ -21,8 +22,7 @@
 
         <p class="text-center">
           Loaded <strong>{{ datasets.length }}</strong> datasets.</p>
-        <hr>
-
+        
         <div class="row justify-content-md-center">
           <div 
             class="col-md-auto btn-group" 
@@ -49,11 +49,15 @@
           </div>
         </div>
 
+        <hr>
         <p 
           v-if="datasets.length < 1" 
           class="text-center"
         >You need to create a dataset!</p>
-        <div v-else>
+        <div 
+          v-else 
+          style="background-color: gray"
+        >
           <div class="row justify-content-md-center">
             <!--<ul class="pagination text-center">
 
@@ -86,7 +90,7 @@
             </ul>-->
           </div>
 
-          <div class="row">
+          <div class="row bg-light">
             <DatasetCard
               v-for="dataset in datasets"
               :key="dataset.id"
@@ -282,7 +286,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .help-icon {
   color: darkblue;
@@ -290,3 +293,4 @@ export default {
   display: inline;
 }
 </style>
+

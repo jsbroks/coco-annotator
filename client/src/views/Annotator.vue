@@ -277,7 +277,7 @@ export default {
       }
     }
   },
-  beforeRouteUpdate (to, from, next) {
+  beforeRouteUpdate(to, from, next) {
     this.image.id = parseInt(to.params.identifier);
     this.image.url = "/api/image/" + this.image.id;
     this.initCanvas();
@@ -295,7 +295,6 @@ export default {
     );
   },
   created() {
-
     paper.install(window);
 
     this.image.id = parseInt(this.identifier);

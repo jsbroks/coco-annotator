@@ -22,6 +22,10 @@ class AnnotatorData(Resource):
         image_id = data.get('image').get('id')
 
         image = ImageModel.objects(id=image_id).first()
+
+        if image is None:
+            return {'message': 'image does not exist'}, 400
+
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
 
@@ -84,7 +88,7 @@ class AnnotatorId(Resource):
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:
-            return {"message": "Image does not exist"}, 400
+            return {'success': False}, 400
 
         dataset = DatasetModel.objects(id=image.dataset_id).first()
         categories = CategoryModel.objects(deleted=False).in_bulk(dataset.categories).items()

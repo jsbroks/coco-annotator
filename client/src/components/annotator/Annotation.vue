@@ -229,3 +229,16 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.list-group-item {
+  height: 22px;
+  font-size: 13px;
+  padding: 2px;
+  background-color: #4b5162;
+}
+.annotation-icon {
+  margin: 0;
+  padding: 3px;
+}
+</style>

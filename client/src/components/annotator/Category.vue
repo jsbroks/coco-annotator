@@ -13,7 +13,7 @@
           <i 
             v-if="isVisible" 
             class="fa fa-eye category-icon"
-            :style="{ color: isCurrent ? 'white' : color }"
+            :style="{ color: showAnnotations ? 'white' : color }"
             aria-hidden="true"
           />
           <i 
@@ -22,6 +22,7 @@
             aria-hidden="true"
           />
         </div>
+
         <button 
           class="btn btn-link btn-sm collapsed category-text" 
           style="color: inherit"
@@ -31,6 +32,7 @@
         >
           {{ category.name }} ({{ category.annotations.length }})
         </button>
+
         <i 
           class="fa fa-gear category-icon" 
           data-toggle="modal" 
@@ -38,6 +40,7 @@
           style="float: right; color: white" 
           aria-hidden="true"
         />
+
         <i 
           @click="createAnnotation" 
           class="fa fa-plus category-icon"
@@ -48,12 +51,10 @@
     </div>
                 
     <ul
+      v-show="showAnnotations"
       ref="collapse"
-      :id="'collapse' + category.id" 
-      class="collapse list-group"
-      :aria-labelledby="'heading' + category.id"
-    >
-                    
+      class="list-group"
+    >          
       <Annotation 
         v-for="(annotation, listIndex) in category.annotations" 
         :key="annotation.id + '-annotation'"
@@ -65,6 +66,7 @@
         ref="annotation" 
         :hover="hover.annotation"
       />
+
     </ul>
   </div>
 </template>
@@ -105,7 +107,8 @@ export default {
       group: null,
       color: this.category.color,
       selectedAnnotation: 0,
-      collapseAnimation: false
+      showAnnotations: false,
+      isVisible: false
     };
   },
   methods: {
@@ -142,7 +145,7 @@ export default {
         // Show in side bar
         show: this.category.show,
         // Show groups on canvas
-        visualize: this.category.visualize,
+        visualize: this.isVisible,
         color: this.color,
         metadata: [],
         annotations: []
@@ -157,24 +160,38 @@ export default {
       return categoryData;
     },
     onEyeClick() {
-      if (this.collapseAnimation) return;
-      this.category.visualize = !this.category.visualize;
-      if (this.isCurrent) {
-        this.$emit("click", {
-          annotation: this.selectedAnnotation,
-          category: this.index
-        });
+      this.isVisible = !this.isVisible;
+
+      if (this.showAnnotations && !this.isVisible) {
+        this.showAnnotations = false;
       }
+
+      if (this.showAnnotations)
+        if (this.isCurrent) {
+          this.$emit("click", {
+            annotation: this.selectedAnnotation,
+            category: this.index
+          });
+        }
     },
     onAnnotationClick(index) {
-      if (this.collapseAnimation) return;
-
       let indices = { annotation: index, category: this.index };
       this.selectedAnnotation = index;
       this.$emit("click", indices);
     },
     onClick() {
-      if (this.collapseAnimation) return;
+      let options = {
+        progressBar: true,
+        preventDuplicates: true,
+        positionClass: "toast-bottom-left"
+      };
+      this.$toastr.success("Message", "Terst", options);
+      this.showAnnotations = !this.showAnnotations;
+
+      if (this.showAnnotations && !this.isVisible) {
+        this.isVisible = true;
+      }
+
       let indices = {
         annotation: this.selectedAnnotation,
         category: this.index
@@ -198,19 +215,7 @@ export default {
 
       return this.$refs.annotation[index];
     },
-    collapse(state) {
-      
-      $("#collapse" + this.category.id).collapse(state);
-      this.$forceUpdate();
-
-      this.collapseAnimation = true;
-
-      setTimeout(() => {
-        this.collapseAnimation = false;
-      }, 500);
-
-    },
-    setColor: function() {
+    setColor() {
       if (this.group != null) {
         this.group.fillColor = this.color;
         // Strokes cause lag, issue #39
@@ -222,19 +227,13 @@ export default {
     }
   },
   computed: {
-    isVisible: function() {
-      return (
-        (this.isCurrent || this.category.visualize) &&
-        this.category.annotations.length !== 0
-      );
-    },
-    isCurrent: function() {
+    isCurrent() {
       return this.current.category === this.index;
     },
-    isHover: function() {
+    isHover() {
       return this.hover.category === this.index;
     },
-    backgroundColor: function() {
+    backgroundColor() {
       if (this.isHover && !this.isCurrent) {
         return "#646c82";
       }
@@ -243,13 +242,16 @@ export default {
   },
   mounted() {
     if (this.isCurrent) {
-      this.collapse("show");
+      this.showAnnotations = true;
+
       let annotations = this.$refs.annotation;
       if (annotations) {
         annotations.forEach(annotation => {
           annotation.setColor();
         });
       }
+    } else {
+      this.showAnnotations = false;
     }
     this.initCategory();
   }
@@ -281,12 +283,5 @@ export default {
 
 .card {
   background-color: #404552;
-}
-
-.list-group-item {
-  height: 21px;
-  font-size: 13px;
-  padding: 2px;
-  background-color: #4b5162;
 }
 </style>
