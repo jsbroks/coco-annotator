@@ -44,6 +44,11 @@ export default {
     }
   },
   methods: {
+    /**
+     * Navigates to image with provided ID
+     *
+     * @param {Number} identifer id of a file
+     */
     route(identifier) {
       this.$router.push({ name: "annotate", params: { identifier } });
     }

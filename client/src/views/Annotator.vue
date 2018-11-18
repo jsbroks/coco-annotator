@@ -4,11 +4,10 @@
       v-show="panels.show.left" 
       class="left-panel shadow-lg"
     >
-      <ToolBar 
-        v-model="activeTool" 
-        ref="toolBar" 
-        :current="current"
-      />
+      <hr>
+
+      <SelectTool v-model="activeTool" />
+      <PolygonTool v-model="activeTool" />
     </aside>
 
     <aside 
@@ -74,13 +73,15 @@
 import paper from "paper";
 import axios from "axios";
 
-import ToolBar from "@/components/annotator/ToolBar";
 import FileTitle from "@/components/annotator/FileTitle";
 import Category from "@/components/annotator/Category";
 
+import PolygonTool from "@/components/annotator/tools/PolygonTool";
+import SelectTool from "@/components/annotator/tools/SelectTool";
+
 export default {
   name: "Annotator",
-  components: { ToolBar, FileTitle, Category },
+  components: { FileTitle, Category, PolygonTool, SelectTool },
   props: {
     identifier: {
       type: [Number, String],
@@ -210,7 +211,6 @@ export default {
     initCanvas() {
       let canvas = document.getElementById("editor");
 
-      this.paper = new paper.PaperScope();
       this.paper.setup(canvas);
       this.paper.view.viewSize = [
         this.paper.view.size.width,
@@ -295,7 +295,7 @@ export default {
     );
   },
   created() {
-    paper.install(window);
+    this.paper = new paper.PaperScope();
 
     this.image.id = parseInt(this.identifier);
     this.image.url = "/api/image/" + this.image.id;

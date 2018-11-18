@@ -54,7 +54,7 @@
       v-show="showAnnotations"
       ref="collapse"
       class="list-group"
-    >          
+    >     
       <Annotation 
         v-for="(annotation, listIndex) in category.annotations" 
         :key="annotation.id + '-annotation'"
@@ -186,6 +186,8 @@ export default {
         positionClass: "toast-bottom-left"
       };
       this.$toastr.success("Message", "Terst", options);
+
+      if (this.category.annotations.length === 0) return;
       this.showAnnotations = !this.showAnnotations;
 
       if (this.showAnnotations && !this.isVisible) {
@@ -259,6 +261,13 @@ export default {
 </script>
 
 <style scoped>
+.list-group-item {
+  height: 22px;
+  font-size: 13px;
+  padding: 2px;
+  background-color: #4b5162;
+}
+
 .category-icon {
   display: block;
   float: left;
