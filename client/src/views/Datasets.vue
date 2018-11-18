@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div style="padding-top: 55px"></div>
+    <div style="padding-top: 55px" />
     
     <div 
       class="album py-5 bg-light" 
-      style="overflow: scroll; height: 100vh"
+      style="overflow: auto; height: calc(100vh - 55px)"
     >
       <div 
         class="container" 
@@ -265,6 +265,7 @@ export default {
     createDataset() {
       if (this.create.name.length < 1) return;
       let categories = [];
+
       for (let key in this.create.categories) {
         categories.push(this.create.categories[key]);
       }
@@ -293,4 +294,3 @@ export default {
   display: inline;
 }
 </style>
-

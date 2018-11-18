@@ -1,10 +1,11 @@
 import Vue from "vue";
 import Router from "vue-router";
 
-import Home from "@/views/Home.vue";
-import About from "@/views/About.vue";
-import Annotator from "@/views/Annotator.vue";
-import Datasets from "@/views/Datasets.vue";
+import Home from "@/views/Home";
+import About from "@/views/About";
+import Annotator from "@/views/Annotator";
+import Datasets from "@/views/Datasets";
+import Categories from "@/views/Categories";
 
 Vue.use(Router);
 
@@ -25,6 +26,11 @@ export default new Router({
       path: "/datasets",
       name: "datasets",
       component: Datasets
+    },
+    {
+      path: "/categories",
+      name: "categories",
+      component: Categories
     },
     {
       path: "/annotate/:identifier",

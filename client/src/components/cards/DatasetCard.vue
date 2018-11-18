@@ -3,6 +3,7 @@
       
     <!-- Dataset Card -->
     <div class="card mb-4 box-shadow">
+
       <!-- Display Image -->
       <img 
         @click="onImageClick" 
@@ -31,7 +32,7 @@
           
         <br>
 
-        <div style="float: left">
+        <div>
           <p v-if="dataset.numberImages > 0">
             {{ dataset.numberAnnotated }} of {{ dataset.numberImages }} images annotated.
           </p>
@@ -114,13 +115,13 @@
                 </select>
               </div>
                                     
-              <!--<metadata 
-                  :metadata="defaultMetadata" 
-                  title="Default Annotation Metadata"
-                  key-name="Default Key" 
-                  value-name="Default Value"
-                  ref="defaultAnnotation"
-                />-->
+              <Metadata 
+                :metadata="defaultMetadata" 
+                title="Default Annotation Metadata"
+                key-name="Default Key" 
+                value-name="Default Value"
+                ref="defaultAnnotation"
+              />
             </form>  
           </div>
           <div class="modal-footer">
@@ -144,8 +145,12 @@
 </template>
 
 <script>
+import axios from "axios";
+import Metadata from "@/components/Metadata";
+
 export default {
   name: "DatasetCard",
+  components: { Metadata },
   props: {
     dataset: {
       type: Object,
@@ -163,16 +168,46 @@ export default {
     };
   },
   methods: {
-    onImageClick() {},
-    onCocoDownloadClick() {},
-    onDeleteClick() {},
-    onSave() {}
+    onImageClick() {
+      if (this.dataset.numberImages > 0) {
+        document.location.pathname = "/images/" + this.dataset.id;
+      }
+    },
+    onCocoDownloadClick() {
+      this.$parent.status.downloading.message =
+        "Generating coco for " + this.dataset.name;
+      this.$parent.status.downloading.state = false;
+      axios.get("/api/dataset/" + this.dataset.id + "/coco").then(reponse => {
+        
+        let dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(reponse.data));
+
+        this.downloadURI(dataStr, this.dataset.name + ".json");
+        this.$parent.status.downloading.state = true;
+      });
+    },
+    onDeleteClick() {
+      axios.delete("/api/dataset/" + this.dataset.id).then(() => {
+        this.$parent.updatePage();
+      });
+    },
+    onSave() {
+      this.dataset.categories = this.selectedCategories;
+
+      axios
+        .post("/api/dataset/" + this.dataset.id, {
+          categories: this.selectedCategories,
+          default_annotation_metadata: this.$refs.defaultAnnotation.export()
+        })
+        .then(() => {});
+    }
   },
   computed: {
     imageUrl() {
       return this.dataset.numberImages > 0
         ? "/api/image/" + this.dataset.first_image_id + "?width=250"
-        : "https://picsum.photos/200/300/?random";
+        : "https://picsum.photos/200/200/?random";
     },
     listCategories() {
       let list = [];

@@ -1,27 +1,28 @@
 <template>
   <div>
+    <div style="padding-top: 55px" />
     <div 
-      class="album py-5" 
-      style="height: 100%; width: 100%"
+      class="album py-5 bg-light" 
+      style="overflow: auto; height: calc(100vh - 55px)"
     >
       <div 
-        class="container" 
-        style="padding-top: 30px"
+        class="container"
       >
 
         <h2 class="text-center">
-          Datasets
+          Categories
           <i 
             class="fa fa-question-circle help-icon" 
             data-toggle="modal" 
-            data-target="#helpDataset"
+            data-target="#helpCategories"
             aria-hidden="true"
           />
         </h2>
 
+
         <p class="text-center">
-          Loaded <strong>{{ datasets.length }}</strong> datasets.</p>
-        <hr>
+          Loaded <strong>{{ categoryCount }}</strong> categories.
+        </p>
 
         <div class="row justify-content-md-center">
           <div 
@@ -33,14 +34,10 @@
               type="button" 
               class="btn btn-success" 
               data-toggle="modal" 
-              data-target="#createDataset"
+              data-target="#createCategories"
             >
               Create
             </button>
-            <button 
-              type="button" 
-              class="btn btn-primary disabled"
-            >Import</button>
             <button 
               type="button" 
               class="btn btn-secondary" 
@@ -49,14 +46,17 @@
           </div>
         </div>
 
+        <hr>
+
         <p 
-          v-if="datasets.length < 1" 
+          v-if="categories.length < 1" 
           class="text-center"
-        >You need to create a dataset!</p>
+        >
+          You need to create a category!
+        </p>
         <div v-else>
           <div class="row justify-content-md-center">
-            <!--<ul class="pagination text-center">
-
+            <ul class="pagination text-center">
               <li class="page-item disabled">
                 <a 
                   class="page-link" 
@@ -83,15 +83,14 @@
                   <span class="sr-only">Next</span>
                 </a>
               </li>
-            </ul>-->
+            </ul>
           </div>
 
           <div class="row">
-            <DatasetCard
-              v-for="dataset in datasets"
-              :key="dataset.id"
-              :dataset="dataset"
-              :categories="categories"
+            <CategoryCard
+              v-for="category in categories"
+              :key="category.id"
+              :category="category"
             />
           </div>
         </div>
@@ -102,7 +101,7 @@
       class="modal fade" 
       tabindex="-1" 
       role="dialog" 
-      id="createDataset"
+      id="createCategories"
     >
       <div 
         class="modal-dialog" 
@@ -110,7 +109,7 @@
       >
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Creating a Dataset</h5>
+            <h5 class="modal-title">Creating a Category</h5>
             <button 
               type="button" 
               class="close" 
@@ -122,44 +121,12 @@
           </div>
           <div class="modal-body">
             <form>
-              <div 
-                class="form-group" 
-                required
-              >
-                <label>Dataset Name</label>
-                <input 
-                  v-model="create.name" 
-                  class="form-control" 
-                  placeholder="Dataset name"
-                >
-              </div>
-
               <div class="form-group">
-                <label>Default Categories <i v-if="categories.length === 0">(No categories found)</i></label>
-                <select 
-                  v-model="create.categories" 
-                  multiple 
-                  class="form-control"
-                >
-                  <option 
-                    v-for="category in categories" 
-                    :key="category.id" 
-                    :value="category.id"
-                  >
-                    {{ category.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div 
-                class="form-group" 
-                required
-              >
-                <label>Folder Directory</label>
+                <label>Category Name</label>
                 <input 
+                  v-model="createName" 
                   class="form-control" 
-                  disabled 
-                  :placeholder="create.directory"
+                  placeholder="Category name"
                 >
               </div>
             </form>
@@ -168,8 +135,8 @@
             <button 
               type="button" 
               class="btn btn-primary" 
-              @click="createDataset"
-            >Create Dataset</button>
+              @click="createCategory"
+            >Create Category</button>
             <button 
               type="button" 
               class="btn btn-secondary" 
@@ -184,7 +151,7 @@
       class="modal fade" 
       tabindex="-1" 
       role="dialog" 
-      id="helpDataset"
+      id="helpCategories"
     >
       <div 
         class="modal-dialog" 
@@ -192,7 +159,7 @@
       >
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Datasets</h5>
+            <h5 class="modal-title">Categories</h5>
             <button 
               type="button" 
               class="close" 
@@ -202,22 +169,15 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-
           <div class="modal-body">
             More information can be found in the <a href="/help">help section</a>.
             <hr>
-            <h6>What is a dataset?</h6>
-            A dataset is a collection of images. It provides default category options for all subsequent images.
-            Each dataset has its own folder in the data/datasets directory.
+            <h6>What is a category?</h6>
+
             <hr>
             <h6>How do I create one?</h6>
-            Click on the "Create" button found on this webpage. A dataset name must be provided.
-            <hr>
-            <h6>How do I add images?</h6>
-            Once you have created a dataset you can add images by placing them in the create folder
-            (well the server is running).
+            Click on the "Create" button found on this webpage. You must provided a name for the category.
           </div>
-
           <div class="modal-footer">
             <button 
               type="button" 
@@ -233,32 +193,68 @@
 
 <script>
 import axios from "axios";
-import DatasetCard from "@/components/cards/DatasetCard";
+import CategoryCard from "@/components/cards/CategoryCard";
 
 export default {
-  name: "Datasets",
-  components: { DatasetCard },
+  name: "Categories",
+  components: { CategoryCard },
   data() {
     return {
-      pages: null,
-      create: {
-        name: "",
-        categories: []
-      },
-      datasets: [],
-      subdirectories: [],
-      categories: []
+      categoryCount: 0,
+      pages: 1,
+      page: 1,
+      limit: 50,
+      range: 11,
+      createName: "",
+      categories: [],
+      status: {
+        data: { state: true, message: "Loading categories" }
+      }
     };
   },
   methods: {
-    updatePage() {
-      axios.get("/api/dataset/data").then(response => {
-        this.datasets = response.data.datasets;
-        this.categories = response.data.categories;
-        this.subdirectories = response.data.subdirectories;
-      });
+    updatePage: function() {
+      this.status.data.state = false;
+      axios
+        .get("/api/category/data", {
+          params: {
+            page: this.page,
+            limit: this.limit
+          }
+        })
+        .then(response => {
+          this.categories = response.data.categories;
+          this.page = response.data.pagination.page;
+          this.pages = response.data.pagination.pages;
+          this.categoryCount = response.data.pagination.total;
+
+          this.status.data.state = true;
+        });
     },
-    createDataset() {}
+    createCategory: function() {
+      if (this.createName.length < 1) return;
+
+      axios
+        .post("/api/category/", {
+          name: this.createName
+        })
+        .then(() => {
+          this.createName = "";
+          this.updatePage();
+        });
+    },
+    previousPage: function() {
+      this.page -= 1;
+      if (this.page < 1) {
+        this.page = 1;
+      }
+    },
+    nextPage: function() {
+      this.page += 1;
+      if (this.page > this.pages) {
+        this.page = this.pages;
+      }
+    }
   },
   created() {
     this.updatePage();
@@ -268,6 +264,18 @@ export default {
 
 
 <style scoped>
+.card-img-overlay {
+  padding: 0 10px 0 0;
+}
+
+.icon-more {
+  width: 10%;
+  margin: 3px 0;
+  padding: 0;
+  float: right;
+  color: black;
+}
+
 .help-icon {
   color: darkblue;
   font-size: 20px;
