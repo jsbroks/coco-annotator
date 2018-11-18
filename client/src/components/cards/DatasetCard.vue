@@ -170,7 +170,8 @@ export default {
   methods: {
     onImageClick() {
       if (this.dataset.numberImages > 0) {
-        document.location.pathname = "/images/" + this.dataset.id;
+        let identifier = this.dataset.id;
+        this.$router.push({ name: "dataset", params: { identifier } });
       }
     },
     onCocoDownloadClick() {
@@ -178,7 +179,6 @@ export default {
         "Generating coco for " + this.dataset.name;
       this.$parent.status.downloading.state = false;
       axios.get("/api/dataset/" + this.dataset.id + "/coco").then(reponse => {
-        
         let dataStr =
           "data:text/json;charset=utf-8," +
           encodeURIComponent(JSON.stringify(reponse.data));

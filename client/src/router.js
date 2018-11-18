@@ -7,6 +7,7 @@ import Annotator from "@/views/Annotator";
 import Datasets from "@/views/Datasets";
 import Categories from "@/views/Categories";
 import Undo from "@/views/Undo";
+import Dataset from "@/views/Dataset";
 
 Vue.use(Router);
 
@@ -42,6 +43,12 @@ export default new Router({
       path: "/annotate/:identifier",
       name: "annotate",
       component: Annotator,
+      props: true
+    },
+    {
+      path: "/dataset/:identifier",
+      name: "dataset",
+      component: Dataset,
       props: true
     }
   ]
