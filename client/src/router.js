@@ -6,6 +6,7 @@ import About from "@/views/About";
 import Annotator from "@/views/Annotator";
 import Datasets from "@/views/Datasets";
 import Categories from "@/views/Categories";
+import Undo from "@/views/Undo";
 
 Vue.use(Router);
 
@@ -31,6 +32,11 @@ export default new Router({
       path: "/categories",
       name: "categories",
       component: Categories
+    },
+    {
+      path: "/undo",
+      name: "undo",
+      component: Undo
     },
     {
       path: "/annotate/:identifier",
