@@ -79,6 +79,10 @@ export default {
     opacity: {
       type: Number,
       required: true
+    },
+    scale: {
+      type: Number,
+      default: 1
     }
   },
   data() {
@@ -142,12 +146,7 @@ export default {
           this.compoundPath.addChild(path);
         }
       }
-
-      this.setColor();
       this.compoundPath.data.annotationId = this.index;
-      this.$parent.group.addChild(this.compoundPath);
-
-      this.isEmpty = this.compoundPath.isEmpty();
     },
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
@@ -164,23 +163,21 @@ export default {
       if (this.compoundPath == null) {
         this.createCompoundPath();
       }
-      this.isEmpty = this.compoundPath.isEmpty();
       return this.compoundPath;
     },
-    setCompoundPath(compoundPath) {
+    unite(compound) {
+      let newCompound = this.compoundPath.unite(compound);
       this.compoundPath.remove();
-      this.compoundPath = compoundPath;
-
-      this.isEmpty = this.compoundPath.isEmpty();
+      this.compoundPath = newCompound;
     },
     setColor() {
       if (this.compoundPath == null) return;
 
       this.compoundPath.fillColor = this.color;
-      // let h = Math.round(this.compoundPath.fillColor.hue);
-      // let l = Math.round((this.compoundPath.fillColor.lightness - 0.2) * 100);
-      // let s = Math.round(this.compoundPath.fillColor.saturation * 100);
-      // this.compoundPath.strokeColor = 'hsl(' + h + ',' + s + '%,' + l + '%)';
+      let h = Math.round(this.compoundPath.fillColor.hue);
+      let l = Math.round((this.compoundPath.fillColor.lightness - 0.2) * 100);
+      let s = Math.round(this.compoundPath.fillColor.saturation * 100);
+      this.compoundPath.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
@@ -195,6 +192,7 @@ export default {
         asString: false,
         precision: 1
       });
+
       if (this.annotation.paper_object !== json) {
         annotationData.compoundPath = json;
       }
@@ -210,11 +208,22 @@ export default {
       if (this.compoundPath == null) return;
 
       this.compoundPath.visible = newVisible;
+    },
+    compoundPath() {
+      if (this.compoundPath == null) return;
+
+      this.$parent.group.addChild(this.compoundPath);
+      this.setColor();
+      this.isEmpty = this.compoundPath.isEmpty();
     }
   },
   computed: {
     isCurrent() {
-      return this.index === this.current;
+      if (this.index === this.current && this.$parent.isCurrent) {
+        if (this.compoundPath != null) this.compoundPath.bringToFront();
+        return true;
+      }
+      return false;
     },
     isHover() {
       return this.index === this.hover;

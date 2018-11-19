@@ -6,8 +6,8 @@
     >
       <hr>
 
-      <SelectTool v-model="activeTool" />
-      <PolygonTool v-model="activeTool" />
+      <SelectTool v-model="activeTool"/>
+      <PolygonTool v-model="activeTool" :scale="image.scale"/>
     </aside>
 
     <aside 
@@ -188,6 +188,7 @@ export default {
 
       return { zoom: zoom, offset: a };
     },
+
     onkeydown(e) {
       //let activeTool = this.activeTool;
 
@@ -208,6 +209,7 @@ export default {
       e.preventDefault();
       return false;
     },
+
     initCanvas() {
       let canvas = document.getElementById("editor");
 
@@ -223,6 +225,7 @@ export default {
       //this.status.image.state = false;
 
       img.onload = () => {
+        // Create image object
         this.image.raster = new paper.Raster({
           source: this.image.url,
           position: new paper.Point(0, 0)
@@ -230,14 +233,6 @@ export default {
 
         this.image.raster.sendToBack();
         this.fit();
-        //tools.initTools(this);
-
-        let categories = this.$refs.category;
-        if (categories != null) {
-          categories.forEach(category => {
-            category.initCategory();
-          });
-        }
 
         this.image.ratio =
           (this.image.raster.width * this.image.raster.height) / 1000000;
@@ -266,6 +261,7 @@ export default {
         if (callback != null) callback();
       });
     },
+
     onCategoryClick(indices) {
       if (
         this.current.annotation === indices.annotation &&
@@ -275,6 +271,29 @@ export default {
       } else {
         this.current = indices;
       }
+    },
+    getCategory: function(index) {
+      if (index == null) return null;
+      if (index < 0) return null;
+
+      let ref = this.$refs.category;
+
+      if (ref == null) return null;
+      if (ref.length < 1 || index >= ref.length) return null;
+
+      return this.$refs.category[index];
+    },
+    // Current Annotation Operations
+    uniteCurrentAnnotation(compound) {
+      let category = this.current.category;
+      let annotation = this.current.annotation;
+
+      if (category === -1) return;
+      if (annotation === -1) return;
+
+      this.getCategory(category)
+        .getAnnotation(annotation)
+        .unite(compound);
     }
   },
   beforeRouteUpdate(to, from, next) {

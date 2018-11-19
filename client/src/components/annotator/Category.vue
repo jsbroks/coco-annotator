@@ -100,6 +100,10 @@ export default {
     opacity: {
       type: Number,
       required: true
+    },
+    scale: {
+      type: Number,
+      default: 1
     }
   },
   data: function() {
@@ -180,12 +184,12 @@ export default {
       this.$emit("click", indices);
     },
     onClick() {
-      let options = {
-        progressBar: true,
-        preventDuplicates: true,
-        positionClass: "toast-bottom-left"
-      };
-      this.$toastr.success("Message", "Terst", options);
+      // let options = {
+      //   progressBar: true,
+      //   preventDuplicates: true,
+      //   positionClass: "toast-bottom-left"
+      // };
+      // this.$toastr.success("Message", "Terst", options);
 
       if (this.category.annotations.length === 0) return;
       this.showAnnotations = !this.showAnnotations;
@@ -220,11 +224,10 @@ export default {
     setColor() {
       if (this.group != null) {
         this.group.fillColor = this.color;
-        // Strokes cause lag, issue #39
-        //let h = Math.round(this.group.fillColor.hue);
-        //let l = Math.round((this.group.fillColor.lightness - 0.2) * 100);
-        //let s = Math.round(this.group.fillColor.saturation * 100);
-        //this.group.strokeColor = 'hsl(' + h + ',' + s + '%,' + l + '%)'
+        let h = Math.round(this.group.fillColor.hue);
+        let l = Math.round((this.group.fillColor.lightness - 0.2) * 100);
+        let s = Math.round(this.group.fillColor.saturation * 100);
+        this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
       }
     }
   },
@@ -242,19 +245,39 @@ export default {
       return "inherit";
     }
   },
-  mounted() {
-    if (this.isCurrent) {
-      this.showAnnotations = true;
-
-      let annotations = this.$refs.annotation;
-      if (annotations) {
-        annotations.forEach(annotation => {
-          annotation.setColor();
-        });
+  watch: {
+    color() {
+      this.setColor();
+    },
+    opacity() {
+      if (this.group == null) return;
+      this.group.opacity = this.opacity;
+    },
+    isVisible(newVisible) {
+      if (this.group == null) return;
+      this.group.visible = newVisible;
+    },
+    showAnnotations(show) {
+      if (show) {
+        let annotations = this.$refs.annotation;
+        if (annotations) {
+          annotations.forEach(annotation => {
+            annotation.setColor();
+          });
+        }
+      } else {
+        this.setColor();
       }
-    } else {
-      this.showAnnotations = false;
+    },
+    group(newGroup) {
+      if (newGroup != null) {
+        if (this.$refs.annotation != null) {
+          this.$refs.annotation.forEach(child => child.initAnnotation());
+        }
+      }
     }
+  },
+  mounted() {
     this.initCategory();
   }
 };

@@ -13,6 +13,8 @@
     "jquery": "^3.3.1",
     "paper": "^0.11.8",
     "popper.js": "^1.14.5",
+    "simplify-js": "^1.2.3",
+    "toastr": "^2.1.4",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"
