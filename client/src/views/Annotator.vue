@@ -4,7 +4,12 @@
       <hr>
 
       <SelectTool v-model="activeTool" :scale="image.scale" />
+
+      <hr>
+
       <PolygonTool v-model="activeTool" :scale="image.scale" />
+      <MagicWandTool v-model="activeTool" :raster="image.raster" />
+
     </aside>
 
     <aside v-show="panels.show.right" class="right-panel shadow-lg">
@@ -40,9 +45,11 @@ import Category from "@/components/annotator/Category";
 import PolygonTool from "@/components/annotator/tools/PolygonTool";
 import SelectTool from "@/components/annotator/tools/SelectTool";
 
+import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
+
 export default {
   name: "Annotator",
-  components: { FileTitle, Category, PolygonTool, SelectTool },
+  components: { FileTitle, Category, PolygonTool, SelectTool, MagicWandTool },
   props: {
     identifier: {
       type: [Number, String],
@@ -76,6 +83,7 @@ export default {
         annotation: -1
       },
       image: {
+        raster: {},
         scale: 0,
         ratio: 0,
         rotate: 0,
@@ -255,6 +263,17 @@ export default {
       this.getCategory(category)
         .getAnnotation(annotation)
         .unite(compound);
+    },
+    subtractCurrentAnnotation(compound) {
+      let category = this.current.category;
+      let annotation = this.current.annotation;
+
+      if (category === -1) return;
+      if (annotation === -1) return;
+
+      this.getCategory(category)
+        .getAnnotation(annotation)
+        .subtract(compound);
     }
   },
   beforeRouteUpdate(to, from, next) {

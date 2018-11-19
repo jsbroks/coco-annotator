@@ -169,6 +169,11 @@ export default {
       this.compoundPath.remove();
       this.compoundPath = newCompound;
     },
+    subtract(compound) {
+      let newCompound = this.compoundPath.subtract(compound);
+      this.compoundPath.remove();
+      this.compoundPath = newCompound;
+    },
     setColor() {
       if (this.compoundPath == null) return;
 

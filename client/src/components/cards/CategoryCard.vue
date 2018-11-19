@@ -68,7 +68,6 @@ export default {
 
 .color-icon {
   display: inline;
-  width: 10%;
   margin: 0;
   padding-right: 10px;
 }
