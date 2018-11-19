@@ -169,11 +169,10 @@ export default {
       let newCompound = this.compoundPath.unite(compound);
       this.compoundPath.remove();
       this.compoundPath = newCompound;
+      this.compoundPath.flatten(flatten);
     },
     subtract(compound, flatten) {
       flatten = flatten || 0;
-      console.log(flatten);
-
       let newCompound = this.compoundPath.subtract(compound);
       this.compoundPath.remove();
       this.compoundPath = newCompound;

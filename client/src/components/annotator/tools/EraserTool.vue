@@ -51,7 +51,10 @@ export default {
       this.erase();
     },
     erase() {
-      this.$parent.subtractCurrentAnnotation(this.eraser.brush, this.eraser.simplify);
+      this.$parent.subtractCurrentAnnotation(
+        this.eraser.brush,
+        this.eraser.simplify
+      );
     }
   },
   watch: {

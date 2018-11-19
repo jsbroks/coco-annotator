@@ -9,6 +9,8 @@
 
       <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
       <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" />
+
+      <BrushTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
       <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
 
     </aside>
@@ -47,6 +49,7 @@ import PolygonTool from "@/components/annotator/tools/PolygonTool";
 import SelectTool from "@/components/annotator/tools/SelectTool";
 import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
+import BrushTool from "@/components/annotator/tools/BrushTool";
 
 export default {
   name: "Annotator",
@@ -56,7 +59,8 @@ export default {
     PolygonTool,
     SelectTool,
     MagicWandTool,
-    EraserTool
+    EraserTool,
+    BrushTool
   },
   props: {
     identifier: {
