@@ -1,23 +1,10 @@
 <template>
   <div>
     <hr>
-    <div 
-      v-for="key in Object.keys( tools )" 
-      class="tool"
-      :key="key"
-    >
-            
-      <i 
-        :class="tools[key].class"
-        :id="key"
-        :style="{ color: tools[key].disabled ? 'gray' : tools[key].color }"
-        @click="click(key)"
-        aria-hidden="true"
-        data-toggle="tooltip"
-        :title="tools[key].description"
-        data-placement="auto"
-      />
-                    
+    <div v-for="key in Object.keys( tools )" class="tool" :key="key">
+
+      <i :class="tools[key].class" :id="key" :style="{ color: tools[key].disabled ? 'gray' : tools[key].color }" @click="click(key)" aria-hidden="true" data-toggle="tooltip" :title="tools[key].description" data-placement="auto" />
+
       <hr v-if="tools[key].hr">
     </div>
   </div>

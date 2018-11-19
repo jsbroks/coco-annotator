@@ -1,18 +1,156 @@
 <script>
-//import paper from "paper";
+import paper from "paper";
 import tool from "@/mixins/tool";
 
 export default {
   name: "SelectTool",
   mixins: [tool],
+  props: {
+    scale: {
+      type: Number,
+      default: 1
+    }
+  },
   data() {
     return {
       icon: "fa-hand-pointer-o",
-      name: "Select"
+      name: "Select",
+      movePath: false,
+      segmentFound: false,
+      segment: null,
+      scaleFactor: 15,
+      hover: {
+        showText: true,
+        text: null,
+        box: null,
+        textShift: 0,
+        fontSize: this.sacleFactor,
+        shift: 0,
+        rounded: 0,
+        category: null,
+        annotation: null
+      },
+      hitOptions: {
+        segments: true,
+        stroke: true,
+        tolerance: 2
+      }
     };
   },
   methods: {
-    onMouseDown() {}
+    generateStringFromMetadata() {
+      let string = " ";
+      let metadata = this.hover.annotation.$refs.metadata.metadataList;
+
+      if (metadata == null || metadata.length === 0) {
+        string += "No Metadata \n";
+      } else {
+        string += "Metadata \n";
+        metadata.forEach(element => {
+          if (element.key.length !== 0) {
+            string += " " + element.key + " = " + element.value + " \n";
+          }
+        });
+      }
+
+      return string.replace(/\n/g, " \n ").slice(0, -2);
+    },
+    hoverText() {
+      if (!this.hover.showText) return;
+
+      if (this.hover.category == null) return;
+      if (this.hover.annotation == null) return;
+
+      let position = this.hover.position.add(this.hover.textShift, 0);
+
+      if (this.hover.text == null) {
+        let content = this.generateStringFromMetadata();
+
+        this.hover.text = new paper.PointText(position);
+        this.hover.text.justification = "left";
+        this.hover.text.fillColor = "black";
+        this.hover.text.content = content;
+
+        this.hover.text.fontSize = this.hover.fontSize;
+
+        this.hover.box = new paper.Path.Rectangle(
+          this.hover.text.bounds,
+          this.hover.rounded
+        );
+
+        this.hover.box.fillColor = "white";
+        this.hover.box.strokeColor = "white";
+        this.hover.box.opacity = 0.5;
+
+        this.hover.box.insertAbove(this.rect);
+      }
+
+      this.hover.shift =
+        (this.hover.text.bounds.bottomRight.x -
+          this.hover.text.bounds.bottomLeft.x) /
+        2;
+      this.hover.box.position = position.add(this.hover.shift, 0);
+      this.hover.text.position = position.add(this.hover.shift, 0);
+      this.hover.text.bringToFront();
+    },
+    onMouseMove(event) {
+      this.$parent.paper.project.activeLayer.selected = false;
+      if (
+        event.item &&
+        event.item.visible &&
+        event.item.data.hasOwnProperty("categoryId") &&
+        event.item.hasChildren()
+      ) {
+        let item = event.item;
+        this.hover.category = this.$parent.getCategory(item.data.categoryId);
+
+        for (let i = 0; i < item.children.length; i++) {
+          let child = item.children[i];
+          if (
+            child.visible &&
+            child.contains(event.point) &&
+            child.data.hasOwnProperty("annotationId")
+          ) {
+            this.hover.position = event.point;
+            this.hover.annotation = this.hover.category.getAnnotation(
+              child.data.annotationId
+            );
+            child.selected = true;
+
+            this.hoverText();
+            break;
+          }
+        }
+      } else {
+        this.hover.category = null;
+        this.hover.annotation = -1;
+
+        if (this.hover.text != null) {
+          this.hover.text.remove();
+          this.hover.box.remove();
+          this.hover.text = null;
+          this.hover.box = null;
+        }
+      }
+    }
+  },
+  watch: {
+    scale(newScale) {
+      this.hover.rounded = newScale * 5;
+      this.hover.textShift = newScale * 40;
+      this.hover.fontSize = newScale * this.scaleFactor;
+
+      if (this.hover.text != null) {
+        this.hover.text.fontSize = this.hover.fontSize;
+        this.hover.shift =
+          (this.hover.text.bounds.bottomRight.x -
+            this.hover.text.bounds.bottomLeft.x) /
+          2;
+        let totalShift = this.hover.shift + this.hover.textShift;
+        this.hover.text.position = this.hover.position.add(totalShift, 0);
+        this.hover.box.bounds = this.hover.text.bounds;
+      }
+    }
   }
 };
 </script>

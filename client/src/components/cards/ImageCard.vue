@@ -1,53 +1,26 @@
 <template>
   <div class="col-md-3">
     <div class="card mb-4 box-shadow">
-      <img 
-        class="card-img-top" 
-        @click="openAnnotator" 
-        style="width: 100%; display: block"
-        :src="imageUrl"
-      >
+      <img class="card-img-top" @click="openAnnotator" style="width: 100%; display: block" :src="imageUrl">
       <div class="card-body">
-             
-        <span 
-          class="d-inline-block text-truncate" 
-          style="max-width: 85%; float: left"
-        >
+
+        <span class="d-inline-block text-truncate" style="max-width: 85%; float: left">
           <strong class="card-title">{{ image.id }}. {{ image.file_name }}</strong>
         </span>
-                     
-        <i 
-          class="card-text fa fa-ellipsis-v fa-x icon-more" 
-          :id="'dropdownImage' + image.id"
-          data-toggle="dropdown" 
-          aria-haspopup="true" 
-          aria-expanded="false" 
-          aria-hidden="true"
-        /> 
-        <br>      
-        <div>                
+
+        <i class="card-text fa fa-ellipsis-v fa-x icon-more" :id="'dropdownImage' + image.id" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true" />
+        <br>
+        <div>
           <p v-if="image.annotations > 0">
             {{ image.annotations }} annotations.
           </p>
           <p v-else>Image has no annotations</p>
         </div>
 
-        <div 
-          class="dropdown-menu" 
-          :aria-labelledby="'dropdownImage' + image.id"
-        >
-          <a 
-            class="dropdown-item" 
-            @click="onDeleteClick"
-          >Delete</a>
-          <a 
-            class="dropdown-item" 
-            @click="openAnnotator"
-          >Annotate</a>
-          <a 
-            class="dropdown-item" 
-            @click="onDownloadClick"
-          >Download Image & COCO</a>
+        <div class="dropdown-menu" :aria-labelledby="'dropdownImage' + image.id">
+          <a class="dropdown-item" @click="onDeleteClick">Delete</a>
+          <a class="dropdown-item" @click="openAnnotator">Annotate</a>
+          <a class="dropdown-item" @click="onDownloadClick">Download Image & COCO</a>
         </div>
       </div>
     </div>

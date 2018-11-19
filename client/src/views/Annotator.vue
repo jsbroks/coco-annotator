@@ -1,69 +1,30 @@
 <template>
   <div style="display: block; height: inherit;">
-    <aside 
-      v-show="panels.show.left" 
-      class="left-panel shadow-lg"
-    >
+    <aside v-show="panels.show.left" class="left-panel shadow-lg">
       <hr>
 
-      <SelectTool v-model="activeTool"/>
-      <PolygonTool v-model="activeTool" :scale="image.scale"/>
+      <SelectTool v-model="activeTool" :scale="image.scale" />
+      <PolygonTool v-model="activeTool" :scale="image.scale" />
     </aside>
 
-    <aside 
-      v-show="panels.show.right" 
-      class="right-panel shadow-lg"
-    >
+    <aside v-show="panels.show.right" class="right-panel shadow-lg">
       <hr>
-      <FileTitle 
-        :previousimage="image.previous" 
-        :nextimage="image.next" 
-        :filename="image.filename"
-      />
+      <FileTitle :previousimage="image.previous" :nextimage="image.next" :filename="image.filename" />
 
-      <div 
-        class="sidebar-section" 
-        style="max-height: 57%"
-      >
-        <p 
-          v-if="categories.length == 0" 
-          style="color: lightgray; font-size: 12px"
-        >
+      <div class="sidebar-section" style="max-height: 57%">
+        <p v-if="categories.length == 0" style="color: lightgray; font-size: 12px">
           No categories have been added to this image.
         </p>
-        <div 
-          v-else 
-          id="accordion" 
-          style="overflow: auto; max-height: 100%"
-        >
-          <Category 
-            v-for="(category, index) in categories" 
-            :key="category.id + '-category'"
-            :category="category" 
-            :opacity="shapeOpacity" 
-            :hover="hover" 
-            :index="index"
-            @click="onCategoryClick" 
-            :current="current" 
-            ref="category"
-          />
+        <div v-else id="accordion" style="overflow: auto; max-height: 100%">
+          <Category v-for="(category, index) in categories" :key="category.id + '-category'" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
         </div>
       </div>
-      
+
     </aside>
 
     <div class="middle-panel">
-      <div 
-        id="frame"
-        class="frame" 
-        @wheel="onwheel"
-      >
-        <canvas
-          class="canvas"
-          id="editor"
-          ref="image" 
-          resize
-        />
+      <div id="frame" class="frame" @wheel="onwheel">
+        <canvas class="canvas" id="editor" ref="image" resize />
       </div>
     </div>
   </div>

@@ -1,13 +1,8 @@
 <template>
   <div>
     <div style="padding-top: 55px" />
-    <div 
-      class="album py-5 bg-light" 
-      style="overflow: auto; height: calc(100vh - 55px)"
-    >
-      <div 
-        class="container"
-      >
+    <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
+      <div class="container">
         <h2 class="text-center">Dataset of {{ dataset.name }}</h2>
         <p class="text-center">
           Total of <strong>{{ imageCount }}</strong> images displayed on <strong>{{ pages }}</strong> pages.
@@ -21,10 +16,7 @@
                 </button>
             </div>
             -->
-        <p 
-          class="text-center" 
-          v-if="images.length < 1"
-        >You need to upload some images!</p>
+        <p class="text-center" v-if="images.length < 1">You need to upload some images!</p>
         <div v-else>
           <!--
                 <ol class="breadcrumb">
@@ -40,11 +32,7 @@
             @pagechange="updatePage"
           />-->
           <div class="row">
-            <ImageCard
-              v-for="image in images"
-              :key="image.id"
-              :image="image"
-            />
+            <ImageCard v-for="image in images" :key="image.id" :image="image" />
           </div>
           <hr>
         </div>

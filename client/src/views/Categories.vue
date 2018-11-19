@@ -1,84 +1,46 @@
 <template>
   <div>
     <div style="padding-top: 55px" />
-    <div 
-      class="album py-5 bg-light" 
-      style="overflow: auto; height: calc(100vh - 55px)"
-    >
-      <div 
-        class="container"
-      >
+    <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
+      <div class="container">
 
         <h2 class="text-center">
           Categories
-          <i 
-            class="fa fa-question-circle help-icon" 
-            data-toggle="modal" 
-            data-target="#helpCategories"
-            aria-hidden="true"
-          />
+          <i class="fa fa-question-circle help-icon" data-toggle="modal" data-target="#helpCategories" aria-hidden="true" />
         </h2>
-
 
         <p class="text-center">
           Loaded <strong>{{ categoryCount }}</strong> categories.
         </p>
 
         <div class="row justify-content-md-center">
-          <div 
-            class="col-md-auto btn-group" 
-            role="group" 
-            style="padding-bottom: 20px"
-          >
-            <button 
-              type="button" 
-              class="btn btn-success" 
-              data-toggle="modal" 
-              data-target="#createCategories"
-            >
+          <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createCategories">
               Create
             </button>
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              @click="updatePage"
-            >Refresh</button>
+            <button type="button" class="btn btn-secondary" @click="updatePage">Refresh</button>
           </div>
         </div>
 
         <hr>
 
-        <p 
-          v-if="categories.length < 1" 
-          class="text-center"
-        >
+        <p v-if="categories.length < 1" class="text-center">
           You need to create a category!
         </p>
         <div v-else>
           <div class="row justify-content-md-center">
             <ul class="pagination text-center">
               <li class="page-item disabled">
-                <a 
-                  class="page-link" 
-                  href="#" 
-                  aria-label="Previous"
-                >
+                <a class="page-link" href="#" aria-label="Previous">
                   <span aria-hidden="true">&laquo;</span>
                   <span class="sr-only">Previous</span>
                 </a>
               </li>
 
-              <li class="page-item disabled"><a 
-                class="page-link" 
-                href="#"
-              >1</a></li>
+              <li class="page-item disabled"><a class="page-link" href="#">1</a></li>
 
               <li class="page-item disabled">
-                <a 
-                  class="page-link" 
-                  href="#" 
-                  aria-label="Next"
-                >
+                <a class="page-link" href="#" aria-label="Next">
                   <span aria-hidden="true">&raquo;</span>
                   <span class="sr-only">Next</span>
                 </a>
@@ -87,35 +49,18 @@
           </div>
 
           <div class="row">
-            <CategoryCard
-              v-for="category in categories"
-              :key="category.id"
-              :category="category"
-            />
+            <CategoryCard v-for="category in categories" :key="category.id" :category="category" />
           </div>
         </div>
       </div>
     </div>
 
-    <div 
-      class="modal fade" 
-      tabindex="-1" 
-      role="dialog" 
-      id="createCategories"
-    >
-      <div 
-        class="modal-dialog" 
-        role="document"
-      >
+    <div class="modal fade" tabindex="-1" role="dialog" id="createCategories">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Creating a Category</h5>
-            <button 
-              type="button" 
-              class="close" 
-              data-dismiss="modal" 
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -123,49 +68,24 @@
             <form>
               <div class="form-group">
                 <label>Category Name</label>
-                <input 
-                  v-model="createName" 
-                  class="form-control" 
-                  placeholder="Category name"
-                >
+                <input v-model="createName" class="form-control" placeholder="Category name">
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn btn-primary" 
-              @click="createCategory"
-            >Create Category</button>
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              data-dismiss="modal"
-            >Close</button>
+            <button type="button" class="btn btn-primary" @click="createCategory">Create Category</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div 
-      class="modal fade" 
-      tabindex="-1" 
-      role="dialog" 
-      id="helpCategories"
-    >
-      <div 
-        class="modal-dialog" 
-        role="document"
-      >
+    <div class="modal fade" tabindex="-1" role="dialog" id="helpCategories">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Categories</h5>
-            <button 
-              type="button" 
-              class="close" 
-              data-dismiss="modal" 
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -179,11 +99,7 @@
             Click on the "Create" button found on this webpage. You must provided a name for the category.
           </div>
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              data-dismiss="modal"
-            >Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>

@@ -1,147 +1,77 @@
 <template>
   <div class="col-md-3">
-      
+
     <!-- Dataset Card -->
     <div class="card mb-4 box-shadow">
 
       <!-- Display Image -->
-      <img 
-        @click="onImageClick" 
-        :src="imageUrl" 
-        class="card-img-top"
-        style="width: 100%; display: block;"
-      >
+      <img @click="onImageClick" :src="imageUrl" class="card-img-top" style="width: 100%; display: block;">
 
-      <!-- Card Body -->                    
+      <!-- Card Body -->
       <div class="card-body">
-        <span 
-          class="d-inline-block text-truncate" 
-          style="max-width: 85%; float: left"
-        >
+        <span class="d-inline-block text-truncate" style="max-width: 85%; float: left">
           <strong class="card-title">{{ dataset.name }}</strong>
         </span>
-                    
-        <i 
-          class="card-text fa fa-ellipsis-v fa-x icon-more" 
-          :id="'dropdownDataset' + dataset.id"
-          data-toggle="dropdown" 
-          aria-haspopup="true" 
-          aria-expanded="false" 
-          aria-hidden="true"
-        />
-          
+
+        <i class="card-text fa fa-ellipsis-v fa-x icon-more" :id="'dropdownDataset' + dataset.id" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true" />
+
         <br>
 
         <div>
           <p v-if="dataset.numberImages > 0">
             {{ dataset.numberAnnotated }} of {{ dataset.numberImages }} images annotated.
           </p>
-          <p v-else>No images in dataset.</p> 
-          <span 
-            v-for="(category, index) in listCategories"
-            :key="index"
-            class="badge badge-pill badge-primary category-badge"
-            :style="{ 'background-color': category.color}"
-          >{{ category.name }}</span>                              
+          <p v-else>No images in dataset.</p>
+          <span v-for="(category, index) in listCategories" :key="index" class="badge badge-pill badge-primary category-badge" :style="{ 'background-color': category.color}">{{ category.name }}</span>
         </div>
-                        
-        <div 
-          class="dropdown-menu" 
-          :aria-labelledby="'dropdownDataset' + dataset.id"
-        >
-          <a 
-            class="dropdown-item" 
-            data-toggle="modal" 
-            :data-target="'#datasetEdit' + dataset.id"
-            @click="selectedCategories = dataset.categories"
-          >
+
+        <div class="dropdown-menu" :aria-labelledby="'dropdownDataset' + dataset.id">
+          <a class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id" @click="selectedCategories = dataset.categories">
             Edit
           </a>
-          <a 
-            class="dropdown-item" 
-            @click="onDeleteClick"
-          >Delete</a>
-          <a 
-            class="dropdown-item" 
-            @click="onCocoDownloadClick"
-          >Download COCO</a>
+          <a class="dropdown-item" @click="onDeleteClick">Delete</a>
+          <a class="dropdown-item" @click="onCocoDownloadClick">Download COCO</a>
         </div>
       </div>
-        
+
     </div>
 
-    <!-- Edit Dataset -->          
-    <div 
-      class="modal fade" 
-      tabindex="-1" 
-      role="dialog" 
-      :id="'datasetEdit' + dataset.id"
-    >
-      <div 
-        class="modal-dialog" 
-        role="document"
-      >
+    <!-- Edit Dataset -->
+    <div class="modal fade" tabindex="-1" role="dialog" :id="'datasetEdit' + dataset.id">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ dataset.name }}</h5>
-            <button 
-              type="button" 
-              class="close" 
-              data-dismiss="modal" 
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <form>
- 
+
               <div class="form-group">
                 <label>
                   Categories <i v-if="categories.length == 0">(No categories found)</i>
                 </label>
-                <select 
-                  v-model="selectedCategories" 
-                  multiple 
-                  class="form-control"
-                >
-                  <option 
-                    v-for="category in categories" 
-                    :key="category.id" 
-                    :value="category.id"
-                  >
+                <select v-model="selectedCategories" multiple class="form-control">
+                  <option v-for="category in categories" :key="category.id" :value="category.id">
                     {{ category.name }}
                   </option>
                 </select>
               </div>
-                                    
-              <Metadata 
-                :metadata="defaultMetadata" 
-                title="Default Annotation Metadata"
-                key-name="Default Key" 
-                value-name="Default Value"
-                ref="defaultAnnotation"
-              />
-            </form>  
+
+              <Metadata :metadata="defaultMetadata" title="Default Annotation Metadata" key-name="Default Key" value-name="Default Value" ref="defaultAnnotation" />
+            </form>
           </div>
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn btn-success" 
-              @click="onSave" 
-              data-dismiss="modal"
-            >Save</button>
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              data-dismiss="modal"
-            >Close</button>
+            <button type="button" class="btn btn-success" @click="onSave" data-dismiss="modal">Save</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
-                 
-  </div> 
+
+  </div>
 </template>
 
 <script>

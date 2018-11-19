@@ -1,71 +1,25 @@
 <template>
-  <div 
-    class="card"
-    :style="{ 'background-color': backgroundColor }"
-  >
-            
-    <div 
-      class="card-header" 
-      :id="'heading' + category.id"
-    >
+  <div class="card" :style="{ 'background-color': backgroundColor }">
+
+    <div class="card-header" :id="'heading' + category.id">
       <div :style="{ color: isVisible ? 'white' : 'gray' }">
         <div @click="onEyeClick">
-          <i 
-            v-if="isVisible" 
-            class="fa fa-eye category-icon"
-            :style="{ color: showAnnotations ? 'white' : color }"
-            aria-hidden="true"
-          />
-          <i 
-            v-else 
-            class="fa fa-eye-slash category-icon" 
-            aria-hidden="true"
-          />
+          <i v-if="isVisible" class="fa fa-eye category-icon" :style="{ color: showAnnotations ? 'white' : color }" aria-hidden="true" />
+          <i v-else class="fa fa-eye-slash category-icon" aria-hidden="true" />
         </div>
 
-        <button 
-          class="btn btn-link btn-sm collapsed category-text" 
-          style="color: inherit"
-          aria-expanded="false" 
-          :aria-controls="'collapse' + category.id"
-          @click="onClick"
-        >
+        <button class="btn btn-link btn-sm collapsed category-text" style="color: inherit" aria-expanded="false" :aria-controls="'collapse' + category.id" @click="onClick">
           {{ category.name }} ({{ category.annotations.length }})
         </button>
 
-        <i 
-          class="fa fa-gear category-icon" 
-          data-toggle="modal" 
-          :data-target="'#categorySettings' + category.id"
-          style="float: right; color: white" 
-          aria-hidden="true"
-        />
+        <i class="fa fa-gear category-icon" data-toggle="modal" :data-target="'#categorySettings' + category.id" style="float: right; color: white" aria-hidden="true" />
 
-        <i 
-          @click="createAnnotation" 
-          class="fa fa-plus category-icon"
-          style="float: right; color: white; padding-right: 0"
-          aria-hidden="true"
-        />
+        <i @click="createAnnotation" class="fa fa-plus category-icon" style="float: right; color: white; padding-right: 0" aria-hidden="true" />
       </div>
     </div>
-                
-    <ul
-      v-show="showAnnotations"
-      ref="collapse"
-      class="list-group"
-    >     
-      <Annotation 
-        v-for="(annotation, listIndex) in category.annotations" 
-        :key="annotation.id + '-annotation'"
-        :annotation="annotation" 
-        :current='current.annotation' 
-        @click="onAnnotationClick(listIndex)"
-        :opacity="opacity" 
-        :index="listIndex" 
-        ref="annotation" 
-        :hover="hover.annotation"
-      />
+
+    <ul v-show="showAnnotations" ref="collapse" class="list-group">
+      <Annotation v-for="(annotation, listIndex) in category.annotations" :key="annotation.id + '-annotation'" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
 
     </ul>
   </div>
@@ -116,6 +70,9 @@ export default {
     };
   },
   methods: {
+    /**
+     * Created
+     */
     createAnnotation() {
       let parent = this.$parent;
       let categories = parent.categories;
@@ -140,6 +97,10 @@ export default {
           }
         });
     },
+    /**
+     * Exports data for send to backend
+     * @returns {json} Annotation data, and settings
+     */
     export() {
       let refs = this.$refs;
       let categoryData = {
@@ -163,6 +124,9 @@ export default {
 
       return categoryData;
     },
+    /**
+     * Event handler for visibility button
+     */
     onEyeClick() {
       this.isVisible = !this.isVisible;
 
@@ -178,11 +142,17 @@ export default {
           });
         }
     },
+    /**
+     * Event handler for annotaiton click
+     */
     onAnnotationClick(index) {
       let indices = { annotation: index, category: this.index };
       this.selectedAnnotation = index;
       this.$emit("click", indices);
     },
+    /**
+     * Event Handler for category click
+     */
     onClick() {
       // let options = {
       //   progressBar: true,
@@ -204,6 +174,9 @@ export default {
       };
       this.$emit("click", indices);
     },
+    /**
+     * Creates paperjs group
+     */
     initCategory() {
       if (this.group === null) {
         this.group = new paper.Group();
@@ -213,6 +186,9 @@ export default {
         this.group.clipMask = false;
       }
     },
+    /**
+     * @returns {Annotation} returns annotation and provided index
+     */
     getAnnotation(index) {
       let ref = this.$refs.annotation;
 
@@ -221,13 +197,29 @@ export default {
 
       return this.$refs.annotation[index];
     },
+    /**
+     * Sets color of current group depending on state.
+     * Show annotation colors if showAnnotations is true,
+     * Show as group color if showAnnotations is false
+     */
     setColor() {
-      if (this.group != null) {
-        this.group.fillColor = this.color;
-        let h = Math.round(this.group.fillColor.hue);
-        let l = Math.round((this.group.fillColor.lightness - 0.2) * 100);
-        let s = Math.round(this.group.fillColor.saturation * 100);
-        this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
+      if (!this.isVisible) return;
+
+      if (this.showAnnotations) {
+        let annotations = this.$refs.annotation;
+        if (annotations) {
+          annotations.forEach(annotation => {
+            annotation.setColor();
+          });
+        }
+      } else {
+        if (this.group != null) {
+          this.group.fillColor = this.color;
+          let h = Math.round(this.group.fillColor.hue);
+          let l = Math.round((this.group.fillColor.lightness - 0.2) * 100);
+          let s = Math.round(this.group.fillColor.saturation * 100);
+          this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
+        }
       }
     }
   },
@@ -256,18 +248,10 @@ export default {
     isVisible(newVisible) {
       if (this.group == null) return;
       this.group.visible = newVisible;
+      this.setColor();
     },
-    showAnnotations(show) {
-      if (show) {
-        let annotations = this.$refs.annotation;
-        if (annotations) {
-          annotations.forEach(annotation => {
-            annotation.setColor();
-          });
-        }
-      } else {
-        this.setColor();
-      }
+    showAnnotations() {
+      this.setColor();
     },
     group(newGroup) {
       if (newGroup != null) {

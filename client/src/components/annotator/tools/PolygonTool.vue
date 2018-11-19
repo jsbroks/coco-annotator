@@ -33,14 +33,14 @@ export default {
     };
   },
   methods: {
-   /**
+    /**
      * Creates a new selection polygon path
      */
     createPolygon() {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
     },
     /**
-     * Frees current ploygon
+     * Frees current polygon
      */
     deletePolygon() {
       if (this.polygon.path == null) return;

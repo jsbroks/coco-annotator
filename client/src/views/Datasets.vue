@@ -1,63 +1,31 @@
 <template>
   <div>
     <div style="padding-top: 55px" />
-    
-    <div 
-      class="album py-5 bg-light" 
-      style="overflow: auto; height: calc(100vh - 55px)"
-    >
-      <div 
-        class="container" 
-      >
+
+    <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
+      <div class="container">
 
         <h2 class="text-center">
           Datasets
-          <i 
-            class="fa fa-question-circle help-icon" 
-            data-toggle="modal" 
-            data-target="#helpDataset"
-            aria-hidden="true"
-          />
+          <i class="fa fa-question-circle help-icon" data-toggle="modal" data-target="#helpDataset" aria-hidden="true" />
         </h2>
 
         <p class="text-center">
           Loaded <strong>{{ datasets.length }}</strong> datasets.</p>
-        
+
         <div class="row justify-content-md-center">
-          <div 
-            class="col-md-auto btn-group" 
-            role="group" 
-            style="padding-bottom: 20px"
-          >
-            <button 
-              type="button" 
-              class="btn btn-success" 
-              data-toggle="modal" 
-              data-target="#createDataset"
-            >
+          <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createDataset">
               Create
             </button>
-            <button 
-              type="button" 
-              class="btn btn-primary disabled"
-            >Import</button>
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              @click="updatePage"
-            >Refresh</button>
+            <button type="button" class="btn btn-primary disabled">Import</button>
+            <button type="button" class="btn btn-secondary" @click="updatePage">Refresh</button>
           </div>
         </div>
 
         <hr>
-        <p 
-          v-if="datasets.length < 1" 
-          class="text-center"
-        >You need to create a dataset!</p>
-        <div 
-          v-else 
-          style="background-color: gray"
-        >
+        <p v-if="datasets.length < 1" class="text-center">You need to create a dataset!</p>
+        <div v-else style="background-color: gray">
           <div class="row justify-content-md-center">
             <!--<ul class="pagination text-center">
 
@@ -91,118 +59,57 @@
           </div>
 
           <div class="row bg-light">
-            <DatasetCard
-              v-for="dataset in datasets"
-              :key="dataset.id"
-              :dataset="dataset"
-              :categories="categories"
-            />
+            <DatasetCard v-for="dataset in datasets" :key="dataset.id" :dataset="dataset" :categories="categories" />
           </div>
         </div>
       </div>
     </div>
 
-    <div 
-      class="modal fade" 
-      tabindex="-1" 
-      role="dialog" 
-      id="createDataset"
-    >
-      <div 
-        class="modal-dialog" 
-        role="document"
-      >
+    <div class="modal fade" tabindex="-1" role="dialog" id="createDataset">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Creating a Dataset</h5>
-            <button 
-              type="button" 
-              class="close" 
-              data-dismiss="modal" 
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <form>
-              <div 
-                class="form-group" 
-                required
-              >
+              <div class="form-group" required>
                 <label>Dataset Name</label>
-                <input 
-                  v-model="create.name" 
-                  class="form-control" 
-                  placeholder="Dataset name"
-                >
+                <input v-model="create.name" class="form-control" placeholder="Dataset name">
               </div>
 
               <div class="form-group">
                 <label>Default Categories <i v-if="categories.length === 0">(No categories found)</i></label>
-                <select 
-                  v-model="create.categories" 
-                  multiple 
-                  class="form-control"
-                >
-                  <option 
-                    v-for="category in categories" 
-                    :key="category.id" 
-                    :value="category.id"
-                  >
+                <select v-model="create.categories" multiple class="form-control">
+                  <option v-for="category in categories" :key="category.id" :value="category.id">
                     {{ category.name }}
                   </option>
                 </select>
               </div>
 
-              <div 
-                class="form-group" 
-                required
-              >
+              <div class="form-group" required>
                 <label>Folder Directory</label>
-                <input 
-                  class="form-control" 
-                  disabled 
-                  :placeholder="create.directory"
-                >
+                <input class="form-control" disabled :placeholder="create.directory">
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn btn-primary" 
-              @click="createDataset"
-            >Create Dataset</button>
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              data-dismiss="modal"
-            >Close</button>
+            <button type="button" class="btn btn-primary" @click="createDataset">Create Dataset</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div 
-      class="modal fade" 
-      tabindex="-1" 
-      role="dialog" 
-      id="helpDataset"
-    >
-      <div 
-        class="modal-dialog" 
-        role="document"
-      >
+    <div class="modal fade" tabindex="-1" role="dialog" id="helpDataset">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Datasets</h5>
-            <button 
-              type="button" 
-              class="close" 
-              data-dismiss="modal" 
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -223,11 +130,7 @@
           </div>
 
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn btn-secondary" 
-              data-dismiss="modal"
-            >Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
