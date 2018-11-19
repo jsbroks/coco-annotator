@@ -17,6 +17,7 @@ export default {
       icon: "fa-magic",
       name: "Magic Wand",
       imageInfo: {},
+      cursor: "crosshair",
       wand: {
         threshold: 30,
         blur: 5,
@@ -26,7 +27,6 @@ export default {
   },
   methods: {
     flood(x, y, thr, rad, simplify) {
-      
       let image = {
         data: this.imageInfo.data.data,
         width: this.imageInfo.width,
@@ -101,8 +101,6 @@ export default {
       tempCtx.canvas.width = raster.width;
       tempCtx.canvas.height = raster.height;
       tempCtx.drawImage(raster.image, 0, 0);
-
-      console.log(tempCtx);
 
       this.imageInfo.data = tempCtx.getImageData(
         0,

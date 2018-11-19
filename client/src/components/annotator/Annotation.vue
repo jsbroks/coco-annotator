@@ -164,15 +164,20 @@ export default {
       }
       return this.compoundPath;
     },
-    unite(compound) {
+    unite(compound, flatten) {
+      flatten = flatten || 0;
       let newCompound = this.compoundPath.unite(compound);
       this.compoundPath.remove();
       this.compoundPath = newCompound;
     },
-    subtract(compound) {
+    subtract(compound, flatten) {
+      flatten = flatten || 0;
+      console.log(flatten);
+
       let newCompound = this.compoundPath.subtract(compound);
       this.compoundPath.remove();
       this.compoundPath = newCompound;
+      this.compoundPath.flatten(flatten);
     },
     setColor() {
       if (this.compoundPath == null) return;

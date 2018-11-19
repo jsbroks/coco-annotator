@@ -17,6 +17,7 @@ export default {
     return {
       tool: null,
       enabled: false,
+      cursor: "default",
       color: {
         enabled: "white",
         active: "#2ecc71",
@@ -39,7 +40,11 @@ export default {
   },
   computed: {
     isActive() {
-      return this.selected === this.name;
+      if (this.selected == this.name) {
+        this.$emit("setcursor", this.cursor);
+        return true;
+      }
+      return false;
     },
     iconColor() {
       if (this.isToggled) return this.color.toggle;

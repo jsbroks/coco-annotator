@@ -3,12 +3,13 @@
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
       <hr>
 
-      <SelectTool v-model="activeTool" :scale="image.scale" />
+      <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
 
       <hr>
 
-      <PolygonTool v-model="activeTool" :scale="image.scale" />
-      <MagicWandTool v-model="activeTool" :raster="image.raster" />
+      <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
+      <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" />
+      <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
 
     </aside>
 
@@ -27,7 +28,7 @@
 
     </aside>
 
-    <div class="middle-panel">
+    <div class="middle-panel" :style="{ cursor: cursor }">
       <div id="frame" class="frame" @wheel="onwheel">
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
@@ -44,12 +45,19 @@ import Category from "@/components/annotator/Category";
 
 import PolygonTool from "@/components/annotator/tools/PolygonTool";
 import SelectTool from "@/components/annotator/tools/SelectTool";
-
 import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
+import EraserTool from "@/components/annotator/tools/EraserTool";
 
 export default {
   name: "Annotator",
-  components: { FileTitle, Category, PolygonTool, SelectTool, MagicWandTool },
+  components: {
+    FileTitle,
+    Category,
+    PolygonTool,
+    SelectTool,
+    MagicWandTool,
+    EraserTool
+  },
   props: {
     identifier: {
       type: [Number, String],
@@ -62,6 +70,7 @@ export default {
       paper: null,
       shapeOpacity: 0.5,
       zoom: 0.2,
+      cursor: "move",
       panels: {
         show: {
           left: true,
@@ -253,7 +262,7 @@ export default {
       return this.$refs.category[index];
     },
     // Current Annotation Operations
-    uniteCurrentAnnotation(compound) {
+    uniteCurrentAnnotation(compound, flatten) {
       let category = this.current.category;
       let annotation = this.current.annotation;
 
@@ -262,9 +271,9 @@ export default {
 
       this.getCategory(category)
         .getAnnotation(annotation)
-        .unite(compound);
+        .unite(compound, flatten);
     },
-    subtractCurrentAnnotation(compound) {
+    subtractCurrentAnnotation(compound, flatten) {
       let category = this.current.category;
       let annotation = this.current.annotation;
 
@@ -273,7 +282,11 @@ export default {
 
       this.getCategory(category)
         .getAnnotation(annotation)
-        .subtract(compound);
+        .subtract(compound, flatten);
+    },
+
+    setCursor(newCursor) {
+      this.cursor = newCursor;
     }
   },
   beforeRouteUpdate(to, from, next) {

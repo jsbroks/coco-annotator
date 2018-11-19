@@ -17,6 +17,7 @@ export default {
       icon: "fa-pencil",
       name: "Polygon",
       scaleFactor: 3,
+      cursor: "copy",
       polygon: {
         toggleGuidance: null,
         deleteCurrent: null,

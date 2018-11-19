@@ -15,6 +15,7 @@ export default {
     return {
       icon: "fa-hand-pointer-o",
       name: "Select",
+      cursor: "pointer",
       movePath: false,
       segmentFound: false,
       segment: null,
