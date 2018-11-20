@@ -19,8 +19,6 @@ export default {
       scaleFactor: 3,
       cursor: "copy",
       polygon: {
-        toggleGuidance: null,
-        deleteCurrent: null,
         completeDistance: 5,
         minDistance: 2,
         path: null,
@@ -71,7 +69,7 @@ export default {
       if (!this.polygon.guidance) return;
       if (this.polygon.path.segments.length === 0) return;
 
-      this.polygon.path.removeSegment(this.polygon.path.segments.length - 1);
+      this.removeLastPoint();
       this.polygon.path.add(event.point);
     },
     /**
@@ -98,6 +96,8 @@ export default {
      */
     complete() {
       if (this.polygon.path == null) return false;
+      
+      this.removeLastPoint();
 
       if (this.polygon.simplify > 0) {
         let points = [];
@@ -108,10 +108,7 @@ export default {
 
         let previous = points.length;
         points = simplify(points, this.polygon.simplify, true);
-        this.$toastr.success(
-          "Polygon Tool",
-          "Reduced by " + (previous - points.length) + " points."
-        );
+
         this.polygon.path.remove();
         this.polygon.path = new paper.Path(points);
       }
@@ -123,6 +120,9 @@ export default {
       this.polygon.path.remove();
       this.polygon.path = null;
       return true;
+    },
+    removeLastPoint() {
+      this.polygon.path.removeSegment(this.polygon.path.segments.length - 1);
     }
   },
   watch: {
@@ -140,10 +140,16 @@ export default {
     "polygon.guidance"(guidance) {
       if (this.polygon.path == null) return;
 
-      if (guidance && this.polygon.path.length > 1) {
-        this.polygon.path.removeSegment(this.polygon.path.segments.length - 1);
+      if (!guidance && this.polygon.path.length > 1) {
+        this.removeLastPoint()
       }
+    },
+    "polygon.minDistance"(newDistance) {
+      this.tool.minDistance = newDistance;
     }
+  },
+  mounted() {
+    this.tool.minDistance = this.minDistance;
   }
 };
 </script>

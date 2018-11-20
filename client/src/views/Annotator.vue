@@ -35,7 +35,15 @@
           <Category v-for="(category, index) in categories" :key="category.id + '-category'" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
         </div>
       </div>
+      <hr>
+      <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
+      <div class="tool-section" style="max-height: 30%; color: lightgray">
 
+        <div v-if="$refs.polygon != null">
+          <PolygonPanel :polygon="$refs.polygon" />
+        </div>
+
+      </div>
     </aside>
 
     <div class="middle-panel" :style="{ cursor: cursor }">
@@ -65,12 +73,15 @@ import DownloadButton from "@/components/annotator/tools/DownloadButton";
 import SaveButton from "@/components/annotator/tools/SaveButton";
 import DeleteButton from "@/components/annotator/tools/DeleteButton";
 
+import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
+
 export default {
   name: "Annotator",
   components: {
     FileTitle,
     Category,
     PolygonTool,
+    PolygonPanel,
     SelectTool,
     MagicWandTool,
     EraserTool,
