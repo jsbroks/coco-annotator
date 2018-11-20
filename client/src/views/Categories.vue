@@ -28,25 +28,7 @@
           You need to create a category!
         </p>
         <div v-else>
-          <div class="row justify-content-md-center">
-            <ul class="pagination text-center">
-              <li class="page-item disabled">
-                <a class="page-link" href="#" aria-label="Previous">
-                  <span aria-hidden="true">&laquo;</span>
-                  <span class="sr-only">Previous</span>
-                </a>
-              </li>
-
-              <li class="page-item disabled"><a class="page-link" href="#">1</a></li>
-
-              <li class="page-item disabled">
-                <a class="page-link" href="#" aria-label="Next">
-                  <span aria-hidden="true">&raquo;</span>
-                  <span class="sr-only">Next</span>
-                </a>
-              </li>
-            </ul>
-          </div>
+          <Pagination :pages="pages" @pagechange="updatePage" />
 
           <div class="row">
             <CategoryCard v-for="category in categories" :key="category.id" :category="category" />
@@ -110,10 +92,11 @@
 <script>
 import axios from "axios";
 import CategoryCard from "@/components/cards/CategoryCard";
+import Pagination from "@/components/Pagination";
 
 export default {
   name: "Categories",
-  components: { CategoryCard },
+  components: { CategoryCard, Pagination },
   data() {
     return {
       categoryCount: 0,
@@ -129,12 +112,14 @@ export default {
     };
   },
   methods: {
-    updatePage: function() {
-      this.status.data.state = false;
+    updatePage(page) {
+      page = page||this.page;
+      this.page = page;
+      
       axios
         .get("/api/category/data", {
           params: {
-            page: this.page,
+            page: page,
             limit: this.limit
           }
         })
@@ -143,11 +128,9 @@ export default {
           this.page = response.data.pagination.page;
           this.pages = response.data.pagination.pages;
           this.categoryCount = response.data.pagination.total;
-
-          this.status.data.state = true;
         });
     },
-    createCategory: function() {
+    createCategory() {
       if (this.createName.length < 1) return;
 
       axios
@@ -159,7 +142,7 @@ export default {
           this.updatePage();
         });
     },
-    previousPage: function() {
+    previousPage() {
       this.page -= 1;
       if (this.page < 1) {
         this.page = 1;

@@ -26,38 +26,7 @@
         <hr>
         <p v-if="datasets.length < 1" class="text-center">You need to create a dataset!</p>
         <div v-else style="background-color: gray">
-          <div class="row justify-content-md-center">
-            <!--<ul class="pagination text-center">
-
-              <li class="page-item disabled">
-                <a 
-                  class="page-link" 
-                  href="#" 
-                  aria-label="Previous"
-                >
-                  <span aria-hidden="true">&laquo;</span>
-                  <span class="sr-only">Previous</span>
-                </a>
-              </li>
-
-              <li class="page-item disabled"><a 
-                class="page-link" 
-                href="#"
-              >1</a></li>
-
-              <li class="page-item disabled">
-                <a 
-                  class="page-link" 
-                  href="#" 
-                  aria-label="Next"
-                >
-                  <span aria-hidden="true">&raquo;</span>
-                  <span class="sr-only">Next</span>
-                </a>
-              </li>
-            </ul>-->
-          </div>
-
+          <Pagination :pages="pages" @pagechange="updatePage" />
           <div class="row bg-light">
             <DatasetCard v-for="dataset in datasets" :key="dataset.id" :dataset="dataset" :categories="categories" />
           </div>
@@ -141,13 +110,16 @@
 <script>
 import axios from "axios";
 import DatasetCard from "@/components/cards/DatasetCard";
+import Pagination from "@/components/Pagination";
 
 export default {
   name: "Datasets",
-  components: { DatasetCard },
+  components: { DatasetCard, Pagination },
   data() {
     return {
-      pages: null,
+      pages: 1,
+      limit: 4,
+      page: 1,
       create: {
         name: "",
         categories: []
@@ -158,11 +130,21 @@ export default {
     };
   },
   methods: {
-    updatePage() {
-      axios.get("/api/dataset/data").then(response => {
+    updatePage(page) {
+      page = page||this.page
+      this.page = page;
+
+      axios.get("/api/dataset/data", {
+        params: {
+          limit: this.limit,
+          page: page
+        }
+      }).then(response => {
         this.datasets = response.data.datasets;
         this.categories = response.data.categories;
         this.subdirectories = response.data.subdirectories;
+        this.pages = response.data.pagination.pages;
+        this.page = response.data.pagination.page;
       });
     },
     createDataset() {

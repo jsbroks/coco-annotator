@@ -74,6 +74,8 @@
 import paper from "paper";
 import axios from "axios";
 
+import toastrs from "@/mixins/toastrs";
+
 import FileTitle from "@/components/annotator/FileTitle";
 import Category from "@/components/annotator/Category";
 
@@ -115,6 +117,7 @@ export default {
     BrushPanel,
     EraserPanel
   },
+  mixins: [toastrs],
   props: {
     identifier: {
       type: [Number, String],
@@ -312,22 +315,31 @@ export default {
     getData(callback) {
       //this.status.data.state = false;
 
-      axios.get("/api/annotator/data/" + this.image.id).then(response => {
-        // Set image data
-        this.image.metadata = response.data.image.metadata;
-        this.image.filename = response.data.image.file_name;
-        this.image.categories = response.data.image.categories;
-        this.image.next = response.data.image.next;
-        this.image.previous = response.data.image.previous;
+      axios
+        .get("/api/annotator/data/" + this.image.id)
+        .then(response => {
+          // Set image data
+          this.image.metadata = response.data.image.metadata;
+          this.image.filename = response.data.image.file_name;
+          this.image.categories = response.data.image.categories;
+          this.image.next = response.data.image.next;
+          this.image.previous = response.data.image.previous;
 
-        // Set other data
-        this.dataset = response.data.dataset;
-        this.categories = response.data.categories;
+          // Set other data
+          this.dataset = response.data.dataset;
+          this.categories = response.data.categories;
 
-        // Update status
-        //this.status.data.state = true;
-        if (callback != null) callback();
-      });
+          // Update status
+          //this.status.data.state = true;
+          if (callback != null) callback();
+        })
+        .catch(() => {
+          this.axiosReqestError(
+            "Could not find requested image",
+            "Redirecting to previous page."
+          );
+          this.$router.go(-1);
+        });
     },
 
     onCategoryClick(indices) {
@@ -380,6 +392,7 @@ export default {
     }
   },
   beforeRouteUpdate(to, from, next) {
+    this.current.annotation = -1;
     this.image.id = parseInt(to.params.identifier);
     this.image.url = "/api/image/" + this.image.id;
     this.initCanvas();

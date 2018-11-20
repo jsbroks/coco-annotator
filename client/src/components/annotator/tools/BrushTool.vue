@@ -48,7 +48,7 @@ export default {
     onMouseMove(event) {
       this.moveBrush(event.point);
     },
-    onMouseDown(event) {
+    onMouseDown() {
       this.draw();
     },
     onMouseDrag(event) {

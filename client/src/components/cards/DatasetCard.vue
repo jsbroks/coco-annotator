@@ -5,8 +5,8 @@
     <div class="card mb-4 box-shadow">
 
       <!-- Display Image -->
-      <img @click="onImageClick" :src="imageUrl" class="card-img-top" style="width: 100%; display: block;">
-
+      <img v-if="dataset.numberImages > 0" @click="onImageClick" :src="imageUrl" class="card-img-top" style="width: 100%; display: block;">
+      <img v-else :src="noImageUrl" class="card-img-top" style="width: 100%; display: block;">
       <!-- Card Body -->
       <div class="card-body">
         <span class="d-inline-block text-truncate" style="max-width: 85%; float: left">
@@ -94,7 +94,8 @@ export default {
   data() {
     return {
       selectedCategories: [],
-      defaultMetadata: this.dataset.default_annotation_metadata
+      defaultMetadata: this.dataset.default_annotation_metadata,
+      noImageUrl: require("@/assets/no-image.png")
     };
   },
   methods: {
@@ -135,9 +136,7 @@ export default {
   },
   computed: {
     imageUrl() {
-      return this.dataset.numberImages > 0
-        ? "/api/image/" + this.dataset.first_image_id + "?width=250"
-        : "https://picsum.photos/200/200/?random";
+      return "/api/image/" + this.dataset.first_image_id + "?width=250";
     },
     listCategories() {
       let list = [];

@@ -27,10 +27,7 @@
                 -->
 
           <hr>
-          <!--<pagination 
-            :pages="pages" 
-            @pagechange="updatePage"
-          />-->
+          <Pagination :pages="pages" @pagechange="updatePage" />
           <div class="row">
             <ImageCard v-for="image in images" :key="image.id" :image="image" />
           </div>
@@ -44,10 +41,12 @@
 <script>
 import axios from "axios";
 import ImageCard from "@/components/cards/ImageCard";
+import Pagination from "@/components/Pagination";
+
 
 export default {
   name: "Dataset",
-  components: { ImageCard },
+  components: { ImageCard, Pagination },
   props: {
     identifier: {
       type: [Number, String],
@@ -57,7 +56,6 @@ export default {
   data() {
     return {
       pages: 1,
-      range: 11,
       limit: 52,
       imageCount: 0,
       images: [],

@@ -53,15 +53,12 @@ export default {
       this.moveBrush(event.point);
       this.erase();
     },
-    onMouseDown(event) {
+    onMouseDown() {
       this.erase();
     },
     erase() {
       let simplify = this.eraser.simplify < 1 ? 1 : this.eraser.simplify;
-      this.$parent.subtractCurrentAnnotation(
-        this.eraser.brush,
-        simplify
-      );
+      this.$parent.subtractCurrentAnnotation(this.eraser.brush, simplify);
     }
   },
   watch: {
