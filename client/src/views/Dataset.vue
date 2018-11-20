@@ -43,7 +43,6 @@ import axios from "axios";
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 
-
 export default {
   name: "Dataset",
   components: { ImageCard, Pagination },

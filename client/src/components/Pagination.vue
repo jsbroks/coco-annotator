@@ -61,7 +61,6 @@ export default {
   computed: {
     startPage: function() {
       if (this.range > this.pages) {
-        this.range = this.pages;
         return 0;
       }
 
@@ -75,6 +74,11 @@ export default {
       }
 
       return start;
+    }
+  },
+  created() {
+    if (this.range > this.pages) {
+      this.range = this.pages;
     }
   }
 };

@@ -113,9 +113,9 @@ export default {
   },
   methods: {
     updatePage(page) {
-      page = page||this.page;
+      page = page || this.page;
       this.page = page;
-      
+
       axios
         .get("/api/category/data", {
           params: {

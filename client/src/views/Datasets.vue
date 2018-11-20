@@ -118,7 +118,7 @@ export default {
   data() {
     return {
       pages: 1,
-      limit: 4,
+      limit: 52,
       page: 1,
       create: {
         name: "",
@@ -131,21 +131,23 @@ export default {
   },
   methods: {
     updatePage(page) {
-      page = page||this.page
+      page = page || this.page;
       this.page = page;
 
-      axios.get("/api/dataset/data", {
-        params: {
-          limit: this.limit,
-          page: page
-        }
-      }).then(response => {
-        this.datasets = response.data.datasets;
-        this.categories = response.data.categories;
-        this.subdirectories = response.data.subdirectories;
-        this.pages = response.data.pagination.pages;
-        this.page = response.data.pagination.page;
-      });
+      axios
+        .get("/api/dataset/data", {
+          params: {
+            limit: this.limit,
+            page: page
+          }
+        })
+        .then(response => {
+          this.datasets = response.data.datasets;
+          this.categories = response.data.categories;
+          this.subdirectories = response.data.subdirectories;
+          this.pages = response.data.pagination.pages;
+          this.page = response.data.pagination.page;
+        });
     },
     createDataset() {
       if (this.create.name.length < 1) return;
