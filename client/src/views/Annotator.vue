@@ -3,15 +3,23 @@
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
       <hr>
 
-      <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
+      <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="select" />
 
       <hr>
 
-      <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
-      <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" />
+      <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="polygon" />
+      <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" ref="magicwand" />
 
-      <BrushTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
-      <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" />
+      <BrushTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="brush" />
+      <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="eraser" />
+      <hr>
+
+      <CenterButton />
+
+      <hr>
+      <DownloadButton :image="image" />
+      <SaveButton />
+      <DeleteButton :image="image" />
 
     </aside>
 
@@ -51,6 +59,12 @@ import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 
+import CenterButton from "@/components/annotator/tools/CenterButton";
+
+import DownloadButton from "@/components/annotator/tools/DownloadButton";
+import SaveButton from "@/components/annotator/tools/SaveButton";
+import DeleteButton from "@/components/annotator/tools/DeleteButton";
+
 export default {
   name: "Annotator",
   components: {
@@ -60,7 +74,11 @@ export default {
     SelectTool,
     MagicWandTool,
     EraserTool,
-    BrushTool
+    BrushTool,
+    DownloadButton,
+    SaveButton,
+    DeleteButton,
+    CenterButton
   },
   props: {
     identifier: {
@@ -116,6 +134,39 @@ export default {
     };
   },
   methods: {
+    save(callback) {
+      let refs = this.$refs;
+
+      let data = {
+        user: {},
+        image: {
+          id: this.image.id,
+          metadata: this.image.metadata,
+          settings: {
+            selectedLayers: this.current
+          }
+        },
+        settings: {
+          activeTool: this.activeTool,
+          zoom: this.zoom,
+          tools: {}
+        },
+        categories: []
+      };
+      if (refs.category != null) {
+        refs.category.forEach(category => {
+          data.categories.push(category.export());
+        });
+      }
+
+      axios
+        .post("/api/annotator/data", JSON.stringify(data))
+        .then(() => {
+          if (callback != null) callback();
+        })
+        .catch(() => {});
+    },
+
     onwheel(e) {
       let view = this.paper.view;
 

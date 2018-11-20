@@ -1,7 +1,7 @@
 <script>
 import paper from "paper";
 import simplify from "simplify-js";
-import tool from "@/mixins/tool";
+import tool from "@/mixins/toolBar/tool";
 
 export default {
   name: "PolygonTool",

@@ -1,6 +1,6 @@
 <script>
 import paper from "paper";
-import tool from "@/mixins/tool";
+import tool from "@/mixins/toolBar/tool";
 
 export default {
   name: "EraserTool",

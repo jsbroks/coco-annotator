@@ -154,13 +154,6 @@ export default {
      * Event Handler for category click
      */
     onClick() {
-      // let options = {
-      //   progressBar: true,
-      //   preventDuplicates: true,
-      //   positionClass: "toast-bottom-left"
-      // };
-      // this.$toastr.success("Message", "Terst", options);
-
       if (this.category.annotations.length === 0) return;
       this.showAnnotations = !this.showAnnotations;
 

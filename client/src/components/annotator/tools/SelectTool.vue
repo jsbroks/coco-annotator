@@ -1,6 +1,6 @@
 <script>
 import paper from "paper";
-import tool from "@/mixins/tool";
+import tool from "@/mixins/toolBar/tool";
 
 export default {
   name: "SelectTool",
@@ -17,7 +17,6 @@ export default {
       name: "Select",
       cursor: "pointer",
       movePath: false,
-      segmentFound: false,
       segment: null,
       scaleFactor: 15,
       hover: {
@@ -93,6 +92,35 @@ export default {
       this.hover.box.position = position.add(this.hover.shift, 0);
       this.hover.text.position = position.add(this.hover.shift, 0);
       this.hover.text.bringToFront();
+    },
+    onMouseDown(event) {
+      let hitResult = this.$parent.paper.project.hitTest(
+        event.point,
+        this.hitResult
+      );
+
+      if (!hitResult) return;
+
+      if (event.modifiers.shift) {
+        if (hitResult.type === "segment") {
+          hitResult.segment.remove();
+        }
+        return;
+      }
+
+      this.path = hitResult.item;
+
+      if (hitResult.type === "segment") {
+        this.segment = hitResult.segment;
+      } else if (hitResult.type === "stroke") {
+        let location = hitResult.location;
+        this.segment = this.path.insert(location.index + 1, event.point);
+      }
+    },
+    onMouseDrag(event) {
+      if (this.segment) {
+        this.segment.point = event.point;
+      }
     },
     onMouseMove(event) {
       this.$parent.paper.project.activeLayer.selected = false;
