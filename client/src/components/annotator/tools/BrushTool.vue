@@ -19,7 +19,6 @@ export default {
       scaleFactor: 3,
       brush: {
         path: null,
-        minimumArea: 10,
         simplify: 5,
         pathOptions: {
           strokeColor: "white",
@@ -36,28 +35,39 @@ export default {
       this.brush.path.bringToFront();
       this.brush.path.position = point;
     },
-    createBrush() {
+    createBrush(center) {
+      center = center || new paper.Point(0, 0);
+
       this.brush.path = new paper.Path.Circle({
         strokeColor: this.brush.pathOptions.strokeColor,
         strokeWidth: this.brush.pathOptions.strokeWidth,
-        radius: this.brush.pathOptions.radius
+        radius: this.brush.pathOptions.radius,
+        center: center
       });
     },
     onMouseMove(event) {
       this.moveBrush(event.point);
     },
+    onMouseDown(event) {
+      this.draw();
+    },
     onMouseDrag(event) {
       this.moveBrush(event.point);
-      this.erase();
+      this.draw();
     },
-    erase() {
-      this.$parent.uniteCurrentAnnotation(this.brush.path, this.brush.simplify);
+    draw() {
+      let simplify = this.brush.simplify < 1 ? 1 : this.brush.simplify;
+      this.$parent.uniteCurrentAnnotation(this.brush.path, simplify);
     }
   },
   watch: {
     "brush.pathOptions.radius"() {
-      this.eraser.brush.remove();
-      this.createBrush();
+      let position = this.brush.path.position;
+      this.brush.path.remove();
+      this.createBrush(position);
+    },
+    "brush.pathOptions.strokeColor"(newColor) {
+      this.brush.path.strokeColor = newColor;
     },
     isActive(active) {
       if (this.brush.path != null) {

@@ -36,11 +36,14 @@ export default {
       this.eraser.brush.bringToFront();
       this.eraser.brush.position = point;
     },
-    createBrush() {
+    createBrush(center) {
+      center = center || new paper.Point(0, 0);
+
       this.eraser.brush = new paper.Path.Circle({
         strokeColor: this.eraser.pathOptions.strokeColor,
         strokeWidth: this.eraser.pathOptions.strokeWidth,
-        radius: this.eraser.pathOptions.radius
+        radius: this.eraser.pathOptions.radius,
+        center: center
       });
     },
     onMouseMove(event) {
@@ -50,17 +53,25 @@ export default {
       this.moveBrush(event.point);
       this.erase();
     },
+    onMouseDown(event) {
+      this.erase();
+    },
     erase() {
+      let simplify = this.eraser.simplify < 1 ? 1 : this.eraser.simplify;
       this.$parent.subtractCurrentAnnotation(
         this.eraser.brush,
-        this.eraser.simplify
+        simplify
       );
     }
   },
   watch: {
     "eraser.pathOptions.radius"() {
+      let position = this.eraser.brush.position;
       this.eraser.brush.remove();
-      this.createBrush();
+      this.createBrush(position);
+    },
+    "eraser.pathOptions.strokeColor"(newColor) {
+      this.eraser.brush.strokeColor = newColor;
     },
     isActive(active) {
       if (this.eraser.brush != null) {

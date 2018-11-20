@@ -96,7 +96,7 @@ export default {
      */
     complete() {
       if (this.polygon.path == null) return false;
-      
+
       this.removeLastPoint();
 
       if (this.polygon.simplify > 0) {
@@ -106,7 +106,6 @@ export default {
           points.push({ x: seg.point.x, y: seg.point.y });
         });
 
-        let previous = points.length;
         points = simplify(points, this.polygon.simplify, true);
 
         this.polygon.path.remove();
@@ -141,7 +140,7 @@ export default {
       if (this.polygon.path == null) return;
 
       if (!guidance && this.polygon.path.length > 1) {
-        this.removeLastPoint()
+        this.removeLastPoint();
       }
     },
     "polygon.minDistance"(newDistance) {

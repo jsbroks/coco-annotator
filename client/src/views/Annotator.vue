@@ -43,6 +43,22 @@
           <PolygonPanel :polygon="$refs.polygon" />
         </div>
 
+        <div v-if="$refs.select != null">
+          <SelectPanel :select="$refs.select" />
+        </div>
+
+        <div v-if="$refs.magicwand != null">
+          <MagicWandPanel :magicwand="$refs.magicwand" />
+        </div>
+
+        <div v-if="$refs.brush != null">
+          <BrushPanel :brush="$refs.brush" />
+        </div>
+
+        <div v-if="$refs.eraser != null">
+          <EraserPanel :eraser="$refs.eraser" />
+        </div>
+
       </div>
     </aside>
 
@@ -74,6 +90,10 @@ import SaveButton from "@/components/annotator/tools/SaveButton";
 import DeleteButton from "@/components/annotator/tools/DeleteButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
+import SelectPanel from "@/components/annotator/panels/SelectPanel";
+import MagicWandPanel from "@/components/annotator/panels/MagicWandPanel";
+import BrushPanel from "@/components/annotator/panels/BrushPanel";
+import EraserPanel from "@/components/annotator/panels/EraserPanel";
 
 export default {
   name: "Annotator",
@@ -89,7 +109,11 @@ export default {
     DownloadButton,
     SaveButton,
     DeleteButton,
-    CenterButton
+    CenterButton,
+    SelectPanel,
+    MagicWandPanel,
+    BrushPanel,
+    EraserPanel
   },
   props: {
     identifier: {
