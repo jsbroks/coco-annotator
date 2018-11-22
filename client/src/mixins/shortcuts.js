@@ -8,6 +8,26 @@ export default {
     annotator() {
       return [
         {
+          default: ["arrowup"],
+          function: this.moveUp,
+          name: "Move Up Annotaitons"
+        },
+        {
+          default: ["arrowdown"],
+          function: this.moveDown,
+          name: "Move Down Annotations"
+        },
+        {
+          default: ["arrowright"],
+          function: this.stepIn,
+          name: "Expand Category"
+        },
+        {
+          default: ["arrowleft"],
+          function: this.stepOut,
+          name: "Collapse Category"
+        },
+        {
           default: ["s"],
           name: "Select Tool",
           function: () => {

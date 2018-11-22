@@ -349,7 +349,7 @@ export default {
       return this.$refs.category[index];
     },
     // Current Annotation Operations
-    uniteCurrentAnnotation(compound, flatten) {
+    uniteCurrentAnnotation(compound, simplify) {
       let category = this.current.category;
       let annotation = this.current.annotation;
 
@@ -358,9 +358,9 @@ export default {
 
       this.getCategory(category)
         .getAnnotation(annotation)
-        .unite(compound, flatten);
+        .unite(compound, simplify);
     },
-    subtractCurrentAnnotation(compound, flatten) {
+    subtractCurrentAnnotation(compound, simplify) {
       let category = this.current.category;
       let annotation = this.current.annotation;
 
@@ -369,11 +369,114 @@ export default {
 
       this.getCategory(category)
         .getAnnotation(annotation)
-        .subtract(compound, flatten);
+        .subtract(compound, simplify);
     },
 
     setCursor(newCursor) {
       this.cursor = newCursor;
+    },
+
+    moveUp() {
+      if (this.currentCategory != null) {
+        if (this.currentAnnotation != null) {
+          // If at end of annotations, go to pervious category
+          if (this.current.annotation === 0) {
+            this.current.annotation = -1;
+            this.current.category -= 1;
+          } else {
+            // otherwise go to pervious annotation
+            this.current.annotation -= 1;
+          }
+        } else {
+          this.current.category -= 1;
+          // If at a category which has annotations showing, go though annotations
+          let numOfAnnotations = this.currentCategory.category.annotations
+            .length;
+          if (this.currentCategory.showAnnotations) {
+            this.current.annotation = numOfAnnotations - 1;
+          }
+        }
+      } else {
+        this.current.category -= 1;
+      }
+    },
+    moveDown() {
+      if (this.currentCategory != null) {
+        let numOfAnnotaitons = this.currentCategory.category.annotations.length;
+
+        if (this.currentAnnotation != null) {
+          // If at end of annotations, go to next category
+          if (numOfAnnotaitons - 1 === this.current.annotation) {
+            this.current.annotation = -1;
+            this.current.category += 1;
+          } else {
+            // otherwise go to next annotation
+            this.current.annotation += 1;
+          }
+        } else {
+          // If at a category which has annotations showing, go though annotations
+          if (this.currentCategory.showAnnotations) {
+            this.current.annotation += 1;
+          } else {
+            this.current.category += 1;
+          }
+        }
+      } else {
+        this.current.category += 1;
+      }
+    },
+    stepIn() {
+      if (this.currentCategory != null) {
+        let numOfAnnotaitons = this.currentCategory.category.annotations.length;
+
+        if (!this.currentCategory.isVisible) {
+          this.currentCategory.isVisible = true;
+        } else if (
+          !this.currentCategory.showAnnotations &&
+          numOfAnnotaitons > 0
+        ) {
+          this.currentCategory.showAnnotations = true;
+        }
+      }
+    },
+    stepOut() {
+      if (this.currentCategory != null) {
+        if (this.currentCategory.showAnnotations) {
+          this.currentCategory.showAnnotations = false;
+          this.current.annotation = -1;
+        } else if (this.currentCategory.isVisible) {
+          this.currentCategory.isVisible = false;
+        }
+      }
+    }
+  },
+  watch: {
+    "current.category"() {
+      if (this.current.category < this.dataset.categories.length) return;
+
+      this.current.category = -1;
+    },
+    "current.annotaiton"() {
+      if (this.currentCategory == null) {
+        this.current.annotaiton = -1;
+        return;
+      }
+      if (
+        this.current.annotaiton <
+        this.currentCategory.category.annotations.length
+      )
+        return;
+
+      this.current.annotation = -1;
+    }
+  },
+  computed: {
+    currentCategory() {
+      return this.getCategory(this.current.category);
+    },
+    currentAnnotation() {
+      if (this.currentCategory == null) return null;
+      return this.currentCategory.getAnnotation(this.current.annotation);
     }
   },
   beforeRouteUpdate(to, from, next) {

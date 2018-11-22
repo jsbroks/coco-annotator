@@ -20,7 +20,7 @@ export default {
       eraser: {
         brush: null,
         minimumArea: 10,
-        simplify: 20,
+        simplify: 5,
         pathOptions: {
           strokeColor: "white",
           strokeWidth: 1,

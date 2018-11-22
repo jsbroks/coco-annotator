@@ -2,7 +2,7 @@
   <div class="card" :style="{ 'background-color': backgroundColor }">
 
     <div class="card-header" :id="'heading' + category.id">
-      <div :style="{ color: isVisible ? 'white' : 'gray' }">
+      <div :style="{ color: isVisible ? 'white' : 'gray', backgroundColor: isCurrent ? 'rgba(255, 255, 255, 0.05)' : 'inherit' }">
         <div @click="onEyeClick">
           <i v-if="isVisible" class="fa fa-eye category-icon" :style="{ color: showAnnotations ? 'white' : color }" aria-hidden="true" />
           <i v-else class="fa fa-eye-slash category-icon" aria-hidden="true" />
