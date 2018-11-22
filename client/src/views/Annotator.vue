@@ -17,8 +17,12 @@
       <CenterButton />
 
       <hr>
+
       <DownloadButton :image="image" />
       <SaveButton />
+      <SettingsButton :metadata="image.metadata" :commands="commands" ref="settings" />
+
+      <hr>
       <DeleteButton :image="image" />
 
     </aside>
@@ -75,6 +79,7 @@ import paper from "paper";
 import axios from "axios";
 
 import toastrs from "@/mixins/toastrs";
+import shortcuts from "@/mixins/shortcuts";
 
 import FileTitle from "@/components/annotator/FileTitle";
 import Category from "@/components/annotator/Category";
@@ -89,6 +94,7 @@ import CenterButton from "@/components/annotator/tools/CenterButton";
 
 import DownloadButton from "@/components/annotator/tools/DownloadButton";
 import SaveButton from "@/components/annotator/tools/SaveButton";
+import SettingsButton from "@/components/annotator/tools/SettingsButton";
 import DeleteButton from "@/components/annotator/tools/DeleteButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
@@ -110,6 +116,7 @@ export default {
     BrushTool,
     DownloadButton,
     SaveButton,
+    SettingsButton,
     DeleteButton,
     CenterButton,
     SelectPanel,
@@ -117,7 +124,7 @@ export default {
     BrushPanel,
     EraserPanel
   },
-  mixins: [toastrs],
+  mixins: [toastrs, shortcuts],
   props: {
     identifier: {
       type: [Number, String],
@@ -154,6 +161,7 @@ export default {
       image: {
         raster: {},
         scale: 0,
+        metadata: {},
         ratio: 0,
         rotate: 0,
         id: null,
@@ -164,11 +172,7 @@ export default {
         filename: ""
       },
       categories: [],
-      dataset: {},
-      keys: {
-        ctrl: false,
-        shift: false
-      }
+      dataset: {}
     };
   },
   methods: {
@@ -176,10 +180,12 @@ export default {
       let refs = this.$refs;
 
       let data = {
-        user: {},
+        user: {
+          keyboardShortcuts: []
+        },
         image: {
           id: this.image.id,
-          metadata: this.image.metadata,
+          metadata: this.$refs.settings.exportMetadata(),
           settings: {
             selectedLayers: this.current
           }
@@ -191,6 +197,7 @@ export default {
         },
         categories: []
       };
+
       if (refs.category != null) {
         refs.category.forEach(category => {
           data.categories.push(category.export());
@@ -260,27 +267,6 @@ export default {
       return { zoom: zoom, offset: a };
     },
 
-    onkeydown(e) {
-      //let activeTool = this.activeTool;
-
-      let key = e.key.toLowerCase();
-
-      if (key === "control") this.keys.ctrl = true;
-      if (key === "shift") this.keys.shift = true;
-
-      // Action shortcuts
-      if (key === "r" && this.keys.ctrl) location.reload();
-    },
-    onkeyup(e) {
-      let key = e.key.toLowerCase();
-
-      if (key === "control") this.keys.ctrl = false;
-      if (key === "shift") this.keys.shift = false;
-
-      e.preventDefault();
-      return false;
-    },
-
     initCanvas() {
       let canvas = document.getElementById("editor");
 
@@ -321,7 +307,6 @@ export default {
           // Set image data
           this.image.metadata = response.data.image.metadata;
           this.image.filename = response.data.image.file_name;
-          this.image.categories = response.data.image.categories;
           this.image.next = response.data.image.next;
           this.image.previous = response.data.image.previous;
 
@@ -402,12 +387,6 @@ export default {
   },
   mounted() {
     this.initCanvas();
-
-    window.addEventListener("keyup", (this.onKeyup = this.onkeyup.bind(this)));
-    window.addEventListener(
-      "keydown",
-      (this.onKeydown = this.onkeydown.bind(this))
-    );
   },
   created() {
     this.paper = new paper.PaperScope();
@@ -418,8 +397,6 @@ export default {
     this.getData();
   },
   destroyed() {
-    window.removeEventListener("keydown", this.onKeydown);
-    window.removeEventListener("keydup", this.onKeyup);
     clearInterval(this.autoSave);
   }
 };

@@ -58,15 +58,27 @@ export default {
     draw() {
       let simplify = this.brush.simplify < 1 ? 1 : this.brush.simplify;
       this.$parent.uniteCurrentAnnotation(this.brush.path, simplify);
+    },
+    decreaseRadius() {
+      if (!this.isActive) return;
+      this.brush.pathOptions.radius -= 2;
+    },
+    increaseRadius() {
+      if (!this.isActive) return;
+      this.brush.pathOptions.radius += 2;
     }
   },
   watch: {
     "brush.pathOptions.radius"() {
+      if (this.brush.path == null) return;
+
       let position = this.brush.path.position;
       this.brush.path.remove();
       this.createBrush(position);
     },
     "brush.pathOptions.strokeColor"(newColor) {
+      if (this.brush.path == null) return;
+
       this.brush.path.strokeColor = newColor;
     },
     isActive(active) {

@@ -59,15 +59,27 @@ export default {
     erase() {
       let simplify = this.eraser.simplify < 1 ? 1 : this.eraser.simplify;
       this.$parent.subtractCurrentAnnotation(this.eraser.brush, simplify);
+    },
+    decreaseRadius() {
+      if (!this.isActive) return;
+      this.eraser.pathOptions.radius -= 2;
+    },
+    increaseRadius() {
+      if (!this.isActive) return;
+      this.eraser.pathOptions.radius += 2;
     }
   },
   watch: {
     "eraser.pathOptions.radius"() {
+      if (this.eraser.brush == null) return;
+
       let position = this.eraser.brush.position;
       this.eraser.brush.remove();
       this.createBrush(position);
     },
     "eraser.pathOptions.strokeColor"(newColor) {
+      if (this.eraser.brush == null) return;
+
       this.eraser.brush.strokeColor = newColor;
     },
     isActive(active) {

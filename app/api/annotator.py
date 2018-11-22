@@ -19,15 +19,18 @@ class AnnotatorData(Resource):
         Called when saving data from the annotator client
         """
         data = request.get_json(force=True)
-        image_id = data.get('image').get('id')
+        image = data.get('image')
+        image_id = image.get('id')
 
-        image = ImageModel.objects(id=image_id).first()
+        image_model = ImageModel.objects(id=image_id).first()
 
-        if image is None:
+        if image_model is None:
             return {'message': 'image does not exist'}, 400
 
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
+
+        image_model.update(set__metadata=image.get('metadata', {}))
 
         # Iterate every category passed in the data
         for category in data.get('categories', []):

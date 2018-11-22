@@ -2,7 +2,7 @@
   <div>
     <i class="fa fa-plus" style="float: right; margin: 0 4px; color: green" @click="createMetadata" />
 
-    <p style="margin: 0">{{ this.title }}</p>
+    <p style="margin: 0">{{ title }}</p>
 
     <div class="row">
       <div class="col-sm">
@@ -15,7 +15,7 @@
 
     <ul class="list-group" style="height: 50%;">
       <li v-if="metadataList.length == 0" class="list-group-item meta-item">
-        <i>No items in metadata.</i>
+        <i class="subtitle">No items in metadata.</i>
       </li>
       <li v-for="(object, index) in metadataList" :key="index" class="list-group-item meta-item">
         <div class="row" style="cell">
@@ -80,21 +80,29 @@ export default {
     },
     createMetadata() {
       this.metadataList.push({ key: "", value: "" });
+    },
+    loadMetadata() {
+      if (this.metadata != null) {
+        for (var key in this.metadata) {
+          if (!this.metadata.hasOwnProperty(key)) continue;
+
+          let value = this.metadata[key];
+
+          if (value == null) value = "";
+          else value = value.toString();
+
+          this.metadataList.push({ key: key, value: value });
+        }
+      }
+    }
+  },
+  watch: {
+    metadata() {
+      this.loadMetadata();
     }
   },
   created() {
-    if (this.metadata != null) {
-      for (var key in this.metadata) {
-        if (!this.metadata.hasOwnProperty(key)) continue;
-
-        let value = this.metadata[key];
-
-        if (value == null) value = "";
-        else value = value.toString();
-
-        this.metadataList.push({ key: key, value: value });
-      }
-    }
+    this.loadMetadata();
   }
 };
 </script>
