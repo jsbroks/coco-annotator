@@ -61,7 +61,7 @@
 
               <div class="form-group" required>
                 <label>Folder Directory</label>
-                <input class="form-control" disabled :placeholder="create.directory">
+                <input class="form-control" disabled :value="directory">
               </div>
             </form>
           </div>
@@ -109,12 +109,16 @@
 
 <script>
 import axios from "axios";
+
+import toastrs from "@/mixins/toastrs";
+
 import DatasetCard from "@/components/cards/DatasetCard";
 import Pagination from "@/components/Pagination";
 
 export default {
   name: "Datasets",
   components: { DatasetCard, Pagination },
+  mixins: [toastrs],
   data() {
     return {
       pages: 1,
@@ -165,7 +169,19 @@ export default {
           this.create.name = "";
           this.create.categories = [];
           this.updatePage();
+        })
+        .catch(error => {
+          this.axiosReqestError(
+            "Creating Dataset",
+            error.response.data.message
+          );
         });
+    }
+  },
+  computed: {
+    directory() {
+      let closing = this.create.name.length > 0 ? "/" : "";
+      return "/datasets/" + this.create.name + closing;
     }
   },
   created() {

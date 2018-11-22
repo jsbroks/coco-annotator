@@ -40,12 +40,16 @@
 
 <script>
 import axios from "axios";
+
+import toastrs from "@/mixins/toastrs";
+
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 
 export default {
   name: "Dataset",
   components: { ImageCard, Pagination },
+  mixins: [toastrs],
   props: {
     identifier: {
       type: [Number, String],
@@ -88,6 +92,9 @@ export default {
           this.subdirectories = response.data.subdirectories;
 
           this.status.data.state = true;
+        })
+        .catch(error => {
+          this.axiosReqestError("Loading Dataset", error.response.data.message);
         });
     }
   },

@@ -215,11 +215,11 @@ export default {
     onwheel(e) {
       let view = this.paper.view;
 
-      if (this.keys.ctrl) {
+      if (e.ctrlKey) {
         // Pan up and down
         let delta = new paper.Point(0, 0.5 * e.deltaY);
         this.paper.view.setCenter(view.center.add(delta));
-      } else if (this.keys.shift) {
+      } else if (e.shiftKey) {
         // Pan left and right
         let delta = new paper.Point(0.5 * e.deltaY, 0);
         this.paper.view.setCenter(view.center.add(delta));

@@ -1,6 +1,8 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
+from mongoengine.errors import NotUniqueError
+
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
 from ..models import *
@@ -52,8 +54,11 @@ class Dataset(Resource):
         name = args['name']
         categories = args.get('categories', [])
 
-        dataset = DatasetModel(name=name, categories=categories)
-        dataset.save()
+        try:
+            dataset = DatasetModel(name=name, categories=categories)
+            dataset.save()
+        except NotUniqueError:
+            return {'message': 'Dataset already exists. Check the undo tab to fully delete the dataset.'}, 400
 
         return query_util.fix_ids(dataset)
 
@@ -163,7 +168,7 @@ class DatasetDataId(Resource):
         # Get directory
         directory = os.path.join(dataset.directory, folder)
         if not os.path.exists(directory):
-            return {'message': 'directory does not exist'}, 400
+            return {'message': 'Directory does not exist.'}, 400
 
         images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False)\
             .only('id', 'file_name')

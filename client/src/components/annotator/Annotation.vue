@@ -165,6 +165,8 @@ export default {
       return this.compoundPath;
     },
     unite(compound, flatten) {
+      if (this.compoundPath == null) this.createCompoundPath();
+
       flatten = flatten || 0;
       let newCompound = this.compoundPath.unite(compound);
       this.compoundPath.remove();
@@ -172,6 +174,8 @@ export default {
       this.compoundPath.flatten(flatten);
     },
     subtract(compound, flatten) {
+      if (this.compoundPath == null) this.createCompoundPath();
+
       flatten = flatten || 0;
       let newCompound = this.compoundPath.subtract(compound);
       this.compoundPath.remove();
