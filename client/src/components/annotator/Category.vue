@@ -1,8 +1,8 @@
 <template>
-  <div class="card" :style="{ 'background-color': backgroundColor }">
+  <div class="card" :style="{ 'background-color': backgroundColor, 'border-color': borderColor }">
 
     <div class="card-header" :id="'heading' + category.id">
-      <div :style="{ color: isVisible ? 'white' : 'gray', backgroundColor: isCurrent ? 'rgba(255, 255, 255, 0.05)' : 'inherit' }">
+      <div :style="{ color: isVisible ? 'white' : 'gray' }">
         <div @click="onEyeClick">
           <i v-if="isVisible" class="fa fa-eye category-icon" :style="{ color: showAnnotations ? 'white' : color }" aria-hidden="true" />
           <i v-else class="fa fa-eye-slash category-icon" aria-hidden="true" />
@@ -171,13 +171,17 @@ export default {
      * Creates paperjs group
      */
     initCategory() {
-      if (this.group === null) {
-        this.group = new paper.Group();
-        this.group.opacity = this.opacity;
-        this.group.visible = this.isVisible;
-        this.group.data.categoryId = this.index;
-        this.group.clipMask = false;
+      if (this.group !== null) {
+        this.group.remove();
+        this.group == null;
       }
+      this.group = new paper.Group();
+      this.group.opacity = this.opacity;
+      this.group.visible = this.isVisible;
+      this.group.data.categoryId = this.index;
+      this.group.clipMask = false;
+
+      this.setColor();
     },
     /**
      * @returns {Annotation} returns annotation and provided index
@@ -223,11 +227,19 @@ export default {
     isHover() {
       return this.hover.category === this.index;
     },
+
     backgroundColor() {
-      if (this.isHover && !this.isCurrent) {
+      if (this.isHover && !this.showAnnotations) {
         return "#646c82";
       }
       return "inherit";
+    },
+    borderColor() {
+      if (this.isCurrent) {
+        return "rgba(255, 255, 255, 0.25)";
+      }
+
+      return "#404552";
     }
   },
   watch: {
@@ -246,12 +258,8 @@ export default {
     showAnnotations() {
       this.setColor();
     },
-    group(newGroup) {
-      if (newGroup != null) {
-        if (this.$refs.annotation != null) {
-          this.$refs.annotation.forEach(child => child.initAnnotation());
-        }
-      }
+    category() {
+      this.initCategory();
     }
   },
   mounted() {

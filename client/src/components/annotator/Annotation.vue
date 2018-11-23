@@ -95,6 +95,11 @@ export default {
   },
   methods: {
     initAnnotation() {
+      if (this.compoundPath != null) {
+        this.compoundPath.remove();
+        this.compoundPath = null;
+      }
+
       this.createCompoundPath(
         this.annotation.paper_object,
         this.annotation.segmentation
@@ -125,7 +130,7 @@ export default {
 
       if (json != null) {
         // Import data directroy from paperjs object
-        this.compoundPath.importJSON(this.annotation.paper_object);
+        this.compoundPath.importJSON(json);
       } else if (segments != null) {
         // Load segments input compound path
         let center = new paper.Point(
@@ -145,7 +150,9 @@ export default {
           this.compoundPath.addChild(path);
         }
       }
+
       this.compoundPath.data.annotationId = this.index;
+      this.setColor();
     },
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
@@ -184,6 +191,11 @@ export default {
     },
     setColor() {
       if (this.compoundPath == null) return;
+
+      if (!this.$parent.showAnnotations) {
+        this.$parent.setColor();
+        return;
+      }
 
       this.compoundPath.fillColor = this.color;
       let h = Math.round(this.compoundPath.fillColor.hue);
@@ -227,6 +239,9 @@ export default {
       this.$parent.group.addChild(this.compoundPath);
       this.setColor();
       this.isEmpty = this.compoundPath.isEmpty();
+    },
+    annotation() {
+      this.initAnnotation();
     }
   },
   computed: {
@@ -241,12 +256,15 @@ export default {
       return this.index === this.hover;
     },
     backgroundColor() {
-      if (this.isHover) return "#646c82";
+      if (this.isHover && this.$parent.isHover) return "#646c82";
 
       if (this.isCurrent) return "#4b624c";
 
       return "inherit";
     }
+  },
+  mounted() {
+    this.initAnnotation();
   }
 };
 </script>

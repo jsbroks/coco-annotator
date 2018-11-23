@@ -149,12 +149,6 @@ export default {
         annotation: -1
       },
       hover: {
-        showText: true,
-        text: null,
-        box: null,
-        textShift: 0,
-        fontSize: 0,
-        shift: 0,
         category: -1,
         annotation: -1
       },
@@ -390,9 +384,12 @@ export default {
         } else {
           this.current.category -= 1;
           // If at a category which has annotations showing, go though annotations
-          let numOfAnnotations = this.currentCategory.category.annotations
-            .length;
-          if (this.currentCategory.showAnnotations) {
+          if (
+            this.currentCategory.showAnnotations &&
+            this.currentCategory != null
+          ) {
+            let numOfAnnotations = this.currentCategory.category.annotations
+              .length;
             this.current.annotation = numOfAnnotations - 1;
           }
         }
@@ -567,45 +564,6 @@ export default {
   background-color: #383c4a;
   padding: 0 5px 5px 5px;
   overflow: auto;
-}
-
-.tool-input-group {
-  padding-top: 4px;
-}
-
-.tool-input-button {
-  height: 20px;
-  border-color: #4b5162;
-  padding: 0 0 0 11px;
-  font-size: 12px;
-  width: 100%;
-}
-
-.tool-input-button:hover {
-  border-color: lightgray;
-  background-color: white;
-}
-
-.tool-option-pre {
-  background-color: #383c4a;
-  height: 20px;
-}
-
-.tool-option-font {
-  border-color: #4b5162;
-  background-color: #383c4a;
-  color: white;
-  font-size: 12px;
-}
-
-.tool-option-input {
-  border-color: #4b5162;
-  color: white;
-  padding: 0 0 0 3px;
-  background-color: #383c4a;
-  height: 20px;
-  font-size: 12px;
-  width: 100%;
 }
 
 /* Categories/Annotations section */

@@ -123,6 +123,9 @@ export default {
       }
     },
     onMouseMove(event) {
+      this.$parent.hover.annotation = -1;
+      this.$parent.hover.category = -1;
+
       this.$parent.paper.project.activeLayer.selected = false;
       if (
         event.item &&
@@ -131,6 +134,7 @@ export default {
         event.item.hasChildren()
       ) {
         let item = event.item;
+        this.$parent.hover.category = item.data.categoryId;
         this.hover.category = this.$parent.getCategory(item.data.categoryId);
 
         for (let i = 0; i < item.children.length; i++) {
@@ -141,6 +145,8 @@ export default {
             child.data.hasOwnProperty("annotationId")
           ) {
             this.hover.position = event.point;
+            this.$parent.hover.annotation = child.data.annotationId;
+
             this.hover.annotation = this.hover.category.getAnnotation(
               child.data.annotationId
             );
