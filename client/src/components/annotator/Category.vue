@@ -366,4 +366,25 @@ export default {
   text-align: center;
   border-radius: 4px;
 }
+
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color: lightgray;
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color: lightgray;
+   opacity:  1;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color: lightgray;
+   opacity:  1;
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color: lightgray;
+}
+::-ms-input-placeholder { /* Microsoft Edge */
+   color: lightgray;
+}
+::placeholder { /* Most modern browsers support this now. */
+   color: lightgray;
+}
 </style>
