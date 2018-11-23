@@ -13,6 +13,7 @@ export default {
   },
   data() {
     return {
+      name: "Download COCO",
       icon: "fa-download",
       include: {
         image: true,

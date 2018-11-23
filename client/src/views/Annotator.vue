@@ -331,7 +331,7 @@ export default {
         this.current = indices;
       }
     },
-    getCategory: function(index) {
+    getCategory(index) {
       if (index == null) return null;
       if (index < 0) return null;
 
@@ -371,6 +371,11 @@ export default {
     },
 
     moveUp() {
+      if (this.current.category == -1) {
+        this.current.category = this.categories.length -1;
+        return;
+      }
+
       if (this.currentCategory != null) {
         if (this.currentAnnotation != null) {
           // If at end of annotations, go to pervious category
@@ -385,8 +390,8 @@ export default {
           this.current.category -= 1;
           // If at a category which has annotations showing, go though annotations
           if (
-            this.currentCategory.showAnnotations &&
-            this.currentCategory != null
+            this.currentCategory != null &&
+            this.currentCategory.showAnnotations
           ) {
             let numOfAnnotations = this.currentCategory.category.annotations
               .length;
@@ -445,30 +450,39 @@ export default {
           this.currentCategory.isVisible = false;
         }
       }
+    },
+    scrollElement(element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
     }
   },
   watch: {
-    "current.category"() {
-      if (this.current.category < this.dataset.categories.length) return;
-
-      this.current.category = -1;
-    },
-    "current.annotaiton"() {
-      if (this.currentCategory == null) {
-        this.current.annotaiton = -1;
-        return;
+    "currentCategory"() {
+      if (this.currentCategory != null) {
+        if (this.currentAnnotation == null || !this.currentCategory.showAnnotations) {     
+          let element = this.currentCategory.$el;
+          this.scrollElement(element);
+        }
       }
-      if (
-        this.current.annotaiton <
-        this.currentCategory.category.annotations.length
-      )
-        return;
-
-      this.current.annotation = -1;
+    },
+    "currentAnnotation"() {
+      if (this.currentAnnotation != null) {
+        if (this.currentCategory.showAnnotations) { 
+          let element = this.currentAnnotation.$el;
+          this.scrollElement(element);
+        }
+      }
     }
   },
   computed: {
     currentCategory() {
+      let cc = this.current.category;
+      let ccMax = cc === -1 ? 1 : this.categories.length;
+      this.current.category = cc < -1 ? -1 : cc;
+      this.current.category = cc >= ccMax ? -1 : cc;
+
       return this.getCategory(this.current.category);
     },
     currentAnnotation() {

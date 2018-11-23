@@ -1,6 +1,6 @@
 <template>
   <div>
-    <i class="fa fa-x fa-cog" style="color: white" data-toggle="modal" data-target="#settings"></i>
+    <i v-tooltip.right="name" class="fa fa-x fa-cog" style="color: white" data-toggle="modal" data-target="#settings"></i>
 
     <br>
     <!-- Modal -->
@@ -57,6 +57,11 @@ export default {
     commands: {
       type: Array,
       required: true
+    }
+  },
+  data() {
+    return {
+      name: "Image Settings"
     }
   },
   methods: {

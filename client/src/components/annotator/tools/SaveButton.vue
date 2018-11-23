@@ -6,6 +6,7 @@ export default {
   mixins: [button],
   data() {
     return {
+      name: "Save",
       icon: "fa-save"
     };
   },

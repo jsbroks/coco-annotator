@@ -76,7 +76,7 @@ export default {
   },
   computed: {
     isDisabled() {
-      return this.$parent.currentAnnotation == null;
+      return this.$parent.current.annotation == -1;
     }
   },
   watch: {

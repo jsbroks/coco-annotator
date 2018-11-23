@@ -52,6 +52,10 @@ export default {
     valueTitle: {
       type: String,
       default: "Values"
+    },
+    exclude: {
+      type: String,
+      default: ""
     }
   },
   data() {
@@ -85,7 +89,8 @@ export default {
       if (this.metadata != null) {
         for (var key in this.metadata) {
           if (!this.metadata.hasOwnProperty(key)) continue;
-
+          if (key === this.exclude) continue;
+          
           let value = this.metadata[key];
 
           if (value == null) value = "";

@@ -1,6 +1,6 @@
 export default {
   template:
-    "<div><i class='fa fa-x' :class='icon' :style='{ color: iconColor }' @click='click'></i><br></div>",
+    "<div><i v-tooltip.right='name' class='fa fa-x' :class='icon' :style='{ color: iconColor }' @click='click'></i><br></div>",
   data() {
     return {
       icon: "",

@@ -154,18 +154,18 @@ export default {
      * Event Handler for category click
      */
     onClick() {
+      let indices = {
+        annotation: this.selectedAnnotation,
+        category: this.index
+      };
+      this.$emit("click", indices);
+
       if (this.category.annotations.length === 0) return;
       this.showAnnotations = !this.showAnnotations;
 
       if (this.showAnnotations && !this.isVisible) {
         this.isVisible = true;
       }
-
-      let indices = {
-        annotation: this.selectedAnnotation,
-        category: this.index
-      };
-      this.$emit("click", indices);
     },
     /**
      * Creates paperjs group

@@ -8,7 +8,8 @@
       </div>
 
       <a @click="onAnnotationClick" :style="{ float: 'left', width: '70%', color: isVisible ? 'white' : 'gray' }">
-        {{ index + 1 }} {{ annotation.name }}
+        <span v-if="name.length === 0">{{ index + 1 }}</span>
+        <span v-else> {{ name }} </span> {{ annotation.name }}
         <i v-if="isEmpty" style="padding-left: 5px; color: lightgray">(Empty)</i>
         <i v-else style="padding-left: 5px; color: lightgray">(id: {{ annotation.id }})</i>
       </a>
@@ -35,7 +36,15 @@
                   <input v-model="color" type="color" class="form-control">
                 </div>
               </div>
-              <Metadata :metadata="annotation.metadata" ref="metadata" />
+
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Name</label>
+                <div class="col-sm-9">
+                  <input v-model="name" class="form-control">
+                </div>
+              </div>
+
+              <Metadata :metadata="annotation.metadata" ref="metadata" exclude="name" />
             </form>
           </div>
           <div class="modal-footer">
@@ -90,11 +99,18 @@ export default {
       color: this.annotation.color,
       compoundPath: null,
       metadata: [],
-      isEmpty: true
+      isEmpty: true,
+      name: ""
     };
   },
   methods: {
     initAnnotation() {
+      let metaName = this.annotation.metadata.name;
+      if (metaName) {
+        this.name = metaName;
+        delete this.annotation.metadata["name"];
+      }
+
       if (this.compoundPath != null) {
         this.compoundPath.remove();
         this.compoundPath = null;
@@ -206,10 +222,12 @@ export default {
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
 
+      let metadata = this.$refs.metadata.export();
+      if (this.name.length > 0) metadata.name = this.name;
       let annotationData = {
         id: this.annotation.id,
         color: this.color,
-        metadata: this.$refs.metadata.export()
+        metadata: metadata
       };
 
       let json = this.compoundPath.exportJSON({

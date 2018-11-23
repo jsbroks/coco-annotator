@@ -28,6 +28,15 @@ export default {
           name: "Collapse Category"
         },
         {
+          default: ["space"],
+          name: "New Annotation",
+          function: () => {
+            if (this.currentCategory) {
+              this.currentCategory.createAnnotation();
+            }
+          }
+        },
+        {
           default: ["s"],
           name: "Select Tool",
           function: () => {
