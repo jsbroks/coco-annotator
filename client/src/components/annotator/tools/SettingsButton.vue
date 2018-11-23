@@ -62,7 +62,7 @@ export default {
   data() {
     return {
       name: "Image Settings"
-    }
+    };
   },
   methods: {
     exportMetadata() {

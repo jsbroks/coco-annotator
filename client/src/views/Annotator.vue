@@ -322,14 +322,8 @@ export default {
     },
 
     onCategoryClick(indices) {
-      if (
-        this.current.annotation === indices.annotation &&
-        this.current.category === indices.category
-      ) {
-        this.current = { category: -1, annotation: -1 };
-      } else {
-        this.current = indices;
-      }
+      this.current.annotation = indices.annotation;
+      this.current.category = indices.category;
     },
     getCategory(index) {
       if (index == null) return null;
@@ -371,31 +365,45 @@ export default {
     },
 
     moveUp() {
-      if (this.current.category == -1) {
-        this.current.category = this.categories.length -1;
+      if (this.current.category < 0) {
+        this.current.category = this.categories.length - 1;
         return;
       }
 
       if (this.currentCategory != null) {
         if (this.currentAnnotation != null) {
-          // If at end of annotations, go to pervious category
+          // If at start of annotations, go to pervious category
           if (this.current.annotation === 0) {
-            this.current.annotation = -1;
             this.current.category -= 1;
+            // Check if category is open so we can go to the bottom annotation
+            if (
+              this.currentCategory != null &&
+              this.currentCategory.showAnnotations
+            ) {
+              this.current.annotation = this.currentAnnotationLength - 1;
+            }
           } else {
             // otherwise go to pervious annotation
             this.current.annotation -= 1;
           }
         } else {
-          this.current.category -= 1;
-          // If at a category which has annotations showing, go though annotations
+          // When the new annotation is added, the currentAnnotation
+          // is null since the annotations are not instantly loaded in
           if (
-            this.currentCategory != null &&
-            this.currentCategory.showAnnotations
+            this.current.annotation != -1 &&
+            this.current.annotation < this.currentAnnotationLength
           ) {
-            let numOfAnnotations = this.currentCategory.category.annotations
-              .length;
-            this.current.annotation = numOfAnnotations - 1;
+            this.current.annotation -= 1;
+          } else {
+            this.current.category -= 1;
+
+            // Check if category is open so we can go to the bottom annotation
+            if (
+              this.currentCategory != null &&
+              this.currentCategory.showAnnotations
+            ) {
+              this.current.annotation = this.currentAnnotationLength - 1;
+            }
           }
         }
       } else {
@@ -403,6 +411,11 @@ export default {
       }
     },
     moveDown() {
+      if (this.currentCategory == null) {
+        this.current.category = 0;
+        return;
+      }
+
       if (this.currentCategory != null) {
         let numOfAnnotaitons = this.currentCategory.category.annotations.length;
 
@@ -411,16 +424,25 @@ export default {
           if (numOfAnnotaitons - 1 === this.current.annotation) {
             this.current.annotation = -1;
             this.current.category += 1;
+
+            if (
+              this.currentCategory != null &&
+              this.currentCategory.showAnnotations
+            ) {
+              this.current.annotation = 0;
+            }
           } else {
             // otherwise go to next annotation
             this.current.annotation += 1;
           }
         } else {
           // If at a category which has annotations showing, go though annotations
-          if (this.currentCategory.showAnnotations) {
-            this.current.annotation += 1;
-          } else {
-            this.current.category += 1;
+          this.current.category += 1;
+          if (
+            this.currentCategory != null &&
+            this.currentCategory.showAnnotations
+          ) {
+            this.current.annotation = 0;
           }
         }
       } else {
@@ -429,15 +451,14 @@ export default {
     },
     stepIn() {
       if (this.currentCategory != null) {
-        let numOfAnnotaitons = this.currentCategory.category.annotations.length;
-
         if (!this.currentCategory.isVisible) {
           this.currentCategory.isVisible = true;
         } else if (
           !this.currentCategory.showAnnotations &&
-          numOfAnnotaitons > 0
+          this.currentAnnotationLength > 0
         ) {
           this.currentCategory.showAnnotations = true;
+          this.current.annotation = 0;
         }
       }
     },
@@ -452,57 +473,68 @@ export default {
       }
     },
     scrollElement(element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "center"
-        });
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
     }
   },
   watch: {
-    "currentCategory"() {
+    currentCategory() {
       if (this.currentCategory != null) {
-        if (this.currentAnnotation == null || !this.currentCategory.showAnnotations) {     
+        if (
+          this.currentAnnotation == null ||
+          !this.currentCategory.showAnnotations
+        ) {
           let element = this.currentCategory.$el;
           this.scrollElement(element);
         }
       }
     },
-    "currentAnnotation"() {
+    currentAnnotation() {
       if (this.currentAnnotation != null) {
-        if (this.currentCategory.showAnnotations) { 
+        if (this.currentCategory.showAnnotations) {
           let element = this.currentAnnotation.$el;
           this.scrollElement(element);
+        }
+      }
+    },
+    "current.category"(cc) {
+      if (cc < -1) this.current.category = -1;
+      let max = this.categories.length;
+      if (cc > max) {
+        this.current.category = -1;
+      }
+    },
+    "current.annotation"(ca) {
+      if (ca < -1) this.current.annotation = -1;
+      if (this.currentCategory != null) {
+        let max = this.currentAnnotationLength;
+        if (ca > max) {
+          this.current.annotations = -1;
         }
       }
     }
   },
   computed: {
+    currentAnnotationLength() {
+      if (this.currentCategory == null) return null;
+      return this.currentCategory.category.annotations.length;
+    },
     currentCategory() {
-      let cc = this.current.category;
-      let ccMax = cc === -1 ? 1 : this.categories.length;
-      this.current.category = cc < -1 ? -1 : cc;
-      this.current.category = cc >= ccMax ? -1 : cc;
-
       return this.getCategory(this.current.category);
     },
     currentAnnotation() {
       if (this.currentCategory == null) {
-        this.current.annotation = -1;
         return null;
-      }
-
-      let ca = this.current.annotation;
-      let caMax = ca === -1 ? 1 : this.currentCategory.category.annotations.length;
-      this.current.annotation = ca < -1 ? -1 : ca;
-      this.current.annotation = ca >= caMax ? -1 : ca;
-      if (this.current.annotation == -1) {
-        this.currentCategory.showAnnotations = false;
       }
       return this.currentCategory.getAnnotation(this.current.annotation);
     }
   },
   beforeRouteUpdate(to, from, next) {
     // Clear any paperjs object so we can reset the canvas
+    this.current.annotation = -1;
+
     this.$refs.polygon.deletePolygon();
     this.$refs.brush.removeBrush();
     this.$refs.eraser.removeBrush();

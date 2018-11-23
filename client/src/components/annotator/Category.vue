@@ -83,18 +83,27 @@ export default {
           category_id: this.category.id
         })
         .then(response => {
-          let category = categories.filter(element => {
+          categories.filter(element => {
             if (element.id === this.category.id) {
               return element;
             }
           });
 
-          let annotations = category[0].annotations;
+          this.category.annotations.push(response.data);
 
-          annotations.push(response.data);
+          this.$emit("click", {
+            annotation: this.category.annotations.length - 1,
+            category: this.index
+          });
+
           if (this.isCurrent) {
-            parent.current.annotation = annotations.length - 1;
+            this.isVisible = true;
+            this.showAnnotations = true;
           }
+
+          this.$parent.scrollElement(
+            this.$refs.annotation[this.current.annotation - 1].$el
+          );
         });
     },
     /**
@@ -188,9 +197,8 @@ export default {
      */
     getAnnotation(index) {
       let ref = this.$refs.annotation;
-
       if (ref == null) return null;
-      if (ref.length < 1 || index >= ref.length) return null;
+      if (index >= ref.length) return null;
 
       return this.$refs.annotation[index];
     },

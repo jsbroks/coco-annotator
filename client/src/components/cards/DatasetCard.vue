@@ -139,7 +139,7 @@ export default {
   },
   computed: {
     percent() {
-      return 100 * (this.dataset.numberAnnotated / this.dataset.numberImages)
+      return 100 * (this.dataset.numberAnnotated / this.dataset.numberImages);
     },
     imageUrl() {
       return "/api/image/" + this.dataset.first_image_id + "?width=250";
