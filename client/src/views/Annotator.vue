@@ -70,6 +70,11 @@
       <div id="frame" class="frame" @wheel="onwheel">
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
+
+      <div v-show="!doneLoading">
+        <i class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
+      </div>
+
     </div>
   </div>
 </template>
@@ -102,6 +107,8 @@ import SelectPanel from "@/components/annotator/panels/SelectPanel";
 import MagicWandPanel from "@/components/annotator/panels/MagicWandPanel";
 import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
+
+import { mapMutations } from "vuex";
 
 export default {
   name: "Annotator",
@@ -166,11 +173,18 @@ export default {
         filename: ""
       },
       categories: [],
-      dataset: {}
+      dataset: {},
+      loading: {
+        image: true,
+        data: true
+      }
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess"]),
     save(callback) {
+      let process = "Saving";
+      this.addProcess(process);
       let refs = this.$refs;
 
       let data = {
@@ -201,6 +215,7 @@ export default {
       axios
         .post("/api/annotator/data", JSON.stringify(data))
         .then(() => {
+          this.removeProcess(process);
           if (callback != null) callback();
         })
         .catch(() => {});
@@ -262,6 +277,10 @@ export default {
     },
 
     initCanvas() {
+      let process = "Initalizing canvas";
+      this.addProcess(process);
+      this.loading.image = true;
+
       let canvas = document.getElementById("editor");
 
       this.paper.setup(canvas);
@@ -273,8 +292,6 @@ export default {
       this.paper.activate();
 
       let img = new Image();
-      //this.status.image.state = false;
-
       img.onload = () => {
         // Create image object
         this.image.raster = new paper.Raster({
@@ -288,13 +305,15 @@ export default {
         this.image.ratio =
           (this.image.raster.width * this.image.raster.height) / 1000000;
 
-        //this.status.image.state = true;
+        this.removeProcess(process);
+        this.loading.image = false;
       };
       img.src = this.image.url;
     },
     getData(callback) {
-      //this.status.data.state = false;
-
+      let process = "Loading annotation data";
+      this.addProcess(process);
+      this.loading.data = true;
       axios
         .get("/api/annotator/data/" + this.image.id)
         .then(response => {
@@ -309,7 +328,9 @@ export default {
           this.categories = response.data.categories;
 
           // Update status
-          //this.status.data.state = true;
+          this.removeProcess(process);
+          this.loading.data = false;
+
           if (callback != null) callback();
         })
         .catch(() => {
@@ -515,14 +536,17 @@ export default {
         }
       }
 
-      if (this.currentAnnotation == null) {
+      if (this.currentAnnotation != null) {
         if (!this.currentAnnotation.showSideMenu) {
-          this.currentAnnotation ++;
+          this.currentAnnotation++;
         }
       }
     }
   },
   computed: {
+    doneLoading() {
+      return !this.loading.image && !this.loading.data;
+    },
     currentAnnotationLength() {
       if (this.currentCategory == null) return null;
       return this.currentCategory.category.annotations.length;
@@ -647,5 +671,13 @@ export default {
   background-color: inherit;
   height: 30px;
   border: none;
+}
+
+.status-icon {
+  font-size: 150px;
+  color: white;
+  position: absolute;
+  left: calc(50% - 75px);
+  top: calc(50% - 75px);
 }
 </style>

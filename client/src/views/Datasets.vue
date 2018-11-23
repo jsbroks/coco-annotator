@@ -115,6 +115,8 @@ import toastrs from "@/mixins/toastrs";
 import DatasetCard from "@/components/cards/DatasetCard";
 import Pagination from "@/components/Pagination";
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "Datasets",
   components: { DatasetCard, Pagination },
@@ -134,7 +136,11 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess"]),
     updatePage(page) {
+      let process = "Loading datasets";
+      this.addProcess(process);
+
       page = page || this.page;
       this.page = page;
 
@@ -151,6 +157,8 @@ export default {
           this.subdirectories = response.data.subdirectories;
           this.pages = response.data.pagination.pages;
           this.page = response.data.pagination.page;
+
+          this.removeProcess(process);
         });
     },
     createDataset() {

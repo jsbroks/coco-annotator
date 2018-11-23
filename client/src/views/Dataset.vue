@@ -46,6 +46,8 @@ import toastrs from "@/mixins/toastrs";
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "Dataset",
   components: { ImageCard, Pagination },
@@ -73,8 +75,11 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess"]),
     updatePage(page) {
-      this.status.data.state = false;
+      let process = "Loading images from dataset";
+      this.addProcess(process);
+
       axios
         .get("/api/dataset/" + this.dataset.id + "/data", {
           params: {
@@ -91,7 +96,7 @@ export default {
 
           this.subdirectories = response.data.subdirectories;
 
-          this.status.data.state = true;
+          this.removeProcess(process);
         })
         .catch(error => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);

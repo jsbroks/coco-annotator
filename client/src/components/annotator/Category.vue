@@ -100,7 +100,7 @@ export default {
     };
   },
   methods: {
-    show (index) {
+    show(index) {
       if (this.search.length === 0) return true;
       return this.filterFound.indexOf(index) > -1;
     },
@@ -139,12 +139,10 @@ export default {
           let annotations = this.$refs.annotation;
           if (annotations == null) return;
 
-          if (annotationId -1 >= annotations.length) {
+          if (annotationId - 1 >= annotations.length) {
             this.$parent.scrollElement(this.$el);
           } else {
-            this.$parent.scrollElement(
-              annotations[annotationId - 1].$el
-            );
+            this.$parent.scrollElement(annotations[annotationId - 1].$el);
           }
         });
     },
@@ -357,34 +355,40 @@ export default {
   background-color: #404552;
 }
 
-.annotation-search{
+.annotation-search {
   width: 100%;
   height: 18px;
   color: white;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border: none;
   text-align: center;
   border-radius: 4px;
 }
 
-::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-    color: lightgray;
+::-webkit-input-placeholder {
+  /* WebKit, Blink, Edge */
+  color: lightgray;
 }
-:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-   color: lightgray;
-   opacity:  1;
+:-moz-placeholder {
+  /* Mozilla Firefox 4 to 18 */
+  color: lightgray;
+  opacity: 1;
 }
-::-moz-placeholder { /* Mozilla Firefox 19+ */
-   color: lightgray;
-   opacity:  1;
+::-moz-placeholder {
+  /* Mozilla Firefox 19+ */
+  color: lightgray;
+  opacity: 1;
 }
-:-ms-input-placeholder { /* Internet Explorer 10-11 */
-   color: lightgray;
+:-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: lightgray;
 }
-::-ms-input-placeholder { /* Microsoft Edge */
-   color: lightgray;
+::-ms-input-placeholder {
+  /* Microsoft Edge */
+  color: lightgray;
 }
-::placeholder { /* Most modern browsers support this now. */
-   color: lightgray;
+::placeholder {
+  /* Most modern browsers support this now. */
+  color: lightgray;
 }
 </style>

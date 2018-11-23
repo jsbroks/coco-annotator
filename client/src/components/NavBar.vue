@@ -27,9 +27,19 @@
           <a class="nav-link" href="https://github.com/jsbroks/coco-annotator/wiki">Help</a>
         </li>
       </ul>
+      <Status />
     </div>
   </nav>
 </template>
+
+<script>
+import Status from "@/components/Status";
+
+export default {
+  name: "NavBar",
+  components: { Status }
+};
+</script>
 
 <style scoped>
 .navbar {

@@ -94,6 +94,8 @@ import axios from "axios";
 import CategoryCard from "@/components/cards/CategoryCard";
 import Pagination from "@/components/Pagination";
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "Categories",
   components: { CategoryCard, Pagination },
@@ -112,7 +114,11 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess"]),
     updatePage(page) {
+      let process = "Loading categories";
+      this.addProcess(process);
+
       page = page || this.page;
       this.page = page;
 
@@ -128,6 +134,8 @@ export default {
           this.page = response.data.pagination.page;
           this.pages = response.data.pagination.pages;
           this.categoryCount = response.data.pagination.total;
+
+          this.removeProcess(process);
         });
     },
     createCategory() {
