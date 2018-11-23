@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-show="showSideMenu">
     <li class="list-group-item btn btn-link btn-sm text-left" :style="{ 'background-color': backgroundColor, color: 'white' }">
 
       <div @click="isVisible = !isVisible">
@@ -91,6 +91,10 @@ export default {
     scale: {
       type: Number,
       default: 1
+    },
+    search: {
+      type: String,
+      default: ""
     }
   },
   data() {
@@ -279,6 +283,13 @@ export default {
       if (this.isCurrent) return "#4b624c";
 
       return "inherit";
+    },
+    showSideMenu() {
+      let search = this.search.toLowerCase();
+      if (search.length === 0) return true;
+      if (search === String(this.annotation.id)) return true;
+      if (search === String(this.index + 1)) return true;
+      return this.name.toLowerCase().includes(this.search);
     }
   },
   mounted() {

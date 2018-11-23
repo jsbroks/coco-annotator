@@ -19,7 +19,11 @@
     </div>
 
     <ul v-show="showAnnotations" ref="collapse" class="list-group">
-      <Annotation v-for="(annotation, listIndex) in category.annotations" :key="annotation.id + '-annotation'" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
+      <li v-show="this.category.annotations.length > 1" class="list-group-item btn btn-link btn-sm text-left" :style="{ 'background-color': backgroundColor, color: 'white' }">
+        <input v-model="search" class="annotation-search" placeholder="Search"/>
+      </li>
+
+      <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
     </ul>
 
     <div class="modal fade" tabindex="-1" role="dialog" :id="'categorySettings' + category.id">
@@ -91,10 +95,15 @@ export default {
       color: this.category.color,
       selectedAnnotation: 0,
       showAnnotations: false,
-      isVisible: false
+      isVisible: false,
+      search: ""
     };
   },
   methods: {
+    show (index) {
+      if (this.search.length === 0) return true;
+      return this.filterFound.indexOf(index) > -1;
+    },
     /**
      * Created
      */
@@ -116,8 +125,10 @@ export default {
 
           this.category.annotations.push(response.data);
 
+          let annotationId = this.category.annotations.length - 1;
+
           this.$emit("click", {
-            annotation: this.category.annotations.length - 1,
+            annotation: annotationId,
             category: this.index
           });
 
@@ -125,10 +136,16 @@ export default {
             this.isVisible = true;
             this.showAnnotations = true;
           }
+          let annotations = this.$refs.annotation;
+          if (annotations == null) return;
 
-          this.$parent.scrollElement(
-            this.$refs.annotation[this.current.annotation - 1].$el
-          );
+          if (annotationId -1 >= annotations.length) {
+            this.$parent.scrollElement(this.$el);
+          } else {
+            this.$parent.scrollElement(
+              annotations[annotationId - 1].$el
+            );
+          }
         });
     },
     /**
@@ -338,5 +355,15 @@ export default {
 
 .card {
   background-color: #404552;
+}
+
+.annotation-search{
+  width: 100%;
+  height: 18px;
+  color: white;
+  background-color: rgba(255,255,255,0.1);
+  border: none;
+  text-align: center;
+  border-radius: 4px;
 }
 </style>

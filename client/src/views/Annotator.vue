@@ -514,6 +514,12 @@ export default {
           this.current.annotations = -1;
         }
       }
+
+      if (this.currentAnnotation == null) {
+        if (!this.currentAnnotation.showSideMenu) {
+          this.currentAnnotation ++;
+        }
+      }
     }
   },
   computed: {
