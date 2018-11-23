@@ -119,15 +119,8 @@ class Dataset(Resource):
         for dataset in datasets:
             images = ImageModel.objects(dataset_id=dataset.get('id'), deleted=False)
 
-            count = images.count()
-            dataset['numberImages'] = count
-
-            count = 0
-            # To many images slow down request to much
-            #for image in images:
-            #    if AnnotationModel.objects(image_id=image.id, deleted=False).count() > 0:
-            #        count = count + 1
-            dataset['numberAnnotated'] = count
+            dataset['numberImages'] = images.count()
+            dataset['numberAnnotated'] = images.filter(annotated=True).count()
 
             first = images.first()
             if first is not None:

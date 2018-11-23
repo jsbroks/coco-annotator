@@ -18,9 +18,12 @@
         <br>
 
         <div>
-          <p v-if="dataset.numberImages > 0">
+          <div v-if="dataset.numberImages > 0">
             {{ dataset.numberAnnotated }} of {{ dataset.numberImages }} images annotated.
-          </p>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" :style="{ width: percent + '%' }"></div>
+            </div>
+          </div>
           <p v-else>No images in dataset.</p>
           <span v-for="(category, index) in listCategories" :key="index" class="badge badge-pill badge-primary category-badge" :style="{ 'background-color': category.color}">{{ category.name }}</span>
         </div>
@@ -135,6 +138,9 @@ export default {
     }
   },
   computed: {
+    percent() {
+      return 100 * (this.dataset.numberAnnotated / this.dataset.numberImages)
+    },
     imageUrl() {
       return "/api/image/" + this.dataset.first_image_id + "?width=250";
     },
@@ -192,5 +198,10 @@ p {
   padding: 0;
   float: right;
   color: black;
+}
+
+.progress {
+  margin: 0 5px 7px 5px;
+  height: 5px;
 }
 </style>

@@ -30,8 +30,7 @@ class AnnotatorData(Resource):
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
 
-        image_model.update(set__metadata=image.get('metadata', {}))
-
+        annotated = False
         # Iterate every category passed in the data
         for category in data.get('categories', []):
             category_id = category.get('id')
@@ -78,6 +77,11 @@ class AnnotatorData(Resource):
                         set__bbox=bbox,
                         set__paper_object=paperjs_object,
                     )
+
+                    if area > 0:
+                        annotated = True
+
+        image_model.update(set__metadata=image.get('metadata', {}), set__annotated=annotated)
 
         return data
 

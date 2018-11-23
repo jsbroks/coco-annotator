@@ -486,7 +486,18 @@ export default {
       return this.getCategory(this.current.category);
     },
     currentAnnotation() {
-      if (this.currentCategory == null) return null;
+      if (this.currentCategory == null) {
+        this.current.annotation = -1;
+        return null;
+      }
+
+      let ca = this.current.annotation;
+      let caMax = ca === -1 ? 1 : this.currentCategory.category.annotations.length;
+      this.current.annotation = ca < -1 ? -1 : ca;
+      this.current.annotation = ca >= caMax ? -1 : ca;
+      if (this.current.annotation == -1) {
+        this.currentCategory.showAnnotations = false;
+      }
       return this.currentCategory.getAnnotation(this.current.annotation);
     }
   },
