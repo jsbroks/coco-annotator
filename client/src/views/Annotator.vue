@@ -477,9 +477,14 @@ export default {
     }
   },
   beforeRouteUpdate(to, from, next) {
-    this.current.annotation = -1;
+    // Clear any paperjs object so we can reset the canvas
+    this.$refs.polygon.deletePolygon();
+    this.$refs.brush.removeBrush();
+    this.$refs.eraser.removeBrush();
+
     this.image.id = parseInt(to.params.identifier);
     this.image.url = "/api/image/" + this.image.id;
+
     this.initCanvas();
     this.getData();
 

@@ -91,8 +91,15 @@ export default {
       this.onMouseDown(event);
     }
   },
+  computed: {
+    isDisabled() {
+      return this.$parent.currentAnnotation == null;
+    }
+  },
   watch: {
     raster(raster) {
+      if (Object.keys(raster).length === 0) return;
+
       this.imageInfo.width = raster.width;
       this.imageInfo.height = raster.height;
 

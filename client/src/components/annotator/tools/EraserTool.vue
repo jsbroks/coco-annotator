@@ -30,6 +30,12 @@ export default {
     };
   },
   methods: {
+    removeBrush() {
+      if (this.eraser.brush != null) {
+        this.eraser.brush.remove();
+        this.eraser.brush = null;
+      }
+    },
     moveBrush(point) {
       if (this.eraser.brush == null) this.createBrush();
 
@@ -67,6 +73,11 @@ export default {
     increaseRadius() {
       if (!this.isActive) return;
       this.eraser.pathOptions.radius += 2;
+    }
+  },
+  computed: {
+    isDisabled() {
+      return this.$parent.currentAnnotation == null;
     }
   },
   watch: {

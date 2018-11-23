@@ -34,7 +34,9 @@ export default {
      * @param {Number} identifer id of a file
      */
     route(identifier) {
-      this.$router.push({ name: "annotate", params: { identifier } });
+      this.$parent.save(() => {
+        this.$router.push({ name: "annotate", params: { identifier } });
+      });
     }
   }
 };

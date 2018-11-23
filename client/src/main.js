@@ -4,6 +4,7 @@ import router from "./router";
 import store from "./store";
 import VueToastr2 from "vue-toastr-2";
 import paper from "paper";
+import VTooltip from "v-tooltip";
 
 import "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -15,6 +16,7 @@ paper.install(window);
 
 window.toastr = require("toastr");
 Vue.use(VueToastr2);
+Vue.use(VTooltip);
 
 new Vue({
   router,

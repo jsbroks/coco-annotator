@@ -29,6 +29,12 @@ export default {
     };
   },
   methods: {
+    removeBrush() {
+      if (this.brush.path != null) {
+        this.brush.path.remove();
+        this.brush.path = null;
+      }
+    },
     moveBrush(point) {
       if (this.brush.path == null) this.createBrush();
 
@@ -66,6 +72,11 @@ export default {
     increaseRadius() {
       if (!this.isActive) return;
       this.brush.pathOptions.radius += 2;
+    }
+  },
+  computed: {
+    isDisabled() {
+      return this.$parent.currentAnnotation == null;
     }
   },
   watch: {

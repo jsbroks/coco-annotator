@@ -18,8 +18,8 @@
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createDataset">
               Create
             </button>
-            <button type="button" class="btn btn-primary disabled">Import</button>
-            <button type="button" class="btn btn-secondary" @click="updatePage">Refresh</button>
+            <button type="button" class="btn btn-primary" v-tooltip="{ content: 'test' }">Import</button>
+            <button type=" button" class="btn btn-secondary" @click="updatePage">Refresh</button>
           </div>
         </div>
 

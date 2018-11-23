@@ -124,6 +124,11 @@ export default {
       this.polygon.path.removeSegment(this.polygon.path.segments.length - 1);
     }
   },
+  computed: {
+    isDisabled() {
+      return this.$parent.currentAnnotation == null;
+    }
+  },
   watch: {
     /**
      * Change width of stroke based on zoom of image
