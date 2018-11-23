@@ -42,7 +42,6 @@ export default {
   },
   computed: {
     isActive() {
-      if (this.isDisabled) return false;
       if (this.selected == this.name) {
         this.$emit("setcursor", this.cursor);
         return true;
@@ -71,6 +70,11 @@ export default {
     isActive(active) {
       if (active) {
         this.tool.activate();
+      }
+    },
+    isDisabled(disabled) {
+      if (disabled && this.isActive) {
+        this.$emit("update", "Select");
       }
     }
   },

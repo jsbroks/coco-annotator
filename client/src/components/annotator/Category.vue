@@ -20,8 +20,33 @@
 
     <ul v-show="showAnnotations" ref="collapse" class="list-group">
       <Annotation v-for="(annotation, listIndex) in category.annotations" :key="annotation.id + '-annotation'" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
-
     </ul>
+
+    <div class="modal fade" tabindex="-1" role="dialog" :id="'categorySettings' + category.id">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ category.name }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Color</label>
+                <div class="col-sm-9">
+                  <input v-model="color" type="color" class="form-control">
+                </div>
+              </div>
+            </form>  
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -246,7 +271,6 @@ export default {
       if (this.isCurrent) {
         return "rgba(255, 255, 255, 0.25)";
       }
-
       return "#404552";
     }
   },
@@ -263,7 +287,13 @@ export default {
       this.group.visible = newVisible;
       this.setColor();
     },
-    showAnnotations() {
+    showAnnotations(showing) {
+      if (!showing) {
+        this.$emit("click", {
+          annotation: -1,
+          category: this.index
+        });
+      }
       this.setColor();
     },
     category() {

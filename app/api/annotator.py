@@ -40,6 +40,8 @@ class AnnotatorData(Resource):
             if db_category is None:
                 continue
 
+            db_category.update(set__color=category.get('color'))
+
             # Iterate every annotation from the data annotations
             for annotation in category.get('annotations', []):
 
