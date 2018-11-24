@@ -5,6 +5,7 @@ volumes:
 services:
     flask:
         container_name: annotator_flask
+        restart: always
         build:
             context: .
             dockerfile: ./docker/production/Dockerfile
@@ -16,12 +17,13 @@ services:
         environment:
           - FLASK_APP=app
           - FLASK_ENV=production
-        command: 'gunicorn -w 4 -b 0.0.0.0:5000 app:app'
+        command: 'gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py'
         depends_on:
             - database
     database:
         image: mongo:latest
         container_name: annotator_mongodb
+        restart: always
         environment:
             - MONGO_DATA_DIR=/data/db
             - MONGO_LOG_DIR=/dev/null

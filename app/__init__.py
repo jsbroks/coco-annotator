@@ -11,6 +11,7 @@ from .models import db
 import threading
 import requests
 import time
+import os
 
 
 def run_watcher():
@@ -29,8 +30,10 @@ def run_watcher():
 
 def create_app():
 
-    watcher_thread = threading.Thread(target=run_watcher)
-    watcher_thread.start()
+    if os.environ.get("APP_WORKER_ID", "1") == "1":
+        print("Creating file watcher on PID: {}".format(os.getpid()), flush=True)
+        watcher_thread = threading.Thread(target=run_watcher)
+        watcher_thread.start()
 
     if Config.LOAD_IMAGES_ON_START:
         load_images(Config.DATASET_DIRECTORY)
