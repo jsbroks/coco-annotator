@@ -1,10 +1,10 @@
 <template>
   <div class="form-inline my-2 my-lg-0" style="margin-right: 10px">
-    <div class="my-sm-0 btn-sm disabled" :class="buttonType" style="border: none">       
+    <div class="my-sm-0 btn-sm disabled" :class="buttonType" style="border: none">
       <i v-if="allLoaded" class="fa fa-check fa-x status-icon" style="float:left"> </i>
-      <i v-else class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>             
+      <i v-else class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
       {{ message }}
-    </div>    
+    </div>
   </div>
 </template>
 
@@ -38,7 +38,11 @@ export default {
         return "Done";
       }
 
-      return "Done " + this.lastProcess.toLowerCase();
+      return (
+        "Done " +
+        this.lastProcess.charAt(0).toLowerCase() +
+        this.lastProcess.slice(1)
+      );
     },
     allLoaded() {
       return this.process.length === 0;

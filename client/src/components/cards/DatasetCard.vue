@@ -73,13 +73,14 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import Metadata from "@/components/Metadata";
+
+import { mapMutations } from "vuex";
 
 export default {
   name: "DatasetCard",
@@ -102,6 +103,7 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess"]),
     onImageClick() {
       if (this.dataset.numberImages > 0) {
         let identifier = this.dataset.id;
@@ -109,16 +111,16 @@ export default {
       }
     },
     onCocoDownloadClick() {
-      this.$parent.status.downloading.message =
-        "Generating coco for " + this.dataset.name;
-      this.$parent.status.downloading.state = false;
+      let process = "Generating COCO for " + this.dataset.name;
+      this.addProcess(process);
+
       axios.get("/api/dataset/" + this.dataset.id + "/coco").then(reponse => {
         let dataStr =
           "data:text/json;charset=utf-8," +
           encodeURIComponent(JSON.stringify(reponse.data));
 
         this.downloadURI(dataStr, this.dataset.name + ".json");
-        this.$parent.status.downloading.state = true;
+        this.removeProcess(process);
       });
     },
     onDeleteClick() {
@@ -135,6 +137,14 @@ export default {
           default_annotation_metadata: this.$refs.defaultAnnotation.export()
         })
         .then(() => {});
+    },
+    downloadURI(uri, exportName) {
+      let link = document.createElement("a");
+      link.href = uri;
+      link.download = exportName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
   },
   computed: {

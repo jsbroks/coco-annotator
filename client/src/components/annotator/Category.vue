@@ -20,7 +20,7 @@
 
     <ul v-show="showAnnotations" ref="collapse" class="list-group">
       <li v-show="this.category.annotations.length > 1" class="list-group-item btn btn-link btn-sm text-left" :style="{ 'background-color': backgroundColor, color: 'white' }">
-        <input v-model="search" class="annotation-search" placeholder="Search"/>
+        <input v-model="search" class="annotation-search" placeholder="Search" />
       </li>
 
       <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
@@ -43,7 +43,7 @@
                   <input v-model="color" type="color" class="form-control">
                 </div>
               </div>
-            </form>  
+            </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -139,10 +139,11 @@ export default {
           let annotations = this.$refs.annotation;
           if (annotations == null) return;
 
-          if (annotationId - 1 >= annotations.length) {
+          let annotation = annotations[annotationId - 1];
+          if (annotation == null) {
             this.$parent.scrollElement(this.$el);
           } else {
-            this.$parent.scrollElement(annotations[annotationId - 1].$el);
+            this.$parent.scrollElement(annotation.$el);
           }
         });
     },

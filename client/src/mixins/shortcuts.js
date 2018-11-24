@@ -37,6 +37,15 @@ export default {
           }
         },
         {
+          default: ["delete"],
+          name: "Delete Current Annotation",
+          function: () => {
+            if (this.currentAnnotation) {
+              this.currentAnnotation.deleteAnnotation();
+            }
+          }
+        },
+        {
           default: ["s"],
           name: "Select Tool",
           function: () => {

@@ -163,8 +163,8 @@ class DatasetDataId(Resource):
         if not os.path.exists(directory):
             return {'message': 'Directory does not exist.'}, 400
 
-        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False)\
-            .only('id', 'file_name')
+        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False) \
+            .order_by('file_name').only('id', 'file_name')
 
         pagination = Pagination(images.count(), limit, page)
         images = query_util.fix_ids(images[pagination.start:pagination.end])
