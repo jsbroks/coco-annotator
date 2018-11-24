@@ -84,7 +84,7 @@ export default {
           params: {
             page: page,
             limit: this.limit,
-            folder: this.folders.join('/')
+            folder: this.folders.join("/")
           }
         })
         .then(response => {
