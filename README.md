@@ -17,7 +17,7 @@
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![Code Quality](https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality)](https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript)
 
-COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-know [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered though an initiative and customizable interface with many tools to help automate the process of annotating images.
+COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-know [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered though an intuitive and customizable interface and provided many tools for creating accurate datasets.
 
 <p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
 <p align="center"><i>Note: This video is from v0.1.0 and many new features have been added.</i></p>
