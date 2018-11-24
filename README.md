@@ -12,9 +12,10 @@
 ---
 
 
-[![GitHub Stars](https://img.shields.io/github/stars/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/stargazers) [![GitHub Issues](https://img.shields.io/github/issues/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/issues) 
+[![GitHub Stars](https://img.shields.io/github/stars/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/issues) 
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
-
+[![Code Quality](https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality)](https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript)
 
 A web based image annotation tool used to create training data for machine learning. It provides many distinct features
 including the ability to label an image segment (or part of a segment), track object instances, labeling objects with
