@@ -19,12 +19,18 @@ class AnnotatorData(Resource):
         Called when saving data from the annotator client
         """
         data = request.get_json(force=True)
-        image_id = data.get('image').get('id')
+        image = data.get('image')
+        image_id = image.get('id')
 
-        image = ImageModel.objects(id=image_id).first()
+        image_model = ImageModel.objects(id=image_id).first()
+
+        if image_model is None:
+            return {'message': 'image does not exist'}, 400
+
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
 
+        annotated = False
         # Iterate every category passed in the data
         for category in data.get('categories', []):
             category_id = category.get('id')
@@ -33,6 +39,8 @@ class AnnotatorData(Resource):
             db_category = categories.filter(id=category_id).first()
             if db_category is None:
                 continue
+
+            db_category.update(set__color=category.get('color'))
 
             # Iterate every annotation from the data annotations
             for annotation in category.get('annotations', []):
@@ -72,6 +80,11 @@ class AnnotatorData(Resource):
                         set__paper_object=paperjs_object,
                     )
 
+                    if area > 0:
+                        annotated = True
+
+        image_model.update(set__metadata=image.get('metadata', {}), set__annotated=annotated)
+
         return data
 
 
@@ -84,7 +97,7 @@ class AnnotatorId(Resource):
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:
-            return {"message": "Image does not exist"}, 400
+            return {'success': False}, 400
 
         dataset = DatasetModel.objects(id=image.dataset_id).first()
         categories = CategoryModel.objects(deleted=False).in_bulk(dataset.categories).items()

@@ -45,6 +45,8 @@ class ImageModel(db.DynamicDocument):
     height = db.IntField(required=True)
     file_name = db.StringField()
 
+    annotated = db.BooleanField(default=False)
+
     image_url = db.StringField()
     thumbnail_url = db.StringField()
 

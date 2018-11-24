@@ -2,30 +2,13 @@ version: '3'
 volumes:
     mongodb_data:
         external: false
-networks:
-    cocoannotator:
-        external: false
-
 services:
-    frontend:
-        container_name: annotator_client
-        build:
-            context: .
-            dockerfile: ./docker/client/Dockerfile
-        ports:
-            - '8080:8080'
-        volumes:
-            - './client:/workspace/client'
-        command: 'npm run serve'
-        networks:
-            - cocoannotator
-        depends_on:
-            - flask
     flask:
         container_name: annotator_flask
+        restart: always
         build:
             context: .
-            dockerfile: ./docker/api/Dockerfile
+            dockerfile: ./docker/production/Dockerfile
         ports:
             - '5000:5000'
         volumes:
@@ -33,15 +16,14 @@ services:
             - './app:/workspace/app'
         environment:
           - FLASK_APP=app
-          - FLASK_ENV=development
-        command: 'flask run --host=0.0.0.0'
-        networks:
-            - cocoannotator
+          - FLASK_ENV=production
+        command: 'gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py'
         depends_on:
             - database
     database:
         image: mongo:latest
         container_name: annotator_mongodb
+        restart: always
         environment:
             - MONGO_DATA_DIR=/data/db
             - MONGO_LOG_DIR=/dev/null
@@ -50,5 +32,3 @@ services:
         ports:
             - '27017:27017'
         command: 'mongod --smallfiles --logpath=/dev/null'
-        networks:
-            - cocoannotator

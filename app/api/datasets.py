@@ -1,6 +1,8 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
+from mongoengine.errors import NotUniqueError
+
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
 from ..models import *
@@ -52,8 +54,11 @@ class Dataset(Resource):
         name = args['name']
         categories = args.get('categories', [])
 
-        dataset = DatasetModel(name=name, categories=categories)
-        dataset.save()
+        try:
+            dataset = DatasetModel(name=name, categories=categories)
+            dataset.save()
+        except NotUniqueError:
+            return {'message': 'Dataset already exists. Check the undo tab to fully delete the dataset.'}, 400
 
         return query_util.fix_ids(dataset)
 
@@ -114,15 +119,8 @@ class Dataset(Resource):
         for dataset in datasets:
             images = ImageModel.objects(dataset_id=dataset.get('id'), deleted=False)
 
-            count = images.count()
-            dataset['numberImages'] = count
-
-            count = 0
-            # To many images slow down request to much
-            #for image in images:
-            #    if AnnotationModel.objects(image_id=image.id, deleted=False).count() > 0:
-            #        count = count + 1
-            dataset['numberAnnotated'] = count
+            dataset['numberImages'] = images.count()
+            dataset['numberAnnotated'] = images.filter(annotated=True).count()
 
             first = images.first()
             if first is not None:
@@ -163,10 +161,10 @@ class DatasetDataId(Resource):
         # Get directory
         directory = os.path.join(dataset.directory, folder)
         if not os.path.exists(directory):
-            return {'message': 'directory does not exist'}, 400
+            return {'message': 'Directory does not exist.'}, 400
 
-        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False)\
-            .only('id', 'file_name')
+        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False) \
+            .order_by('file_name').only('id', 'file_name')
 
         pagination = Pagination(images.count(), limit, page)
         images = query_util.fix_ids(images[pagination.start:pagination.end])

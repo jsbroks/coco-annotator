@@ -5,4 +5,5 @@ flask-mongoengine
 numpy
 cython
 scikit-image
+requests
 watchdog==0.8.3
