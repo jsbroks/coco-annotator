@@ -17,17 +17,14 @@
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![Code Quality](https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality)](https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript)
 
-A web based image annotation tool used to create training data for machine learning. It provides many distinct features
-including the ability to label an image segment (or part of a segment), track object instances, labeling objects with
-disconnected visible parts and efficiently storing the annotation and instances information in the well-know [COCO
-format](http://cocodataset.org/#format-data). The annotation process is delivered though an initiative and customizable interface similar to PhotoShop.
+COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-know [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered though an initiative and customizable interface with many tools to help automate the process of annotating images.
 
 <p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
 <p align="center"><i>Note: This video is from v0.1.0 and many new features have been added.</i></p>
 
 # Features
 
-COCO Annotator provides many 2D image annotation features that other annotations tool fall short:
+COCO Annotator allows users to annotate images using free-form curves or polygons and provides many additional features were other annotations tool fall short.
  - Directly export to COCO format
  - Segmentation of objects
  - Useful API endpoints to analyze data
@@ -45,7 +42,6 @@ COCO Annotator provides many 2D image annotation features that other annotations
 Thanks to all these wonderful libaries/frameworks:
  - [Flask](http://flask.pocoo.org/) - Python web microframework
  - [Vue](https://vuejs.org/) - Frontend javascript framework
- - [RequireJS](https://requirejs.org/) - File module loader
  - [Axios](https://github.com/axios/axios) - Promise based HTTP client
  - [PaperJS](http://paperjs.org/) - Canvas editor library
  - [Bootstrap](https://getbootstrap.com/) - Frontend component library
