@@ -1,4 +1,4 @@
-from flask_restplus import Api, Resource
+from flask_restplus import Namespace, Api, Resource
 from flask import request
 
 from ..util import query_util
