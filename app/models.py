@@ -3,10 +3,7 @@ from .util import color_util
 from .config import Config
 from PIL import Image
 
-import datetime
-
 import os
-import sys
 
 db = MongoEngine()
 

@@ -1,11 +1,9 @@
-from flask_restplus import Namespace, Api, Resource, fields, reqparse
-from flask import jsonify, send_file, request
+from flask_restplus import Api, Resource
+from flask import request
 
 from ..util import query_util
 from ..util import coco_util
 from ..models import *
-
-import sys
 
 
 api = Namespace('annotator', description='Annotator related operations')
