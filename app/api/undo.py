@@ -1,6 +1,6 @@
 from flask_restplus import Namespace, Resource, reqparse
 
-from datetime import datetime
+import datetime
 from ..models import *
 
 api = Namespace('undo', description='Undo related operations')
