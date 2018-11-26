@@ -543,9 +543,9 @@ export default {
       }
     }
   },
-  beforeRouteLeave (to, from , next) {
+  beforeRouteLeave(to, from, next) {
     this.save();
-    next()
+    next();
   },
   computed: {
     doneLoading() {
