@@ -1,4 +1,4 @@
-<template>
+no_numbering<template>
   <div>
     <div style="padding-top: 55px" />
     <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
@@ -59,12 +59,12 @@
               </div>
               <div class="form-group">
                 <label>Limit</label>
-                <input class="form-control" type="number" v-model="limit"/>
+                <input class="form-control" type="number" v-model="imageLimit"/>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="generateDataset">Generate</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" @click="generateDataset">Generate</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -108,19 +108,19 @@ export default {
         data: { state: true, message: "Loading data" }
       },
       keyword: "",
-      limit: 100
+      imageLimit: 100
     };
   },
   methods: {
     ...mapMutations(["addProcess", "removeProcess"]),
     generateDataset() {
       if (this.keyword.length === 0) return;
-      axios.post("/api/dataset/" + this.dataset.id + "/generate", {
-        keywords: [this.keyword],
-        limit: this.limit
-      }).then(() => {
-        console.log("Generating dataset");
-      })
+      axios
+        .post("/api/dataset/" + this.dataset.id + "/generate", {
+          keywords: [this.keyword],
+          limit: this.imageLimit
+        })
+        .then(() => {});
     },
     updatePage(page) {
       let process = "Loading images from dataset";

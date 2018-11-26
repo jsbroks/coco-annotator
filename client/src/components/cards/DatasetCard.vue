@@ -5,8 +5,8 @@
     <div class="card mb-4 box-shadow">
 
       <!-- Display Image -->
-      <img v-if="dataset.numberImages > 0" @click="onImageClick" :src="imageUrl" class="card-img-top" style="width: 100%; display: block;">
-      <img v-else :src="noImageUrl" class="card-img-top" style="width: 100%; display: block;">
+      <img @click="onImageClick" :src="imageUrl" class="card-img-top" style="width: 100%; display: block;">
+
       <!-- Card Body -->
       <div class="card-body">
         <span class="d-inline-block text-truncate" style="max-width: 85%; float: left">
@@ -105,10 +105,8 @@ export default {
   methods: {
     ...mapMutations(["addProcess", "removeProcess"]),
     onImageClick() {
-      if (this.dataset.numberImages > 0) {
-        let identifier = this.dataset.id;
-        this.$router.push({ name: "dataset", params: { identifier } });
-      }
+      let identifier = this.dataset.id;
+      this.$router.push({ name: "dataset", params: { identifier } });
     },
     onCocoDownloadClick() {
       let process = "Generating COCO for " + this.dataset.name;
@@ -152,7 +150,11 @@ export default {
       return 100 * (this.dataset.numberAnnotated / this.dataset.numberImages);
     },
     imageUrl() {
-      return "/api/image/" + this.dataset.first_image_id + "?width=250";
+      if (this.dataset.numberImages > 0) {
+        return "/api/image/" + this.dataset.first_image_id + "?width=250";
+      } else {
+        return this.noImageUrl;
+      }
     },
     listCategories() {
       let list = [];

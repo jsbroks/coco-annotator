@@ -76,7 +76,13 @@ def download_images(output_dir, args):
         response.download({
             "keywords": keyword,
             "limit": args['limit'],
-            "output_directory": output_dir
+            "output_directory": output_dir,
+            "no_numbering": True,
+            "format": "jpg",
+            "type": "photo",
+            "print_urls": False,
+            "print_paths": False,
+            "print_size": False
         })
 
 
@@ -85,8 +91,6 @@ class DatasetGenerate(Resource):
     def post(self, dataset_id):
         """ Adds images found on google to the dataset """
         args = dataset_generate.parse_args()
-        keywords = args['keywords']
-        limit = args['limit']
 
         dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
         if dataset is None:
