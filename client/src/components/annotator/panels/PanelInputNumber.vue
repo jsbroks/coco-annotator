@@ -59,21 +59,23 @@ export default {
 
 .tool-option-pre {
   background-color: #383c4a;
-  height: 20px;
 }
+
 .tool-option-font {
   border-color: #4b5162;
   background-color: #383c4a;
   color: white;
   font-size: 12px;
+  height: 20px;
 }
+
 .tool-option-input {
+  display: table-cell;
   border-color: #4b5162;
   color: white;
   padding: 0 0 0 3px;
   background-color: #383c4a;
   height: 20px;
   font-size: 12px;
-  width: 100%;
 }
 </style>
