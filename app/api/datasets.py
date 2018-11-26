@@ -1,7 +1,9 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-
 from mongoengine.errors import NotUniqueError
+from threading import Thread
+
+from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
@@ -39,6 +41,11 @@ update_dataset.add_argument('categories', location='json', type=list, help="New 
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
                             help="Default annotation metadata")
 
+dataset_generate = reqparse.RequestParser()
+dataset_generate.add_argument('keywords', location='json', type=list, default=[],
+                              help="Keywords associated with images")
+dataset_generate.add_argument('limit', location='json', type=int, default=100, help="Number of images per keyword")
+
 
 @api.route('/')
 class Dataset(Resource):
@@ -61,6 +68,34 @@ class Dataset(Resource):
             return {'message': 'Dataset already exists. Check the undo tab to fully delete the dataset.'}, 400
 
         return query_util.fix_ids(dataset)
+
+
+def download_images(output_dir, args):
+    for keyword in args['keywords']:
+        response = gid.googleimagesdownload()
+        response.download({
+            "keywords": keyword,
+            "limit": args['limit'],
+            "output_directory": output_dir
+        })
+
+
+@api.route('/<int:dataset_id>/generate')
+class DatasetGenerate(Resource):
+    def post(self, dataset_id):
+        """ Adds images found on google to the dataset """
+        args = dataset_generate.parse_args()
+        keywords = args['keywords']
+        limit = args['limit']
+
+        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        thread = Thread(target=download_images, args=(dataset.directory, args))
+        thread.start()
+
+        return {"success": True}
 
 
 @api.route('/<int:dataset_id>')
