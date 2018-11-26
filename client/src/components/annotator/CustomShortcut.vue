@@ -32,13 +32,13 @@ export default {
     };
   },
   methods: {
-    function(event) {
-      let target = event.target.tagName.toLowerCase();
+    function(e) {
+      let target = e.target.tagName.toLowerCase();
 
       if (target === "input") return;
       if (target === "textarea") return;
 
-      event.preventDefault();
+      e.preventDefault();
       this.shortcut.function();
     },
     onkeydown(e) {
@@ -52,7 +52,7 @@ export default {
         this.keysDown.push(key);
       }
 
-      if (parseInt(event.target.id) === this._uid) {
+      if (parseInt(e.target.id) === this._uid) {
         e.preventDefault();
         this.keys = this.keysDown;
       } else if (this.$route.name === "annotate") {

@@ -11,13 +11,13 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
+        <li class="nav-item" :class="{ active: $route.name === 'datasets' }">
           <router-link class="nav-link" to="/datasets">Datasets</router-link>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" :class="{ active: $route.name === 'categories' }">
           <router-link class="nav-link" to="/categories">Categories</router-link>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" :class="{ active: $route.name === 'undo' }">
           <router-link class="nav-link" to="/undo">Undo</router-link>
         </li>
         <li class="nav-item">
