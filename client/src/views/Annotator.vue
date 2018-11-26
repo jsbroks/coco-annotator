@@ -543,6 +543,10 @@ export default {
       }
     }
   },
+  beforeRouteLeave (to, from , next) {
+    this.save();
+    next()
+  },
   computed: {
     doneLoading() {
       return !this.loading.image && !this.loading.data;

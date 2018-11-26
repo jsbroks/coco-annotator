@@ -182,7 +182,7 @@ export default {
     },
     onAnnotationClick() {
       if (this.isVisible) {
-        this.$emit("click", event);
+        this.$emit("click", this.index);
       }
     },
     getCompoundPath() {
