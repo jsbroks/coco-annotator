@@ -17,9 +17,9 @@
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![Code Quality](https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality)](https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript)
 
-COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-know [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered though an intuitive and customizable interface and provided many tools for creating accurate datasets.
+COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-know [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered though an intuitive and customizable interface and provides many tools for creating accurate datasets.
 
-<p align="center"><img src="https://i.imgur.com/m4RmjCp.gif"></p>
+<p align="center"><img width="600" src="https://i.imgur.com/m4RmjCp.gif"></p>
 <p align="center"><i>Note: This video is from v0.1.0 and many new features have been added.</i></p>
 
 # Features
@@ -36,21 +36,7 @@ Several annotation tools are currently available, with most applications as a de
  - Magic wand/select tool
  - Generate datasets using google images
 
-### Semi-automated Annotations
-
-For cluttered images such as that in _Figure 1_, the image tends to be dense with many objects. In this figure, we can see numerous cars were the process to annotate each one becomes time-consuming. When tens of thousands such images need to be ground-truthed, an efficient annotation tool becomes more pressing. For starters, some type of semi-automatic marking of the image segments may be helpful in speeding up the annotation process. 
-
-<p align="center"><img width="400" src="https://akm-img-a-in.tosshub.com/indiatoday/images/story/201412/traffic-snarls-2_650_122914113653.jpg"></p>
-<p align="center">Figure 1: Traffic on an highway in Delhi</p>
-
-This problem is solved through the use of two different methods. A tool called Magic Wand uses the flood fill algorithm to create a selection of pixels similar in color and shade. The second method allows users to configure external API call to a semi-trained model which then applies annotations return from the request.
-
-### Annotation of Disconnected Objects
-
-Annotated objects are not required to be composed of continuous segments. For example, if a car is partially blocked by a tree. The disjoint visible parts can be annotated as part of a single car without including the tree.
-
-<p align="center"><img width="600" src="https://i.imgur.com/5OZOZ4K.jpg"></p>
-<p align="center">Figure 2: Annotation of a single car object with visual disconnected parts</p>
+For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
 
 # Backers
 
