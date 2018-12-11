@@ -24,13 +24,33 @@ COCO Annotator is a web-based image annotation tool designed for versatility and
 
 # Features
 
-COCO Annotator allows users to annotate images using free-form curves or polygons and provides many additional features were other annotations tool fall short.
+Several annotation tools are currently available, with most applications as a desktop installation. Once installed, users can manually define regions in an image and creating a textual description. Generally, objects can be marked by a bounding box, either directly, through a masking tool, or by marking points to define the containing area. _COCO Annotator_ allows users to annotate images using free-form curves or polygons and provides many additional features were other annotations tool fall short.
+
  - Directly export to COCO format
  - Segmentation of objects
  - Useful API endpoints to analyze data
  - Import datasets already annotated in COCO format
+ - Annotated disconnected objects as a single instance
+ - Labeling image segments with any number of labels simultaneously
  - Allow custom metadata for each instance or object
  - Magic wand/select tool
+ - Generate datasets using google images
+
+### Semi-automated Annotations
+
+For cluttered images such as that in _Figure 1_, the image tends to be dense with many objects. In this figure, we can see numerous cars were the process to annotate each one becomes time-consuming. When tens of thousands such images need to be ground-truthed, an efficient annotation tool becomes more pressing. For starters, some type of semi-automatic marking of the image segments may be helpful in speeding up the annotation process. 
+
+<p align="center"><img width="400" src="https://akm-img-a-in.tosshub.com/indiatoday/images/story/201412/traffic-snarls-2_650_122914113653.jpg"></p>
+<p align="center">Figure 1: Traffic on an highway in Delhi</p>
+
+This problem is solved through the use of two different methods. A tool called Magic Wand uses the flood fill algorithm to create a selection of pixels similar in color and shade. The second method allows users to configure external API call to a semi-trained model which then applies annotations return from the request.
+
+### Annotation of Disconnected Objects
+
+Annotated objects are not required to be composed of continuous segments. For example, if a car is partially blocked by a tree. The disjoint visible parts can be annotated as part of a single car without including the tree.
+
+<p align="center"><img width="600" src="https://i.imgur.com/5OZOZ4K.jpg"></p>
+<p align="center">Figure 2: Annotation of a single car object with visual disconnected parts</p>
 
 # Backers
 
