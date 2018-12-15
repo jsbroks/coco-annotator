@@ -183,7 +183,7 @@ export default {
       this.addProcess(process);
 
       var formData = new FormData();
-      formData.append("coco", document.getElementById("cocoFile").files[0])
+      formData.append("coco", document.getElementById("cocoFile").files[0]);
 
       axios
         .post("/api/dataset/" + this.dataset.id + "/coco", formData, {
