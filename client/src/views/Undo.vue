@@ -15,6 +15,32 @@
             <button type="button" class="btn btn-secondary" @click="updatePage">Refresh</button>
           </div>
         </div>
+
+        <div class="row justify-content-md-center" style="padding-bottom: 10px">
+          <div class="col-md-2 text-right">
+            <span>Instance Type</span>
+          </div>
+          <div class="col-md-2">
+            <select v-model="type" class="form-control form-control-sm">
+              <option value="all">All</option>
+              <option value="annotation">Annotations</option>
+              <option value="category">Categories</option>
+              <option value="dataset">Datasets</option>
+            </select>
+          </div>
+          <div class="col-md-2 text-right">
+            <span>Limit</span>
+          </div>
+          <div class="col-md-2">
+            <select v-model="limit" class="form-control form-control-sm text-inline">
+              <option>50</option>
+              <option>100</option>
+              <option>500</option>
+              <option>1000</option>
+            </select>
+          </div>
+        </div>
+
         <p class="text-center" v-if="undos.length < 1">Nothing to undone!</p>
         <div v-else>
           <table class="table table-hover table-sm">
@@ -49,24 +75,28 @@
 <script>
 import axios from "axios";
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "Undo",
   data() {
     return {
       undos: [],
-      status: {
-        data: { state: true, message: "Loading data" }
-      }
+      limit: 50,
+      type: "all"
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess"]),
     updatePage() {
-      this.status.data.state = false;
-      axios.get("/api/undo/list/").then(response => {
-        this.undos = response.data;
-
-        this.status.data.state = true;
-      });
+      let process = "Loading undo for " + this.type + " instance type";
+      this.addProcess(process);
+      axios
+        .get("/api/undo/list/?type=" + this.type + "&limit=" + this.limit)
+        .then(response => {
+          this.undos = response.data;
+          this.removeProcess(process);
+        });
     },
     undoModel(id, instance) {
       axios.post("/api/undo/?id=" + id + "&instance=" + instance).then(() => {
@@ -78,6 +108,10 @@ export default {
         this.updatePage();
       });
     }
+  },
+  watch: {
+    limit: 'updatePage',
+    type: 'updatePage'
   },
   created() {
     this.updatePage();

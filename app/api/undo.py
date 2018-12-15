@@ -5,6 +5,10 @@ from ..models import *
 
 api = Namespace('undo', description='Undo related operations')
 
+model_list = reqparse.RequestParser()
+model_list.add_argument('type', type=str, location='args', default="all")
+model_list.add_argument('limit', type=int, location='args', default=50)
+
 model_data = reqparse.RequestParser()
 model_data.add_argument('id', type=int, required=True)
 model_data.add_argument('instance', required=True)
@@ -20,14 +24,18 @@ models = [
 
 @api.route('/list/')
 class Undo(Resource):
-
+    @api.expect(model_list)
     def get(self):
         """ Returns all partially delete models """
-        n = 50
+        args = model_list.parse_args()
+        model_type = args['type']
+        n = max(1, min(args['limit'], 1000))
+        
         data = []
 
         for model in models:
-            data.extend(model_undo(model[0], model[1], limit=n))
+            if model_type == "all" or model_type == model[1]:
+                data.extend(model_undo(model[0], model[1], limit=n))
 
         data.sort(key=lambda item: item['date'], reverse=True)
 
@@ -36,6 +44,7 @@ class Undo(Resource):
 
         if len(data) > n:
             data = data[:n]
+
         return data
 
 
