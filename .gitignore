@@ -3,3 +3,5 @@ datasets/*
 
 dist/*
 !dist/.gitkeep
+
+docs/.vuepress/dist/*
