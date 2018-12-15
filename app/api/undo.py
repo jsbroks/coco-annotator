@@ -30,7 +30,7 @@ class Undo(Resource):
         args = model_list.parse_args()
         model_type = args['type']
         n = max(1, min(args['limit'], 1000))
-        
+
         data = []
 
         for model in models:
