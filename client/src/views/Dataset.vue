@@ -13,7 +13,7 @@ no_numbering<template>
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#generateDataset">
               Generate
             </button>
-            <button type="button" class="btn btn-primary disabled">Import</button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#importCoco">Import COCO</button>
           </div>
         </div>
         <div v-if="subdirectories.length > 0" class="text-center">
@@ -42,6 +42,7 @@ no_numbering<template>
         </div>
       </div>
     </div>
+
     <div class="modal fade" tabindex="-1" role="dialog" id="generateDataset">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -65,6 +66,34 @@ no_numbering<template>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-dismiss="modal" @click="generateDataset">Generate</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="importCoco">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Import COCO Annotations</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+               <div class="form-group">
+                <label for="cocoFile">Example file input</label>
+                <input type="file" class="form-control-file" id="cocoFile">
+              </div>
+              <div class="form-group">
+                
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" @click="uploadCoco">Upload</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -147,6 +176,31 @@ export default {
         })
         .catch(error => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
+        });
+    },
+    uploadCoco() {
+      this.process = "Importing COCO annotations";
+      this.addProcess(process);
+
+      var formData = new FormData();
+      formData.append("coco", document.getElementById("cocoFile").files[0])
+
+      axios
+        .post("/api/dataset/" + this.dataset.id + "/coco", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        })
+        .then(resposne => {
+          let errors = resposne.data.errors;
+          if (errors.length > 0) {
+            this.axiosReqestError("Importing COCO", errors);
+          }
+          this.removeProcess(process);
+          this.updatePage();
+        })
+        .catch(error => {
+          this.axiosReqestError("Importing COCO", error.response.data.message);
         });
     },
     removeFolder(folder) {

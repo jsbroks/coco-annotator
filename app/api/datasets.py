@@ -12,7 +12,6 @@ from ..models import *
 
 import datetime
 import json
-import sys
 import os
 
 api = Namespace('dataset', description='Dataset related operations')
