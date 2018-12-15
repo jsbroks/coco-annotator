@@ -242,6 +242,7 @@ class ImageCoco(Resource):
 
     @api.expect(coco_upload)
     def post(self, dataset_id):
+        """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
 
@@ -257,9 +258,6 @@ class ImageCoco(Resource):
         coco_annotations = coco_json.get('annotations')
         coco_categories = coco_json.get('categories')
 
-        total = len(coco_categories) + len(coco_images) + len(coco_annotations)
-        count = 0
-
         errors = []
 
         categories_id = {}
@@ -267,9 +265,9 @@ class ImageCoco(Resource):
 
         # Create any missing categories
         for category in coco_categories:
-            count = count + 1
             category_name = category.get('name')
-            print("{} [{}]".format(category_name, (count/total)*100), file=sys.stderr)
+            print("Loading category {}".format(category_name), flush=True)
+
             category_id = category.get('id')
             category_model = categories.filter(name__exact=category_name).all()
 
@@ -280,6 +278,7 @@ class ImageCoco(Resource):
                 new_category = CategoryModel(name=category_name, color=color_util.random_color_hex())
                 new_category.save()
                 categories_id[category_id] = new_category.id
+                print("Category not found! (Creating new one)", flush=True)
                 continue
 
             if len(category_model) > 1:
@@ -299,11 +298,10 @@ class ImageCoco(Resource):
 
         # Find all images
         for image in coco_images:
-            count = count + 1
             image_id = image.get('id')
             image_filename = image.get('file_name')
 
-            print("{} [{}]".format(image_filename, (count/total)*100), file=sys.stderr)
+            print("Loading image {}".format(image_filename), flush=True)
             image_model = images.filter(file_name__exact=image_filename).all()
 
             if len(image_model) == 0:
@@ -317,44 +315,44 @@ class ImageCoco(Resource):
                 continue
 
             image_model = image_model[0]
-            print("Image found", file=sys.stderr)
-            images_id[image_id] = image_model.id
+            print("Image found", flush=True)
+            images_id[image_id] = image_model
 
         # Generate annotations
         for annotation in coco_annotations:
-            count = count + 1
             image_id = annotation.get('image_id')
             category_id = annotation.get('category_id')
             segmentation = annotation.get('segmentation', [])
             is_crowd = annotation.get('iscrowed', False)
 
-            print("A {} {} [{}]".format(image_id, category_id, (count/total)*100), file=sys.stderr)
+            if len(segmentation) == 0:
+                continue
 
-            print(image_id, category_id, file=sys.stderr)
+            print("Loading annotation data (image:{} category:{})".format(image_id, category_id), flush=True)
+
             try:
-                image_model_id = images_id[image_id]
+                image_model = images_id[image_id]
                 category_model_id = categories_id[category_id]
             except KeyError:
                 continue
 
-            if len(segmentation) == 0:
-
-                print("Segment not found", file=sys.stderr)
-                continue
-
             # Check if annotation already exists
-            annotation = AnnotationModel.objects(image_id=image_model_id,
+            annotation = AnnotationModel.objects(image_id=image_model.id,
                                                  category_id=category_model_id,
-                                                 segmentation=segmentation).first()
+                                                 segmentation=segmentation, delete=False).first()
             # Create annotation
             if annotation is None:
-                print("Creating annotation", file=sys.stderr)
-                annotation = AnnotationModel(image_id=image_model_id)
+                print("Creating annotation", flush=True)
+                annotation = AnnotationModel(image_id=image_model.id)
                 annotation.category_id = category_model_id
                 # annotation.iscrowd = is_crowd
                 annotation.segmentation = segmentation
                 annotation.color = color_util.random_color_hex()
                 annotation.save()
+
+                image_model.update(set__annotated=True)
+            else:
+                print("Annotation already exists", flush=True)
 
         return {
             'errors': errors
