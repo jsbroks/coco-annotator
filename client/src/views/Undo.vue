@@ -31,7 +31,7 @@
 
             <tbody>
               <tr v-for="(undo, index) in undos" :key="index">
-                <td>{{ undo.ago }} ago</td>
+                <td>{{ undo.ago.length > 0 ? undo.ago : 0 + " seconds" }} ago</td>
                 <td>{{ undo.instance }}</td>
                 <td>{{ undo.id }}</td>
                 <td>{{ undo.name }}</td>
