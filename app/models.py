@@ -47,6 +47,8 @@ class ImageModel(db.DynamicDocument):
     image_url = db.StringField()
     thumbnail_url = db.StringField()
 
+    category_ids = db.ListField(default=[])
+
     metadata = db.DictField()
 
     license = db.IntField()

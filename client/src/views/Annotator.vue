@@ -5,13 +5,15 @@
 
       <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="select" />
 
-      <hr>
+      <div v-show="type == 'segment'">
+        <hr>
 
-      <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="polygon" />
-      <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" ref="magicwand" />
+        <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="polygon" />
+        <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" ref="magicwand" />
 
-      <BrushTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="brush" />
-      <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="eraser" />
+        <BrushTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="brush" />
+        <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="eraser" />
+      </div>
       <hr>
 
       <CenterButton />
@@ -145,6 +147,7 @@ export default {
       shapeOpacity: 0.5,
       zoom: 0.2,
       cursor: "move",
+      type: "segment",
       panels: {
         show: {
           left: true,
@@ -188,6 +191,7 @@ export default {
       let refs = this.$refs;
 
       let data = {
+        type: this.type,
         user: {
           keyboardShortcuts: []
         },
@@ -196,7 +200,8 @@ export default {
           metadata: this.$refs.settings.exportMetadata(),
           settings: {
             selectedLayers: this.current
-          }
+          },
+          category_ids: []
         },
         settings: {
           activeTool: this.activeTool,
@@ -208,7 +213,15 @@ export default {
 
       if (refs.category != null) {
         refs.category.forEach(category => {
-          data.categories.push(category.export());
+          let categoryData = category.export();
+          data.categories.push(categoryData);
+
+          if (categoryData.annotations.length > 0) {
+            let categoryIds = data.image.category_ids
+            if (categoryIds.indexOf(categoryData.id) == -1) {
+              categoryIds.push(categoryData.id)
+            }
+          }
         });
       }
 

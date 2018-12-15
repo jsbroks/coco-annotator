@@ -81,7 +81,11 @@ class AnnotatorData(Resource):
                     if area > 0:
                         annotated = True
 
-        image_model.update(set__metadata=image.get('metadata', {}), set__annotated=annotated)
+        image_model.update(
+            set__metadata=image.get('metadata', {}),
+            set__annotated=annotated,
+            set__category_ids=image.get('category_ids', [])
+        )
 
         return data
 
