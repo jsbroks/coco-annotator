@@ -99,7 +99,7 @@ class ImageId(Resource):
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
         image_io = io.BytesIO()
         pil_image = pil_image.convert("RGB")
-        pil_image.save(image_io, "JPEG", quality=70)
+        pil_image.save(image_io, "JPEG", quality=90)
         image_io.seek(0)
 
         return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
@@ -141,7 +141,7 @@ class ImageCoco(Resource):
 
         image_io = io.BytesIO()
         pil_image = pil_image.convert("RGB")
-        pil_image.save(image_io, "JPEG", quality=50)
+        pil_image.save(image_io, "JPEG", quality=90)
         image_io.seek(0)
 
         return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)

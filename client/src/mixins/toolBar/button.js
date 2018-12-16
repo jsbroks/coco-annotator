@@ -3,7 +3,6 @@ export default {
     "<div><i v-tooltip.right='name' class='fa fa-x' :class='icon' :style='{ color: iconColor }' @click='click'></i><br></div>",
   data() {
     return {
-      icon: "",
       color: {
         enabled: "white",
         active: "#2ecc71"

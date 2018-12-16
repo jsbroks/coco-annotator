@@ -1,5 +1,5 @@
 <template>
-  <div class="card" :style="{ 'background-color': backgroundColor, 'border-color': borderColor }">
+  <div class="card" v-show="showCategory" :style="{ 'background-color': backgroundColor, 'border-color': borderColor }">
 
     <div class="card-header" :id="'heading' + category.id">
       <div :style="{ color: isVisible ? 'white' : 'gray' }">
@@ -87,6 +87,10 @@ export default {
     scale: {
       type: Number,
       default: 1
+    },
+    categorysearch: {
+      type: String,
+      required: true
     }
   },
   data: function() {
@@ -270,6 +274,11 @@ export default {
     }
   },
   computed: {
+    showCategory() {
+      let search = this.categorysearch.toLowerCase();
+      if (search.length === 0) return true;
+      return this.category.name.toLowerCase().includes(search);
+    },
     isCurrent() {
       return this.current.category === this.index;
     },

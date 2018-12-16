@@ -1,11 +1,12 @@
 <template>
   <div style="display: block; height: inherit;">
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
-      <hr>
+      
+      <div v-show="mode == 'segment'">
+        <hr>
+        
+        <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="select" />
 
-      <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="select" />
-
-      <div v-show="type == 'segment'">
         <hr>
 
         <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="polygon" />
@@ -22,6 +23,7 @@
 
       <DownloadButton :image="image" />
       <SaveButton />
+      <ModeButton v-model="mode"/>
       <SettingsButton :metadata="image.metadata" :commands="commands" ref="settings" />
 
       <hr>
@@ -33,38 +35,53 @@
       <hr>
       <FileTitle :previousimage="image.previous" :nextimage="image.next" :filename="image.filename" />
 
-      <div class="sidebar-section" style="max-height: 57%">
+      <div v-if="categories.length > 5">
+        <div style="padding: 0px 5px">
+          <input v-model="search" class="search" placeholder="Category Search">
+        </div>
+      </div>
+      
+      <div class="sidebar-section" :style="{'max-height': mode == 'label' ? '100%': '57%'}">
         <p v-if="categories.length == 0" style="color: lightgray; font-size: 12px">
           No categories have been added to this image.
         </p>
-        <div v-else id="accordion" style="overflow: auto; max-height: 100%">
-          <Category v-for="(category, index) in categories" :key="category.id + '-category'" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
+
+        <div v-show="mode == 'segment'" id="accordion" style="overflow: auto; max-height: 100%">
+          <Category v-for="(category, index) in categories" :key="category.id + '-category'" :categorysearch="search" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
+        </div>
+
+        <div v-show="mode == 'label'" id="accordion" style="overflow: auto; max-height: 100%">
+          <CLabel v-for="category in categories" v-model="image.categoryIds" :key="category.id + '-label'" :category="category" :search="search"/>
         </div>
       </div>
-      <hr>
-      <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
-      <div class="tool-section" style="max-height: 30%; color: lightgray">
 
-        <div v-if="$refs.polygon != null">
-          <PolygonPanel :polygon="$refs.polygon" />
+      <div v-show="mode == 'segment'">
+        <hr>
+        <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
+
+        <div class="tool-section" style="max-height: 30%; color: lightgray">
+
+          <div v-if="$refs.polygon != null">
+            <PolygonPanel :polygon="$refs.polygon" />
+          </div>
+
+          <div v-if="$refs.select != null">
+            <SelectPanel :select="$refs.select" />
+          </div>
+
+          <div v-if="$refs.magicwand != null">
+            <MagicWandPanel :magicwand="$refs.magicwand" />
+          </div>
+
+          <div v-if="$refs.brush != null">
+            <BrushPanel :brush="$refs.brush" />
+          </div>
+
+          <div v-if="$refs.eraser != null">
+            <EraserPanel :eraser="$refs.eraser" />
+          </div>
+
         </div>
-
-        <div v-if="$refs.select != null">
-          <SelectPanel :select="$refs.select" />
-        </div>
-
-        <div v-if="$refs.magicwand != null">
-          <MagicWandPanel :magicwand="$refs.magicwand" />
-        </div>
-
-        <div v-if="$refs.brush != null">
-          <BrushPanel :brush="$refs.brush" />
-        </div>
-
-        <div v-if="$refs.eraser != null">
-          <EraserPanel :eraser="$refs.eraser" />
-        </div>
-
       </div>
     </aside>
 
@@ -90,6 +107,7 @@ import shortcuts from "@/mixins/shortcuts";
 
 import FileTitle from "@/components/annotator/FileTitle";
 import Category from "@/components/annotator/Category";
+import Label from "@/components/annotator/Label";
 
 import PolygonTool from "@/components/annotator/tools/PolygonTool";
 import SelectTool from "@/components/annotator/tools/SelectTool";
@@ -102,6 +120,7 @@ import CenterButton from "@/components/annotator/tools/CenterButton";
 import DownloadButton from "@/components/annotator/tools/DownloadButton";
 import SaveButton from "@/components/annotator/tools/SaveButton";
 import SettingsButton from "@/components/annotator/tools/SettingsButton";
+import ModeButton from "@/components/annotator/tools/ModeButton";
 import DeleteButton from "@/components/annotator/tools/DeleteButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
@@ -117,6 +136,7 @@ export default {
   components: {
     FileTitle,
     Category,
+    CLabel: Label,
     PolygonTool,
     PolygonPanel,
     SelectTool,
@@ -131,7 +151,8 @@ export default {
     SelectPanel,
     MagicWandPanel,
     BrushPanel,
-    EraserPanel
+    EraserPanel,
+    ModeButton
   },
   mixins: [toastrs, shortcuts],
   props: {
@@ -147,7 +168,7 @@ export default {
       shapeOpacity: 0.5,
       zoom: 0.2,
       cursor: "move",
-      type: "segment",
+      mode: "segment",
       panels: {
         show: {
           left: true,
@@ -173,14 +194,16 @@ export default {
         dataset: 0,
         previous: null,
         next: null,
-        filename: ""
+        filename: "",
+        categoryIds: []
       },
       categories: [],
       dataset: {},
       loading: {
         image: true,
         data: true
-      }
+      },
+      search: ""
     };
   },
   methods: {
@@ -191,7 +214,7 @@ export default {
       let refs = this.$refs;
 
       let data = {
-        type: this.type,
+        mode: this.mode,
         user: {
           keyboardShortcuts: []
         },
@@ -211,19 +234,22 @@ export default {
         categories: []
       };
 
-      if (refs.category != null) {
+      if (refs.category != null && this.mode == "segment") {
+        this.image.categoryIds = [];
         refs.category.forEach(category => {
           let categoryData = category.export();
           data.categories.push(categoryData);
 
           if (categoryData.annotations.length > 0) {
-            let categoryIds = data.image.category_ids;
+            let categoryIds = this.image.categoryIds;
             if (categoryIds.indexOf(categoryData.id) == -1) {
               categoryIds.push(categoryData.id);
             }
           }
         });
       }
+
+      data.image.category_ids = this.image.categoryIds;
 
       axios
         .post("/api/annotator/data", JSON.stringify(data))
@@ -331,10 +357,11 @@ export default {
         .get("/api/annotator/data/" + this.image.id)
         .then(response => {
           // Set image data
-          this.image.metadata = response.data.image.metadata;
+          this.image.metadata = response.data.image.metadata || {};
           this.image.filename = response.data.image.file_name;
           this.image.next = response.data.image.next;
           this.image.previous = response.data.image.previous;
+          this.image.categoryIds = response.data.image.category_ids || [];
 
           // Set other data
           this.dataset = response.data.dataset;
@@ -696,5 +723,15 @@ export default {
   position: absolute;
   left: calc(50% - 75px);
   top: calc(50% - 75px);
+}
+
+.search {
+  width: 100%;
+  height: 18px;
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  text-align: center;
+  border-radius: 4px;
 }
 </style>

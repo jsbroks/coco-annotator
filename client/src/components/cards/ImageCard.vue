@@ -12,7 +12,7 @@
         <br>
         <div>
           <p v-if="image.annotations > 0">
-            {{ image.annotations }} annotations.
+            {{ image.annotations }} annotation<span v-show="image.annotations > 1">s</span>
           </p>
           <p v-else>Image has no annotations</p>
         </div>
@@ -37,6 +37,11 @@ export default {
       type: Object,
       required: true
     }
+  },
+  data() {
+    return {
+      showAnnotations: true
+    };
   },
   methods: {
     downloadURI(uri, exportName) {
@@ -78,7 +83,7 @@ export default {
   computed: {
     imageUrl: function() {
       let d = new Date();
-      if (this.image.annotations > 0) {
+      if (this.image.annotations > 0 && this.showAnnotations) {
         return (
           "/api/image/" +
           this.image.id +
