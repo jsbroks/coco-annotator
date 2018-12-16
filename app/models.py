@@ -80,6 +80,17 @@ class ImageModel(db.DynamicDocument):
 
         return image
 
+    def thumbnail_path(self):
+        folders = self.path.split('/')
+        i = folders.index("datasets")
+        folders.insert(i+1, "_thumbnails")
+
+        directory = '/'.join(folders[:-1])
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        return '/'.join(folders)
+
 
 class AnnotationModel(db.DynamicDocument):
 
@@ -88,7 +99,7 @@ class AnnotationModel(db.DynamicDocument):
     category_id = db.IntField(required=True)
     dataset_id = db.IntField()
 
-    segmentation = db.ListField()
+    segmentation = db.ListField(default=[])
     area = db.IntField(default=0)
     bbox = db.ListField()
     iscrowd = db.BooleanField(default=False)

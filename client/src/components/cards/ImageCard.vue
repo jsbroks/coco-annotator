@@ -77,7 +77,17 @@ export default {
   },
   computed: {
     imageUrl: function() {
-      return "/api/image/" + this.image.id + "?width=250";
+      let d = new Date();
+      if (this.image.annotations > 0) {
+        return (
+          "/api/image/" +
+          this.image.id +
+          "/thumbnail?width=250&dummy=" +
+          d.getTime()
+        );
+      } else {
+        return "/api/image/" + this.image.id + "?width=250";
+      }
     }
   }
 };

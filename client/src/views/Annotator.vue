@@ -217,9 +217,9 @@ export default {
           data.categories.push(categoryData);
 
           if (categoryData.annotations.length > 0) {
-            let categoryIds = data.image.category_ids
+            let categoryIds = data.image.category_ids;
             if (categoryIds.indexOf(categoryData.id) == -1) {
-              categoryIds.push(categoryData.id)
+              categoryIds.push(categoryData.id);
             }
           }
         });

@@ -110,8 +110,8 @@ export default {
     }
   },
   watch: {
-    limit: 'updatePage',
-    type: 'updatePage'
+    limit: "updatePage",
+    type: "updatePage"
   },
   created() {
     this.updatePage();

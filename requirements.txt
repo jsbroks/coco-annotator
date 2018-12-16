@@ -1,3 +1,4 @@
+opencv-python
 flask
 flask-cors
 flask-restplus

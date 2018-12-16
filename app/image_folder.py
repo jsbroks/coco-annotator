@@ -30,6 +30,13 @@ class ImageFolderHandler(FileSystemEventHandler):
     def on_any_event(self, event):
 
         path = event.dest_path if event.event_type == "moved" else event.src_path
+
+        # Check if thumbnails directory
+        folders = path.split('/')
+        i = folders.index("datasets")
+        if folders[i+1] == "_thumbnails":
+            return
+        
         if not event.is_directory and path.endswith(self.pattern):
 
             if event.is_directory:
