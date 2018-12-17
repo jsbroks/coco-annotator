@@ -2,7 +2,8 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
 
     <a class="navbar-brand" href="/">
-      <strong>Coco Annotator</strong>
+      <strong>COCO Annotator</strong>
+      <span class="subscript">{{ tag }}</span>
     </a>
 
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,14 +35,42 @@
 
 <script>
 import Status from "@/components/Status";
+import axios from "axios";
 
 export default {
   name: "NavBar",
-  components: { Status }
+  components: { Status },
+  data() {
+    return {
+      valid: true,
+      tag: "loading"
+    };
+  },
+  methods: {
+    getTag() {
+      axios
+        .get("/api/info/")
+        .then(response => {
+          this.tag = response.data.git.tag;
+        })
+        .catch(() => {
+          this.tag = "unknown";
+        });
+    }
+  },
+  mounted() {
+    this.getTag();
+  }
 };
 </script>
 
 <style scoped>
+.subscript {
+  padding: 10px;
+  font-size: 10px;
+  color: lightgray;
+}
+
 .navbar {
   background-color: #383c4a;
 }
