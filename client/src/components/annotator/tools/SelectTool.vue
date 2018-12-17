@@ -28,7 +28,8 @@ export default {
         shift: 0,
         rounded: 0,
         category: null,
-        annotation: null
+        annotation: null,
+        annotationText: null
       },
       hitOptions: {
         segments: true,
@@ -63,9 +64,16 @@ export default {
 
       let position = this.hover.position.add(this.hover.textShift, 0);
 
-      if (this.hover.text == null) {
+      if (
+        this.hover.text == null ||
+        this.hover.annotationText != this.hover.anntoation
+      ) {
         let content = this.generateStringFromMetadata();
 
+        if (this.hover.text != null) {
+          this.hover.text.remove();
+          this.hover.box.remove();
+        }
         this.hover.text = new paper.PointText(position);
         this.hover.text.justification = "left";
         this.hover.text.fillColor = "black";
@@ -83,6 +91,7 @@ export default {
         this.hover.box.opacity = 0.5;
 
         this.hover.box.insertAbove(this.rect);
+        this.hover.annotationText = this.hover.annotation;
       }
 
       this.hover.shift =
@@ -136,6 +145,8 @@ export default {
         let item = event.item;
         this.$parent.hover.category = item.data.categoryId;
         this.hover.category = this.$parent.getCategory(item.data.categoryId);
+
+        if (this.hover.category == null) return;
 
         for (let i = 0; i < item.children.length; i++) {
           let child = item.children[i];

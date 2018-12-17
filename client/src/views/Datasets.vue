@@ -11,7 +11,8 @@
         </h2>
 
         <p class="text-center">
-          Loaded <strong>{{ datasets.length }}</strong> datasets.</p>
+          Loaded <strong>{{ datasets.length }}</strong> datasets.
+        </p>
 
         <div class="row justify-content-md-center">
           <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
@@ -19,7 +20,7 @@
               Create
             </button>
             <button type="button" class="btn btn-primary">Import</button>
-            <button type=" button" class="btn btn-secondary" @click="updatePage">Refresh</button>
+            <button type=" button" class="btn btn-secondary" @click="updatePage(page)">Refresh</button>
           </div>
         </div>
 

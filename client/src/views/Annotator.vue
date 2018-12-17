@@ -400,27 +400,15 @@ export default {
     },
     // Current Annotation Operations
     uniteCurrentAnnotation(compound) {
-      let category = this.current.category;
-      let annotation = this.current.annotation;
+      if (this.currentAnnotation == null) return;
 
-      if (category === -1) return;
-      if (annotation === -1) return;
-
-      this.getCategory(category)
-        .getAnnotation(annotation)
-        .unite(compound);
+      this.currentAnnotation.unite(compound);
     },
 
     subtractCurrentAnnotation(compound) {
-      let category = this.current.category;
-      let annotation = this.current.annotation;
+      if (this.currentCategory == null) return;
 
-      if (category === -1) return;
-      if (annotation === -1) return;
-
-      this.getCategory(category)
-        .getAnnotation(annotation)
-        .subtract(compound);
+      this.currentAnnotation.subtract(compound);
     },
 
     setCursor(newCursor) {

@@ -13,7 +13,12 @@
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#generateDataset">
               Generate
             </button>
-            <button type="button" class="btn btn-primary disabled">Import</button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cocoUpload">
+              Import COCO
+            </button>
+            <!-- <button type="button" class="btn btn-info">
+              Download COCO
+            </button> -->
           </div>
         </div>
         <div v-if="subdirectories.length > 0" class="text-center">
@@ -65,6 +70,30 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" @click="generateDataset">Generate</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+        <div class="modal fade" tabindex="-1" role="dialog" id="cocoUpload">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Upload COCO Annotaitons</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="coco">COCO Annotation file (.json)</label>
+                <input type="file" class="form-control-file" id="coco">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @click="uploadCoco" data-dismiss="modal">Upload</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -152,6 +181,28 @@ export default {
     removeFolder(folder) {
       let index = this.folders.indexOf(folder);
       this.folders.splice(index + 1, this.folders.length);
+    },
+    uploadCoco() {
+      let process = "Uploading COCO annotation file";
+      this.addProcess(process);
+
+      let form = new FormData();
+
+      let uploaded = document.getElementById("coco");
+      form.append("coco", uploaded.files[0]);
+      axios
+        .post("/api/dataset/" + this.dataset.id + "/coco", form, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        })
+        .then(() => {
+          this.removeProcess(process);
+        })
+        .catch(error => {
+          this.axiosReqestError("Loading Dataset", error.response.data.message);
+          this.removeProcess(process);
+        });
     }
   },
   watch: {
