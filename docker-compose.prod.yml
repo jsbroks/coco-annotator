@@ -12,7 +12,7 @@ services:
         ports:
             - '5000:5000'
         volumes:
-            - './datasets:/data/datasets'
+            - './datasets:/datasets'
             - './app:/workspace/app'
         environment:
           - FLASK_APP=app

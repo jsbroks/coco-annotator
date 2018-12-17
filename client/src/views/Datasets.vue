@@ -88,7 +88,7 @@
             <hr>
             <h6>What is a dataset?</h6>
             A dataset is a collection of images. It provides default category options for all subsequent images.
-            Each dataset has its own folder in the data/datasets directory.
+            Each dataset has its own folder in the /datasets directory.
             <hr>
             <h6>How do I create one?</h6>
             Click on the "Create" button found on this webpage. A dataset name must be provided.

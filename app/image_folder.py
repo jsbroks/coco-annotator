@@ -34,13 +34,10 @@ class ImageFolderHandler(FileSystemEventHandler):
         # Check if thumbnails directory
         folders = path.split('/')
         i = folders.index("datasets")
-        if folders[i+1] == "_thumbnails":
+        if i+1 < len(folders) and folders[i+1] == "_thumbnails":
             return
         
         if not event.is_directory and path.endswith(self.pattern):
-
-            if event.is_directory:
-                return None
 
             image = ImageModel.objects(path=event.src_path).first()
 

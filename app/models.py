@@ -68,9 +68,10 @@ class ImageModel(db.DynamicDocument):
         image.width = pil_image.size[0]
         image.height = pil_image.size[1]
 
-        # TODO: Make more general
         # Get dataset name from path
-        dataset_name = path.split('/')[3]
+        folders = path.split('/')
+        i = folders.index("datasets")
+        dataset_name = folders[i+1]
 
         dataset = DatasetModel.objects(name=dataset_name).first()
         if dataset is not None:
