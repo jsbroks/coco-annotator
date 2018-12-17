@@ -20,7 +20,6 @@ export default {
       eraser: {
         brush: null,
         minimumArea: 10,
-        simplify: 5,
         pathOptions: {
           strokeColor: "white",
           strokeWidth: 1,
@@ -63,8 +62,7 @@ export default {
       this.erase();
     },
     erase() {
-      let simplify = this.eraser.simplify < 1 ? 1 : this.eraser.simplify;
-      this.$parent.subtractCurrentAnnotation(this.eraser.brush, simplify);
+      this.$parent.subtractCurrentAnnotation(this.eraser.brush);
     },
     decreaseRadius() {
       if (!this.isActive) return;

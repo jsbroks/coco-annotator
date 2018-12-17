@@ -23,7 +23,7 @@
         <input v-model="search" class="annotation-search" placeholder="Search" />
       </li>
 
-      <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
+      <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :simplify="simplify" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
     </ul>
 
     <div class="modal fade" tabindex="-1" role="dialog" :id="'categorySettings' + category.id">
@@ -91,6 +91,10 @@ export default {
     categorysearch: {
       type: String,
       required: true
+    },
+    simplify: {
+      type: Number,
+      default: 1
     }
   },
   data: function() {

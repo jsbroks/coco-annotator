@@ -47,7 +47,7 @@
         </p>
 
         <div v-show="mode == 'segment'" id="accordion" style="overflow: auto; max-height: 100%">
-          <Category v-for="(category, index) in categories" :key="category.id + '-category'" :categorysearch="search" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
+          <Category v-for="(category, index) in categories" :key="category.id + '-category'" :simplify="simplify" :categorysearch="search" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
         </div>
 
         <div v-show="mode == 'label'" id="accordion" style="overflow: auto; max-height: 100%">
@@ -169,6 +169,7 @@ export default {
       zoom: 0.2,
       cursor: "move",
       mode: "segment",
+      simplify: 1,
       panels: {
         show: {
           left: true,
@@ -398,7 +399,7 @@ export default {
       return this.$refs.category[index];
     },
     // Current Annotation Operations
-    uniteCurrentAnnotation(compound, simplify) {
+    uniteCurrentAnnotation(compound) {
       let category = this.current.category;
       let annotation = this.current.annotation;
 
@@ -407,9 +408,10 @@ export default {
 
       this.getCategory(category)
         .getAnnotation(annotation)
-        .unite(compound, simplify);
+        .unite(compound);
     },
-    subtractCurrentAnnotation(compound, simplify) {
+
+    subtractCurrentAnnotation(compound) {
       let category = this.current.category;
       let annotation = this.current.annotation;
 
@@ -418,7 +420,7 @@ export default {
 
       this.getCategory(category)
         .getAnnotation(annotation)
-        .subtract(compound, simplify);
+        .subtract(compound);
     },
 
     setCursor(newCursor) {

@@ -19,7 +19,6 @@ export default {
       scaleFactor: 3,
       brush: {
         path: null,
-        simplify: 5,
         pathOptions: {
           strokeColor: "white",
           strokeWidth: 1,
@@ -62,8 +61,7 @@ export default {
       this.draw();
     },
     draw() {
-      let simplify = this.brush.simplify < 1 ? 1 : this.brush.simplify;
-      this.$parent.uniteCurrentAnnotation(this.brush.path, simplify);
+      this.$parent.uniteCurrentAnnotation(this.brush.path);
     },
     decreaseRadius() {
       if (!this.isActive) return;

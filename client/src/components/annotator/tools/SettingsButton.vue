@@ -14,6 +14,14 @@
             </button>
           </div>
           <div class="modal-body">
+
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">simplify</label>
+              <div class="col-sm-9">
+                <input v-model.number="$parent.simplify" type="number" class="form-control">
+              </div>
+            </div>
+
             <Metadata :metadata="metadata" ref="metadata" />
 
             <p style="margin: 5px 0 0 0">Keyboard Shortcuts</p>

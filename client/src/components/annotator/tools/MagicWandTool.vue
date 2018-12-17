@@ -20,13 +20,12 @@ export default {
       cursor: "crosshair",
       wand: {
         threshold: 30,
-        blur: 5,
-        simplify: 1
+        blur: 5
       }
     };
   },
   methods: {
-    flood(x, y, thr, rad, simplify) {
+    flood(x, y, thr, rad) {
       let image = {
         data: this.imageInfo.data.data,
         width: this.imageInfo.width,
@@ -38,7 +37,6 @@ export default {
       mask = MagicWand.gaussBlurOnlyBorder(mask, rad);
 
       let contours = MagicWand.traceContours(mask).filter(x => !x.inner);
-      contours = MagicWand.simplifyContours(contours, simplify, 3);
 
       if (contours[0]) {
         let centerX = image.width / 2;
@@ -70,13 +68,7 @@ export default {
         return;
       }
 
-      let path = this.flood(
-        x,
-        y,
-        this.wand.threshold,
-        this.wand.blur,
-        this.wand.simplify
-      );
+      let path = this.flood(x, y, this.wand.threshold, this.wand.blur);
 
       if (event.modifiers.shift) {
         this.$parent.subtractCurrentAnnotation(path);

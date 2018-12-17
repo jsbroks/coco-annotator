@@ -59,6 +59,7 @@
 <script>
 import paper from "paper";
 import axios from "axios";
+import simplifyjs from "simplify-js";
 
 import Metadata from "@/components/Metadata";
 
@@ -95,6 +96,10 @@ export default {
     search: {
       type: String,
       default: ""
+    },
+    simplify: {
+      type: Number,
+      default: 1
     }
   },
   data() {
@@ -191,23 +196,50 @@ export default {
       }
       return this.compoundPath;
     },
-    unite(compound, flatten) {
-      if (this.compoundPath == null) this.createCompoundPath();
+    simplifyPath() {
+      let flatten = 1;
+      let simplify = this.simplify;
 
-      flatten = flatten || 0;
-      let newCompound = this.compoundPath.unite(compound);
-      this.compoundPath.remove();
-      this.compoundPath = newCompound;
       this.compoundPath.flatten(flatten);
+
+      if (this.compoundPath instanceof paper.Path) {
+        this.compoundPath = new paper.CompoundPath(this.compoundPath);
+        this.compoundPath.data.annotationId = this.index;
+      }
+
+      this.compoundPath.children.forEach(path => {
+        let points = [];
+
+        path.segments.forEach(seg => {
+          points.push({ x: seg.point.x, y: seg.point.y });
+        });
+
+        points = simplifyjs(points, simplify, true);
+        path.remove();
+
+        let newPath = new paper.Path(points);
+        newPath.closePath();
+
+        this.compoundPath.addChild(newPath);
+      });
     },
-    subtract(compound, flatten) {
+    unite(compound) {
       if (this.compoundPath == null) this.createCompoundPath();
 
-      flatten = flatten || 0;
-      let newCompound = this.compoundPath.subtract(compound);
+      let newCompound = this.compoundPath.unite(compound);
+
       this.compoundPath.remove();
       this.compoundPath = newCompound;
-      this.compoundPath.flatten(flatten);
+      this.simplifyPath();
+    },
+    subtract(compound) {
+      if (this.compoundPath == null) this.createCompoundPath();
+
+      let newCompound = this.compoundPath.subtract(compound);
+
+      this.compoundPath.remove();
+      this.compoundPath = newCompound;
+      this.simplifyPath();
     },
     setColor() {
       if (this.compoundPath == null) return;

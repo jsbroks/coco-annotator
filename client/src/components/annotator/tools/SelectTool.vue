@@ -137,8 +137,11 @@ export default {
         this.$parent.hover.category = item.data.categoryId;
         this.hover.category = this.$parent.getCategory(item.data.categoryId);
 
+        console.log(item.children.length);
+
         for (let i = 0; i < item.children.length; i++) {
           let child = item.children[i];
+
           if (
             child.visible &&
             child.contains(event.point) &&

@@ -2,7 +2,6 @@
   <div v-show="eraser.isActive">
     <PanelInputNumber name="Radius" min="0" max="1000" step="5" v-model="eraser.eraser.pathOptions.radius" />
     <PanelInputString name="Stroke Color" v-model="eraser.eraser.pathOptions.strokeColor" />
-    <PanelInputNumber name="Simplify" min="0" max="1000" step="5" v-model="eraser.eraser.simplify" />
   </div>
 </template>
 

@@ -99,18 +99,6 @@ export default {
 
       this.removeLastPoint();
 
-      if (this.polygon.simplify > 0) {
-        let points = [];
-
-        this.polygon.path.segments.forEach(seg => {
-          points.push({ x: seg.point.x, y: seg.point.y });
-        });
-
-        points = simplify(points, this.polygon.simplify, true);
-
-        this.polygon.path.remove();
-        this.polygon.path = new paper.Path(points);
-      }
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
