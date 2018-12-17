@@ -3,10 +3,7 @@ from .util import color_util
 from .config import Config
 from PIL import Image
 
-import datetime
-
 import os
-import sys
 
 db = MongoEngine()
 
@@ -45,8 +42,12 @@ class ImageModel(db.DynamicDocument):
     height = db.IntField(required=True)
     file_name = db.StringField()
 
+    annotated = db.BooleanField(default=False)
+
     image_url = db.StringField()
     thumbnail_url = db.StringField()
+
+    category_ids = db.ListField(default=[])
 
     metadata = db.DictField()
 
@@ -67,9 +68,10 @@ class ImageModel(db.DynamicDocument):
         image.width = pil_image.size[0]
         image.height = pil_image.size[1]
 
-        # TODO: Make more general
         # Get dataset name from path
-        dataset_name = path.split('/')[3]
+        folders = path.split('/')
+        i = folders.index("datasets")
+        dataset_name = folders[i+1]
 
         dataset = DatasetModel.objects(name=dataset_name).first()
         if dataset is not None:
@@ -79,6 +81,17 @@ class ImageModel(db.DynamicDocument):
 
         return image
 
+    def thumbnail_path(self):
+        folders = self.path.split('/')
+        i = folders.index("datasets")
+        folders.insert(i+1, "_thumbnails")
+
+        directory = '/'.join(folders[:-1])
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        return '/'.join(folders)
+
 
 class AnnotationModel(db.DynamicDocument):
 
@@ -87,7 +100,7 @@ class AnnotationModel(db.DynamicDocument):
     category_id = db.IntField(required=True)
     dataset_id = db.IntField()
 
-    segmentation = db.ListField()
+    segmentation = db.ListField(default=[])
     area = db.IntField(default=0)
     bbox = db.ListField()
     iscrowd = db.BooleanField(default=False)

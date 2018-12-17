@@ -1,4 +1,3 @@
-from flask import request
 from flask_restplus import Namespace, Resource, reqparse
 
 from ..models import AnnotationModel

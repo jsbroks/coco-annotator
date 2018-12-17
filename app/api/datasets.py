@@ -1,12 +1,17 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
+from mongoengine.errors import NotUniqueError
+from threading import Thread
 
+from google_images_download import google_images_download as gid
+
+from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
 from ..models import *
 
+
 import datetime
 import json
-import sys
 import os
 
 api = Namespace('dataset', description='Dataset related operations')
@@ -35,6 +40,11 @@ update_dataset.add_argument('categories', location='json', type=list, help="New 
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
                             help="Default annotation metadata")
 
+dataset_generate = reqparse.RequestParser()
+dataset_generate.add_argument('keywords', location='json', type=list, default=[],
+                              help="Keywords associated with images")
+dataset_generate.add_argument('limit', location='json', type=int, default=100, help="Number of images per keyword")
+
 
 @api.route('/')
 class Dataset(Resource):
@@ -50,10 +60,45 @@ class Dataset(Resource):
         name = args['name']
         categories = args.get('categories', [])
 
-        dataset = DatasetModel(name=name, categories=categories)
-        dataset.save()
+        try:
+            dataset = DatasetModel(name=name, categories=categories)
+            dataset.save()
+        except NotUniqueError:
+            return {'message': 'Dataset already exists. Check the undo tab to fully delete the dataset.'}, 400
 
         return query_util.fix_ids(dataset)
+
+
+def download_images(output_dir, args):
+    for keyword in args['keywords']:
+        response = gid.googleimagesdownload()
+        response.download({
+            "keywords": keyword,
+            "limit": args['limit'],
+            "output_directory": output_dir,
+            "no_numbering": True,
+            "format": "jpg",
+            "type": "photo",
+            "print_urls": False,
+            "print_paths": False,
+            "print_size": False
+        })
+
+
+@api.route('/<int:dataset_id>/generate')
+class DatasetGenerate(Resource):
+    def post(self, dataset_id):
+        """ Adds images found on google to the dataset """
+        args = dataset_generate.parse_args()
+
+        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        thread = Thread(target=download_images, args=(dataset.directory, args))
+        thread.start()
+
+        return {"success": True}
 
 
 @api.route('/<int:dataset_id>')
@@ -103,44 +148,24 @@ class Dataset(Resource):
         page = args['page']
         folder = args['folder']
 
-        datasets = query_util.fix_ids(DatasetModel.objects(deleted=False).all())
+        datasets = DatasetModel.objects(deleted=False)
+
+        pagination = Pagination(datasets.count(), limit, page)
+
+        datasets = query_util.fix_ids(datasets[pagination.start:pagination.end])
 
         for dataset in datasets:
             images = ImageModel.objects(dataset_id=dataset.get('id'), deleted=False)
 
-            count = images.count()
-            dataset['numberImages'] = count
-
-            count = 0
-            for image in images:
-                if AnnotationModel.objects(image_id=image.id, deleted=False).count() > 0:
-                    count = count + 1
-            dataset['numberAnnotated'] = count
+            dataset['numberImages'] = images.count()
+            dataset['numberAnnotated'] = images.filter(annotated=True).count()
 
             first = images.first()
             if first is not None:
                 dataset['first_image_id'] = images.first().id
 
-        count = len(datasets)
-        pages = int((count-1) / limit) + 1
-
-        if page > pages:
-            page = pages
-
-        if page < 1:
-            page = 1
-
-        start = (page - 1) * limit
-        end = start + limit
-
-        if count < end:
-            end = count
-
         return {
-            "end": end,
-            "start": start,
-            "pages": pages,
-            "page": page,
+            "pagination": pagination.export(),
             "folder": folder,
             "datasets": datasets,
             "categories": query_util.fix_ids(CategoryModel.objects(deleted=False).all())
@@ -153,41 +178,34 @@ class DatasetDataId(Resource):
     @api.expect(page_data)
     def get(self, dataset_id):
         """ Endpoint called by image viewer client """
+
+        exec_start = datetime.datetime.now()
         args = page_data.parse_args()
         limit = args['limit']
         page = args['page']
         folder = args['folder']
 
+        # Check if dataset exists
         dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {'message', 'Invalid dataset id'}, 400
 
+        # Make sure folder starts with is in proper format
         if len(folder) > 0:
             folder = folder[0].strip('/') + folder[1:]
             if folder[-1] != '/':
                 folder = folder + '/'
 
+        # Get directory
         directory = os.path.join(dataset.directory, folder)
         if not os.path.exists(directory):
-            return {'message': 'directory does not exist'}, 400
+            return {'message': 'Directory does not exist.'}, 400
 
-        images = ImageModel.objects(dataset_id=dataset_id, deleted=False).only('id', 'file_name').all()
-        count = len(images)
-        pages = int((count-1) / limit) + 1
+        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False) \
+            .order_by('file_name').only('id', 'file_name')
 
-        if page > pages:
-            page = pages
-
-        if page < 1:
-            page = 1
-
-        start = (page - 1) * limit
-        end = start + limit
-
-        if count < end:
-            end = count
-
-        images = query_util.fix_ids(images)[start:end]
+        pagination = Pagination(images.count(), limit, page)
+        images = query_util.fix_ids(images[pagination.start:pagination.end])
 
         for image in images:
             image_id = image.get('id')
@@ -196,12 +214,10 @@ class DatasetDataId(Resource):
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f)]
 
+        delta = datetime.datetime.now() - exec_start
         return {
-            "end": end,
-            "start": start,
-            "pages": pages,
-            "page": page,
-            "imageCount": count,
+            "time_ms": int(delta.total_seconds() * 1000),
+            "pagination": pagination.export(),
             "images": images,
             "folder": folder,
             "directory": directory,
@@ -225,6 +241,7 @@ class ImageCoco(Resource):
 
     @api.expect(coco_upload)
     def post(self, dataset_id):
+        """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
 
@@ -240,9 +257,6 @@ class ImageCoco(Resource):
         coco_annotations = coco_json.get('annotations')
         coco_categories = coco_json.get('categories')
 
-        total = len(coco_categories) + len(coco_images) + len(coco_annotations)
-        count = 0
-
         errors = []
 
         categories_id = {}
@@ -250,9 +264,9 @@ class ImageCoco(Resource):
 
         # Create any missing categories
         for category in coco_categories:
-            count = count + 1
             category_name = category.get('name')
-            print("{} [{}]".format(category_name, (count/total)*100), file=sys.stderr)
+            print("Loading category {}".format(category_name), flush=True)
+
             category_id = category.get('id')
             category_model = categories.filter(name__exact=category_name).all()
 
@@ -263,6 +277,7 @@ class ImageCoco(Resource):
                 new_category = CategoryModel(name=category_name, color=color_util.random_color_hex())
                 new_category.save()
                 categories_id[category_id] = new_category.id
+                print("Category not found! (Creating new one)", flush=True)
                 continue
 
             if len(category_model) > 1:
@@ -282,11 +297,10 @@ class ImageCoco(Resource):
 
         # Find all images
         for image in coco_images:
-            count = count + 1
             image_id = image.get('id')
             image_filename = image.get('file_name')
 
-            print("{} [{}]".format(image_filename, (count/total)*100), file=sys.stderr)
+            print("Loading image {}".format(image_filename), flush=True)
             image_model = images.filter(file_name__exact=image_filename).all()
 
             if len(image_model) == 0:
@@ -300,44 +314,44 @@ class ImageCoco(Resource):
                 continue
 
             image_model = image_model[0]
-            print("Image found", file=sys.stderr)
-            images_id[image_id] = image_model.id
+            print("Image found", flush=True)
+            images_id[image_id] = image_model
 
         # Generate annotations
         for annotation in coco_annotations:
-            count = count + 1
             image_id = annotation.get('image_id')
             category_id = annotation.get('category_id')
             segmentation = annotation.get('segmentation', [])
             is_crowd = annotation.get('iscrowed', False)
 
-            print("A {} {} [{}]".format(image_id, category_id, (count/total)*100), file=sys.stderr)
+            if len(segmentation) == 0:
+                continue
 
-            print(image_id, category_id, file=sys.stderr)
+            print("Loading annotation data (image:{} category:{})".format(image_id, category_id), flush=True)
+
             try:
-                image_model_id = images_id[image_id]
+                image_model = images_id[image_id]
                 category_model_id = categories_id[category_id]
             except KeyError:
                 continue
 
-            if len(segmentation) == 0:
-
-                print("Segment not found", file=sys.stderr)
-                continue
-
             # Check if annotation already exists
-            annotation = AnnotationModel.objects(image_id=image_model_id,
+            annotation = AnnotationModel.objects(image_id=image_model.id,
                                                  category_id=category_model_id,
-                                                 segmentation=segmentation).first()
+                                                 segmentation=segmentation, delete=False).first()
             # Create annotation
             if annotation is None:
-                print("Creating annotation", file=sys.stderr)
-                annotation = AnnotationModel(image_id=image_model_id)
+                print("Creating annotation", flush=True)
+                annotation = AnnotationModel(image_id=image_model.id)
                 annotation.category_id = category_model_id
                 # annotation.iscrowd = is_crowd
                 annotation.segmentation = segmentation
                 annotation.color = color_util.random_color_hex()
                 annotation.save()
+
+                image_model.update(set__annotated=True)
+            else:
+                print("Annotation already exists", flush=True)
 
         return {
             'errors': errors

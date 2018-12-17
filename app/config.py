@@ -8,6 +8,6 @@ class Config:
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024  # 1GB
     MONGODB_SETTINGS = {'host': 'mongodb://database/flask'}
 
-    DATASET_DIRECTORY = '/data/datasets/'
+    DATASET_DIRECTORY = '/datasets/'
     LOAD_IMAGES_ON_START = False
 

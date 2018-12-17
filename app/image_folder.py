@@ -28,21 +28,27 @@ class ImageFolderHandler(FileSystemEventHandler):
         self.pattern = pattern or (".gif", ".png", ".jpg", ".jpeg", ".bmp")
 
     def on_any_event(self, event):
-        path = event.src_path
+
+        path = event.dest_path if event.event_type == "moved" else event.src_path
+
+        # Check if thumbnails directory
+        folders = path.split('/')
+        i = folders.index("datasets")
+        if i+1 < len(folders) and folders[i+1] == "_thumbnails":
+            return
+        
         if not event.is_directory and path.endswith(self.pattern):
 
-            if event.is_directory:
-                return None
+            image = ImageModel.objects(path=event.src_path).first()
 
-            print("{} {}".format(event.event_type, path), flush=True)
-
-            if event.event_type == 'created':
-                if ImageModel.objects(path=path).first() is None:
-                    ImageModel.create_from_path(path).save()
+            if image is None and event.event_type != 'deleted':
+                print("Adding new file to database: {}".format(path), flush=True)
+                ImageModel.create_from_path(path).save()
 
             elif event.event_type == 'moved':
-                image = ImageModel.objects(path=path).first()
-                image.update(path=event.dest_path)
+                print("Moving image from {} to {}".format(event.src_path, path), flush=True)
+                image.update(path=path)
 
             elif event.event_type == 'deleted':
+                print("Deleting image from  database: {}".format(path), flush=True)
                 ImageModel.objects(path=path).delete()

@@ -3,8 +3,7 @@ from werkzeug.datastructures import FileStorage
 
 from flask import send_file
 
-from ..util import query_util, coco_util
-from ..config import Config
+from ..util import query_util, coco_util, thumbnail_util
 from ..models import *
 
 import datetime
@@ -92,12 +91,15 @@ class ImageId(Resource):
         if height < 1:
             height = image.height
 
-        pil_image = Image.open(image.path)
+        try:
+            pil_image = Image.open(image.path)
+        except Exception as e:
+            return {'message': str(e)}, 400
 
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
         image_io = io.BytesIO()
         pil_image = pil_image.convert("RGB")
-        pil_image.save(image_io, "JPEG", quality=70)
+        pil_image.save(image_io, "JPEG", quality=90)
         image_io.seek(0)
 
         return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
@@ -110,6 +112,39 @@ class ImageId(Resource):
 
         image.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {"success": True}
+
+
+@api.route('/<int:image_id>/thumbnail')
+class ImageCoco(Resource):
+
+    @api.expect(image_download)
+    def get(self, image_id):
+        """ Returns coco of image and annotations """
+        args = image_download.parse_args()
+        as_attachment = args['asAttachment']
+        width = args['width']
+        height = args['height']
+
+        image = ImageModel.objects(id=image_id, deleted=False).first()
+
+        if image is None:
+            return {'success': False}, 400
+
+        if width < 1:
+            width = image.width
+
+        if height < 1:
+            height = image.height
+
+        pil_image = thumbnail_util.generate_thumbnail(image, save=False)
+        pil_image.thumbnail((width, height), Image.ANTIALIAS)
+
+        image_io = io.BytesIO()
+        pil_image = pil_image.convert("RGB")
+        pil_image.save(image_io, "JPEG", quality=90)
+        image_io.seek(0)
+
+        return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
 
 
 @api.route('/<int:image_id>/coco')
