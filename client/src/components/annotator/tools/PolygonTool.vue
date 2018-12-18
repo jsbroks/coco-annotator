@@ -78,7 +78,7 @@ export default {
 
       if (this.polygon.guidance && wasNull) this.polygon.path.add(event.point);
     },
-    onMouseUp(event) {
+    onMouseUp() {
       if (this.polygon.path == null) return;
       let action = new UndoAction({
         name: this.name,

@@ -37,13 +37,13 @@ export default {
     };
   },
   methods: {
-    previousPage: function() {
+    previousPage() {
       this.page -= 1;
       if (this.page < 1) {
         this.page = 1;
       }
     },
-    nextPage: function() {
+    nextPage() {
       this.page += 1;
       if (this.page > this.pages) {
         this.page = this.pages;
@@ -51,7 +51,7 @@ export default {
     }
   },
   watch: {
-    page: function(newPage, oldPage) {
+    page(newPage, oldPage) {
       if (newPage === oldPage) return;
 
       clearTimeout(this.timer);
@@ -59,7 +59,7 @@ export default {
     }
   },
   computed: {
-    startPage: function() {
+    startPage() {
       if (this.range > this.pages) {
         return 0;
       }

@@ -1,6 +1,5 @@
 <script>
 import button from "@/mixins/toolBar/button";
-import axios from "axios";
 
 import { mapMutations } from "vuex";
 

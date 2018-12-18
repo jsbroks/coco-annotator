@@ -44,24 +44,25 @@ describe("Metadata.vue Empty", () => {
 });
 
 describe("Metadata.vue with metadata", () => {
+  let metadata = {
+    name: "ignore",
+    a: 0,
+    b: 1,
+    c: true,
+    d: 123
+    //e: { test: true, data: "info" }
+  };
   const wrapper = shallowMount(Metadata, {
     propsData: {
-      metadata: {
-        name: "ignore",
-        a: "0",
-        b: "1",
-        c: true,
-        d: 123,
-        e: { test: true, data: "info" }
-      },
-      exlcude: "name",
+      metadata: metadata,
+      exclude: "name",
       keyTitle: "Custom Keys",
       valueTitle: "Custom Values",
       title: "Custom Title"
     }
   });
 
-  it("check component render", () => {
+  it("proper compoent proerpties", () => {
     expect(wrapper.find(".fa-plus").exists()).toBeTruthy();
     expect(wrapper.find(".meta-input").exists()).toBeTruthy();
 
@@ -70,5 +71,13 @@ describe("Metadata.vue with metadata", () => {
     let subtitles = wrapper.findAll(".subtitle");
     expect(subtitles.wrappers[0].text()).toEqual("Custom Keys");
     expect(subtitles.wrappers[1].text()).toEqual("Custom Values");
+
+    let inputs = wrapper.findAll(".meta-input").wrappers;
+    expect(inputs.length).toEqual(4 * 2);
+  });
+
+  it("exporting data", () => {
+    delete metadata.name;
+    expect(wrapper.vm.export()).toEqual(metadata);
   });
 });
