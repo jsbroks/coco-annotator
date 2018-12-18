@@ -61,6 +61,9 @@ import paper from "paper";
 import axios from "axios";
 import simplifyjs from "simplify-js";
 
+import { mapMutations } from "vuex";
+import UndoAction from "@/undo";
+
 import Metadata from "@/components/Metadata";
 
 export default {
@@ -109,10 +112,12 @@ export default {
       compoundPath: null,
       metadata: [],
       isEmpty: true,
-      name: ""
+      name: "",
+      pervious: []
     };
   },
   methods: {
+    ...mapMutations(["addUndo"]),
     initAnnotation() {
       let metaName = this.annotation.metadata.name;
       if (metaName) {
@@ -223,12 +228,27 @@ export default {
         this.compoundPath.addChild(newPath);
       });
     },
+    undoCompound() {
+      if (this.pervious.length == 0) return;
+      this.compoundPath.remove();
+      this.compoundPath = this.pervious.pop();
+    },
     unite(compound) {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.unite(compound);
 
-      this.compoundPath.remove();
+      this.compoundPath.visible = false;
+      this.pervious.push(this.compoundPath);
+
+      let action = new UndoAction({
+        name: "Annotaiton " + this.annotation.id,
+        action: "United",
+        func: this.undoCompound,
+        args: {}
+      });
+      this.addUndo(action);
+
       this.compoundPath = newCompound;
       this.simplifyPath();
     },
@@ -237,7 +257,17 @@ export default {
 
       let newCompound = this.compoundPath.subtract(compound);
 
-      this.compoundPath.remove();
+      this.compoundPath.visible = false;
+      this.pervious.push(this.compoundPath);
+
+      let action = new UndoAction({
+        name: "Annotaiton " + this.annotation.id,
+        action: "Subtract",
+        func: this.undoCompound,
+        args: {}
+      });
+      this.addUndo(action);
+
       this.compoundPath = newCompound;
       this.simplifyPath();
     },
@@ -290,6 +320,7 @@ export default {
     compoundPath() {
       if (this.compoundPath == null) return;
 
+      this.compoundPath.visible = this.isVisible;
       this.$parent.group.addChild(this.compoundPath);
       this.setColor();
       this.isEmpty = this.compoundPath.isEmpty();

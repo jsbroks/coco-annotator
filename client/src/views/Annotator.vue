@@ -6,7 +6,6 @@
         <hr>
         
         <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="select" />
-
         <hr>
 
         <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="polygon" />
@@ -18,6 +17,7 @@
       <hr>
 
       <CenterButton />
+      <UndoButton />
 
       <hr>
 
@@ -122,6 +122,7 @@ import SaveButton from "@/components/annotator/tools/SaveButton";
 import SettingsButton from "@/components/annotator/tools/SettingsButton";
 import ModeButton from "@/components/annotator/tools/ModeButton";
 import DeleteButton from "@/components/annotator/tools/DeleteButton";
+import UndoButton from "@/components/annotator/tools/UndoButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
 import SelectPanel from "@/components/annotator/panels/SelectPanel";
@@ -152,7 +153,8 @@ export default {
     MagicWandPanel,
     BrushPanel,
     EraserPanel,
-    ModeButton
+    ModeButton,
+    UndoButton
   },
   mixins: [toastrs, shortcuts],
   props: {
