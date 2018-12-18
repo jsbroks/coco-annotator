@@ -10,10 +10,11 @@ matrix:
 
     - language: node_js
       node_js:
-        - iojs
         - 8
+        - node
       cache: npm
       before_install:
+        - npm install -g npm@latest
         - cd client
       install:
         - npm i
