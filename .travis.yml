@@ -1,0 +1,19 @@
+matrix:
+  include:
+#    - language: python
+#      python:
+#        - 3.6
+#      before_script:
+#        - pip install -r requirements.txt
+#        - pip install pycocotools
+#      script: pytest
+
+    - language: node_js
+      cache: npm
+      before_install:
+        - cd client
+      install:
+        - npm i
+      script: npm test
+
+

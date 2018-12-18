@@ -2,7 +2,7 @@
   <div>
     <i class="fa fa-plus" style="float: right; margin: 0 4px; color: green" @click="createMetadata" />
 
-    <p style="margin: 0">{{ title }}</p>
+    <p class="title" style="margin: 0">{{ title }}</p>
 
     <div class="row">
       <div class="col-sm">
