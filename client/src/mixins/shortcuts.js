@@ -1,3 +1,5 @@
+import { mapMutations } from "vuex";
+
 export default {
   data() {
     return {
@@ -5,6 +7,7 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(["undo"]),
     annotator() {
       return [
         {
@@ -44,6 +47,11 @@ export default {
               this.currentAnnotation.deleteAnnotation();
             }
           }
+        },
+        {
+          default: ["control", "z"],
+          name: "Undo Last Action",
+          function: this.undo
         },
         {
           default: ["s"],

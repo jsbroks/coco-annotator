@@ -2,6 +2,10 @@
 import paper from "paper";
 import tool from "@/mixins/toolBar/tool";
 
+import UndoAction from "@/undo";
+
+import { mapMutations } from "vuex";
+
 export default {
   name: "PolygonTool",
   mixins: [tool],
@@ -27,10 +31,17 @@ export default {
           strokeColor: "black",
           strokeWidth: 1
         }
-      }
+      },
+      actionTypes: Object.freeze({
+        ADD_POINTS: "Added Points",
+        CLOSED_POLYGON: "Closed Polygon",
+        DELETE_POLYGON: "Delete Polygon"
+      }),
+      actionPoints: 0
     };
   },
   methods: {
+    ...mapMutations(["addUndo", "removeUndos"]),
     /**
      * Creates a new selection polygon path
      */
@@ -49,6 +60,7 @@ export default {
     onMouseDrag(event) {
       if (this.polygon.path == null) return;
 
+      this.actionPoints++;
       this.polygon.path.add(event.point);
       this.autoComplete(30);
     },
@@ -59,9 +71,25 @@ export default {
         this.createPolygon();
       }
 
+      this.actionPoints = 1;
       this.polygon.path.add(event.point);
+
       if (this.autoComplete(3)) return;
+
       if (this.polygon.guidance && wasNull) this.polygon.path.add(event.point);
+    },
+    onMouseUp(event) {
+      if (this.polygon.path == null) return;
+      let action = new UndoAction({
+        name: this.name,
+        action: this.actionTypes.ADD_POINTS,
+        func: this.undoPoints,
+        args: {
+          points: this.actionPoints
+        }
+      });
+
+      this.addUndo(action);
     },
     onMouseMove(event) {
       if (this.polygon.path == null) return;
@@ -70,6 +98,21 @@ export default {
 
       this.removeLastPoint();
       this.polygon.path.add(event.point);
+    },
+    /**
+     * Undo points
+     */
+    undoPoints(args) {
+      if (this.polygon.path == null) return;
+
+      let points = args.points;
+      let length = this.polygon.path.segments.length;
+
+      if (this.polygon.guidance) {
+        length -= 1;
+      }
+
+      this.polygon.path.removeSegments(length - points, length);
     },
     /**
      * Completes polygon if point being added is close to first point
@@ -105,6 +148,8 @@ export default {
 
       this.polygon.path.remove();
       this.polygon.path = null;
+
+      this.removeUndos(this.actionTypes.ADD_POINTS);
       return true;
     },
     removeLastPoint() {
