@@ -9,6 +9,9 @@ matrix:
 #      script: pytest
 
     - language: node_js
+      node_js:
+        - iojs
+        - 8
       cache: npm
       before_install:
         - cd client
