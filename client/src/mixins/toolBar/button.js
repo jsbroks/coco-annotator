@@ -5,7 +5,8 @@ export default {
     return {
       color: {
         enabled: "white",
-        active: "#2ecc71"
+        active: "#2ecc71",
+        disabled: "gray"
       },
       iconColor: "",
       delay: 400
@@ -13,8 +14,10 @@ export default {
   },
   methods: {
     click() {
-      this.toggleAnimation();
-      this.execute();
+      if (!this.disabled) {
+        this.toggleAnimation();
+        this.execute();
+      }
     },
     toggleAnimation() {
       this.iconColor = this.color.active;

@@ -279,8 +279,6 @@ export default {
       }
     },
     annotationDeleted(index) {
-      console.log(index, this.selectedAnnotation);
-
       if (this.selectedAnnotation == index) {
         if (index === this.category.annotations.length) {
           this.selectedAnnotation--;
