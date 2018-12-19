@@ -187,6 +187,8 @@ export default {
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
         this.$parent.category.annotations.splice(this.index, 1);
+        this.$emit("deleted", this.index);
+
         if (this.compoundPath != null) this.compoundPath.remove();
       });
     },

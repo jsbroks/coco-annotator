@@ -210,7 +210,7 @@ export default {
     };
   },
   methods: {
-    ...mapMutations(["addProcess", "removeProcess"]),
+    ...mapMutations(["addProcess", "removeProcess", "resetUndo"]),
     save(callback) {
       let process = "Saving";
       this.addProcess(process);
@@ -384,7 +384,6 @@ export default {
           this.$router.go(-1);
         });
     },
-
     onCategoryClick(indices) {
       this.current.annotation = indices.annotation;
       this.current.category = indices.category;
@@ -577,6 +576,7 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     this.save();
+    this.resetUndo();
     next();
   },
   computed: {
