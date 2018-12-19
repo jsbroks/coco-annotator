@@ -574,11 +574,6 @@ export default {
       }
     }
   },
-  beforeRouteLeave(to, from, next) {
-    this.save();
-    this.resetUndo();
-    next();
-  },
   computed: {
     doneLoading() {
       return !this.loading.image && !this.loading.data;
@@ -597,8 +592,12 @@ export default {
       return this.currentCategory.getAnnotation(this.current.annotation);
     }
   },
+  beforeRouteLeave(to, from, next) {
+    this.save(next);
+  },
   beforeRouteUpdate(to, from, next) {
     // Clear any paperjs object so we can reset the canvas
+    this.resetUndo();
     this.current.annotation = -1;
 
     this.$refs.polygon.deletePolygon();

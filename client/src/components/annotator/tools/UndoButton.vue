@@ -2,6 +2,8 @@
 <script>
 import button from "@/mixins/toolBar/button";
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "UndoButton",
   mixins: [button],
@@ -12,6 +14,7 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(["undo"]),
     execute() {
       this.undo();
     }
