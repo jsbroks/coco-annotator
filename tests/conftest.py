@@ -1,10 +1,8 @@
 import pytest
-import os
-from app import app, db
+from app import app
 
 
 @pytest.fixture
 def client():
-    print(os.getenv("MONGODB_HOST", "mongodb://database/flask"))
-    print(app.extensions['mongoengine'][db])
-    return app.test_client()
+    test_client = app.test_client()
+    return test_client

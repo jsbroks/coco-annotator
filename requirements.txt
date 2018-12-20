@@ -9,3 +9,5 @@ scikit-image
 requests
 google_images_download
 watchdog==0.8.3
+pytest
+pytest-ordering

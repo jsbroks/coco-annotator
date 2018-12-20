@@ -13,7 +13,6 @@ matrix:
       before_script:
         - pip install -r requirements.txt
         - pip install pycocotools
-        - pip install pytest
         - docker run -d -p 27017:27017 mongo
         - docker ps -a
       script: pytest

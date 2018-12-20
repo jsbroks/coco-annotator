@@ -49,7 +49,12 @@ class Category(Resource):
 class Category(Resource):
     def get(self, category_id):
         """ Returns a category by ID """
-        return query_util.fix_ids(CategoryModel.objects(id=category_id).first())
+        category = CategoryModel.objects(id=category_id).first()
+
+        if category is None:
+            return {'success': False}, 400
+
+        return query_util.fix_ids(category)
 
     def delete(self, category_id):
         """ Deletes a category by ID """
