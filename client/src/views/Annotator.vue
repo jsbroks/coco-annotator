@@ -16,6 +16,11 @@
       </div>
       <hr>
 
+      <div v-show="mode == 'segment'">
+        <ShowAllButton />
+        <HideAllButton />
+      </div>
+      
       <CenterButton />
       <UndoButton />
 
@@ -123,6 +128,8 @@ import SettingsButton from "@/components/annotator/tools/SettingsButton";
 import ModeButton from "@/components/annotator/tools/ModeButton";
 import DeleteButton from "@/components/annotator/tools/DeleteButton";
 import UndoButton from "@/components/annotator/tools/UndoButton";
+import ShowAllButton from "@/components/annotator/tools/ShowAllButton";
+import HideAllButton from "@/components/annotator/tools/HideAllButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
 import SelectPanel from "@/components/annotator/panels/SelectPanel";
@@ -154,7 +161,9 @@ export default {
     BrushPanel,
     EraserPanel,
     ModeButton,
-    UndoButton
+    UndoButton,
+    HideAllButton,
+    ShowAllButton
   },
   mixins: [toastrs, shortcuts],
   props: {
@@ -374,6 +383,10 @@ export default {
           this.removeProcess(process);
           this.loading.data = false;
 
+          this.$nextTick(() => {
+            this.showAll();
+          });
+
           if (callback != null) callback();
         })
         .catch(() => {
@@ -529,6 +542,16 @@ export default {
         behavior: "smooth",
         block: "center"
       });
+    },
+    showAll() {
+      this.$refs.category.forEach(category => {
+        category.isVisible = category.category.annotations.length > 0;
+      });
+    },
+    hideAll() {
+      this.$refs.category.forEach(category => {
+        category.isVisible = false;
+      });
     }
   },
   watch: {
@@ -631,6 +654,28 @@ export default {
 
 
 <style scoped>
+/* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: white;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #9feeb0;
+}
+
 .left-panel {
   background-color: #4b5162;
   width: 40px;

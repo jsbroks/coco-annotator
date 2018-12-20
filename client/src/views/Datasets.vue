@@ -169,8 +169,6 @@ export default {
         categories.push(this.create.categories[key]);
       }
 
-      console.log(categories);
-
       axios
         .post("/api/dataset/?name=" + this.create.name, {
           categories: categories
