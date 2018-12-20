@@ -180,7 +180,7 @@ class CategoryModel(db.DynamicDocument):
     @classmethod
     def create_category(cls, name, color=None, metadata=None, supercategory=None):
         category = CategoryModel(name=name, supercategory=supercategory)
-        category.metadata = metadata if metadata is None else {}
+        category.metadata = metadata if metadata is not None else {}
         category.color = color_util.random_color_hex() if color is None else color
         category.save()
         return category
