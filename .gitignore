@@ -1,3 +1,5 @@
+.pytest_cache/*
+.cache/*
 .idea/*
 datasets/*
 !datasets/.gitkeep

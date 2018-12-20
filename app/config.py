@@ -1,3 +1,5 @@
+import os
+
 
 class Config:
 
@@ -6,8 +8,9 @@ class Config:
 
     SWAGGER_UI_JSONEDITOR = True
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024  # 1GB
-    MONGODB_SETTINGS = {'host': 'mongodb://database/flask'}
+    MONGODB_HOST = os.getenv("MONGODB_HOST", "mongodb://database/flask")
 
-    DATASET_DIRECTORY = '/datasets/'
+    TESTING = os.getenv("TESTING", False)
+    DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
     LOAD_IMAGES_ON_START = False
 

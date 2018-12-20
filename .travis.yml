@@ -1,12 +1,22 @@
 matrix:
   include:
-#    - language: python
-#      python:
-#        - 3.6
-#      before_script:
-#        - pip install -r requirements.txt
-#        - pip install pycocotools
-#      script: pytest
+    - language: python
+      python:
+        - 3.6
+      services:
+        - docker
+      cache: pip
+      env:
+        - MONGODB_HOST=mongodb://localhost/test
+        - DATASET_DIRECTORY=datasets/
+        - TESTING=true
+      before_script:
+        - pip install -r requirements.txt
+        - pip install pycocotools
+        - pip install pytest
+        - docker run -d -p 27017:27017 mongo
+        - docker ps -a
+      script: pytest
 
     - language: node_js
       node_js:
