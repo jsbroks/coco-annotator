@@ -1,9 +1,8 @@
 import json
-import pytest
 
 
 class TestImage:
-    @pytest.mark.run('first')
+
     def test_get_empty(self, client):
         response = client.get("/api/image/")
         data = json.loads(response.data)

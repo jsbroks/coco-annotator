@@ -14,7 +14,7 @@ class TestCategory:
     def setup_class(cls):
         CategoryModel.objects.delete()
 
-    @pytest.mark.run('first')
+    @pytest.mark.run(before='test_post_categories')
     def test_get_empty(self, client):
         response = client.get("/api/category/")
         data = json.loads(response.data)
