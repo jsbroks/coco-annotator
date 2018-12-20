@@ -19,6 +19,7 @@ class AnnotatorData(Resource):
         data = request.get_json(force=True)
         image = data.get('image')
         image_id = image.get('id')
+        propagate_to_id = data.get('propagate_to_id')
 
         image_model = ImageModel.objects(id=image_id).first()
 
@@ -95,6 +96,11 @@ class AnnotatorId(Resource):
 
     def get(self, image_id):
         """ Called when loading from the annotator client """
+
+        propagate_from_id = request.args.get('propagate_from_id')
+        if propagate_from_id >= 0:
+
+
 
         image = ImageModel.objects(id=image_id).first()
 

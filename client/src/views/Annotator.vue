@@ -628,6 +628,7 @@ export default {
     this.$refs.eraser.removeBrush();
 
     this.image.id = parseInt(to.params.identifier);
+    this.propagate_from_id = to.params.propagate ? from.params.identifier : -1;
     this.image.url = "/api/image/" + this.image.id;
 
     this.initCanvas();
