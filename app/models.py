@@ -1,4 +1,5 @@
 import os
+import json
 from flask_mongoengine import MongoEngine
 from .util import color_util
 from .config import Config
@@ -19,6 +20,23 @@ class DatasetModel(db.DynamicDocument):
 
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
+
+    @classmethod
+    def create_from_json(cls, json_file):
+        with open(json_file) as file:
+            datasets = json.load(file)
+            for dataset_json in datasets:
+                name = dataset_json.get('name')
+                if name:
+                    try:
+                        dataset = DatasetModel(
+                            name=name, 
+                            categories=dataset_json.get('categories', []))
+                        dataset.save()
+                        print(f'Created dataset {name}', flush=True)
+                    except db.NotUniqueError:
+                        pass
+
 
     def save(self, *args, **kwargs):
 
@@ -185,6 +203,22 @@ class CategoryModel(db.DynamicDocument):
         category.save()
         return category
 
+    @classmethod
+    def create_from_json(cls, json_file):
+        with open(json_file) as file:
+            categories = json.load(file)
+            for cat in categories:
+                name = cat.get('name')
+                if name is not None:
+                    try:
+                        category = cls.create_category(
+                            name=name,
+                            supercategory=cat.get('supercategory'),
+                            color=cat.get('color'),
+                            metadata=cat.get('metadata'))
+                        print(f'Added category "{name}"')
+                    except db.NotUniqueError:
+                        pass
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

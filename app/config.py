@@ -12,5 +12,7 @@ class Config:
 
     TESTING = os.getenv("TESTING", False)
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
-    LOAD_IMAGES_ON_START = False
+    CREATE_CATEGORIES_FROM_FILE = os.getenv("CREATE_CATEGORIES_FROM_FILE")
+    CREATE_DATASETS_FROM_FILE = os.getenv("CREATE_DATASETS_FROM_FILE")
+    LOAD_IMAGES_ON_START = os.getenv("LOAD_IMAGES_ON_START", False)
 
