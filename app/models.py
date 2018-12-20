@@ -1,9 +1,9 @@
+import os
 from flask_mongoengine import MongoEngine
 from .util import color_util
 from .config import Config
 from PIL import Image
 
-import os
 
 db = MongoEngine()
 
@@ -26,13 +26,17 @@ class DatasetModel(db.DynamicDocument):
 
         if not os.path.exists(directory):
             os.makedirs(directory)
+        else:
+            ImageModel.load_images(directory, self.id)
 
         self.directory = directory
-
         return super(DatasetModel, self).save(*args, **kwargs)
 
 
 class ImageModel(db.DynamicDocument):
+    
+    PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp")
+    
     id = db.SequenceField(primary_key=True)
     path = db.StringField(required=True, unique=True)
 
@@ -58,7 +62,7 @@ class ImageModel(db.DynamicDocument):
     deleted_date = db.DateTimeField()
 
     @classmethod
-    def create_from_path(cls, path):
+    def create_from_path(cls, path, dataset_id=None):
 
         pil_image = Image.open(path)
 
@@ -68,18 +72,35 @@ class ImageModel(db.DynamicDocument):
         image.width = pil_image.size[0]
         image.height = pil_image.size[1]
 
-        # Get dataset name from path
-        folders = path.split('/')
-        i = folders.index("datasets")
-        dataset_name = folders[i+1]
+        if dataset_id is not None:
+            image.dataset_id = dataset_id
+        else:
+            # Get dataset name from path
+            folders = path.split('/')
+            i = folders.index("datasets")
+            dataset_name = folders[i+1]
 
-        dataset = DatasetModel.objects(name=dataset_name).first()
-        if dataset is not None:
-            image.dataset_id = dataset.id
+            dataset = DatasetModel.objects(name=dataset_name).first()
+            if dataset is not None:
+                image.dataset_id = dataset.id
 
         pil_image.close()
 
         return image
+
+    @classmethod
+    def load_images(cls, directory, dataset_id=None):
+        print("Checking all images in dataset directory (may take a few minutes)")
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                path = os.path.join(root, file)
+
+                if path.endswith(cls.PATTERN):
+                    db_image = cls.objects(path=path).first()
+
+                    if db_image is None:
+                        print("New file found: {}".format(path))
+                        cls.create_from_path(path, dataset_id).save()
 
     def thumbnail_path(self):
         folders = self.path.split('/')

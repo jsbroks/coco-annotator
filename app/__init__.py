@@ -3,10 +3,10 @@ from werkzeug.contrib.fixers import ProxyFix
 from flask_cors import CORS
 from watchdog.observers import Observer
 
-from .image_folder import ImageFolderHandler, load_images
+from .image_folder import ImageFolderHandler
 from .api import blueprint as api
 from .config import Config
-from .models import db
+from .models import db, ImageModel
 
 import threading
 import requests
@@ -53,7 +53,7 @@ app = create_app()
 db.init_app(app)
 
 if Config.LOAD_IMAGES_ON_START:
-    load_images(Config.DATASET_DIRECTORY)
+    ImageModel.load_images(Config.DATASET_DIRECTORY)
 
 
 @app.route('/', defaults={'path': ''})
