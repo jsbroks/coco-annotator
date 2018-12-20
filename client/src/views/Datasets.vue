@@ -46,18 +46,17 @@
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group" required>
+              <div class="form-group" :class="{'was-validated': validDatasetName.lenght !== 0}">
                 <label>Dataset Name</label>
-                <input v-model="create.name" class="form-control" placeholder="Dataset name">
+                <input v-model="create.name" class="form-control" placeholder="Dataset name invalid" required>
+                <div class="invalid-feedback">
+                  {{ validDatasetName }}
+                </div>
               </div>
 
               <div class="form-group">
-                <label>Default Categories <i v-if="categories.length === 0">(No categories found)</i></label>
-                <select v-model="create.categories" multiple class="form-control">
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
+                <label>Default Categories</label>
+                <tags-input v-model="create.categories" :existing-tags="categoryTags" :typeahead="true" placeholder="Add a category" :typeahead-activation-threshold="0"></tags-input>
               </div>
 
               <div class="form-group" required>
@@ -170,6 +169,8 @@ export default {
         categories.push(this.create.categories[key]);
       }
 
+      console.log(categories);
+
       axios
         .post("/api/dataset/?name=" + this.create.name, {
           categories: categories
@@ -191,6 +192,17 @@ export default {
     directory() {
       let closing = this.create.name.length > 0 ? "/" : "";
       return "/datasets/" + this.create.name + closing;
+    },
+    categoryTags() {
+      let tags = {};
+      this.categories.forEach(category => {
+        tags[category.name] = category.name;
+      });
+      return tags;
+    },
+    validDatasetName() {
+      if (this.create.name.length === 0) return "Dataset name is required";
+      return "";
     }
   },
   created() {

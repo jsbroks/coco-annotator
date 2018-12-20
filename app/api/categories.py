@@ -35,10 +35,12 @@ class Category(Resource):
         color = args.get('color')
 
         try:
-            category = CategoryModel(name=name, supercategory=supercategory)
-            category.color = color_util.random_color_hex() if color is None else color
-            category.metadata = metadata
-            category.save()
+            category = CategoryModel.create_category(
+                name=name,
+                supercategory=supercategory,
+                color=color,
+                metadata=metadata
+            )
         except (ValueError, TypeError) as e:
             return {'message': str(e)}, 400
 
@@ -67,7 +69,7 @@ class Category(Resource):
 
 
 @api.route('/data')
-class DatasetId(Resource):
+class CategoriesData(Resource):
 
     @api.expect(page_data)
     def get(self):

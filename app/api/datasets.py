@@ -60,8 +60,22 @@ class Dataset(Resource):
         name = args['name']
         categories = args.get('categories', [])
 
+        category_ids = []
+
+        for category in categories:
+            if isinstance(category, int):
+                category_ids.append(category)
+            else:
+                category_model = CategoryModel.objects(name=category).first()
+
+                if category_model is None:
+                    new_category = CategoryModel.create_category(name=category)
+                    category_ids.append(new_category.id)
+                else:
+                    category_ids.append(category_model.id)
+
         try:
-            dataset = DatasetModel(name=name, categories=categories)
+            dataset = DatasetModel(name=name, categories=category_ids)
             dataset.save()
         except NotUniqueError:
             return {'message': 'Dataset already exists. Check the undo tab to fully delete the dataset.'}, 400
