@@ -96,12 +96,6 @@ class AnnotatorId(Resource):
 
     def get(self, image_id):
         """ Called when loading from the annotator client """
-
-        propagate_from_id = request.args.get('propagate_from_id')
-        if propagate_from_id >= 0:
-
-
-
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:
