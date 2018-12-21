@@ -30,8 +30,10 @@ class AnnotatorData(Resource):
 
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
-        propagated_annotations = None
+
+        propagated_image = None
         if propagate_to_id:
+            propagated_image = ImageModel.objects(id=propagate_to_id).first()
             AnnotationModel.objects(image_id=propagate_to_id).delete()
 
         annotated = False
@@ -65,13 +67,14 @@ class AnnotatorData(Resource):
                     set__color=annotation.get('color')
                 )
 
+                propagated_annotation = None
                 if propagate_to_id:
                     # propagate the annotation
                     pr_annotation = copy.deepcopy(annotation)
                     pr_annotation['image_id'] = propagate_to_id
                     pr_annotation['category_id'] = category_id
                     pr_annotation.pop('id')
-                    AnnotationModel(**pr_annotation).save()
+                    propagated_annotation = AnnotationModel(**pr_annotation).save()
 
                 paperjs_object = annotation.get('compoundPath', [])
 
@@ -91,6 +94,13 @@ class AnnotatorData(Resource):
                         set__bbox=bbox,
                         set__paper_object=paperjs_object,
                     )
+                    if propagated_annotation:
+                        propagated_annotation.update(
+                            set__segmentation=segmentation,
+                            set__area=area,
+                            set__bbox=bbox,
+                            set__paper_object=paperjs_object,
+                        )
 
                     if area > 0:
                         annotated = True
@@ -100,6 +110,12 @@ class AnnotatorData(Resource):
             set__annotated=annotated,
             set__category_ids=image.get('category_ids', [])
         )
+        if propagated_image:
+            propagated_image.update(
+                set__metadata=image.get('metadata', {}),
+                set__annotated=annotated,
+                set__category_ids=image.get('category_ids', [])
+            )
 
         return data
 
