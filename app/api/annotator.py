@@ -102,10 +102,15 @@ class AnnotatorId(Resource):
             return {'success': False}, 400
 
         data = request.get_json(force=True)
+        # add these annotations by id
         annotations_to_add = data.get('add_annotations', [])
+        # add all annotations from these image ids
         add_annotations_from = data.get('add_annotations_from', [])
+        
         if add_annotations_from:
-            annotation_ids = AnnotationModel.objects(image_id__in=add_annotations_from).distinct('_id')
+            annotation_ids = AnnotationModel.objects(
+                image_id__in=add_annotations_from).filter(
+                    deleted=False, area__gt=0).distinct('_id')
             annotations_to_add += annotation_ids
 
         if annotations_to_add:
@@ -115,14 +120,27 @@ class AnnotatorId(Resource):
             image_categories = image.category_ids
 
             annotations = AnnotationModel.objects(id__in=list(set(annotations_to_add)))
-            
+            existing_annotations = list(AnnotationModel.objects(image_id=image_id).filter(deleted=False))
+
             annotated = False
             for annotation in annotations:
                 if annotation.width != image.width \
                         or annotation.height != image.height:
                     # cannot copy annotations from differently sized images
                     continue
-                
+
+                annotation_exists = False
+                for existing in existing_annotations:
+                    if annotation.category_id == existing.category_id \
+                            and annotation.area == existing.area:
+                        # if IOU matches, then we already have this annotation
+                        if coco_util.get_annotations_iou(annotation, existing) == 1:
+                            annotation_exists = True
+                            break
+
+                if annotation_exists:
+                    continue
+
                 # make sure the category is added to image
                 if annotation.category_id not in dataset_categories:
                     image_categories = image.category_ids
@@ -142,9 +160,11 @@ class AnnotatorId(Resource):
                 new_annotation.color = annotation.color
                 new_annotation.compoundPath = annotation.compoundPath
                 new_annotation.paper_object = annotation.paper_object
+                new_annotation.segmentation = annotation.segmentation
                 new_annotation.save()
                 annotated = True
                 print(f'Added annotation {annotation.id} to image {image.id}', flush=True)
+                existing_annotations.append(new_annotation)
 
             image.update(
                 set__annotated=annotated,
