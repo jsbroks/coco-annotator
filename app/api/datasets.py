@@ -139,7 +139,21 @@ class DatasetId(Resource):
         default_annotation_metadata = args.get('default_annotation_metadata')
 
         if categories is not None:
-            dataset.categories = categories
+            category_ids = []
+
+            for category in categories:
+                if isinstance(category, int):
+                    category_ids.append(category)
+                else:
+                    category_model = CategoryModel.objects(name=category).first()
+
+                    if category_model is None:
+                        new_category = CategoryModel.create_category(name=category)
+                        category_ids.append(new_category.id)
+                    else:
+                        category_ids.append(category_model.id)
+
+            dataset.categories = category_ids
 
         if default_annotation_metadata is not None:
             dataset.default_annotation_metadata = default_annotation_metadata
