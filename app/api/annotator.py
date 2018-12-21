@@ -1,3 +1,4 @@
+import copy
 from flask_restplus import Namespace, Api, Resource
 from flask import request
 
@@ -20,6 +21,7 @@ class AnnotatorData(Resource):
         image = data.get('image')
         image_id = image.get('id')
         propagate_to_id = data.get('propagate_to_id')
+        print(f'propagate_to_id: {propagate_to_id}', flush=True)
 
         image_model = ImageModel.objects(id=image_id).first()
 
@@ -28,6 +30,9 @@ class AnnotatorData(Resource):
 
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
+        propagated_annotations = None
+        if propagate_to_id:
+            AnnotationModel.objects(image_id=propagate_to_id).delete()
 
         annotated = False
         # Iterate every category passed in the data
@@ -59,6 +64,14 @@ class AnnotatorData(Resource):
                     set__metadata=annotation.get('metadata'),
                     set__color=annotation.get('color')
                 )
+
+                if propagate_to_id:
+                    # propagate the annotation
+                    pr_annotation = copy.deepcopy(annotation)
+                    pr_annotation['image_id'] = propagate_to_id
+                    pr_annotation['category_id'] = category_id
+                    pr_annotation.pop('id')
+                    AnnotationModel(**pr_annotation).save()
 
                 paperjs_object = annotation.get('compoundPath', [])
 

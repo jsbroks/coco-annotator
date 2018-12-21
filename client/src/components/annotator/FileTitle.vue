@@ -2,13 +2,13 @@
   <div>
     <i v-show="previousimage != null" class="fa fa-arrow-left image-arrows" style="float:left" @click="route(previousimage)" />
     
-    <span v-show="previousimage != null" class="icon-stack" style="float:left" @click="route(previousimage, true)">
+    <span v-show="previousimage != null" class="icon-stack" style="float:left" @click="route(previousimage, previousimage)">
       <i  class="fa fa-clone" />
       <i  class="fa fa-long-arrow-left arrow" />
     </span>
 
     <i v-show="nextimage != null" class="fa fa-arrow-right image-arrows" style="float:right" @click="route(nextimage)" />
-    <span v-show="nextimage != null" class="icon-stack" style="float:right" @click="route(nextimage, true)">
+    <span v-show="nextimage != null" class="icon-stack" style="float:right" @click="route(nextimage, nextimage)">
       <i  class="fa fa-clone" />
       <i  class="fa fa-long-arrow-right arrow" />
     </span>
@@ -42,13 +42,13 @@ export default {
      *
      * @param {Number} identifer id of a file
      */
-    route(identifier, propagate) {
+    route(identifier, propagate_to_id) {
       this.$parent.save(() => {
         this.$router.push({
           name: "annotate",
           params: { identifier }
         });
-      });
+      }, propagate_to_id);
     }
   }
 };

@@ -220,7 +220,7 @@ export default {
   },
   methods: {
     ...mapMutations(["addProcess", "removeProcess", "resetUndo"]),
-    save(callback) {
+    save(callback, propagate_to_id) {
       let process = "Saving";
       this.addProcess(process);
       let refs = this.$refs;
@@ -243,7 +243,8 @@ export default {
           zoom: this.zoom,
           tools: {}
         },
-        categories: []
+        categories: [],
+        propagate_to_id: propagate_to_id
       };
 
       if (refs.category != null && this.mode == "segment") {
