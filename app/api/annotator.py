@@ -106,7 +106,7 @@ class AnnotatorId(Resource):
         annotations_to_add = data.get('add_annotations', [])
         # add all annotations from these image ids
         add_annotations_from = data.get('add_annotations_from', [])
-        
+
         if add_annotations_from:
             annotation_ids = AnnotationModel.objects(
                 image_id__in=add_annotations_from).filter(
@@ -158,12 +158,22 @@ class AnnotatorId(Resource):
                 new_annotation.width = image.width
                 new_annotation.height = image.height
                 new_annotation.color = annotation.color
-                new_annotation.compoundPath = annotation.compoundPath
-                new_annotation.paper_object = annotation.paper_object
-                new_annotation.segmentation = annotation.segmentation
+                new_annotation.bbox = annotation.bbox
+                new_annotation.area = annotation.area
+                try:
+                    new_annotation.compoundPath = annotation.compoundPath
+                except AttributeError:
+                    pass
+                try:
+                    new_annotation.paper_object = annotation.paper_object
+                except AttributeError:
+                    pass
+                try:
+                    new_annotation.segmentation = annotation.segmentation
+                except AttributeError:
+                    pass
                 new_annotation.save()
                 annotated = True
-                print(f'Added annotation {annotation.id} to image {image.id}', flush=True)
                 existing_annotations.append(new_annotation)
 
             image.update(
