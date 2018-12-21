@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 from flask_mongoengine import MongoEngine
 from .util import color_util
@@ -205,14 +206,17 @@ def _upsert_category(name, supercategory=None, color=None, metadata=None):
 
     else:
         updates = {}
-        if supercategory is not None:
+        if supercategory is not None and \
+                supercategory != category_model.supercategory:
             updates['set__supercategory'] = supercategory
-        if color is not None:
+        if color is not None and \
+                color != category_model.color:
             updates['set__color'] = color
         if metadata is not None:
             updates['set__metadata'] = metadata
         if updates:
             category_model.update(**updates)
+            print(f'Updated category "{name}": {updates}')
 
     return category_model
 
@@ -241,12 +245,14 @@ def initialize_from_json(initializer_json_file):
                         name=name,
                         categories=category_ids)
                     dataset.save()
-                    print(f'Created dataset {name}', flush=True)
+                    print(f'Created dataset {name}')
                 else:
                     # merge categories with existing
                     existing_categories = set(dataset_model.categories)
-                    merged_categories = set(category_ids) + existing_categories
+                    merged_categories = set(category_ids) | existing_categories
                     if merged_categories != existing_categories:
                         dataset_model.update(
                             set__categories=list(merged_categories)
                         )
+                        print(f'Updated categories for dataset {name}')
+    sys.stdout.flush()
