@@ -20,8 +20,6 @@ class AnnotatorData(Resource):
         data = request.get_json(force=True)
         image = data.get('image')
         image_id = image.get('id')
-        propagate_to_id = data.get('propagate_to_id')
-        print(f'propagate_to_id: {propagate_to_id}', flush=True)
 
         image_model = ImageModel.objects(id=image_id).first()
 
@@ -30,11 +28,6 @@ class AnnotatorData(Resource):
 
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
-
-        propagated_image = None
-        if propagate_to_id:
-            propagated_image = ImageModel.objects(id=propagate_to_id).first()
-            AnnotationModel.objects(image_id=propagate_to_id).delete()
 
         annotated = False
         # Iterate every category passed in the data
@@ -67,15 +60,6 @@ class AnnotatorData(Resource):
                     set__color=annotation.get('color')
                 )
 
-                propagated_annotation = None
-                if propagate_to_id:
-                    # propagate the annotation
-                    pr_annotation = copy.deepcopy(annotation)
-                    pr_annotation['image_id'] = propagate_to_id
-                    pr_annotation['category_id'] = category_id
-                    pr_annotation.pop('id')
-                    propagated_annotation = AnnotationModel(**pr_annotation).save()
-
                 paperjs_object = annotation.get('compoundPath', [])
 
                 # Update paperjs if it exists
@@ -94,13 +78,6 @@ class AnnotatorData(Resource):
                         set__bbox=bbox,
                         set__paper_object=paperjs_object,
                     )
-                    if propagated_annotation:
-                        propagated_annotation.update(
-                            set__segmentation=segmentation,
-                            set__area=area,
-                            set__bbox=bbox,
-                            set__paper_object=paperjs_object,
-                        )
 
                     if area > 0:
                         annotated = True
@@ -110,18 +87,70 @@ class AnnotatorData(Resource):
             set__annotated=annotated,
             set__category_ids=image.get('category_ids', [])
         )
-        if propagated_image:
-            propagated_image.update(
-                set__metadata=image.get('metadata', {}),
-                set__annotated=annotated,
-                set__category_ids=image.get('category_ids', [])
-            )
 
         return data
 
 
 @api.route('/data/<int:image_id>')
 class AnnotatorId(Resource):
+
+    def post(self, image_id):
+        """Called when copying/adding annotations from another image"""
+        image = ImageModel.objects(id=image_id).first()
+
+        if image is None:
+            return {'success': False}, 400
+
+        data = request.get_json(force=True)
+        annotations_to_add = data.get('add_annotations', [])
+        add_annotations_from = data.get('add_annotations_from', [])
+        if add_annotations_from:
+            annotation_ids = AnnotationModel.objects(image_id__in=add_annotations_from).distinct('_id')
+            annotations_to_add += annotation_ids
+
+        if annotations_to_add:
+
+            dataset = DatasetModel.objects(id=image.dataset_id).first()
+            dataset_categories = dataset.categories
+            image_categories = image.category_ids
+
+            annotations = AnnotationModel.objects(id__in=list(set(annotations_to_add)))
+            
+            annotated = False
+            for annotation in annotations:
+                if annotation.width != image.width \
+                        or annotation.height != image.height:
+                    # cannot copy annotations from differently sized images
+                    continue
+                
+                # make sure the category is added to image
+                if annotation.category_id not in dataset_categories:
+                    image_categories = image.category_ids
+                    dataset_categories.append(annotation.category_id)
+                    image_categories = image.category_ids
+                    dataset.update(set__categories=dataset_categories)
+                    image_categories = image.category_ids
+                
+                if annotation.category_id not in image_categories:
+                    image_categories.append(annotation.category_id)
+
+                new_annotation = AnnotationModel(
+                    image_id=image_id, category_id=annotation.category_id, metadata=annotation.metadata)
+                new_annotation.dataset_id = image.dataset_id
+                new_annotation.width = image.width
+                new_annotation.height = image.height
+                new_annotation.color = annotation.color
+                new_annotation.compoundPath = annotation.compoundPath
+                new_annotation.paper_object = annotation.paper_object
+                new_annotation.save()
+                annotated = True
+                print(f'Added annotation {annotation.id} to image {image.id}', flush=True)
+
+            image.update(
+                set__annotated=annotated,
+                set__category_ids=image_categories
+            )
+
 
     def get(self, image_id):
         """ Called when loading from the annotator client """

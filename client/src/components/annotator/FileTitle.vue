@@ -43,12 +43,19 @@ export default {
      * @param {Number} identifer id of a file
      */
     route(identifier, propagate_to_id) {
-      this.$parent.save(() => {
-        this.$router.push({
-          name: "annotate",
-          params: { identifier }
+      let doSave = () => {
+        this.$parent.save(() => {
+          this.$router.push({
+            name: "annotate",
+            params: { identifier }
+          });
         });
-      }, propagate_to_id);
+      };
+      if (propagate_to_id) {
+        this.$parent.copyAnnotationsTo(propagate_to_id, doSave);
+      } else {
+        doSave();
+      }
     }
   }
 };

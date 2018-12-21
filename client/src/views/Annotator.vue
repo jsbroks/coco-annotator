@@ -220,7 +220,7 @@ export default {
   },
   methods: {
     ...mapMutations(["addProcess", "removeProcess", "resetUndo"]),
-    save(callback, propagate_to_id) {
+    save(callback) {
       let process = "Saving";
       this.addProcess(process);
       let refs = this.$refs;
@@ -243,8 +243,7 @@ export default {
           zoom: this.zoom,
           tools: {}
         },
-        categories: [],
-        propagate_to_id: propagate_to_id
+        categories: []
       };
 
       if (refs.category != null && this.mode == "segment") {
@@ -266,6 +265,23 @@ export default {
 
       axios
         .post("/api/annotator/data", JSON.stringify(data))
+        .then(() => {
+          this.removeProcess(process);
+          if (callback != null) callback();
+        })
+        .catch(() => {});
+    },
+
+    copyAnnotationsTo(copy_to_image_id, callback) {
+      let process = "Propagating annotations";
+      this.addProcess(process);
+
+      let data = {
+        add_annotations_from: [this.image.id]
+      };
+
+      axios
+        .post(`/api/annotator/data/${copy_to_image_id}`, JSON.stringify(data))
         .then(() => {
           this.removeProcess(process);
           if (callback != null) callback();
