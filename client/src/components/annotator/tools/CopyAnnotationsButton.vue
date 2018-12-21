@@ -1,10 +1,24 @@
 <template>
   <div>
-    <i v-tooltip.right="name" class="fa fa-x fa-clone" style="color: white" data-toggle="modal" data-target="#copy_annotations"></i>
+    <i
+      v-tooltip.right="name"
+      class="fa fa-x fa-clone"
+      style="color: white"
+      data-toggle="modal"
+      data-target="#copy_annotations"
+    ></i>
 
     <br>
     <!-- Modal -->
-    <div class="modal fade" id="copy_annotations" tabindex="-1" role="dialog" aria-labelledby="copyAnnotationsLabel" aria-hidden="true">
+    <div
+      id="copy_annotations"
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      ref="modal"
+      aria-labelledby="copyAnnotationsLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -17,29 +31,30 @@
             <form novalidate="true">
               <div class="form-group">
                 <label>Image ID</label>
-                <input v-model="copyFrom.imageId" 
+                <input
+                  v-model="copyFrom.imageId"
                   :class="{'form-control': true, 'is-invalid': validImageId.length !== 0}"
-                  placeholder="Enter a valid image ID" required>
-                <div class="invalid-feedback">
-                  {{ validImageId }}
-                </div>
+                  placeholder="Enter a valid image ID"
+                  required
+                >
+                <div class="invalid-feedback">{{ validImageId }}</div>
               </div>
             </form>
-
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" @click="close()">Close</button>
             <button type="button" class="btn btn-primary" @click="copyAnnotations()">Copy</button>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import JQuery from "jquery";
+let $ = JQuery;
 
 export default {
   name: "CopyAnnotationsButton",
@@ -50,12 +65,16 @@ export default {
       name: "Copy Annotations",
       copyFrom: {
         imageId: "",
-        validatedImageId: "invalid"
+        validatedImageId: ""
       },
+      visible: false,
       imageIds: []
     };
   },
   methods: {
+    close() {
+      $("#copy_annotations").modal("hide");
+    },
     copyAnnotations() {
       if (this.copyFrom.imageId === "" || isNaN(this.copyFrom.imageId)) {
         return;
@@ -64,8 +83,10 @@ export default {
       if (!this.imageIds.includes(imageId)) {
         return;
       }
-      this.$emit("close");
-      return this.$parent.copyAnnotationsFrom(this.copyFrom.validatedImageId);
+      return this.$parent.copyAnnotationsFrom(imageId, () => {
+        this.close();
+        this.$parent.getData();
+      });
     }
   },
   computed: {
@@ -82,6 +103,7 @@ export default {
     }
   },
   created() {
+    $("#copy_annotations").modal()
     axios
       .get("/api/image/?fields=id")
       .then(response => {
