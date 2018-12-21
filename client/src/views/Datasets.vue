@@ -56,7 +56,7 @@
 
               <div class="form-group">
                 <label>Default Categories</label>
-                <tags-input v-model="create.categories" :existing-tags="categoryTags" :typeahead="true" placeholder="Add a category" :typeahead-activation-threshold="0"></tags-input>
+                <TagsInput v-model="create.categories" element-id="createCategory" :existing-tags="categoryTags" :typeahead="true" :typeahead-activation-threshold="0"></TagsInput>
               </div>
 
               <div class="form-group" required>
@@ -115,11 +115,12 @@ import toastrs from "@/mixins/toastrs";
 import DatasetCard from "@/components/cards/DatasetCard";
 import Pagination from "@/components/Pagination";
 
+import TagsInput from "@/components/TagsInput";
 import { mapMutations } from "vuex";
 
 export default {
   name: "Datasets",
-  components: { DatasetCard, Pagination },
+  components: { DatasetCard, Pagination, TagsInput },
   mixins: [toastrs],
   data() {
     return {

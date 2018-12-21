@@ -582,13 +582,18 @@ export default {
       });
     },
     showAll() {
+      if (this.$refs.category == null) return;
+
       this.$refs.category.forEach(category => {
         category.isVisible = category.category.annotations.length > 0;
       });
     },
     hideAll() {
+      if (this.$refs.category == null) return;
+
       this.$refs.category.forEach(category => {
         category.isVisible = false;
+        category.showAnnotations = false;
       });
     }
   },
