@@ -21,23 +21,6 @@ class DatasetModel(db.DynamicDocument):
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
-    @classmethod
-    def create_from_json(cls, json_file):
-        with open(json_file) as file:
-            datasets = json.load(file)
-            for dataset_json in datasets:
-                name = dataset_json.get('name')
-                if name:
-                    try:
-                        dataset = DatasetModel(
-                            name=name, 
-                            categories=dataset_json.get('categories', []))
-                        dataset.save()
-                        print(f'Created dataset {name}', flush=True)
-                    except db.NotUniqueError:
-                        pass
-
-
     def save(self, *args, **kwargs):
 
         directory = os.path.join(Config.DATASET_DIRECTORY, self.name + '/')
@@ -203,25 +186,67 @@ class CategoryModel(db.DynamicDocument):
         category.save()
         return category
 
-    @classmethod
-    def create_from_json(cls, json_file):
-        with open(json_file) as file:
-            categories = json.load(file)
-            for cat in categories:
-                name = cat.get('name')
-                if name is not None:
-                    try:
-                        category = cls.create_category(
-                            name=name,
-                            supercategory=cat.get('supercategory'),
-                            color=cat.get('color'),
-                            metadata=cat.get('metadata'))
-                        print(f'Added category "{name}"')
-                    except db.NotUniqueError:
-                        pass
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField()
     url = db.StringField()
 
+
+def _upsert_category(name, supercategory=None, color=None, metadata=None):
+    category_model = CategoryModel.objects(name=name).first()
+    if category_model is None:
+        category_model = CategoryModel.create_category(
+            name=name,
+            supercategory=supercategory,
+            color=color,
+            metadata=metadata)
+        print(f'Added category "{name}"')
+
+    else:
+        updates = {}
+        if supercategory is not None:
+            updates['set__supercategory'] = supercategory
+        if color is not None:
+            updates['set__color'] = color
+        if metadata is not None:
+            updates['set__metadata'] = metadata
+        if updates:
+            category_model.update(**updates)
+
+    return category_model
+
+def initialize_from_json(initializer_json_file):
+
+    with open(initializer_json_file) as file:
+        initializer_json = json.load(file)
+        for category in initializer_json.get('categories', []):
+            name = category.get('name')
+            if name is not None:
+                _upsert_category(**category)
+
+        for dataset_json in initializer_json.get('datasets', []):
+            name = dataset_json.get('name')
+            if name:
+                # map category names to ids; create as needed
+                category_ids = []
+                for category in dataset_json.get('categories', []):
+                    category_model = _upsert_category(category)
+                    category_ids.append(category_model.id)
+
+                dataset_model = DatasetModel.objects(name=name).first()
+                if dataset_model is None:
+                    # create dataset or update/merge categories
+                    dataset = DatasetModel(
+                        name=name,
+                        categories=category_ids)
+                    dataset.save()
+                    print(f'Created dataset {name}', flush=True)
+                else:
+                    # merge categories with existing
+                    existing_categories = set(dataset_model.categories)
+                    merged_categories = set(category_ids) + existing_categories
+                    if merged_categories != existing_categories:
+                        dataset_model.update(
+                            set__categories=list(merged_categories)
+                        )
