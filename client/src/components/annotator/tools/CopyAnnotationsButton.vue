@@ -52,27 +52,32 @@ export default {
         imageId: "",
         validatedImageId: "invalid"
       },
-      errors: []
+      imageIds: []
     };
   },
   methods: {
     copyAnnotations() {
-      if (isNaN(this.copyFrom.validatedImageId)) {
+      if (this.copyFrom.imageId === "" || isNaN(this.copyFrom.imageId)) {
         return;
       }
+      let imageId = parseInt(this.copyFrom.imageId);
+      if (!this.imageIds.includes(imageId)) {
+        return;
+      }
+      this.$emit("close");
       return this.$parent.copyAnnotationsFrom(this.copyFrom.validatedImageId);
     }
   },
   computed: {
     validImageId() {
-      this.copyFrom.validatedImageId = "invalid"
-      if (
-        isNaN(this.copyFrom.imageId) ||
-        (this.imageIds && !this.imageIds.includes(parseInt(this.copyFrom.imageId)))
-      ) {
-        return "Enter a valid image ID";
+      let errorMsg = "Enter a valid image ID";
+      if (this.copyFrom.imageId === "") {
+        return errorMsg;
+      } else if (isNaN(this.copyFrom.imageId)) {
+        return errorMsg;
+      } else if (!this.imageIds.includes(parseInt(this.copyFrom.imageId))) {
+        return errorMsg;
       }
-      this.copyFrom.validatedImageId = parseInt(this.copyFrom.imageId)
       return "";
     }
   },
