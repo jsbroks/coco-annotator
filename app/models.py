@@ -205,6 +205,12 @@ class LicenseModel(db.DynamicDocument):
 # Use this methods until a solution is found
 def upsert(model, query=None, set=None):
 
+    if not set:
+        set = query
+
+    if not query:
+        return None
+
     found = model.objects(**query).first()
 
     if found:
@@ -234,7 +240,7 @@ def create_from_json(json_file):
                 category_ids = []
                 for category in dataset_json.get('categories', []):
                     category_obj = { "name": category }
-                    category_model = upsert(CategoryModel, query=category_obj, set=category_obj)
+                    category_model = upsert(CategoryModel, query=category_obj)
                     category_ids.append(category_model.id)
 
                 dataset_json['categories'] = category_ids
