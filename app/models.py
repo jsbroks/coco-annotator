@@ -203,10 +203,10 @@ class LicenseModel(db.DynamicDocument):
 
 # https://github.com/MongoEngine/mongoengine/issues/1171
 # Use this methods until a solution is found
-def upsert(model, query=None, set=None):
+def upsert(model, query=None, update=None):
 
-    if not set:
-        set = query
+    if not update:
+        update = query
 
     if not query:
         return None
@@ -214,9 +214,9 @@ def upsert(model, query=None, set=None):
     found = model.objects(**query)
 
     if found.first():
-        return found.modify(new=True, **set)
+        return found.modify(new=True, **update)
 
-    new_model = model(**set)
+    new_model = model(**update)
     new_model.save()
 
     return new_model
@@ -230,7 +230,7 @@ def create_from_json(json_file):
         for category in data_json.get('categories', []):
             name = category.get('name')
             if name is not None:
-                upsert(CategoryModel, query={ "name": name }, set=category)
+                upsert(CategoryModel, query={ "name": name }, update=category)
 
         for dataset_json in data_json.get('datasets', []):
             name = dataset_json.get('name')
@@ -243,6 +243,6 @@ def create_from_json(json_file):
                     category_ids.append(category_model.id)
 
                 dataset_json['categories'] = category_ids
-                upsert(DatasetModel, query={ "name": name}, set=dataset_json)
+                upsert(DatasetModel, query={ "name": name}, update=dataset_json)
 
     sys.stdout.flush()
