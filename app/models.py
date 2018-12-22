@@ -172,9 +172,9 @@ class AnnotationModel(db.DynamicDocument):
 class CategoryModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique=True)
-    supercategory = db.StringField()
-    color = db.StringField(default=color_util.random_color_hex())
-    metadata = db.DictField()
+    supercategory = db.StringField(default="")
+    color = db.StringField(default=None)
+    metadata = db.DictField(default={})
 
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
@@ -186,6 +186,13 @@ class CategoryModel(db.DynamicDocument):
         category.color = color_util.random_color_hex() if color is None else color
         category.save()
         return category
+
+    def save(self, *args, **kwargs):
+
+        if self.color:
+            self.color = color_util.random_color_hex()
+
+        return super(CategoryModel, self).save(*args, **kwargs)
 
 
 class LicenseModel(db.DynamicDocument):
