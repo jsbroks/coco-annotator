@@ -56,7 +56,6 @@ db.init_app(app)
 if Config.INITIALIZE_FROM_FILE is not None:
     initialize_from_json(Config.INITIALIZE_FROM_FILE)
 
-
 if Config.LOAD_IMAGES_ON_START:
     ImageModel.load_images(Config.DATASET_DIRECTORY)
 
