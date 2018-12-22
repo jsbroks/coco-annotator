@@ -1,7 +1,7 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 
-from flask import send_file
+from flask import send_file, request
 
 from ..util import query_util, coco_util, thumbnail_util
 from ..models import *
@@ -31,7 +31,16 @@ image_download.add_argument('height', type=int, required=False, default=0)
 class Images(Resource):
     def get(self):
         """ Returns all images """
-        return query_util.fix_ids(ImageModel.objects(deteled=False).all())
+        fields = request.args.getlist('fields')
+        if fields and ',' in fields[0]:
+            fields = fields[0].split(',')
+
+        images = ImageModel.objects(deleted=False)
+        if fields:
+            fields_map = dict([(k, 1) for k in fields])
+            images = images.fields(**fields_map)
+        return query_util.fix_ids(images.all())
+        
 
     @api.expect(image_upload)
     def post(self):

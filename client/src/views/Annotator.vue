@@ -17,6 +17,7 @@
       <hr>
 
       <div v-show="mode == 'segment'">
+        <CopyAnnotationsButton ref="copyAnnotations" />
         <ShowAllButton />
         <HideAllButton />
       </div>
@@ -120,6 +121,8 @@ import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 
+import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
+
 import CenterButton from "@/components/annotator/tools/CenterButton";
 
 import DownloadButton from "@/components/annotator/tools/DownloadButton";
@@ -143,6 +146,7 @@ export default {
   name: "Annotator",
   components: {
     FileTitle,
+    CopyAnnotationsButton,
     Category,
     CLabel: Label,
     PolygonTool,
@@ -282,6 +286,23 @@ export default {
 
       axios
         .post(`/api/annotator/data/${copy_to_image_id}`, JSON.stringify(data))
+        .then(() => {
+          this.removeProcess(process);
+          if (callback != null) callback();
+        })
+        .catch(() => {});
+    },
+
+    copyAnnotationsFrom(copy_from_image_id, callback) {
+      let process = "Cloning annotations";
+      this.addProcess(process);
+
+      let data = {
+        add_annotations_from: [copy_from_image_id]
+      };
+
+      axios
+        .post(`/api/annotator/data/${this.image.id}`, JSON.stringify(data))
         .then(() => {
           this.removeProcess(process);
           if (callback != null) callback();
