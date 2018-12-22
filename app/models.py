@@ -189,7 +189,7 @@ class CategoryModel(db.DynamicDocument):
 
     def save(self, *args, **kwargs):
 
-        if self.color:
+        if not self.color:
             self.color = color_util.random_color_hex()
 
         return super(CategoryModel, self).save(*args, **kwargs)
