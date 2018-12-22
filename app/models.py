@@ -1,4 +1,6 @@
 import os
+import sys
+import json
 from flask_mongoengine import MongoEngine
 from .util import color_util
 from .config import Config
@@ -170,9 +172,9 @@ class AnnotationModel(db.DynamicDocument):
 class CategoryModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique=True)
-    supercategory = db.StringField()
-    color = db.StringField(default=color_util.random_color_hex())
-    metadata = db.DictField()
+    supercategory = db.StringField(default="")
+    color = db.StringField(default=None)
+    metadata = db.DictField(default={})
 
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
@@ -185,9 +187,62 @@ class CategoryModel(db.DynamicDocument):
         category.save()
         return category
 
+    def save(self, *args, **kwargs):
+
+        if not self.color:
+            self.color = color_util.random_color_hex()
+
+        return super(CategoryModel, self).save(*args, **kwargs)
+
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField()
     url = db.StringField()
 
+
+# https://github.com/MongoEngine/mongoengine/issues/1171
+# Use this methods until a solution is found
+def upsert(model, query=None, update=None):
+
+    if not update:
+        update = query
+
+    if not query:
+        return None
+
+    found = model.objects(**query)
+
+    if found.first():
+        return found.modify(new=True, **update)
+
+    new_model = model(**update)
+    new_model.save()
+
+    return new_model
+
+
+def create_from_json(json_file):
+
+    with open(json_file) as file:
+
+        data_json = json.load(file)
+        for category in data_json.get('categories', []):
+            name = category.get('name')
+            if name is not None:
+                upsert(CategoryModel, query={ "name": name }, update=category)
+
+        for dataset_json in data_json.get('datasets', []):
+            name = dataset_json.get('name')
+            if name:
+                # map category names to ids; create as needed
+                category_ids = []
+                for category in dataset_json.get('categories', []):
+                    category_obj = { "name": category }
+                    category_model = upsert(CategoryModel, query=category_obj)
+                    category_ids.append(category_model.id)
+
+                dataset_json['categories'] = category_ids
+                upsert(DatasetModel, query={ "name": name}, update=dataset_json)
+
+    sys.stdout.flush()
