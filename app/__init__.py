@@ -6,7 +6,7 @@ from watchdog.observers import Observer
 from .image_folder import ImageFolderHandler
 from .api import blueprint as api
 from .config import Config
-from .models import db, ImageModel, initialize_from_json
+from .models import db, ImageModel, create_from_json
 from .util import query_util, color_util
 
 import threading
@@ -53,8 +53,8 @@ def create_app():
 app = create_app()
 db.init_app(app)
 
-if Config.INITIALIZE_FROM_FILE is not None:
-    initialize_from_json(Config.INITIALIZE_FROM_FILE)
+if Config.INITIALIZE_FROM_FILE:
+    create_from_json(Config.INITIALIZE_FROM_FILE)
 
 if Config.LOAD_IMAGES_ON_START:
     ImageModel.load_images(Config.DATASET_DIRECTORY)

@@ -194,65 +194,43 @@ class LicenseModel(db.DynamicDocument):
     url = db.StringField()
 
 
-def _upsert_category(name, supercategory=None, color=None, metadata=None):
-    category_model = CategoryModel.objects(name=name).first()
-    if category_model is None:
-        category_model = CategoryModel.create_category(
-            name=name,
-            supercategory=supercategory,
-            color=color,
-            metadata=metadata)
-        print(f'Added category "{name}"')
+# https://github.com/MongoEngine/mongoengine/issues/1171
+# Use this methods until a solution is found
+def upsert(model, query=None, set=None):
 
-    else:
-        updates = {}
-        if supercategory is not None and \
-                supercategory != category_model.supercategory:
-            updates['set__supercategory'] = supercategory
-        if color is not None and \
-                color != category_model.color:
-            updates['set__color'] = color
-        if metadata is not None:
-            updates['set__metadata'] = metadata
-        if updates:
-            category_model.update(**updates)
-            print(f'Updated category "{name}": {updates}')
+    found = model.objects(**query).first()
 
-    return category_model
+    if found:
+        found.update(**set)
+        return found
 
-def initialize_from_json(initializer_json_file):
+    new_model = model(**set)
+    new_model.save()
 
-    with open(initializer_json_file) as file:
-        initializer_json = json.load(file)
-        for category in initializer_json.get('categories', []):
+    return new_model
+
+
+def create_from_json(json_file):
+
+    with open(json_file) as file:
+
+        data_json = json.load(file)
+        for category in data_json.get('categories', []):
             name = category.get('name')
             if name is not None:
-                _upsert_category(**category)
+                upsert(CategoryModel, query={ "name": name }, set=category)
 
-        for dataset_json in initializer_json.get('datasets', []):
+        for dataset_json in data_json.get('datasets', []):
             name = dataset_json.get('name')
             if name:
                 # map category names to ids; create as needed
                 category_ids = []
                 for category in dataset_json.get('categories', []):
-                    category_model = _upsert_category(category)
+                    category_obj = { "name": category }
+                    category_model = upsert(CategoryModel, query=category_obj, set=category_obj)
                     category_ids.append(category_model.id)
 
-                dataset_model = DatasetModel.objects(name=name).first()
-                if dataset_model is None:
-                    # create dataset or update/merge categories
-                    dataset = DatasetModel(
-                        name=name,
-                        categories=category_ids)
-                    dataset.save()
-                    print(f'Created dataset {name}')
-                else:
-                    # merge categories with existing
-                    existing_categories = set(dataset_model.categories)
-                    merged_categories = set(category_ids) | existing_categories
-                    if merged_categories != existing_categories:
-                        dataset_model.update(
-                            set__categories=list(merged_categories)
-                        )
-                        print(f'Updated categories for dataset {name}')
+                dataset_json['categories'] = category_ids
+                upsert(DatasetModel, query={ "name": name}, set=dataset_json)
+
     sys.stdout.flush()
