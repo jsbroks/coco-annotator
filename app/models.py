@@ -214,7 +214,7 @@ def upsert(model, query=None, set=None):
     found = model.objects(**query)
 
     if found.first():
-        return found.modify(new=True, **set).first()
+        return found.modify(new=True, **set)
 
     new_model = model(**set)
     new_model.save()
