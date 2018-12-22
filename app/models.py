@@ -211,10 +211,10 @@ def upsert(model, query=None, set=None):
     if not query:
         return None
 
-    found = model.objects(**query).first()
+    found = model.objects(**query)
 
-    if found:
-        return found.modify(new=True, **set)
+    if found.first():
+        return found.modify(new=True, **set).first()
 
     new_model = model(**set)
     new_model.save()
