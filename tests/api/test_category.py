@@ -19,8 +19,7 @@ class TestCategory:
         response = client.get("/api/category/")
         data = json.loads(response.data)
 
-        assert isinstance(data, list)
-        assert len(data) == 0
+        assert data.get('total') == 0
 
     def test_post_no_data(self, client):
         response = client.post("/api/category/")

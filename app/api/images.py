@@ -14,6 +14,12 @@ import io
 api = Namespace('image', description='Image related operations')
 
 
+image_all = reqparse.RequestParser()
+image_all.add_argument('fields', required=False, type=str)
+image_all.add_argument('page', default=1, type=int)
+image_all.add_argument('perPage', default=50, type=int, required=False)
+
+
 image_upload = reqparse.RequestParser()
 image_upload.add_argument('image', location='files',
                           type=FileStorage, required=True,
@@ -33,18 +39,30 @@ copy_annotations.add_argument('category_ids', location='json', type=int,
 
 @api.route('/')
 class Images(Resource):
+    @api.expect(image_all)
     def get(self):
         """ Returns all images """
-        fields = request.args.getlist('fields')
-        if fields and ',' in fields[0]:
-            fields = fields[0].split(',')
+        args = image_all.parse_args()
+        per_page = args['perPage']
+        page = args['page']-1
+        fields = args.get('fields', "").split(',')
 
         images = ImageModel.objects(deleted=False)
+        total = images.count()
+        pages = int(total/per_page) + 1
+
+        images = images.skip(page*per_page).limit(per_page)
         if fields:
-            fields_map = dict([(k, 1) for k in fields])
-            images = images.fields(**fields_map)
-        return query_util.fix_ids(images.all())
-        
+            images = images.only(*fields)
+
+        return {
+            "total": total,
+            "pages": pages,
+            "page": page,
+            "fields": fields,
+            "per_page": per_page,
+            "images": query_util.fix_ids(images.all())
+        }
 
     @api.expect(image_upload)
     def post(self):
