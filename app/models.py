@@ -122,7 +122,7 @@ class ImageModel(db.DynamicDocument):
         """
         Creates a copy of the annotations for this image
         :param annotations: QuerySet of annotation models
-        :return:
+        :return: number of annotations
         """
         annotations = annotations.filter(width=self.width, height=self.height, area__gt=0)
 
@@ -214,12 +214,23 @@ class CategoryModel(db.DynamicDocument):
     deleted_date = db.DateTimeField()
 
     @classmethod
-    def create_category(cls, name, color=None, metadata=None, supercategory=None):
-        category = CategoryModel(name=name, supercategory=supercategory)
-        category.metadata = metadata if metadata is not None else {}
-        category.color = color_util.random_color_hex() if color is None else color
-        category.save()
-        return category
+    def bulk_create(cls, categories):
+
+        if not categories:
+            return []
+
+        category_ids = []
+        for category in categories:
+            category_model = CategoryModel.objects(name=category).first()
+
+            if category_model is None:
+                new_category = CategoryModel(name=category)
+                new_category.save()
+                category_ids.append(new_category.id)
+            else:
+                category_ids.append(category_model.id)
+
+        return category_ids
 
     def save(self, *args, **kwargs):
 
@@ -264,7 +275,7 @@ def create_from_json(json_file):
         for category in data_json.get('categories', []):
             name = category.get('name')
             if name is not None:
-                upsert(CategoryModel, query={ "name": name }, update=category)
+                upsert(CategoryModel, query={"name": name}, update=category)
 
         for dataset_json in data_json.get('datasets', []):
             name = dataset_json.get('name')
@@ -272,11 +283,10 @@ def create_from_json(json_file):
                 # map category names to ids; create as needed
                 category_ids = []
                 for category in dataset_json.get('categories', []):
-                    category_obj = { "name": category }
+                    category_obj = {"name": category}
                     category_model = upsert(CategoryModel, query=category_obj)
                     category_ids.append(category_model.id)
 
                 dataset_json['categories'] = category_ids
                 upsert(DatasetModel, query={ "name": name}, update=dataset_json)
 
-    sys.stdout.flush()

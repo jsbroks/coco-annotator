@@ -60,19 +60,7 @@ class Dataset(Resource):
         name = args['name']
         categories = args.get('categories', [])
 
-        category_ids = []
-
-        for category in categories:
-            if isinstance(category, int):
-                category_ids.append(category)
-            else:
-                category_model = CategoryModel.objects(name=category).first()
-
-                if category_model is None:
-                    new_category = CategoryModel.create_category(name=category)
-                    category_ids.append(new_category.id)
-                else:
-                    category_ids.append(category_model.id)
+        category_ids = CategoryModel.bulk_create(categories)
 
         try:
             dataset = DatasetModel(name=name, categories=category_ids)
@@ -139,21 +127,7 @@ class DatasetId(Resource):
         default_annotation_metadata = args.get('default_annotation_metadata')
 
         if categories is not None:
-            category_ids = []
-
-            for category in categories:
-                if isinstance(category, int):
-                    category_ids.append(category)
-                else:
-                    category_model = CategoryModel.objects(name=category).first()
-
-                    if category_model is None:
-                        new_category = CategoryModel.create_category(name=category)
-                        category_ids.append(new_category.id)
-                    else:
-                        category_ids.append(category_model.id)
-
-            dataset.categories = category_ids
+            dataset.categories = CategoryModel.bulk_create(categories)
 
         if default_annotation_metadata is not None:
             dataset.default_annotation_metadata = default_annotation_metadata
