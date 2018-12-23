@@ -108,13 +108,19 @@ class AnnotatorId(Resource):
         add_annotations_from = data.get('add_annotations_from', [])
 
         if add_annotations_from:
+            # validate the passed image ids are numbers
+            from_image_ids = []
+            for from_image_id in add_annotations_from:
+                try:
+                    from_image_ids.append(int(from_image_id))
+                except ValueError:
+                    return {'success': False}, 400
             annotation_ids = AnnotationModel.objects(
-                image_id__in=add_annotations_from).filter(
+                image_id__in=from_image_ids).filter(
                     deleted=False, area__gt=0).distinct('_id')
             annotations_to_add += annotation_ids
 
         if annotations_to_add:
-
             dataset = DatasetModel.objects(id=image.dataset_id).first()
             dataset_categories = dataset.categories
             image_categories = image.category_ids
@@ -180,7 +186,6 @@ class AnnotatorId(Resource):
                 set__annotated=annotated,
                 set__category_ids=image_categories
             )
-
 
     def get(self, image_id):
         """ Called when loading from the annotator client """
