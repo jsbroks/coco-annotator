@@ -1,11 +1,14 @@
 import os
 import sys
 import json
+import copy
+import numpy as np
+
 from flask_mongoengine import MongoEngine
+from .util.coco_util import decode_seg
 from .util import color_util
 from .config import Config
 from PIL import Image
-
 
 db = MongoEngine()
 
@@ -115,6 +118,24 @@ class ImageModel(db.DynamicDocument):
 
         return '/'.join(folders)
 
+    def copy_annotations(self, annotations):
+        """
+        Creates a copy of the annotations for this image
+        :param annotations: QuerySet of annotation models
+        :return:
+        """
+        annotations = annotations.filter(width=self.width, height=self.height, area__gt=0)
+
+        for annotation in annotations:
+            clone = annotation.clone()
+
+            clone.dataset_id = self.dataset_id
+            clone.image_id = self.id
+
+            clone.save(copy=True)
+
+        return annotations.count()
+
 
 class AnnotationModel(db.DynamicDocument):
 
@@ -131,7 +152,7 @@ class AnnotationModel(db.DynamicDocument):
     width = db.IntField()
     height = db.IntField()
 
-    color = db.StringField(default=color_util.random_color_hex())
+    color = db.StringField()
 
     metadata = db.DictField(default={})
     paper_object = db.ListField(default=[])
@@ -153,20 +174,33 @@ class AnnotationModel(db.DynamicDocument):
 
         super(AnnotationModel, self).__init__(**data)
 
-    def save(self, *args, **kwargs):
+    def save(self, copy=False, *args, **kwargs):
 
-        if self.dataset_id is not None:
+        if not self.dataset_id and not copy:
             dataset = DatasetModel.objects(id=self.dataset_id).first()
 
             if dataset is not None:
-                metadata = dataset.default_annotation_metadata.copy()
-                metadata.update(self.metadata)
-                self.metadata = metadata
+                self.metadata = dataset.default_annotation_metadata.copy()
+
+        if self.color is None:
+            self.color = color_util.random_color_hex()
 
         return super(AnnotationModel, self).save(*args, **kwargs)
 
     def is_empty(self):
         return len(self.segmentation) == 0 or self.area == 0
+
+    def mask(self):
+        """ Returns binary mask of annotation """
+        mask = np.zeros((self.height, self.width))
+        return decode_seg(mask, self.segmentation)
+
+    def clone(self):
+        """ Creates a clone """
+        create = json.loads(self.to_json())
+        del create['_id']
+
+        return AnnotationModel(**create)
 
 
 class CategoryModel(db.DynamicDocument):

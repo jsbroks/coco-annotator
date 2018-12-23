@@ -1,5 +1,5 @@
 import copy
-from flask_restplus import Namespace, Api, Resource
+from flask_restplus import Namespace, Api, Resource, reqparse
 from flask import request
 
 from ..util import query_util
@@ -94,8 +94,9 @@ class AnnotatorData(Resource):
 @api.route('/data/<int:image_id>')
 class AnnotatorId(Resource):
 
-    def post(self, image_id):
+    def put(self, image_id):
         """Called when copying/adding annotations from another image"""
+
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:
@@ -103,7 +104,7 @@ class AnnotatorId(Resource):
 
         data = request.get_json(force=True)
         # add these annotations by id
-        annotations_to_add = data.get('add_annotations', [])
+        annotations_to_add = data.get('addAnnotations', [])
         # add all annotations from these image ids
         add_annotations_from = data.get('add_annotations_from', [])
 
@@ -115,6 +116,7 @@ class AnnotatorId(Resource):
                     from_image_ids.append(int(from_image_id))
                 except ValueError:
                     return {'success': False}, 400
+
             annotation_ids = AnnotationModel.objects(
                 image_id__in=from_image_ids).filter(
                     deleted=False, area__gt=0).distinct('_id')
