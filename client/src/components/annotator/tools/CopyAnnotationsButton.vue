@@ -38,6 +38,13 @@
                 >
                 <div class="invalid-feedback">{{ validImageId }}</div>
               </div>
+              <button type="button" class="btn btn-sm btn-light" style="float: left" @click="fromId = previous.toString()">
+                <i class="fa fa-arrow-left"></i> Previous Image
+              </button>
+              <button type="button" class="btn btn-sm btn-light" style="float: right" @click="fromId = next.toString()">
+                Next Image <i class="fa fa-arrow-right"></i>
+              </button>
+
             </form>
           </div>
           <div class="modal-footer">
@@ -65,11 +72,11 @@ export default {
       type: Number,
       required: true
     },
-    nextId: {
+    next: {
       type: Number,
       default: null
     },
-    previousId: {
+    previous: {
       type: Number,
       default: null
     }
@@ -89,33 +96,44 @@ export default {
     },
     copyAnnotations() {
       if (this.validImageId !== "") return;
-      let process = "Copying annotations from " + this.fromId;
-      this.addProcess();
+      this.close();
 
-      axios
-        .put(
-          "/api/image/copy/" + this.fromId + "/" + this.imageId + "/annotations"
-        )
-        .then(() => {
-          this.removeProcess(process);
-          this.$parent.save(() => this.$parent.getData());
-        })
-        .catch(error => {
-          this.axiosReqestError(
-            "Copying Annotations",
-            error.response.data.message
-          );
-          this.removeProcess(process);
-        });
+      let process = "Copying annotations from " + this.fromId;
+
+      this.$parent.save(() => {
+        this.addProcess(process);
+        axios
+          .put(
+            "/api/image/copy/" +
+              this.fromId +
+              "/" +
+              this.imageId +
+              "/annotations"
+          )
+          .then(() => {
+            this.removeProcess(process);
+            this.$parent.getData();
+          })
+          .catch(error => {
+            this.axiosReqestError(
+              "Copying Annotations",
+              error.response.data.message
+            );
+            this.removeProcess(process);
+          });
+      });
     }
   },
   computed: {
     validImageId() {
       let errorMsg = "Enter a valid image ID";
 
+      if (this.fromId == null) return errorMsg;
       if (this.fromId === "") return errorMsg;
-      if (isNaN(this.fromId)) return errorMsg;
-      if (this.fromId.trim() !== this.fromId) return errorMsg;
+      if (isNaN(this.fromId)) return "Value must be a number";
+      if (this.fromId.trim() !== this.fromId) return "Value must be a number";
+      if (this.fromId === this.imageId)
+        return "Sorry, you can not clone the same image";
 
       return "";
     }

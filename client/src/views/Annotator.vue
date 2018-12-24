@@ -17,7 +17,7 @@
       <hr>
 
       <div v-show="mode == 'segment'">
-        <CopyAnnotationsButton :image-id="image.id" />
+        <CopyAnnotationsButton :image-id="image.id" :next="image.next" :previous="image.previous"/>
         <ShowAllButton />
         <HideAllButton />
       </div>
@@ -331,27 +331,29 @@ export default {
     initCanvas() {
       let process = "Initializing canvas";
       this.addProcess(process);
-
       this.loading.image = true;
       let canvas = document.getElementById("editor");
-
       this.paper.setup(canvas);
-
       this.paper.view.viewSize = [
         this.paper.view.size.width,
         window.innerHeight
       ];
       this.paper.activate();
-
-      this.image.raster = new paper.Raster(this.image.url);
-      this.image.raster.onLoad = () => {
+      let img = new Image();
+      img.onload = () => {
+        // Create image object
+        this.image.raster = new paper.Raster({
+          source: this.image.url,
+          position: new paper.Point(0, 0)
+        });
+        this.image.raster.sendToBack();
         this.fit();
         this.image.ratio =
           (this.image.raster.width * this.image.raster.height) / 1000000;
-
         this.removeProcess(process);
         this.loading.image = false;
       };
+      img.src = this.image.url;
     },
     getData(callback) {
       let process = "Loading annotation data";
@@ -410,7 +412,6 @@ export default {
 
       this.currentAnnotation.unite(compound);
     },
-
     subtractCurrentAnnotation(compound) {
       if (this.currentCategory == null) return;
 
@@ -420,7 +421,6 @@ export default {
     setCursor(newCursor) {
       this.cursor = newCursor;
     },
-
     moveUp() {
       if (this.current.category < 0) {
         this.current.category = this.categories.length - 1;

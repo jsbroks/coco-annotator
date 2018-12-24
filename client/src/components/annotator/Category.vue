@@ -101,7 +101,7 @@ export default {
     return {
       group: null,
       color: this.category.color,
-      selectedAnnotation: 0,
+      selectedAnnotation: -1,
       showAnnotations: false,
       isVisible: false,
       search: ""

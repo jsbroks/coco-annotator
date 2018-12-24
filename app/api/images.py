@@ -154,13 +154,15 @@ class ImageCopyAnnotations(Resource):
 
         image_from = ImageModel.objects(id=from_id).first()
         image_to = ImageModel.objects(id=to_id).first()
-        limit = 500
 
         if image_from == image_to:
-            return {'success': False, 'message': 'Cannot copy self'}
+            return {'success': False, 'message': 'Cannot copy self'}, 400
+
+        if image_from.width != image_to.width or image_from.height != image_to.height:
+            return {'success': False, 'message': 'Image sizes do not match'}, 400
 
         if image_from is None or image_to is None:
-            return {'success': False, 'message': 'Invalid image ids'}
+            return {'success': False, 'message': 'Invalid image ids'}, 400
 
         if category_ids is None:
             category_ids = DatasetModel.objects(id=image_from.dataset_id).first().categories
