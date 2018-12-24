@@ -5,13 +5,12 @@
       class="fa fa-x fa-clone"
       style="color: white"
       data-toggle="modal"
-      data-target="#copy_annotations"
+      data-target="#copyAnnotations"
     ></i>
-
     <br>
     <!-- Modal -->
     <div
-      id="copy_annotations"
+      id="copyAnnotations"
       class="modal fade"
       tabindex="-1"
       role="dialog"
@@ -32,9 +31,9 @@
               <div class="form-group">
                 <label>Image ID</label>
                 <input
-                  v-model="copyFrom.imageId"
+                  v-model="fromId"
                   :class="{'form-control': true, 'is-invalid': validImageId.length !== 0}"
-                  placeholder="Enter a valid image ID"
+                  placeholder="Enter an image ID"
                   required
                 >
                 <div class="invalid-feedback">{{ validImageId }}</div>
@@ -53,72 +52,74 @@
 
 <script>
 import axios from "axios";
+import toastrs from "@/mixins/toastrs";
 import JQuery from "jquery";
 let $ = JQuery;
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "CopyAnnotationsButton",
-  components: {},
-  props: {},
+  props: {
+    imageId: {
+      type: Number,
+      required: true
+    },
+    nextId: {
+      type: Number,
+      default: null
+    },
+    previousId: {
+      type: Number,
+      default: null
+    }
+  },
+  mixins: [toastrs],
   data() {
     return {
       name: "Copy Annotations",
-      copyFrom: {
-        imageId: "",
-        validatedImageId: ""
-      },
-      visible: false,
-      imageIds: []
+      fromId: "",
+      visible: false
     };
   },
   methods: {
+    ...mapMutations(["addProcess", "removeProcess", "resetUndo"]),
     close() {
-      $("#copy_annotations").modal("hide");
+      $("#copyAnnotations").modal("hide");
     },
     copyAnnotations() {
-      if (this.copyFrom.imageId === "" || isNaN(this.copyFrom.imageId)) {
-        return;
-      }
-      let imageId = parseInt(this.copyFrom.imageId);
-      if (!this.imageIds.includes(imageId)) {
-        return;
-      }
-      return this.$parent.copyAnnotationsFrom(imageId, () => {
-        this.close();
-        this.$parent.getData();
-      });
+      if (this.validImageId !== "") return;
+      let process = "Copying annotations from " + this.fromId;
+      this.addProcess();
+
+      axios
+        .put(
+          "/api/image/copy/" + this.fromId + "/" + this.imageId + "/annotations"
+        )
+        .then(() => {
+          this.removeProcess(process);
+          this.$parent.save(() => this.$parent.getData());
+        })
+        .catch(error => {
+          this.axiosReqestError(
+            "Copying Annotations",
+            error.response.data.message
+          );
+          this.removeProcess(process);
+        });
     }
   },
   computed: {
     validImageId() {
       let errorMsg = "Enter a valid image ID";
-      if (this.copyFrom.imageId === "") {
-        return errorMsg;
-      } else if (isNaN(this.copyFrom.imageId)) {
-        return errorMsg;
-      } else if (!this.imageIds.includes(parseInt(this.copyFrom.imageId))) {
-        return errorMsg;
-      }
+
+      if (this.fromId === "") return errorMsg;
+      if (isNaN(this.fromId)) return errorMsg;
+      if (this.fromId.trim() !== this.fromId) return errorMsg;
+
       return "";
     }
   },
-  created() {
-    $("#copy_annotations").modal()
-    axios
-      .get("/api/image/?fields=id")
-      .then(response => {
-        this.imageIds = response.data.map(image => image.id);
-      })
-      .catch(error => {
-        this.axiosReqestError("Loading Dataset", error.response.data.message);
-      });
-  }
+  created() {}
 };
 </script>
-
-<style scoped>
-.subtitle {
-  margin: 0;
-  font-size: 10px;
-}
-</style>

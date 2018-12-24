@@ -1,7 +1,6 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-
-from flask import send_file, request
+from flask import send_file
 
 from ..util import query_util, coco_util, thumbnail_util
 from ..models import *

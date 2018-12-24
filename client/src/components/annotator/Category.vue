@@ -102,8 +102,8 @@ export default {
       group: null,
       color: this.category.color,
       selectedAnnotation: 0,
-      showAnnotations: true,
-      isVisible: true,
+      showAnnotations: false,
+      isVisible: false,
       search: ""
     };
   },

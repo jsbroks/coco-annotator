@@ -18,9 +18,9 @@
         @keydown.8="removeLastTag"
         @keydown.down="nextSearchResult"
         @keydown.up="prevSearchResult"
-        @keydown="onKeyDown"
+        @keydown.exact="onKeyDown"
         @keyup.esc="ignoreSearchResults"
-        @keyup="searchTag"
+        @keyup.exact="searchTag"
         @focus="onFocus"
         @blur="hideTypeahead"
         @value="tags">
