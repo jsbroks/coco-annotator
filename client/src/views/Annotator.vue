@@ -17,7 +17,7 @@
       <hr>
 
       <div v-show="mode == 'segment'">
-        <CopyAnnotationsButton :image-id="image.id" :next="image.next" :previous="image.previous"/>
+        <CopyAnnotationsButton :categories="categories" :image-id="image.id" :next="image.next" :previous="image.previous"/>
         <ShowAllButton />
         <HideAllButton />
       </div>

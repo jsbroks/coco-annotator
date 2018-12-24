@@ -28,6 +28,14 @@
           </div>
           <div class="modal-body">
             <form novalidate="true">
+
+              <button type="button" class="btn btn-sm btn-light" style="float: left" @click="fromId = previous.toString()">
+                <i class="fa fa-arrow-left"></i> Previous Image
+              </button>
+              <button type="button" class="btn btn-sm btn-light" style="float: right; margin-left: 8px" @click="fromId = next.toString()">
+                Next Image <i class="fa fa-arrow-right"></i>
+              </button>
+
               <div class="form-group">
                 <label>Image ID</label>
                 <input
@@ -38,12 +46,18 @@
                 >
                 <div class="invalid-feedback">{{ validImageId }}</div>
               </div>
-              <button type="button" class="btn btn-sm btn-light" style="float: left" @click="fromId = previous.toString()">
-                <i class="fa fa-arrow-left"></i> Previous Image
-              </button>
-              <button type="button" class="btn btn-sm btn-light" style="float: right" @click="fromId = next.toString()">
-                Next Image <i class="fa fa-arrow-right"></i>
-              </button>
+
+              <div class="form-group">
+                <label>Copy Only Selected Categories</label>
+                <TagsInput
+                  v-model="selectedCategories"
+                  element-id="categoriesToCopy"
+                  :existing-tags="categoryTags"
+                  :typeahead="true"
+                  :only-existing-tags="true"
+                  :typeahead-activation-threshold="0"
+                />
+              </div>
 
             </form>
           </div>
@@ -59,11 +73,13 @@
 
 <script>
 import axios from "axios";
-import toastrs from "@/mixins/toastrs";
 import JQuery from "jquery";
-let $ = JQuery;
 
 import { mapMutations } from "vuex";
+import toastrs from "@/mixins/toastrs";
+import TagsInput from "@/components/TagsInput";
+
+let $ = JQuery;
 
 export default {
   name: "CopyAnnotationsButton",
@@ -79,13 +95,19 @@ export default {
     previous: {
       type: Number,
       default: null
+    },
+    categories: {
+      type: Array,
+      required: true
     }
   },
+  components: { TagsInput },
   mixins: [toastrs],
   data() {
     return {
       name: "Copy Annotations",
       fromId: "",
+      selectedCategories: [],
       visible: false
     };
   },
@@ -99,16 +121,23 @@ export default {
       this.close();
 
       let process = "Copying annotations from " + this.fromId;
+      let categories = [];
+      this.selectedCategories.forEach(category =>
+        categories.push(parseInt(category))
+      );
 
       this.$parent.save(() => {
         this.addProcess(process);
         axios
-          .put(
+          .post(
             "/api/image/copy/" +
               this.fromId +
               "/" +
               this.imageId +
-              "/annotations"
+              "/annotations",
+            {
+              category_ids: categories
+            }
           )
           .then(() => {
             this.removeProcess(process);
@@ -124,6 +153,18 @@ export default {
       });
     }
   },
+  watch: {
+    categories: {
+      immediate: true,
+      handler(newCategories) {
+        let tags = [];
+        newCategories.forEach(category => {
+          tags.push(category.id.toString());
+        });
+        this.selectedCategories = tags;
+      }
+    }
+  },
   computed: {
     validImageId() {
       let errorMsg = "Enter a valid image ID";
@@ -136,8 +177,21 @@ export default {
         return "Sorry, you can not clone the same image";
 
       return "";
+    },
+    categoryTags() {
+      let tags = {};
+      this.categories.forEach(category => {
+        tags[category.id] = category.name;
+      });
+
+      return tags;
     }
-  },
-  created() {}
+  }
 };
 </script>
+
+<style scoped>
+.btn-light {
+  margin-bottom: 4px;
+}
+</style>

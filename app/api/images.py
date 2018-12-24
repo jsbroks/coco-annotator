@@ -32,7 +32,7 @@ image_download.add_argument('width', type=int, required=False, default=0)
 image_download.add_argument('height', type=int, required=False, default=0)
 
 copy_annotations = reqparse.RequestParser()
-copy_annotations.add_argument('category_ids', location='json', type=int,
+copy_annotations.add_argument('category_ids', location='json', type=list,
                               required=False, default=None, help='Categories to copy')
 
 
@@ -148,12 +148,15 @@ class ImageId(Resource):
 class ImageCopyAnnotations(Resource):
 
     @api.expect(copy_annotations)
-    def put(self, from_id, to_id):
+    def post(self, from_id, to_id):
         args = copy_annotations.parse_args()
         category_ids = args.get('category_ids')
 
         image_from = ImageModel.objects(id=from_id).first()
         image_to = ImageModel.objects(id=to_id).first()
+
+        if image_from is None or image_to is None:
+            return {'success': False, 'message': 'Invalid image ids'}, 400
 
         if image_from == image_to:
             return {'success': False, 'message': 'Cannot copy self'}, 400
@@ -161,13 +164,8 @@ class ImageCopyAnnotations(Resource):
         if image_from.width != image_to.width or image_from.height != image_to.height:
             return {'success': False, 'message': 'Image sizes do not match'}, 400
 
-        if image_from is None or image_to is None:
-            return {'success': False, 'message': 'Invalid image ids'}, 400
-
         if category_ids is None:
             category_ids = DatasetModel.objects(id=image_from.dataset_id).first().categories
-        else:
-            category_ids = []
 
         query = AnnotationModel.objects(
             image_id=image_from.id,
