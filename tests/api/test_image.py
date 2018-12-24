@@ -7,8 +7,8 @@ class TestImage:
         response = client.get("/api/image/")
         data = json.loads(response.data)
 
-        assert isinstance(data, list)
-        assert len(data) == 0
+        assert isinstance(data, dict)
+        assert data['total'] == 0
 
     def test_post_no_data(self, client):
         response = client.post("/api/image/")

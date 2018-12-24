@@ -44,7 +44,7 @@ class Images(Resource):
         args = image_all.parse_args()
         per_page = args['perPage']
         page = args['page']-1
-        fields = args.get('fields', "").split(',')
+        fields = args.get('fields', "")
 
         images = ImageModel.objects(deleted=False)
         total = images.count()
@@ -52,7 +52,7 @@ class Images(Resource):
 
         images = images.skip(page*per_page).limit(per_page)
         if fields:
-            images = images.only(*fields)
+            images = images.only(*fields.split(','))
 
         return {
             "total": total,
