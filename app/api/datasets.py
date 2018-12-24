@@ -129,6 +129,7 @@ class DatasetId(Resource):
         if categories is not None:
             dataset.categories = CategoryModel.bulk_create(categories)
 
+
         if default_annotation_metadata is not None:
             dataset.default_annotation_metadata = default_annotation_metadata
 
