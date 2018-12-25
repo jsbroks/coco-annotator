@@ -34,7 +34,7 @@ export default {
 }
 
 .tool-input-button:hover {
-  border-color: lightgray;
-  background-color: white;
+  background-color: transparent;
+  color: white;
 }
 </style>
