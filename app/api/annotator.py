@@ -1,4 +1,5 @@
-from flask_restplus import Namespace, Api, Resource
+import copy
+from flask_restplus import Namespace, Api, Resource, reqparse
 from flask import request
 
 from ..util import query_util
@@ -95,7 +96,6 @@ class AnnotatorId(Resource):
 
     def get(self, image_id):
         """ Called when loading from the annotator client """
-
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:

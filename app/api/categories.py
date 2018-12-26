@@ -35,12 +35,13 @@ class Category(Resource):
         color = args.get('color')
 
         try:
-            category = CategoryModel.create_category(
+            category = CategoryModel(
                 name=name,
                 supercategory=supercategory,
                 color=color,
                 metadata=metadata
             )
+            category.save()
         except (ValueError, TypeError) as e:
             return {'message': str(e)}, 400
 

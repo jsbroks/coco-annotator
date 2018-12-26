@@ -17,6 +17,7 @@
       <hr>
 
       <div v-show="mode == 'segment'">
+        <CopyAnnotationsButton :categories="categories" :image-id="image.id" :next="image.next" :previous="image.previous"/>
         <ShowAllButton />
         <HideAllButton />
       </div>
@@ -51,11 +52,11 @@
           No categories have been added to this image.
         </p>
 
-        <div v-show="mode == 'segment'" id="accordion" style="overflow: auto; max-height: 100%">
+        <div v-show="mode == 'segment'" style="overflow: auto; max-height: 100%">
           <Category v-for="(category, index) in categories" :key="category.id + '-category'" :simplify="simplify" :categorysearch="search" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
         </div>
 
-        <div v-show="mode == 'label'" id="accordion" style="overflow: auto; max-height: 100%">
+        <div v-show="mode == 'label'" style="overflow: auto; max-height: 100%">
           <CLabel v-for="category in categories" v-model="image.categoryIds" :key="category.id + '-label'" :category="category" :search="search"/>
         </div>
       </div>
@@ -120,8 +121,8 @@ import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 
+import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
-
 import DownloadButton from "@/components/annotator/tools/DownloadButton";
 import SaveButton from "@/components/annotator/tools/SaveButton";
 import SettingsButton from "@/components/annotator/tools/SettingsButton";
@@ -143,6 +144,7 @@ export default {
   name: "Annotator",
   components: {
     FileTitle,
+    CopyAnnotationsButton,
     Category,
     CLabel: Label,
     PolygonTool,
@@ -246,7 +248,7 @@ export default {
         categories: []
       };
 
-      if (refs.category != null && this.mode == "segment") {
+      if (refs.category != null && this.mode === "segment") {
         this.image.categoryIds = [];
         refs.category.forEach(category => {
           let categoryData = category.export();
@@ -254,7 +256,7 @@ export default {
 
           if (categoryData.annotations.length > 0) {
             let categoryIds = this.image.categoryIds;
-            if (categoryIds.indexOf(categoryData.id) == -1) {
+            if (categoryIds.indexOf(categoryData.id) === -1) {
               categoryIds.push(categoryData.id);
             }
           }
@@ -271,7 +273,6 @@ export default {
         })
         .catch(() => {});
     },
-
     onwheel(e) {
       let view = this.paper.view;
 
@@ -328,20 +329,16 @@ export default {
     },
 
     initCanvas() {
-      let process = "Initalizing canvas";
+      let process = "Initializing canvas";
       this.addProcess(process);
       this.loading.image = true;
-
       let canvas = document.getElementById("editor");
-
       this.paper.setup(canvas);
       this.paper.view.viewSize = [
         this.paper.view.size.width,
         window.innerHeight
       ];
-
       this.paper.activate();
-
       let img = new Image();
       img.onload = () => {
         // Create image object
@@ -349,13 +346,10 @@ export default {
           source: this.image.url,
           position: new paper.Point(0, 0)
         });
-
         this.image.raster.sendToBack();
         this.fit();
-
         this.image.ratio =
           (this.image.raster.width * this.image.raster.height) / 1000000;
-
         this.removeProcess(process);
         this.loading.image = false;
       };
@@ -418,7 +412,6 @@ export default {
 
       this.currentAnnotation.unite(compound);
     },
-
     subtractCurrentAnnotation(compound) {
       if (this.currentCategory == null) return;
 
@@ -428,7 +421,6 @@ export default {
     setCursor(newCursor) {
       this.cursor = newCursor;
     },
-
     moveUp() {
       if (this.current.category < 0) {
         this.current.category = this.categories.length - 1;
@@ -455,7 +447,7 @@ export default {
           // When the new annotation is added, the currentAnnotation
           // is null since the annotations are not instantly loaded in
           if (
-            this.current.annotation != -1 &&
+            this.current.annotation !== -1 &&
             this.current.annotation < this.currentAnnotationLength
           ) {
             this.current.annotation -= 1;
@@ -594,12 +586,6 @@ export default {
           this.current.annotations = -1;
         }
       }
-
-      if (this.currentAnnotation != null) {
-        if (!this.currentAnnotation.showSideMenu) {
-          this.currentAnnotation++;
-        }
-      }
     }
   },
   computed: {
@@ -622,23 +608,6 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     this.save(next);
-  },
-  beforeRouteUpdate(to, from, next) {
-    // Clear any paperjs object so we can reset the canvas
-    this.resetUndo();
-    this.current.annotation = -1;
-
-    this.$refs.polygon.deletePolygon();
-    this.$refs.brush.removeBrush();
-    this.$refs.eraser.removeBrush();
-
-    this.image.id = parseInt(to.params.identifier);
-    this.image.url = "/api/image/" + this.image.id;
-
-    this.initCanvas();
-    this.getData();
-
-    next();
   },
   mounted() {
     this.initCanvas();

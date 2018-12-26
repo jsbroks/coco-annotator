@@ -85,11 +85,12 @@ export default {
   },
   computed: {
     isDisabled() {
-      return this.$parent.current.annotation == -1;
+      return this.$parent.current.annotation === -1;
     }
   },
   watch: {
     raster(raster) {
+      if (raster == null) return;
       if (Object.keys(raster).length === 0) return;
 
       this.imageInfo.width = raster.width;

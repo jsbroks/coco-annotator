@@ -1,6 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
-
 from flask import send_file
 
 from ..util import query_util, coco_util, thumbnail_util
@@ -12,6 +11,12 @@ import io
 
 
 api = Namespace('image', description='Image related operations')
+
+
+image_all = reqparse.RequestParser()
+image_all.add_argument('fields', required=False, type=str)
+image_all.add_argument('page', default=1, type=int)
+image_all.add_argument('perPage', default=50, type=int, required=False)
 
 
 image_upload = reqparse.RequestParser()
@@ -26,12 +31,37 @@ image_download.add_argument('asAttachment', type=bool, required=False, default=F
 image_download.add_argument('width', type=int, required=False, default=0)
 image_download.add_argument('height', type=int, required=False, default=0)
 
+copy_annotations = reqparse.RequestParser()
+copy_annotations.add_argument('category_ids', location='json', type=list,
+                              required=False, default=None, help='Categories to copy')
+
 
 @api.route('/')
 class Images(Resource):
+    @api.expect(image_all)
     def get(self):
         """ Returns all images """
-        return query_util.fix_ids(ImageModel.objects(deteled=False).all())
+        args = image_all.parse_args()
+        per_page = args['perPage']
+        page = args['page']-1
+        fields = args.get('fields', "")
+
+        images = ImageModel.objects(deleted=False)
+        total = images.count()
+        pages = int(total/per_page) + 1
+
+        images = images.skip(page*per_page).limit(per_page)
+        if fields:
+            images = images.only(*fields.split(','))
+
+        return {
+            "total": total,
+            "pages": pages,
+            "page": page,
+            "fields": fields,
+            "per_page": per_page,
+            "images": query_util.fix_ids(images.all())
+        }
 
     @api.expect(image_upload)
     def post(self):
@@ -112,6 +142,38 @@ class ImageId(Resource):
 
         image.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {"success": True}
+
+
+@api.route('/copy/<int:from_id>/<int:to_id>/annotations')
+class ImageCopyAnnotations(Resource):
+
+    @api.expect(copy_annotations)
+    def post(self, from_id, to_id):
+        args = copy_annotations.parse_args()
+        category_ids = args.get('category_ids')
+
+        image_from = ImageModel.objects(id=from_id).first()
+        image_to = ImageModel.objects(id=to_id).first()
+
+        if image_from is None or image_to is None:
+            return {'success': False, 'message': 'Invalid image ids'}, 400
+
+        if image_from == image_to:
+            return {'success': False, 'message': 'Cannot copy self'}, 400
+
+        if image_from.width != image_to.width or image_from.height != image_to.height:
+            return {'success': False, 'message': 'Image sizes do not match'}, 400
+
+        if category_ids is None:
+            category_ids = DatasetModel.objects(id=image_from.dataset_id).first().categories
+
+        query = AnnotationModel.objects(
+            image_id=image_from.id,
+            category_id__in=category_ids,
+            deleted=False
+        )
+
+        return {'annotations_created': image_to.copy_annotations(query)}
 
 
 @api.route('/<int:image_id>/thumbnail')

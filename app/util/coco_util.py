@@ -1,4 +1,6 @@
 import pycocotools.mask as mask
+import numpy as np
+import cv2
 
 from .query_util import fix_ids
 from ..models import *
@@ -62,6 +64,23 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     rle = mask.merge(rles)
 
     return segments, mask.area(rle), mask.toBbox(rle)
+
+
+def get_annotations_iou(annotation_a, annotation_b):
+    """
+    Computes the IOU between two annotation objects
+    """
+    seg_a = list([list(part) for part in annotation_a.segmentation])
+    seg_b = list([list(part) for part in annotation_b.segmentation])
+
+    rles_a = mask.frPyObjects(
+        seg_a, annotation_a.height, annotation_a.width)
+
+    rles_b = mask.frPyObjects(
+        seg_b, annotation_b.height, annotation_b.width)
+
+    ious = mask.iou(rles_a, rles_b, [0])
+    return ious[0][0]
 
 
 def get_image_coco(image):
@@ -155,6 +174,19 @@ def get_dataset_coco(dataset):
         coco.get('images').append(image)
 
     return coco
+
+
+def decode_seg(mask, segmentation):
+    """
+    Create binary mask from segmentation
+    """
+    pts = [
+        np.array(anno).reshape(-1, 2).round().astype(int)
+        for anno in segmentation
+    ]
+    mask = cv2.fillPoly(mask, pts, 1)
+
+    return mask
 
 
 def _fit(value, max_value, min_value):

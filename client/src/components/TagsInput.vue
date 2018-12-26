@@ -12,15 +12,15 @@
 
       <input type="text"
         ref="taginput"
-        :placeholder="placeholder"
+        :placeholder="showPlaceholder ? placeholder : ''"
         v-model="input"
         @keydown.enter.prevent="tagFromInput"
         @keydown.8="removeLastTag"
         @keydown.down="nextSearchResult"
         @keydown.up="prevSearchResult"
-        @keydown="onKeyDown"
+        @keydown.exact="onKeyDown"
         @keyup.esc="ignoreSearchResults"
-        @keyup="searchTag"
+        @keyup.exact="searchTag"
         @focus="onFocus"
         @blur="hideTypeahead"
         @value="tags">
@@ -154,6 +154,17 @@ export default {
 
     // Emit an event
     this.$emit("initialized");
+  },
+
+  computed: {
+    showPlaceholder() {
+      if (this.onlyExistingTags) {
+        if (this.value.length === Object.keys(this.existingTags).length) {
+          return false;
+        }
+      }
+      return true;
+    }
   },
 
   watch: {
