@@ -18,6 +18,7 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
+        <!-- eslint-disable -->
         <li class="nav-item" :class="{ active: $route.name === 'datasets' }">
           <RouterLink class="nav-link" to="/datasets">Datasets</RouterLink>
         </li>
@@ -33,6 +34,7 @@
         <li class="nav-item">
           <a class="nav-link" href="https://github.com/jsbroks/coco-annotator/wiki">Help</a>
         </li>
+        <!-- eslint-enable -->
       </ul>
       <Status />
     </div>

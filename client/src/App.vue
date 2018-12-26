@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <NavBar />
-    <RouterView />
+    <!-- eslint-disable -->
+    <router-view />
+    <!-- eslint-enable -->
   </div>
 </template>
 
