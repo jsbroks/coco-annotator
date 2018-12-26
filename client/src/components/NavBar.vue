@@ -19,13 +19,13 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item" :class="{ active: $route.name === 'datasets' }">
-          <RouterLink class="nav-link" to="/datasets">Datasets</RouterLink>
+          <a><RouterLink class="nav-link" to="/datasets">Datasets</RouterLink></a>
         </li>
         <li class="nav-item" :class="{ active: $route.name === 'categories' }">
-          <RouterLink class="nav-link" to="/categories">Categories</RouterLink>
+          <a><RouterLink class="nav-link" to="/categories">Categories</RouterLink></a>
         </li>
         <li class="nav-item" :class="{ active: $route.name === 'undo' }">
-          <RouterLink class="nav-link" to="/undo">Undo</RouterLink>
+          <a><RouterLink class="nav-link" to="/undo">Undo</RouterLink></a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/api">API</a>
