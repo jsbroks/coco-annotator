@@ -18,7 +18,7 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <!-- eslint-disable -->
+
         <li class="nav-item" :class="{ active: $route.name === 'datasets' }">
           <RouterLink class="nav-link" to="/datasets">Datasets</RouterLink>
         </li>
