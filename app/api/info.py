@@ -1,5 +1,6 @@
 from flask_restplus import Namespace, Resource, reqparse
 
+from ..config import Config
 from ..util.version_util import get_tag
 
 
@@ -18,6 +19,7 @@ class Info(Resource):
             "repo": "https://github.com/jsbroks/coco-annotator",
             "git": {
                 "tag": get_tag()
-            }
+            },
+            "allow_registration": Config.ALLOW_REGISTRATION
         }
 

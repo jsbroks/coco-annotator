@@ -1,0 +1,112 @@
+from flask_login import login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_restplus import Namespace, Resource, reqparse
+
+from ..models import UserModel
+from ..config import Config
+from ..util.query_util import fix_ids
+
+api = Namespace('user', description='User related operations')
+
+register = reqparse.RequestParser()
+register.add_argument('username', required=True, location='json')
+register.add_argument('password', required=True, location='json')
+register.add_argument('email', location='json')
+register.add_argument('name', location='json')
+
+login = reqparse.RequestParser()
+login.add_argument('password', required=True, location='json')
+login.add_argument('username', required=True, location='json')
+
+
+@api.route('/')
+class User(Resource):
+    @login_required
+    def get(self):
+        """ Get information of current user """
+
+        user_json = fix_ids(current_user)
+        del user_json['password']
+
+        return {'user': user_json}
+
+    @login_required
+    def post(self):
+        """ Updates information of current user """
+        return False
+
+    @login_required
+    def delete(self):
+        """ Removes current user from database """
+        return False
+
+
+@api.route('/<string:username>')
+class Username(Resource):
+    @login_required
+    def get(self):
+        """ Returns information of a user """
+        return False
+
+    @login_required
+    def post(self):
+        """ Update information of a user"""
+        return False
+
+    @login_required
+    def delete(self):
+        """ Deletes a user """
+        return False
+
+
+@api.route('/register')
+class UserRegister(Resource):
+    @api.expect(register)
+    def post(self):
+        """ Creates user """
+        if not Config.ALLOW_REGISTRATION:
+            return {'success': False, 'message': 'Registration of new accounts is disabled.'}, 400
+
+        args = register.parse_args()
+        username = args.get('username')
+
+        if UserModel.objects(username=username).first():
+            return {'success': False, 'message': 'Username already exists.'}, 400
+
+        user = UserModel()
+        user.username = args.get('username')
+        user.password = generate_password_hash(args.get('password'), method='sha256')
+        user.name = args.get('name')
+        user.email = args.get('email')
+        user.save()
+
+        login_user(user)
+        return {'success': True}
+
+
+@api.route('/login')
+class UserLogin(Resource):
+    @api.expect(login)
+    def post(self):
+        """ Logs current user in """
+        args = login.parse_args()
+        username = args.get('username')
+
+        user = UserModel.objects(username=username).first()
+        if user is None:
+            return {'success': False, 'message': 'User does not exist'}, 400
+
+        if check_password_hash(user.password, args.get('password')):
+            login_user(user)
+
+        return {'success': True}
+
+
+@api.route('/logout')
+class UserLogout(Resource):
+    @login_required
+    def get(self):
+        """ Logs current user out """
+        logout_user()
+        return {'success': True}
+

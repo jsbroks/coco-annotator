@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <NavBar />
+    <NavBar v-show="showNavBar"/>
     <RouterView :key="$route.fullPath" />
   </div>
 </template>
@@ -10,7 +10,13 @@ import NavBar from "@/components/NavBar";
 
 export default {
   name: "App",
-  components: { NavBar }
+  components: { NavBar },
+  computed: {
+    showNavBar() {
+      let notShow = ["authentication", "setup"];
+      return notShow.indexOf(this.$route.name) === -1;
+    }
+  }
 };
 </script>
 

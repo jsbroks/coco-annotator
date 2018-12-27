@@ -5,6 +5,8 @@ import copy
 import numpy as np
 
 from flask_mongoengine import MongoEngine
+from flask_login import UserMixin
+
 from .util.coco_util import decode_seg
 from .util import color_util
 from .config import Config
@@ -251,6 +253,18 @@ class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField()
     url = db.StringField()
+
+
+class UserModel(db.DynamicDocument, UserMixin):
+    password = db.StringField(required=True)
+    username = db.StringField(max_length=25, required=True, unique=True)
+    email = db.StringField(max_length=30)
+
+    name = db.StringField()
+    last_seen = db.DateTimeField()
+    datasets = db.ListField(default=[])
+
+    is_admin = db.BooleanField(default=False)
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171

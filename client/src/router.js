@@ -8,6 +8,7 @@ import Datasets from "@/views/Datasets";
 import Categories from "@/views/Categories";
 import Undo from "@/views/Undo";
 import Dataset from "@/views/Dataset";
+import Auth from "@/views/Auth";
 
 Vue.use(Router);
 
@@ -50,6 +51,12 @@ export default new Router({
       path: "/dataset/:identifier",
       name: "dataset",
       component: Dataset,
+      props: true
+    },
+    {
+      path: "/auth",
+      name: "authentication",
+      component: Auth,
       props: true
     }
   ]

@@ -7,6 +7,7 @@ from .image_folder import ImageFolderHandler
 from .api import blueprint as api
 from .config import Config
 from .models import db, ImageModel, create_from_json
+from .authentication import login_manager
 from .util import query_util, color_util
 
 import threading
@@ -47,11 +48,14 @@ def create_app():
     flask.wsgi_app = ProxyFix(flask.wsgi_app)
     flask.register_blueprint(api)
 
+    db.init_app(flask)
+    login_manager.init_app(flask)
+
     return flask
 
 
 app = create_app()
-db.init_app(app)
+
 
 if Config.INITIALIZE_FROM_FILE:
     create_from_json(Config.INITIALIZE_FROM_FILE)
