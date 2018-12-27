@@ -239,13 +239,6 @@ class CategoryModel(db.DynamicDocument):
 
         return super(CategoryModel, self).save(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
-
-        if not self.color:
-            self.color = color_util.random_color_hex()
-
-        return super(CategoryModel, self).save(*args, **kwargs)
-
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
