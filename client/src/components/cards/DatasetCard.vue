@@ -44,15 +44,19 @@
           <a class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
             Edit
           </a>
-          <a class="dropdown-item" @click="onDeleteClick">Delete</a>
           <a class="dropdown-item" @click="onCocoDownloadClick">Download COCO</a>
+          <a class="dropdown-item delete" v-show="canDelete" @click="onDeleteClick">Delete</a>
         </div>
+      </div>
+
+      <div class="card-footer text-muted">
+        Created by {{ dataset.owner }}
       </div>
 
     </div>
 
     <!-- Edit Dataset -->
-    <div class="modal fade" tabindex="-1" role="dialog" :id="'datasetEdit' + dataset.id">
+    <div class="modal fade" role="dialog" :id="'datasetEdit' + dataset.id">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -209,6 +213,11 @@ export default {
       });
 
       return tags;
+    },
+    canDelete() {
+      let user = this.$store.state.user.user;
+      if (user == null) return false;
+      return user.is_admin || user.username === this.dataset.owner;
     }
   },
   mounted() {
@@ -253,5 +262,9 @@ p {
 .progress {
   margin: 0 5px 7px 5px;
   height: 5px;
+}
+.card-footer {
+  padding: 2px;
+  font-size: 11px;
 }
 </style>

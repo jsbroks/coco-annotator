@@ -92,7 +92,7 @@ class UserRegister(Resource):
 class UserLogin(Resource):
     @api.expect(login)
     def post(self):
-        """ Logs current user in """
+        """ Logs user in """
         args = login.parse_args()
         username = args.get('username')
 
@@ -100,6 +100,7 @@ class UserLogin(Resource):
         if user is None:
             return {'success': False, 'message': 'User does not exist'}, 400
 
+        print(username, flush=True)
         if check_password_hash(user.password, args.get('password')):
             login_user(user)
 
@@ -113,7 +114,7 @@ class UserLogin(Resource):
 class UserLogout(Resource):
     @login_required
     def get(self):
-        """ Logs current user out """
+        """ Logs user out """
         logout_user()
         return {'success': True}
 

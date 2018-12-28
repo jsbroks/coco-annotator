@@ -8,11 +8,15 @@ const state = {
   user: null
 };
 
-const getters = {};
+const getters = {
+  isAdmin(state) {
+    if (!state.user) return false;
+    return state.user.is_admin;
+  }
+};
 
 const mutations = {
   loggingIn(state) {
-    state.isAuthenticated = false;
     state.isAuthenticatePending = true;
   },
   loggedIn(state, user) {
@@ -24,6 +28,9 @@ const mutations = {
     state.error = error;
     state.isAuthenticatePending = false;
     state.isLogoutPending = false;
+  },
+  loggingOut(state) {
+    state.isLogoutPending = true;
   },
   loggedOut(state) {
     state.user = null;
@@ -50,7 +57,9 @@ const mutations = {
 };
 
 const actions = {
-  register({ commit }, { user, successCallback, errorCallback }) {
+  async register({ commit, state }, { user, successCallback, errorCallback }) {
+    if (state.isAuthenticated) return false;
+
     commit("clearError");
     commit("loggingIn");
 
@@ -64,12 +73,14 @@ const actions = {
         return true;
       })
       .catch(error => {
-        commit("loginError", error);
+        commit("error", error);
         if (errorCallback != null) errorCallback(error);
         return false;
       });
   },
-  login({ commit }, { user, successCallback, errorCallback }) {
+  async login({ commit, state }, { user, successCallback, errorCallback }) {
+    if (state.isAuthenticated) return false;
+
     commit("clearError");
     commit("loggingIn");
 
@@ -83,12 +94,28 @@ const actions = {
         return true;
       })
       .catch(error => {
-        commit("loginError", error);
+        commit("error", error);
         if (errorCallback != null) errorCallback(error);
         return false;
       });
   },
-  logout() {}
+  async logout({ commit, state }) {
+    if (!state.isAuthenticated) return false;
+
+    commit("loggingOut");
+    commit("clearError");
+
+    return axios
+      .get("/api/user/logout")
+      .then(() => {
+        commit("loggedOut");
+        return true;
+      })
+      .catch(error => {
+        commit("error", error);
+        return false;
+      });
+  }
 };
 
 export default {

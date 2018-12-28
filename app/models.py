@@ -1,10 +1,9 @@
 import os
-import sys
 import json
-import copy
 import numpy as np
 
 from flask_mongoengine import MongoEngine
+from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
 
 from .util.coco_util import decode_seg
@@ -40,7 +39,7 @@ class DatasetModel(db.DynamicDocument):
             ImageModel.load_images(directory, self.id)
 
         self.directory = directory
-        self.owner = current_user.name
+        self.owner = current_user.username
 
         return super(DatasetModel, self).save(*args, **kwargs)
 
@@ -269,6 +268,12 @@ class UserModel(db.DynamicDocument, UserMixin):
     last_seen = db.DateTimeField()
 
     is_admin = db.BooleanField(default=False)
+
+    @property
+    def datasets(self):
+        if self.is_admin:
+            return DatasetModel.objects
+        return DatasetModel.objects(Q(owner=self.username) | Q(users__contains=self.username))
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171

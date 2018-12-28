@@ -1,4 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
+from flask_login import login_required, current_user
 
 from ..util.pagination_util import Pagination
 from ..util import query_util, color_util
@@ -21,11 +22,14 @@ page_data.add_argument('limit', default=20, type=int)
 
 @api.route('/')
 class Category(Resource):
+
+    @login_required
     def get(self):
         """ Returns all categories """
         return query_util.fix_ids(CategoryModel.objects.all())
 
     @api.expect(create_category)
+    @login_required
     def post(self):
         """ Creates a category """
         args = create_category.parse_args()
@@ -50,6 +54,8 @@ class Category(Resource):
 
 @api.route('/<int:category_id>')
 class Category(Resource):
+
+    @login_required
     def get(self, category_id):
         """ Returns a category by ID """
         category = CategoryModel.objects(id=category_id).first()
@@ -59,6 +65,7 @@ class Category(Resource):
 
         return query_util.fix_ids(category)
 
+    @login_required
     def delete(self, category_id):
         """ Deletes a category by ID """
         category = CategoryModel.objects(id=category_id).first()
@@ -73,6 +80,7 @@ class Category(Resource):
 class CategoriesData(Resource):
 
     @api.expect(page_data)
+    @login_required
     def get(self):
         """ Endpoint called by category viewer client """
         args = page_data.parse_args()

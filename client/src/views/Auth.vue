@@ -62,7 +62,7 @@
                   <input v-model="loginForm.remember" type="checkbox" class="form-check-input">
                   <label class="form-check-label">Remember me</label>
                 </div>
-                <button class="btn btn-primary btn-block" style="margin-top: 10px" @click="loginUser">
+                <button type="button" class="btn btn-primary btn-block" style="margin-top: 10px" @click="loginUser">
                   Submit
                 </button>
               </form>
@@ -92,7 +92,7 @@
                   <input v-model="registerForm.remember" type="checkbox" class="form-check-input">
                   <label class="form-check-label">Remember me</label>
                 </div>
-                <button class="btn btn-primary btn-block" style="margin-top: 10px" @click="registerUser">
+                <button type="button" class="btn btn-primary btn-block" style="margin-top: 10px" @click="registerUser">
                   Register
                 </button>
               </form>
@@ -138,7 +138,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions("user", ["register"]),
+    ...mapActions("user", ["register", "login"]),
     registerUser() {
       let data = {
         user: this.registerForm,
@@ -152,16 +152,13 @@ export default {
       this.register(data);
     },
     loginUser() {
-      axios
-        .post("/api/user/login", {
-          ...this.login
-        })
-        .then(() => {
-          this.$router.push(this.redirect);
-        })
-        .catch(error => {
-          this.axiosReqestError("User Login", error.response.data.message);
-        });
+      let data = {
+        user: this.loginForm,
+        successCallback: () => this.$router.push(this.redirect),
+        errorCallback: error =>
+          this.axiosReqestError("User Login", error.response.data.message)
+      };
+      this.login(data);
     }
   },
   computed: {
