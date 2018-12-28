@@ -5,7 +5,7 @@ import copy
 import numpy as np
 
 from flask_mongoengine import MongoEngine
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 
 from .util.coco_util import decode_seg
 from .util import color_util
@@ -22,6 +22,9 @@ class DatasetModel(db.DynamicDocument):
     directory = db.StringField()
     categories = db.ListField(default=[])
 
+    owner = db.StringField(required=True)
+    users = db.ListField(default=[])
+
     default_annotation_metadata = db.DictField(default={})
 
     deleted = db.BooleanField(default=False)
@@ -37,6 +40,8 @@ class DatasetModel(db.DynamicDocument):
             ImageModel.load_images(directory, self.id)
 
         self.directory = directory
+        self.owner = current_user.name
+
         return super(DatasetModel, self).save(*args, **kwargs)
 
 
@@ -262,7 +267,6 @@ class UserModel(db.DynamicDocument, UserMixin):
 
     name = db.StringField()
     last_seen = db.DateTimeField()
-    datasets = db.ListField(default=[])
 
     is_admin = db.BooleanField(default=False)
 

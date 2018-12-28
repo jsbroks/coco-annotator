@@ -37,17 +37,19 @@
         <!-- eslint-enable -->
       </ul>
       <Status />
+      <User />
     </div>
   </nav>
 </template>
 
 <script>
+import User from "@/components/User";
 import Status from "@/components/Status";
 import axios from "axios";
 
 export default {
   name: "NavBar",
-  components: { Status },
+  components: { Status, User },
   data() {
     return {
       valid: true,

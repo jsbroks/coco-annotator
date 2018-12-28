@@ -81,7 +81,11 @@ class UserRegister(Resource):
         user.save()
 
         login_user(user)
-        return {'success': True}
+
+        user_json = fix_ids(current_user)
+        del user_json['password']
+
+        return {'success': True, 'user': user_json}
 
 
 @api.route('/login')
@@ -99,7 +103,10 @@ class UserLogin(Resource):
         if check_password_hash(user.password, args.get('password')):
             login_user(user)
 
-        return {'success': True}
+        user_json = fix_ids(current_user)
+        del user_json['password']
+
+        return {'success': True, 'user': user_json}
 
 
 @api.route('/logout')

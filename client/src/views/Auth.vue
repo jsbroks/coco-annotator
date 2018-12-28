@@ -33,7 +33,7 @@
                 Login
               </a>
             </li>
-            <li class="nav-item" v-show="register.enabled">
+            <li class="nav-item" v-show="registerForm.enabled">
               <a class="nav-link"
                  :class="{ active: tab === 'register'}"
                  id="contact-tab"
@@ -52,14 +52,14 @@
               <form>
                 <div class="form-group">
                   <label>Username</label>
-                  <input v-model="login.username" type="text" class="form-control">
+                  <input v-model="loginForm.username" type="text" class="form-control">
                 </div>
                 <div class="form-group">
                   <label >Password</label>
-                  <input v-model="login.password" type="password" class="form-control">
+                  <input v-model="loginForm.password" type="password" class="form-control">
                 </div>
                 <div class="form-check">
-                  <input v-model="login.remember" type="checkbox" class="form-check-input">
+                  <input v-model="loginForm.remember" type="checkbox" class="form-check-input">
                   <label class="form-check-label">Remember me</label>
                 </div>
                 <button class="btn btn-primary btn-block" style="margin-top: 10px" @click="loginUser">
@@ -68,28 +68,28 @@
               </form>
             </div>
             <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
-              <div v-if="!register.enabled">
+              <div v-if="!registerForm.enabled">
                 You are not allowed to register accounts
               </div>
               <form v-else>
                 <div class="form-group">
                   <label>Full Name</label>
-                  <input v-model="register.name" type="text" class="form-control">
+                  <input v-model="registerForm.name" type="text" class="form-control">
                 </div>
                 <div class="form-group">
                   <label>Username</label>
-                  <input v-model="register.username" type="text" class="form-control">
+                  <input v-model="registerForm.username" type="text" class="form-control">
                 </div>
                 <div class="form-group">
                   <label>Password</label>
-                  <input v-model="register.password" type="password" class="form-control">
+                  <input v-model="registerForm.password" type="password" class="form-control">
                 </div>
                 <div class="form-group">
                   <label>Confirm Password</label>
-                  <input v-model="register.confirmPassword" type="password" class="form-control">
+                  <input v-model="registerForm.confirmPassword" type="password" class="form-control">
                 </div>
                 <div class="form-check">
-                  <input v-model="register.remember" type="checkbox" class="form-check-input">
+                  <input v-model="registerForm.remember" type="checkbox" class="form-check-input">
                   <label class="form-check-label">Remember me</label>
                 </div>
                 <button class="btn btn-primary btn-block" style="margin-top: 10px" @click="registerUser">
@@ -107,7 +107,7 @@
 <script>
 import axios from "axios";
 import toastrs from "@/mixins/toastrs";
-
+import { mapActions } from "vuex";
 export default {
   name: "Authentication",
   mixins: [toastrs],
@@ -122,7 +122,7 @@ export default {
   data() {
     return {
       tab: "login",
-      register: {
+      registerForm: {
         enabled: true,
         name: "",
         username: "",
@@ -130,7 +130,7 @@ export default {
         confirmPassword: "",
         remember: false
       },
-      login: {
+      loginForm: {
         username: "",
         password: "",
         remember: false
@@ -138,20 +138,18 @@ export default {
     };
   },
   methods: {
+    ...mapActions("user", ["register"]),
     registerUser() {
-      axios
-        .post("/api/user/register", {
-          ...this.register
-        })
-        .then(() => {
-          this.$router.push(this.redirect);
-        })
-        .catch(error => {
+      let data = {
+        user: this.registerForm,
+        successCallback: () => this.$router.push(this.redirect),
+        errorCallback: error =>
           this.axiosReqestError(
             "User Registration",
             error.response.data.message
-          );
-        });
+          )
+      };
+      this.register(data);
     },
     loginUser() {
       axios
