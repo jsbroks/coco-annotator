@@ -25,6 +25,10 @@
           <a class="dropdown-item" @click="onDownloadClick">Download COCO & Images</a>
         </div>
       </div>
+
+      <div class="card-footer text-muted">
+        Created by {{ category.creator }}
+      </div>
     </div>
   </div>
 </template>
@@ -70,5 +74,10 @@ export default {
   display: inline;
   margin: 0;
   padding-right: 10px;
+}
+
+.card-footer {
+  padding: 2px;
+  font-size: 11px;
 }
 </style>

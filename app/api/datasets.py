@@ -179,7 +179,7 @@ class Dataset(Resource):
             "pagination": pagination.export(),
             "folder": folder,
             "datasets": datasets,
-            "categories": query_util.fix_ids(CategoryModel.objects(deleted=False).all())
+            "categories": query_util.fix_ids(current_user.categories.filter(deleted=False).all())
         }
 
 

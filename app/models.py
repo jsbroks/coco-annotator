@@ -1,5 +1,6 @@
 import os
 import json
+import datetime
 import numpy as np
 
 from flask_mongoengine import MongoEngine
@@ -155,6 +156,7 @@ class AnnotationModel(db.DynamicDocument):
     bbox = db.ListField()
     iscrowd = db.BooleanField(default=False)
 
+    creator = db.StringField(required=True)
     width = db.IntField()
     height = db.IntField()
 
@@ -191,6 +193,7 @@ class AnnotationModel(db.DynamicDocument):
         if self.color is None:
             self.color = color_util.random_color_hex()
 
+        self.creator = current_user.username
         return super(AnnotationModel, self).save(*args, **kwargs)
 
     def is_empty(self):
@@ -211,11 +214,12 @@ class AnnotationModel(db.DynamicDocument):
 
 class CategoryModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
-    name = db.StringField(required=True, unique=True)
+    name = db.StringField(required=True, unique_with=['creator'])
     supercategory = db.StringField(default="")
     color = db.StringField(default=None)
     metadata = db.DictField(default={})
 
+    creator = db.StringField()
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
@@ -243,13 +247,7 @@ class CategoryModel(db.DynamicDocument):
         if not self.color:
             self.color = color_util.random_color_hex()
 
-        return super(CategoryModel, self).save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-
-        if not self.color:
-            self.color = color_util.random_color_hex()
-
+        self.creator = current_user.username
         return super(CategoryModel, self).save(*args, **kwargs)
 
 
@@ -269,11 +267,55 @@ class UserModel(db.DynamicDocument, UserMixin):
 
     is_admin = db.BooleanField(default=False)
 
+    preferences = db.DictField(default={})
+
+    def save(self, *args, **kwargs):
+
+        self.last_seen = datetime.datetime.now()
+
+        return super(UserModel, self).save(*args, **kwargs)
+
     @property
     def datasets(self):
+        self._update_last_seen()
+
         if self.is_admin:
             return DatasetModel.objects
+
         return DatasetModel.objects(Q(owner=self.username) | Q(users__contains=self.username))
+
+    @property
+    def categories(self):
+        self._update_last_seen()
+
+        if self.is_admin:
+            return CategoryModel.objects
+
+        dataset_ids = self.datasets.distinct('categories')
+        return CategoryModel.objects(Q(id__in=dataset_ids) | Q(creator=self.username))
+
+    @property
+    def images(self):
+        self._update_last_seen()
+
+        if self.is_admin:
+            return ImageModel.objects
+
+        dataset_ids = self.datasets.distinct('id')
+        return ImageModel.objects(dataset_id__in=dataset_ids)
+
+    @property
+    def annotations(self):
+        self._update_last_seen()
+
+        if self.is_admin:
+            return AnnotationModel.objects
+
+        image_ids = self.images.distinct('id')
+        return AnnotationModel.objects(image_id__in=image_ids)
+
+    def _update_last_seen(self):
+        self.update(last_seen=datetime.datetime.now())
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171

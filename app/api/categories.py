@@ -26,7 +26,7 @@ class Category(Resource):
     @login_required
     def get(self):
         """ Returns all categories """
-        return query_util.fix_ids(CategoryModel.objects.all())
+        return query_util.fix_ids(current_user.categories.all())
 
     @api.expect(create_category)
     @login_required
@@ -58,7 +58,7 @@ class Category(Resource):
     @login_required
     def get(self, category_id):
         """ Returns a category by ID """
-        category = CategoryModel.objects(id=category_id).first()
+        category = current_user.categories.filter(id=category_id).first()
 
         if category is None:
             return {'success': False}, 400
@@ -68,7 +68,7 @@ class Category(Resource):
     @login_required
     def delete(self, category_id):
         """ Deletes a category by ID """
-        category = CategoryModel.objects(id=category_id).first()
+        category = current_user.categories.filter(id=category_id).first()
         if category is None:
             return {"message": "Invalid image id"}, 400
 
@@ -87,7 +87,7 @@ class CategoriesData(Resource):
         limit = args['limit']
         page = args['page']
 
-        categories = CategoryModel.objects(deleted=False)
+        categories = current_user.categories.filter(deleted=False)
 
         pagination = Pagination(categories.count(), limit, page)
         categories = query_util.fix_ids(categories[pagination.start:pagination.end])

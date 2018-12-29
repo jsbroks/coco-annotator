@@ -49,7 +49,7 @@ class Images(Resource):
         page = args['page']-1
         fields = args.get('fields', "")
 
-        images = ImageModel.objects(deleted=False)
+        images = current_user.images.filter(deleted=False)
         total = images.count()
         pages = int(total/per_page) + 1
 
@@ -115,7 +115,7 @@ class ImageId(Resource):
         width = args['width']
         height = args['height']
 
-        image = ImageModel.objects(id=image_id, deleted=False).first()
+        image = current_user.images.filter(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
@@ -142,7 +142,7 @@ class ImageId(Resource):
     @login_required
     def delete(self, image_id):
         """ Deletes an image by ID """
-        image = ImageModel.objects(id=image_id, deleted=False).first()
+        image = current_user.images.filter(id=image_id, deleted=False).first()
         if image is None:
             return {"message": "Invalid image id"}, 400
 
@@ -159,8 +159,8 @@ class ImageCopyAnnotations(Resource):
         args = copy_annotations.parse_args()
         category_ids = args.get('category_ids')
 
-        image_from = ImageModel.objects(id=from_id).first()
-        image_to = ImageModel.objects(id=to_id).first()
+        image_from = current_user.images.filter(id=from_id).first()
+        image_to = current_user.images.filter(id=to_id).first()
 
         if image_from is None or image_to is None:
             return {'success': False, 'message': 'Invalid image ids'}, 400
@@ -195,7 +195,7 @@ class ImageCoco(Resource):
         width = args['width']
         height = args['height']
 
-        image = ImageModel.objects(id=image_id, deleted=False).first()
+        image = current_user.images.filter(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
@@ -223,7 +223,7 @@ class ImageCoco(Resource):
     @login_required
     def get(self, image_id):
         """ Returns coco of image and annotations """
-        image = ImageModel.objects(id=image_id).exclude('deleted_date').first()
+        image = current_user.images.filter(id=image_id).exclude('deleted_date').first()
 
         if image is None:
             return {"message": "Invalid image ID"}, 400
