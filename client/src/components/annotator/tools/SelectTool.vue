@@ -39,6 +39,11 @@ export default {
     };
   },
   methods: {
+    export() {
+      return {
+        showText: this.hover.showText
+      };
+    },
     generateStringFromMetadata() {
       let string = " ";
       let metadata = this.hover.annotation.$refs.metadata.metadataList;

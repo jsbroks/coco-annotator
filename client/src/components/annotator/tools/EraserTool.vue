@@ -71,6 +71,12 @@ export default {
     increaseRadius() {
       if (!this.isActive) return;
       this.eraser.pathOptions.radius += 2;
+    },
+    export() {
+      return {
+        strokeColor: this.eraser.pathOptions.strokeColor,
+        radius: this.eraser.pathOptions.radius
+      };
     }
   },
   computed: {

@@ -230,7 +230,12 @@ export default {
       let data = {
         mode: this.mode,
         user: {
-          keyboardShortcuts: []
+          polygon: this.$refs.polygon.export(),
+          eraser: this.$refs.eraser.export(),
+          brush: this.$refs.brush.export(),
+          magicwand: this.$refs.magicwand.export(),
+          select: this.$refs.select.export(),
+          settings: this.$refs.settings.export()
         },
         image: {
           id: this.image.id,
@@ -269,6 +274,7 @@ export default {
         .post("/api/annotator/data", JSON.stringify(data))
         .then(() => {
           this.removeProcess(process);
+          //TODO: updateUser
           if (callback != null) callback();
         })
         .catch(() => {});
@@ -604,6 +610,9 @@ export default {
         return null;
       }
       return this.currentCategory.getAnnotation(this.current.annotation);
+    },
+    user() {
+      return this.$store.user.user;
     }
   },
   beforeRouteLeave(to, from, next) {

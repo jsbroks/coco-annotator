@@ -105,7 +105,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import toastrs from "@/mixins/toastrs";
 import { mapActions } from "vuex";
 export default {
