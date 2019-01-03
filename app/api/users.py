@@ -43,24 +43,6 @@ class User(Resource):
         return False
 
 
-@api.route('/<string:username>')
-class Username(Resource):
-    @login_required
-    def get(self):
-        """ Returns information of a user """
-        return False
-
-    @login_required
-    def post(self):
-        """ Update information of a user"""
-        return False
-
-    @login_required
-    def delete(self):
-        """ Deletes a user """
-        return False
-
-
 @api.route('/register')
 class UserRegister(Resource):
     @api.expect(register)

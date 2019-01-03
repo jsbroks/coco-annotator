@@ -28,13 +28,16 @@
         <li class="nav-item" :class="{ active: $route.name === 'undo' }">
           <RouterLink class="nav-link" to="/undo">Undo</RouterLink>
         </li>
+        <li v-show="$store.getters['user/isAdmin']" class="nav-item" :class="{ active: $route.name === 'admin' }">
+          <RouterLink class="nav-link" to="/admin/panel">Admin</RouterLink>
+        </li>
         <li class="nav-item">
           <a class="nav-link" href="/api">API</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="https://github.com/jsbroks/coco-annotator/wiki">Help</a>
         </li>
-        <!-- eslint-enable -->
+        
       </ul>
       <Status />
       <User v-if="$store.getters['user/loginEnabled']" />

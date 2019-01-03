@@ -4,6 +4,7 @@ import Router from "vue-router";
 // import Home from "@/views/Home";
 import About from "@/views/About";
 import Annotator from "@/views/Annotator";
+import AdminPanel from "@/views/AdminPanel";
 import Datasets from "@/views/Datasets";
 import Categories from "@/views/Categories";
 import Undo from "@/views/Undo";
@@ -15,11 +16,6 @@ Vue.use(Router);
 export default new Router({
   // mode: "history",
   routes: [
-    // {
-    //   path: "/",
-    //   name: "home",
-    //   component: Home
-    // },
     {
       path: "/about",
       name: "about",
@@ -58,6 +54,11 @@ export default new Router({
       name: "authentication",
       component: Auth,
       props: true
+    },
+    {
+      path: "/admin/panel",
+      name: "admin",
+      component: AdminPanel
     }
   ]
 });

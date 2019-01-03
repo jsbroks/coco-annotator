@@ -7,6 +7,7 @@ from .annotator import api as ns_annotator
 from .datasets import api as ns_datasets
 from .images import api as ns_images
 from .users import api as ns_users
+from .admin import api as ns_admin
 from .undo import api as ns_undo
 from .info import api as ns_info
 
@@ -33,4 +34,5 @@ api.add_namespace(ns_categories)
 api.add_namespace(ns_annotator)
 api.add_namespace(ns_datasets)
 api.add_namespace(ns_undo)
+api.add_namespace(ns_admin)
 

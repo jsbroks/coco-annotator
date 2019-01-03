@@ -15,6 +15,7 @@ const getters = {
   },
   loginEnabled(state) {
     if (!state.user) return false;
+    if (!state.user.anonymous) return true;
     return state.user.anonymous;
   }
 };
