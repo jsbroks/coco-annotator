@@ -46,9 +46,9 @@
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group" :class="{'was-validated': validDatasetName.lenght !== 0}">
+              <div class="form-group" :class="{'was-validated': validDatasetName.length !== 0}">
                 <label>Dataset Name</label>
-                <input v-model="create.name" class="form-control" placeholder="Dataset name invalid" required>
+                <input v-model="create.name" class="form-control" placeholder="Dataset name" required>
                 <div class="invalid-feedback">
                   {{ validDatasetName }}
                 </div>

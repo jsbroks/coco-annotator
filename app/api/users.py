@@ -64,7 +64,10 @@ class UserRegister(Resource):
     @api.expect(register)
     def post(self):
         """ Creates user """
-        if not Config.ALLOW_REGISTRATION:
+
+        users = UserModel.objects.count()
+
+        if not Config.ALLOW_REGISTRATION and users != 0:
             return {'success': False, 'message': 'Registration of new accounts is disabled.'}, 400
 
         args = register.parse_args()
@@ -78,6 +81,8 @@ class UserRegister(Resource):
         user.password = generate_password_hash(args.get('password'), method='sha256')
         user.name = args.get('name')
         user.email = args.get('email')
+        if users == 0:
+            user.is_admin = True
         user.save()
 
         login_user(user)
@@ -98,16 +103,18 @@ class UserLogin(Resource):
 
         user = UserModel.objects(username=username).first()
         if user is None:
-            return {'success': False, 'message': 'User does not exist'}, 400
+            return {'success': False, 'message': 'Could not authenticate user'}, 400
 
         print(username, flush=True)
         if check_password_hash(user.password, args.get('password')):
             login_user(user)
 
-        user_json = fix_ids(current_user)
-        del user_json['password']
+            user_json = fix_ids(current_user)
+            del user_json['password']
 
-        return {'success': True, 'user': user_json}
+            return {'success': True, 'user': user_json}
+
+        return {'success': False, 'message': 'Could not authenticate user'}, 400
 
 
 @api.route('/logout')

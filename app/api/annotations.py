@@ -21,7 +21,7 @@ class Annotation(Resource):
     @login_required
     def get(self):
         """ Returns all annotations """
-        return query_util.fix_ids(AnnotationModel.objects.exclude("paper_object").all())
+        return query_util.fix_ids(current_user.annotations.exclude("paper_object").all())
 
     @api.expect(create_annotation)
     @login_required
@@ -49,7 +49,7 @@ class AnnotationId(Resource):
     @login_required
     def get(self, annotation_id):
         """ Returns annotation by ID """
-        annotation = AnnotationModel.objects(id=annotation_id).first()
+        annotation = current_user.annotations.filter(id=annotation_id).first()
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
@@ -59,7 +59,7 @@ class AnnotationId(Resource):
     @login_required
     def delete(self, annotation_id):
         """ Deletes an annotation by ID """
-        annotation = AnnotationModel.objects(id=annotation_id).first()
+        annotation = current_user.annotations.filter(id=annotation_id).first()
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400

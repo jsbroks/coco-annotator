@@ -8,7 +8,7 @@
       <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
         <a v-show="$store.getters['user/isAdmin']" class="dropdown-item" href="#">Admin Panel</a> 
         <a class="dropdown-item" href="#">Settings</a>
-        <a class="dropdown-item" href="#" @click="logout">Logout</a>
+        <a class="dropdown-item" href="#" @click="logoutButton">Logout</a>
       </div>
     </div>
   </div>
@@ -20,7 +20,15 @@ import { mapActions } from "vuex";
 export default {
   name: "User",
   methods: {
-    ...mapActions("user", ["logout"])
+    ...mapActions("user", ["logout"]),
+    logoutButton() {
+      console.log("log");
+      if (this.$route.name == "annotate") {
+        this.$router.replace({ name: "datasets" }, this.logout);
+        return;
+      }
+      this.logout();
+    }
   },
   computed: {
     user() {

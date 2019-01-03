@@ -15,10 +15,8 @@ export default {
   methods: {
     ...mapMutations("user", ["setUserInfo"]),
     toAuthPage() {
-      let redirect = { name: this.$route.name };
       this.$router.push({
-        name: "authentication",
-        params: { redirect: redirect }
+        name: "authentication"
       });
     }
   },
@@ -44,6 +42,13 @@ export default {
     loginRequired(newValue) {
       if (newValue) {
         this.toAuthPage();
+        return;
+      }
+
+      if (this.$route.name == "authentication" && !newValue) {
+        this.$router.push({
+          name: "datasets"
+        });
       }
     },
     "$route.name"() {
