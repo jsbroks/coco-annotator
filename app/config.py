@@ -20,6 +20,7 @@ class Config:
     LOAD_IMAGES_ON_START = os.getenv("LOAD_IMAGES_ON_START", False)
 
     # User Options
+    LOGIN_DISABLED = os.getenv('LOGIN_DISABLED', False)
     ALLOW_REGISTRATION = True
 
 

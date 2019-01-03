@@ -59,9 +59,11 @@ export default {
         });
       }
 
-      let creator = this.hover.annotation.annotation.creator;
-      if (creator != null) {
-        string += "Created by " + creator + "\n";
+      if (this.$store.getters["user/loginEnabled"]) {
+        let creator = this.hover.annotation.annotation.creator;
+        if (creator != null) {
+          string += "Created by " + creator + "\n";
+        }
       }
 
       return string.replace(/\n/g, " \n ").slice(0, -2);

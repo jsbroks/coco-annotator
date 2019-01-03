@@ -37,7 +37,7 @@
         <!-- eslint-enable -->
       </ul>
       <Status />
-      <User />
+      <User v-if="$store.getters['user/loginEnabled']" />
     </div>
   </nav>
 </template>

@@ -49,7 +49,7 @@
         </div>
       </div>
 
-      <div class="card-footer text-muted">
+      <div v-show="$store.getters['user/loginEnabled']" class="card-footer text-muted">
         Created by {{ dataset.owner }}
       </div>
 

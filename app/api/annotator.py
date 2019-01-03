@@ -33,7 +33,7 @@ class AnnotatorData(Resource):
 
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
-        
+
         current_user.update(prefernces=data.get('user', {}))
 
         annotated = False

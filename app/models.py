@@ -219,7 +219,7 @@ class CategoryModel(db.DynamicDocument):
     color = db.StringField(default=None)
     metadata = db.DictField(default={})
 
-    creator = db.StringField()
+    creator = db.StringField(default="unknown")
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
@@ -247,7 +247,9 @@ class CategoryModel(db.DynamicDocument):
         if not self.color:
             self.color = color_util.random_color_hex()
 
-        self.creator = current_user.username
+        if current_user:
+            self.creator = current_user.username
+
         return super(CategoryModel, self).save(*args, **kwargs)
 
 

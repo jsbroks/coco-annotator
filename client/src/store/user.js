@@ -12,6 +12,10 @@ const getters = {
   isAdmin(state) {
     if (!state.user) return false;
     return state.user.is_admin;
+  },
+  loginEnabled(state) {
+    if (!state.user) return false;
+    return state.user.anonymous;
   }
 };
 

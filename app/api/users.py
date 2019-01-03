@@ -24,6 +24,8 @@ class User(Resource):
     @login_required
     def get(self):
         """ Get information of current user """
+        if Config.LOGIN_DISABLED:
+            return current_user.to_json()
 
         user_json = fix_ids(current_user)
         del user_json['password']

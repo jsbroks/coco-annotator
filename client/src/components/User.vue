@@ -22,7 +22,7 @@ export default {
   methods: {
     ...mapActions("user", ["logout"]),
     logoutButton() {
-      if (this.$route.name == "annotate") {
+      if (this.$route.name === "annotate") {
         this.$router.replace({ name: "datasets" }, this.logout);
         return;
       }
