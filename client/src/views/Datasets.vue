@@ -160,7 +160,8 @@ export default {
           this.page = response.data.pagination.page;
 
           this.removeProcess(process);
-        });
+        })
+        .catch(() => this.removeProcess(process));
     },
     createDataset() {
       if (this.create.name.length < 1) return;

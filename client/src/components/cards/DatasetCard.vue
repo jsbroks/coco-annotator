@@ -44,8 +44,11 @@
           <a class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
             Edit
           </a>
+          <a v-if="isOwner" class="dropdown-item" data-toggle="modal" :data-target="'#datasetShare' + dataset.id">
+            Share
+          </a>
           <a class="dropdown-item" @click="onCocoDownloadClick">Download COCO</a>
-          <a class="dropdown-item delete" v-show="canDelete" @click="onDeleteClick">Delete</a>
+          <a class="dropdown-item delete" v-show="isOwner" @click="onDeleteClick">Delete</a>
         </div>
       </div>
 
@@ -95,6 +98,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Share Dataset -->
+    <div class="modal fade" role="dialog" :id="'datasetShare' + dataset.id">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ dataset.name }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label>Users shared with</label>
+                <TagsInput
+                  v-model="sharedUsers"
+                  element-id="usersList"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                  placeholder="Add usernames"
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" @click="onShare" data-dismiss="modal">Save</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -123,7 +158,8 @@ export default {
     return {
       selectedCategories: [],
       defaultMetadata: this.dataset.default_annotation_metadata,
-      noImageUrl: require("@/assets/no-image.png")
+      noImageUrl: require("@/assets/no-image.png"),
+      sharedUsers: this.dataset.users
     };
   },
   methods: {
@@ -131,6 +167,15 @@ export default {
     onImageClick() {
       let identifier = this.dataset.id;
       this.$router.push({ name: "dataset", params: { identifier } });
+    },
+    onShare() {
+      axios
+        .post("/api/dataset/" + this.dataset.id + "/share", {
+          users: this.sharedUsers
+        })
+        .then(() => {
+          this.$parent.updatePage();
+        });
     },
     onCocoDownloadClick() {
       let process = "Generating COCO for " + this.dataset.name;
@@ -214,10 +259,12 @@ export default {
 
       return tags;
     },
-    canDelete() {
-      let user = this.$store.state.user.user;
-      if (user == null) return false;
-      return user.is_admin || user.username === this.dataset.owner;
+    user() {
+      return this.$store.state.user.user;
+    },
+    isOwner() {
+      if (this.user == null) return false;
+      return this.user.username === this.dataset.owner || this.user.is_admin;
     }
   },
   mounted() {

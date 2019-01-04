@@ -46,6 +46,9 @@ dataset_generate.add_argument('keywords', location='json', type=list, default=[]
                               help="Keywords associated with images")
 dataset_generate.add_argument('limit', location='json', type=int, default=100, help="Number of images per keyword")
 
+share = reqparse.RequestParser()
+share.add_argument('users', location='json', type=list, default=[], help="List of users")
+
 
 @api.route('/')
 class Dataset(Resource):
@@ -91,6 +94,7 @@ def download_images(output_dir, args):
 
 @api.route('/<int:dataset_id>/generate')
 class DatasetGenerate(Resource):
+    @api.expect(dataset_generate)
     @login_required
     def post(self, dataset_id):
         """ Adds images found on google to the dataset """
@@ -142,9 +146,25 @@ class DatasetId(Resource):
             dataset.default_annotation_metadata = default_annotation_metadata
 
         dataset.update(
-            set__categories=dataset.categories,
+            categories=dataset.categories,
             default_annotation_metadata=dataset.default_annotation_metadata
         )
+
+        return {"success": True}
+
+
+@api.route('/<int:dataset_id>/share')
+class DatasetIdShare(Resource):
+    @api.expect(share)
+    @login_required
+    def post(self, dataset_id):
+        args = share.parse_args()
+
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        dataset.update(users=args.get('users'))
 
         return {"success": True}
 

@@ -55,7 +55,7 @@ class Users(Resource):
 
 @api.route('/user/')
 class User(Resource):
-    
+
     @login_required
     @api.expect(register)
     def post(self):
