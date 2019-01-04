@@ -10,7 +10,7 @@
 
         <div class="row justify-content-md-center">
           <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
-            <button type="button" class="btn btn-success disabled">Create User</button>
+            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createUser">Create User</button>
             <button type="button" class="btn btn-secondary" @click="updatePage">Refresh</button>
           </div>
         </div>
@@ -37,7 +37,7 @@
                 <th scope="col">Name</th>
                 <th scope="col">Admin</th>
                 <!-- <th class="text-center" scope="col">Edit</th> -->
-                <th class="text-center" scope="col">Delete</th>
+                <th class="text-center" scope="col" @click="deleteUser(user)">Delete</th>
               </tr>
             </thead>
 
@@ -57,21 +57,66 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="createUser">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create a User</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group" :class="{'was-validated': create.username.length !== 0}">
+                <label>Username</label>
+                <input v-model="create.username" class="form-control" placeholder="Username" required>
+              </div>
+              <div class="form-group" :class="{'was-validated': create.password.length !== 0}">
+                <label>Password</label>
+                <input v-model="create.password" class="form-control" placeholder="Password" required>
+              </div>
+              <div class="form-group" :class="{'was-validated': create.name.length !== 0}">
+                <label>Name</label>
+                <input v-model="create.name" class="form-control" placeholder="Name" required>
+              </div>
+              <div class="form-check">
+                <input v-model="create.isAdmin" type="checkbox" class="form-check-input">
+                <label class="form-check-label">Admin</label>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" @click="createUser">Create Category</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-
+import toastrs from "@/mixins/toastrs";
 import { mapMutations } from "vuex";
 
 export default {
   name: "AdminPanel",
+  mixins: [toastrs],
   data() {
     return {
       users: [],
       limit: 50,
-      total: 0
+      total: 0,
+      create: {
+        name: "",
+        username: "",
+        isAdmin: false,
+        password: "",
+        name: ""
+      }
     };
   },
   methods: {
@@ -86,8 +131,34 @@ export default {
         this.removeProcess(process);
       });
     },
+    createUser(event) {
+      event.preventDefault();
+
+      axios
+        .post("/api/admin/user/", {
+          ...this.create
+        })
+        .then(() => {
+          this.updatePage();
+        })
+        .catch(error => {
+          this.axiosReqestError("Create User", error.response.data.message);
+        });
+    },
     editUser(user) {},
-    deleteUser(user) {}
+    deleteUser(user) {
+      let yes = confirm("Are you sure you want to delete " + user.name);
+      if (!yes) return;
+
+      axios
+        .delete("/api/admin/user/" + user.username)
+        .then(() => {
+          this.updatePage();
+        })
+        .catch(error => {
+          this.axiosReqestError("Create User", error.response.data.message);
+        });
+    }
   },
   watch: {
     limit: "updatePage"

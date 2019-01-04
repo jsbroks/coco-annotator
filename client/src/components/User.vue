@@ -6,7 +6,9 @@
       </a>
 
       <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
-        <a v-show="$store.getters['user/isAdmin']" class="dropdown-item" href="#">Admin Panel</a> 
+        <a v-show="$store.getters['user/isAdmin']" class="dropdown-item" href="#">
+          <RouterLink class="admin" to="/admin/panel">Admin Panel</RouterLink>
+        </a> 
         <a class="dropdown-item" href="#">Settings</a>
         <a class="dropdown-item" href="#" @click="logoutButton">Logout</a>
       </div>
@@ -44,5 +46,8 @@ export default {
 <style scoped>
 a:hover {
   text-decoration: none;
+}
+.admin {
+  color: black;
 }
 </style>

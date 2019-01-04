@@ -15,6 +15,13 @@ create_user = reqparse.RequestParser()
 create_user.add_argument('name', default="", location='json')
 create_user.add_argument('password', default="", location='json')
 
+register = reqparse.RequestParser()
+register.add_argument('username', required=True, location='json')
+register.add_argument('password', required=True, location='json')
+register.add_argument('email', location='json')
+register.add_argument('name', location='json')
+register.add_argument('isAdmin', type=bool, default=False, location='json')
+
 
 @api.route('/users')
 class Users(Resource):
@@ -46,8 +53,39 @@ class Users(Resource):
         }
 
 
+@api.route('/user/')
+class User(Resource):
+    
+    @login_required
+    @api.expect(register)
+    def post(self):
+        """ Create a new user """
+
+        if not current_user.is_admin:
+            return {"success": False, "message": "Access denied"}, 401
+
+        args = register.parse_args()
+        username = args.get('username')
+
+        if UserModel.objects(username=username).first():
+            return {'success': False, 'message': 'Username already exists.'}, 400
+
+        user = UserModel()
+        user.username = args.get('username')
+        user.password = generate_password_hash(args.get('password'), method='sha256')
+        user.name = args.get('name', "")
+        user.email = args.get('email', "")
+        user.is_admin = args.get('isAdmin', False)
+        user.save()
+
+        user_json = fix_ids(current_user)
+        del user_json['password']
+
+        return {'success': True, 'user': user_json}
+
+
 @api.route('/user/<string:username>')
-class Users(Resource):
+class Username(Resource):
 
     @login_required
     def get(self, username):
@@ -64,7 +102,7 @@ class Users(Resource):
 
     @api.expect(create_user)
     @login_required
-    def post(self, username):
+    def patch(self, username):
         """ Edit a user """
 
         if not current_user.is_admin:
