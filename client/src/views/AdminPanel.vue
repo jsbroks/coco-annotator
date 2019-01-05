@@ -114,8 +114,7 @@ export default {
         name: "",
         username: "",
         isAdmin: false,
-        password: "",
-        name: ""
+        password: ""
       }
     };
   },
@@ -147,7 +146,11 @@ export default {
     },
     editUser(user) {},
     deleteUser(user) {
-      let yes = confirm("Are you sure you want to delete " + user.name);
+      let yes = confirm(
+        "Are you sure you want to delete " +
+          user.username +
+          ". This action cannot be undone."
+      );
       if (!yes) return;
 
       axios

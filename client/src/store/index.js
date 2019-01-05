@@ -11,9 +11,13 @@ export default new Vuex.Store({
   },
   state: {
     process: [],
-    undo: []
+    undo: [],
+    numberOfUsers: 1
   },
   mutations: {
+    setNumberOfUsers(state, numberOfUsers) {
+      state.numberOfUsers = numberOfUsers;
+    },
     addProcess(state, process) {
       state.process.push(process);
     },

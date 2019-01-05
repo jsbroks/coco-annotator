@@ -41,14 +41,15 @@
         </div>
 
         <div class="dropdown-menu" :aria-labelledby="'dropdownDataset' + dataset.id">
-          <a class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
+          <button class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
             Edit
-          </a>
-          <a v-if="isOwner" class="dropdown-item" data-toggle="modal" :data-target="'#datasetShare' + dataset.id">
+          </button>
+          <button v-if="isOwner" class="dropdown-item" data-toggle="modal" :data-target="'#datasetShare' + dataset.id">
             Share
-          </a>
-          <a class="dropdown-item" @click="onCocoDownloadClick">Download COCO</a>
-          <a class="dropdown-item delete" v-show="isOwner" @click="onDeleteClick">Delete</a>
+          </button>
+          <button class="dropdown-item" @click="onCocoDownloadClick">Download COCO</button>
+          <hr>
+          <button class="dropdown-item delete" v-show="isOwner" @click="onDeleteClick">Delete</button>
         </div>
       </div>
 
@@ -313,5 +314,9 @@ p {
 .card-footer {
   padding: 2px;
   font-size: 11px;
+}
+
+.delete {
+  color: darkred;
 }
 </style>

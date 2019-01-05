@@ -188,6 +188,11 @@ export default {
         });
     }
   },
+  watch: {
+    user() {
+      this.updatePage();
+    }
+  },
   computed: {
     directory() {
       let closing = this.create.name.length > 0 ? "/" : "";
@@ -203,6 +208,9 @@ export default {
     validDatasetName() {
       if (this.create.name.length === 0) return "Dataset name is required";
       return "";
+    },
+    user() {
+      return this.$store.state.user.user;
     }
   },
   created() {

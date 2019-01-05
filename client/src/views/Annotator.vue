@@ -338,6 +338,7 @@ export default {
       let process = "Initializing canvas";
       this.addProcess(process);
       this.loading.image = true;
+      4;
       let canvas = document.getElementById("editor");
       this.paper.setup(canvas);
       this.paper.view.viewSize = [

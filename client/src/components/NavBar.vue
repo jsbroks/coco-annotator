@@ -50,6 +50,8 @@ import User from "@/components/User";
 import Status from "@/components/Status";
 import axios from "axios";
 
+import { mapMutations } from "vuex";
+
 export default {
   name: "NavBar",
   components: { Status, User },
@@ -60,11 +62,13 @@ export default {
     };
   },
   methods: {
-    getTag() {
+    ...mapMutations(["setNumberOfUsers"]),
+    getInfo() {
       axios
         .get("/api/info/")
         .then(response => {
           this.tag = response.data.git.tag;
+          this.setNumberOfUsers(response.data.total_users);
         })
         .catch(() => {
           this.tag = "unknown";
@@ -72,7 +76,7 @@ export default {
     }
   },
   mounted() {
-    this.getTag();
+    this.getInfo();
   }
 };
 </script>
