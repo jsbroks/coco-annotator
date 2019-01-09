@@ -2,22 +2,20 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import user from "./user";
+import info from "./info";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   modules: {
-    user
+    user,
+    info
   },
   state: {
     process: [],
-    undo: [],
-    numberOfUsers: 1
+    undo: []
   },
   mutations: {
-    setNumberOfUsers(state, numberOfUsers) {
-      state.numberOfUsers = numberOfUsers;
-    },
     addProcess(state, process) {
       state.process.push(process);
     },

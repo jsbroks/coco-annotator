@@ -2,8 +2,8 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
 
     <a class="navbar-brand" href="/">
-      <strong>COCO Annotator</strong>
-      <span class="subscript">{{ tag }}</span>
+      <strong>{{ name }}</strong>
+      <span class="subscript">{{ version }}</span>
     </a>
 
     <button class="navbar-toggler"
@@ -40,7 +40,7 @@
         
       </ul>
       <Status />
-      <User v-if="$store.getters['user/loginEnabled']" />
+      <User v-if="loginEnabled" />
     </div>
   </nav>
 </template>
@@ -48,35 +48,20 @@
 <script>
 import User from "@/components/User";
 import Status from "@/components/Status";
-import axios from "axios";
-
-import { mapMutations } from "vuex";
 
 export default {
   name: "NavBar",
   components: { Status, User },
-  data() {
-    return {
-      valid: true,
-      tag: "loading"
-    };
-  },
-  methods: {
-    ...mapMutations(["setNumberOfUsers"]),
-    getInfo() {
-      axios
-        .get("/api/info/")
-        .then(response => {
-          this.tag = response.data.git.tag;
-          this.setNumberOfUsers(response.data.total_users);
-        })
-        .catch(() => {
-          this.tag = "unknown";
-        });
+  computed: {
+    version() {
+      return this.$store.state.info.version;
+    },
+    loginEnabled() {
+      return this.$store.state.info.loginEnabled;
+    },
+    name() {
+      return this.$store.state.name;
     }
-  },
-  mounted() {
-    this.getInfo();
   }
 };
 </script>

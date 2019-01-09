@@ -14,6 +14,7 @@ export default {
   components: { NavBar },
   methods: {
     ...mapMutations("user", ["setUserInfo"]),
+    ...mapMutations("info", ["getServerInfo"]),
     toAuthPage() {
       this.$router.push({
         name: "authentication"
@@ -63,6 +64,7 @@ export default {
   },
   created() {
     this.setUserInfo();
+    this.getServerInfo();
   }
 };
 </script>

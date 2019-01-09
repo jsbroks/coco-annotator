@@ -21,6 +21,7 @@ class Info(Resource):
             "git": {
                 "tag": get_tag()
             },
+            "login_enabled": not Config.LOGIN_DISABLED,
             "total_users": UserModel.objects.count(),
             "allow_registration": Config.ALLOW_REGISTRATION
         }

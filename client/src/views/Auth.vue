@@ -7,19 +7,30 @@
           <!-- Change this section to whatever you would like -->
           <h1>COCO Annotator</h1>
           <hr>
-          <p>
-            COCO Annotator is a web-based image annotation tool designed for versatility and efficiently
-            label images to create training data for image localization and object detection.
-            <br><br>
-            Login to create datasets.
-            <br><br>
-            Find out more <a href="https://github.com/jsbroks/coco-annotator">Github</a>
-          </p>
-          <!---->
+          <div v-if="totalUsers === 0">
+            <h5>You have successfully installed COCO Annotator!</h5>
+            <p>Use the registeration to create an admin account</p>
+            <p>
+              If you have any questions please checkout the
+              <a href="https://github.com/jsbroks/coco-annotator/wiki">wiki</a> before
+              posting an <a href="https://github.com/jsbroks/coco-annotator/issues">issues</a>.
+            </p>
+          </div>
+          <div v-else>
+            <p>
+              COCO Annotator is a web-based image annotation tool designed for versatility and efficiently
+              label images to create training data for image localization and object detection.
+              <br><br>
+              Login to create datasets.
+              <br><br>
+              Find out more <a href="https://github.com/jsbroks/coco-annotator">Github</a>
+            </p>
+          </div>
+          <!-- End of section -->
         </div>
         <div class="col-sm">
-          <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item">
+          <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" v-show="totalUsers !== 0">
               <a class="nav-link"
                  :class="{ active: tab === 'login'}"
                  id="home-tab"
@@ -33,7 +44,7 @@
                 Login
               </a>
             </li>
-            <li class="nav-item" v-show="registerForm.enabled">
+            <li class="nav-item" v-show="showRegistrationForm">
               <a class="nav-link"
                  :class="{ active: tab === 'register'}"
                  id="contact-tab"
@@ -42,6 +53,7 @@
                  role="tab"
                  aria-controls="contact"
                  aria-selected="false" @click="tab = 'register'"
+                 ref="registerTab"
               >
                 Register
               </a>
@@ -68,7 +80,7 @@
               </form>
             </div>
             <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
-              <div v-if="!registerForm.enabled">
+              <div v-if="!showRegistrationForm">
                 You are not allowed to register accounts
               </div>
               <form v-else>
@@ -106,7 +118,7 @@
 
 <script>
 import toastrs from "@/mixins/toastrs";
-import { mapActions } from "vuex";
+import { mapActions, mapMutations } from "vuex";
 export default {
   name: "Authentication",
   mixins: [toastrs],
@@ -138,13 +150,17 @@ export default {
   },
   methods: {
     ...mapActions("user", ["register", "login"]),
+    ...mapMutations("info", ["increamentUserCount"]),
     registerUser(event) {
       event.preventDefault();
       if (!this.registerValid) return;
 
       let data = {
         user: this.registerForm,
-        successCallback: () => this.$router.push(this.redirect),
+        successCallback: () => {
+          this.increamentUserCount();
+          this.$router.push(this.redirect);
+        },
         errorCallback: error =>
           this.axiosReqestError(
             "User Registration",
@@ -182,6 +198,22 @@ export default {
       if (!this.usernameIsValid(this.loginForm.username)) return false;
       if (this.loginForm.password.length == 0) return false;
       return true;
+    },
+    totalUsers() {
+      return this.$store.state.info.totalUsers;
+    },
+    allowRegistration() {
+      return this.$store.state.info.allowRegistration;
+    },
+    showRegistrationForm() {
+      return this.totalUsers == 0 || this.allowRegistration;
+    }
+  },
+  watch: {
+    totalUsers(users) {
+      if (users === 0) {
+        this.$refs.registerTab.click();
+      }
     }
   }
 };
