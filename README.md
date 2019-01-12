@@ -39,6 +39,14 @@ Several annotation tools are currently available, with most applications as a de
  - Generate datasets using google images
 
 For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
+# Demo
+
+| Login Information |
+| ----------------- |
+| __Username:__ admin   |
+| __Password:__ password |
+
+https://annotator.justinbrooks.ca/
 
 # Backers
 
