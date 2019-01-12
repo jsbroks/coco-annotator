@@ -18,6 +18,10 @@ login = reqparse.RequestParser()
 login.add_argument('password', required=True, location='json')
 login.add_argument('username', required=True, location='json')
 
+set_password = reqparse.RequestParser()
+set_password.add_argument('password', required=True, location='json')
+set_password.add_argument('new_password', required=True, location='json')
+
 
 @api.route('/')
 class User(Resource):
@@ -32,15 +36,21 @@ class User(Resource):
 
         return {'user': user_json}
 
-    @login_required
-    def post(self):
-        """ Updates information of current user """
-        return False
+
+@api.route('/password')
+class UserPassword(Resource):
 
     @login_required
-    def delete(self):
-        """ Removes current user from database """
-        return False
+    @api.expect(register)
+    def post(self):
+        """ Set password of current user """
+        args = set_password.parse_args()
+
+        if check_password_hash(current_user.password, args.get('password')):
+            current_user.update(password=generate_password_hash(args.get('new_password'), method='sha256'), new=False)
+            return {'success': True}
+
+        return {'success': False, 'message': 'Password does not match current passowrd'}, 400
 
 
 @api.route('/register')

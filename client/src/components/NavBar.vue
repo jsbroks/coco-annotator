@@ -41,6 +41,7 @@
       </ul>
       <Status />
       <User v-if="loginEnabled" />
+      
     </div>
   </nav>
 </template>

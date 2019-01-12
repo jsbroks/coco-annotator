@@ -114,10 +114,12 @@
                   <div class="invalid-feedback">Minimum length of 5 characters.</div>
                 </div>
                 
-                <div class="form-group" :class="{'was-validated': registerForm.password === registerForm.confirmPassword && registerForm.password.length > 0}">
+                <div class="form-group">
                   <label>Confirm Password</label>
                   <input
                     v-model="registerForm.confirmPassword"
+                    :class="{ 'is-valid': registerForm.confirmPassword.length > 0
+                            && registerForm.confirmPassword === registerForm.password }"
                     type="password"
                     class="form-control"
                   >
@@ -282,6 +284,9 @@ export default {
     },
     showRegistrationForm() {
       return this.totalUsers == 0 || this.allowRegistration;
+    },
+    isAuthenticatePending() {
+      return this.$store.state.user.isAuthenticatePending;
     }
   },
   watch: {
@@ -289,6 +294,16 @@ export default {
       if (users === 0) {
         this.$refs.registerTab.click();
       }
+    },
+    isAuthenticatePending: {
+      handler() {
+        if (this.isAuthenticatePending) {
+          this.$router.push({
+            name: "datasets"
+          });
+        }
+      },
+      immediate: true
     }
   },
   mounted() {}

@@ -51,26 +51,19 @@ export default {
         this.loader.hide();
       }
     },
-    loginRequired(newValue) {
-      if (newValue) {
-        this.toAuthPage();
-        return;
-      }
-
-      if (this.$route.name == "authentication" && !newValue) {
-        this.$router.push({
-          name: "datasets"
-        });
-      }
-    },
-    "$route.name"() {
-      if (this.loginRequired) {
-        this.toAuthPage();
-      } else {
-        if (this.$route.name === "authentication") {
-          this.$router.push({ name: "datasets" });
+    loginRequired: {
+      handler(newValue) {
+        if (newValue) {
+          this.toAuthPage();
+        } else {
+          if (this.$router.name == "authentication") {
+            this.$router.push({
+              name: "datasets"
+            });
+          }
         }
-      }
+      },
+      immediate: true
     }
   },
   mounted() {
