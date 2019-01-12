@@ -99,7 +99,6 @@ class UserLogin(Resource):
         if user is None:
             return {'success': False, 'message': 'Could not authenticate user'}, 400
 
-        print(username, flush=True)
         if check_password_hash(user.password, args.get('password')):
             login_user(user)
 

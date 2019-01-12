@@ -1,20 +1,17 @@
-FROM node:9.11 as build-stage
+FROM node:10 as build-stage
 
 WORKDIR /workspace/
-
 COPY ./client /workspace/client
 
-WORKDIR client
-
-RUN apt-get -y update \
-	&& apt-get install -y \
-	    git
-
 RUN npm install -g --quiet \
-    @vue/cli@3.1.1 \
-    @vue/cli-service@3.1.2
+    @vue/cli@3.3.0 \
+    @vue/cli-service@3.3.0
 
-RUN npm i
+COPY ./client/package.json /workspace/package.json
+RUN npm install
+ENV NODE_PATH=/workspace/node_modules
+
+WORKDIR client
 RUN npm run build
 
 # Setup flask
@@ -36,3 +33,6 @@ COPY requirements.txt requirements.txt
 RUN pip install gunicorn
 RUN pip install -r requirements.txt
 RUN pip install pycocotools
+
+EXPOSE 5000
+CMD gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py
