@@ -4,14 +4,20 @@ volumes:
         external: false
 services:
     flask:
-        image: jsbroks/coco-annotator:latest
+        container_name: annotator_flask
         restart: always
+        build:
+            context: .
+            dockerfile: ./docker/production/Dockerfile
         ports:
             - '5000:5000'
         volumes:
             - './datasets:/datasets'
             - './app:/workspace/app'
             - './.git:/workspace/.git'
+        environment:
+          - FLASK_APP=app
+          - FLASK_ENV=production
         depends_on:
             - database
     database:
