@@ -67,7 +67,7 @@ class UserRegister(Resource):
         args = register.parse_args()
         username = args.get('username')
 
-        if UserModel.objects(username=username).first():
+        if UserModel.objects(username__iexact=username).first():
             return {'success': False, 'message': 'Username already exists.'}, 400
 
         user = UserModel()
@@ -95,7 +95,7 @@ class UserLogin(Resource):
         args = login.parse_args()
         username = args.get('username')
 
-        user = UserModel.objects(username=username).first()
+        user = UserModel.objects(username__iexact=username).first()
         if user is None:
             return {'success': False, 'message': 'Could not authenticate user'}, 400
 

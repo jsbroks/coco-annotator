@@ -67,7 +67,7 @@ class User(Resource):
         args = register.parse_args()
         username = args.get('username')
 
-        if UserModel.objects(username=username).first():
+        if UserModel.objects(username__iexact=username).first():
             return {'success': False, 'message': 'Username already exists.'}, 400
 
         user = UserModel()
@@ -94,7 +94,7 @@ class Username(Resource):
         if not current_user.is_admin:
             return {"success": False, "message": "Access denied"}, 401
 
-        user = UserModel.objects(username=username).first()
+        user = UserModel.objects(username__iexact=username).first()
         if user is None:
             return {"success": False, "message": "User not found"}, 400
 
@@ -108,7 +108,7 @@ class Username(Resource):
         if not current_user.is_admin:
             return {"success": False, "message": "Access denied"}, 401
 
-        user = UserModel.objects(username=username).first()
+        user = UserModel.objects(username__iexact=username).first()
         if user is None:
             return {"success": False, "message": "User not found"}, 400
 
@@ -132,7 +132,7 @@ class Username(Resource):
         if not current_user.is_admin:
             return {"success": False, "message": "Access denied"}, 401
 
-        user = UserModel.objects(username=username).first()
+        user = UserModel.objects(username__iexact=username).first()
         if user is None:
             return {"success": False, "message": "User not found"}, 400
 
