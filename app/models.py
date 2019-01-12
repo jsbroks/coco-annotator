@@ -249,7 +249,7 @@ class CategoryModel(db.DynamicDocument):
 
         if current_user:
             self.creator = current_user.username
-
+      
         return super(CategoryModel, self).save(*args, **kwargs)
 
 
