@@ -96,9 +96,9 @@
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
 
-      <div v-show="!doneLoading">
+      <!-- <div v-show="!doneLoading">
         <i class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
-      </div>
+      </div> -->
 
     </div>
   </div>
@@ -215,7 +215,8 @@ export default {
       dataset: {},
       loading: {
         image: true,
-        data: true
+        data: true,
+        loader: null
       },
       search: ""
     };
@@ -559,6 +560,11 @@ export default {
     }
   },
   watch: {
+    doneLoading() {
+      if (this.loading.loader) {
+        this.loading.loader.hide();
+      }
+    },
     currentCategory() {
       if (this.currentCategory != null) {
         if (
@@ -620,6 +626,14 @@ export default {
     this.save(next);
   },
   mounted() {
+    this.loading.loader = this.$loading.show({
+      color: "white",
+      backgroundColor: "#4b5162",
+      height: 150,
+      opacity: 0.7,
+      width: 150
+    });
+
     this.initCanvas();
   },
   created() {

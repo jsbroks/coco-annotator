@@ -8,12 +8,12 @@
           <h1>COCO Annotator</h1>
           <hr>
           <div v-if="totalUsers === 0">
-            <h5>You have successfully installed COCO Annotator!</h5>
-            <p>Use the registeration to create an admin account</p>
+            <h3>You have successfully installed COCO Annotator!</h3>
+            <p>Use the registeration form to create an admin account</p>
             <p>
               If you have any questions please checkout the
               <a href="https://github.com/jsbroks/coco-annotator/wiki">wiki</a> before
-              posting an <a href="https://github.com/jsbroks/coco-annotator/issues">issues</a>.
+              posting <a href="https://github.com/jsbroks/coco-annotator/issues">issues</a>.
             </p>
           </div>
           <div v-else>
@@ -21,7 +21,7 @@
               COCO Annotator is a web-based image annotation tool designed for versatility and efficiently
               label images to create training data for image localization and object detection.
               <br><br>
-              Login to create datasets.
+              Login to create a datasets.
               <br><br>
               Find out more <a href="https://github.com/jsbroks/coco-annotator">Github</a>
             </p>
@@ -61,50 +61,68 @@
           </ul>
           <div class="tab-content panel border-bottom border-right border-left text-left">
             <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
-              <form>
+              <form class="vld-parent" ref="loginForm">
                 <div class="form-group">
                   <label>Username</label>
-                  <input v-model="loginForm.username" type="text" class="form-control" >
+                  <input
+                    v-model="loginForm.username"
+                    type="text"
+                    class="form-control"
+                    required>
+                  <div class="invalid-feedback">Invalid username format</div>
                 </div>
                 <div class="form-group">
                   <label >Password</label>
                   <input v-model="loginForm.password" type="password" class="form-control">
                 </div>
-                <div class="form-check">
-                  <input v-model="loginForm.remember" type="checkbox" class="form-check-input">
-                  <label class="form-check-label">Remember me</label>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block" :class="{ disabled: !loginValid }" style="margin-top: 10px" @click="loginUser">
+                <button type="submit" class="btn btn-primary btn-block" :class="{ disabled: !loginValid }" @click.prevent="loginUser">
                   Login
                 </button>
               </form>
             </div>
             <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
               <div v-if="!showRegistrationForm">
-                You are not allowed to register accounts
+                You are not allowed to register new accounts
               </div>
-              <form v-else>
+              <form v-else class="vld-parent" ref="registerForm">
                 <div class="form-group" novalidate="">
                   <label>Full Name <span class="text-mute">(Optional)</span></label>
                   <input v-model="registerForm.name" type="text" class="form-control">
                 </div>
-                <div class="form-group" :class="{'was-validated': usernameIsValid(registerForm.username)}">
+
+                <div class="form-group">
                   <label>Username</label>
-                  <input v-model="registerForm.username" type="text" class="form-control">
+                  <input
+                    v-model="registerForm.username"
+                    :class="inputUsernameClasses(registerForm.username)"
+                    type="text"
+                    class="form-control"
+                    required
+                  >
+                  <div class="invalid-feedback">Invalid username format</div>
                 </div>
-                <div class="form-group" :class="{'was-validated': registerForm.password.length > 4 }" required>
+
+                <div class="form-group">
                   <label>Password</label>
-                  <input v-model="registerForm.password" type="password" class="form-control">
+                  <input
+                    v-model="registerForm.password"
+                    :class="inputPasswordClasses(registerForm.password)"
+                    type="password"
+                    class="form-control"
+                    required
+                  >
+                  <div class="invalid-feedback">Minimum length of 5 characters.</div>
                 </div>
+                
                 <div class="form-group" :class="{'was-validated': registerForm.password === registerForm.confirmPassword && registerForm.password.length > 0}">
                   <label>Confirm Password</label>
-                  <input v-model="registerForm.confirmPassword" type="password" class="form-control">
+                  <input
+                    v-model="registerForm.confirmPassword"
+                    type="password"
+                    class="form-control"
+                  >
                 </div>
-                <div class="form-check">
-                  <input v-model="registerForm.remember" type="checkbox" class="form-check-input">
-                  <label class="form-check-label">Remember me</label>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block" :class="{ disabled: !registerValid }" style="margin-top: 10px" @click="registerUser">
+                <button type="submit" class="btn btn-primary btn-block" :class="{ disabled: !registerValid }" @click.prevent="registerUser">
                   Register
                 </button>
               </form>
@@ -134,30 +152,37 @@ export default {
     return {
       tab: "login",
       registerForm: {
-        enabled: true,
+        loading: false,
         name: "",
         username: "",
         password: "",
-        confirmPassword: "",
-        remember: false
+        confirmPassword: ""
       },
       loginForm: {
+        loading: false,
         username: "",
-        password: "",
-        remember: false
+        password: ""
       }
     };
   },
   methods: {
     ...mapActions("user", ["register", "login"]),
     ...mapMutations("info", ["increamentUserCount"]),
-    registerUser(event) {
-      event.preventDefault();
+    /**
+     * Reigsters a user with provided infomation from login form
+     */
+    registerUser() {
       if (!this.registerValid) return;
+
+      let loader = this.$loading.show({
+        container: this.$refs.registerForm,
+        color: "#383c4a"
+      });
 
       let data = {
         user: this.registerForm,
         successCallback: () => {
+          loader.hide();
           this.increamentUserCount();
           this.$router.push(this.redirect);
         },
@@ -167,27 +192,77 @@ export default {
             error.response.data.message
           )
       };
+
       this.register(data);
     },
-    loginUser(event) {
-      event.preventDefault();
+    /**
+     * Login a user with provided infomation from login form
+     */
+    loginUser() {
       if (!this.loginValid) return;
+
+      let loader = this.$loading.show({
+        container: this.$refs.registerForm,
+        color: "#383c4a"
+      });
 
       let data = {
         user: this.loginForm,
-        successCallback: () => this.$router.push(this.redirect),
+        successCallback: () => {
+          loader.hide();
+          this.$router.push(this.redirect);
+        },
         errorCallback: error =>
           this.axiosReqestError("User Login", error.response.data.message)
       };
       this.login(data);
     },
-    usernameIsValid(username) {
+    /**
+     * Returns boolean value if provide string is a valid username
+     * @param {string} username
+     * @returns {boolean} true if valid otherwise false
+     */
+    validUsername(username) {
       return /^[0-9a-zA-Z_.-]+$/.test(username);
+    },
+    /**
+     * Returns boolean value if provide string is a valid password
+     * @param {string} password
+     * @returns {boolean} true if valid otherwise false
+     */
+    validPassword(password) {
+      return password.length > 5;
+    },
+    /**
+     * Returns classes to be applied to a username input field for validation
+     * @param {string} username input username string
+     * @returns {object} validation classes
+     */
+    inputUsernameClasses(username) {
+      let isValid = this.validUsername(username);
+
+      return {
+        "is-invalid": !isValid && username.length != 0,
+        "is-valid": isValid
+      };
+    },
+    /**
+     * Returns classes to be applied to a password input field for validation
+     * @param {string} password input password string
+     * @returns {object} validation classes
+     */
+    inputPasswordClasses(password) {
+      let isValid = password.length > 4;
+
+      return {
+        "is-invalid": !isValid && password.length != 0,
+        "is-valid": isValid
+      };
     }
   },
   computed: {
     registerValid() {
-      if (!this.usernameIsValid(this.registerForm.username)) return false;
+      if (!this.validUsername(this.registerForm.username)) return false;
       if (this.registerForm.password.length < 5) return false;
       if (this.registerForm.password !== this.registerForm.confirmPassword)
         return false;
@@ -195,7 +270,7 @@ export default {
       return true;
     },
     loginValid() {
-      if (!this.usernameIsValid(this.loginForm.username)) return false;
+      if (!this.validUsername(this.loginForm.username)) return false;
       if (this.loginForm.password.length == 0) return false;
       return true;
     },
@@ -215,7 +290,8 @@ export default {
         this.$refs.registerTab.click();
       }
     }
-  }
+  },
+  mounted() {}
 };
 </script>
 
@@ -227,5 +303,9 @@ export default {
 
 .text-mute {
   font-size: 10px;
+}
+
+.btn-button {
+  margin-top: 10px;
 }
 </style>

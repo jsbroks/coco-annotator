@@ -21,6 +21,9 @@ export default {
       });
     }
   },
+  data() {
+    return { loader: null };
+  },
   computed: {
     showNavBar() {
       let notShow = ["authentication", "setup"];
@@ -37,9 +40,17 @@ export default {
         return false;
       }
       return !this.isAuthenticated;
+    },
+    loading() {
+      return this.$store.state.info.loading;
     }
   },
   watch: {
+    loading() {
+      if (!this.loading && this.loader != null) {
+        this.loader.hide();
+      }
+    },
     loginRequired(newValue) {
       if (newValue) {
         this.toAuthPage();
@@ -60,6 +71,13 @@ export default {
           this.$router.push({ name: "datasets" });
         }
       }
+    }
+  },
+  mounted() {
+    if (this.$route.name.toLowerCase() !== "annotate") {
+      this.loader = this.$loading.show({
+        height: 100
+      });
     }
   },
   created() {

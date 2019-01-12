@@ -60,7 +60,7 @@ export default {
       return this.$store.state.info.loginEnabled;
     },
     name() {
-      return this.$store.state.name;
+      return this.$store.state.info.name;
     }
   }
 };
