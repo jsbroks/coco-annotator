@@ -1,9 +1,16 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+import user from "./user";
+import info from "./info";
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+  modules: {
+    user,
+    info
+  },
   state: {
     process: [],
     undo: []
@@ -13,7 +20,7 @@ export default new Vuex.Store({
       state.process.push(process);
     },
     removeProcess(state, process) {
-      var index = state.process.indexOf(process);
+      let index = state.process.indexOf(process);
       if (index > -1) {
         state.process.splice(index, 1);
       }

@@ -41,18 +41,26 @@
         </div>
 
         <div class="dropdown-menu" :aria-labelledby="'dropdownDataset' + dataset.id">
-          <a class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
+          <button class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
             Edit
-          </a>
-          <a class="dropdown-item" @click="onDeleteClick">Delete</a>
-          <a class="dropdown-item" @click="onCocoDownloadClick">Download COCO</a>
+          </button>
+          <button v-if="isOwner" class="dropdown-item" data-toggle="modal" :data-target="'#datasetShare' + dataset.id">
+            Share
+          </button>
+          <button class="dropdown-item" @click="onCocoDownloadClick">Download COCO</button>
+          <hr>
+          <button class="dropdown-item delete" v-show="isOwner" @click="onDeleteClick">Delete</button>
         </div>
+      </div>
+
+      <div v-show="$store.getters['user/loginEnabled']" class="card-footer text-muted">
+        Created by {{ dataset.owner }}
       </div>
 
     </div>
 
     <!-- Edit Dataset -->
-    <div class="modal fade" tabindex="-1" role="dialog" :id="'datasetEdit' + dataset.id">
+    <div class="modal fade" role="dialog" :id="'datasetEdit' + dataset.id">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -91,6 +99,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Share Dataset -->
+    <div class="modal fade" role="dialog" :id="'datasetShare' + dataset.id">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">{{ dataset.name }}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label>Users shared with</label>
+                <TagsInput
+                  v-model="sharedUsers"
+                  element-id="usersList"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                  placeholder="Add usernames"
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" @click="onShare" data-dismiss="modal">Save</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -119,7 +159,8 @@ export default {
     return {
       selectedCategories: [],
       defaultMetadata: this.dataset.default_annotation_metadata,
-      noImageUrl: require("@/assets/no-image.png")
+      noImageUrl: require("@/assets/no-image.png"),
+      sharedUsers: this.dataset.users
     };
   },
   methods: {
@@ -127,6 +168,15 @@ export default {
     onImageClick() {
       let identifier = this.dataset.id;
       this.$router.push({ name: "dataset", params: { identifier } });
+    },
+    onShare() {
+      axios
+        .post("/api/dataset/" + this.dataset.id + "/share", {
+          users: this.sharedUsers
+        })
+        .then(() => {
+          this.$parent.updatePage();
+        });
     },
     onCocoDownloadClick() {
       let process = "Generating COCO for " + this.dataset.name;
@@ -209,6 +259,13 @@ export default {
       });
 
       return tags;
+    },
+    user() {
+      return this.$store.state.user.user;
+    },
+    isOwner() {
+      if (this.user == null) return false;
+      return this.user.username === this.dataset.owner || this.user.is_admin;
     }
   },
   mounted() {
@@ -253,5 +310,13 @@ p {
 .progress {
   margin: 0 5px 7px 5px;
   height: 5px;
+}
+.card-footer {
+  padding: 2px;
+  font-size: 11px;
+}
+
+.delete {
+  color: darkred;
 }
 </style>

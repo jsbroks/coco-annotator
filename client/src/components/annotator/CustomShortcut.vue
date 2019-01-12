@@ -32,6 +32,12 @@ export default {
     };
   },
   methods: {
+    export() {
+      return {
+        name: this.shortcut.name,
+        keys: this.keys
+      };
+    },
     function(e) {
       let target = e.target.tagName.toLowerCase();
 

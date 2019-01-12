@@ -25,6 +25,12 @@ export default {
     };
   },
   methods: {
+    export() {
+      return {
+        threshold: this.wand.threshold,
+        blur: this.wand.blur
+      };
+    },
     flood(x, y, thr, rad) {
       let image = {
         data: this.imageInfo.data.data,

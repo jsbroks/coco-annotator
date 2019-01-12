@@ -1,6 +1,7 @@
 opencv-python
 flask
 flask-cors
+flask-login
 flask-restplus
 flask-mongoengine
 numpy

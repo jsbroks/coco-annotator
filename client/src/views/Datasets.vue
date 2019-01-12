@@ -46,9 +46,9 @@
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group" :class="{'was-validated': validDatasetName.lenght !== 0}">
+              <div class="form-group" :class="{'was-validated': validDatasetName.length !== 0}">
                 <label>Dataset Name</label>
-                <input v-model="create.name" class="form-control" placeholder="Dataset name invalid" required>
+                <input v-model="create.name" class="form-control" placeholder="Dataset name" required>
                 <div class="invalid-feedback">
                   {{ validDatasetName }}
                 </div>
@@ -160,7 +160,8 @@ export default {
           this.page = response.data.pagination.page;
 
           this.removeProcess(process);
-        });
+        })
+        .catch(() => this.removeProcess(process));
     },
     createDataset() {
       if (this.create.name.length < 1) return;
@@ -187,6 +188,11 @@ export default {
         });
     }
   },
+  watch: {
+    user() {
+      this.updatePage();
+    }
+  },
   computed: {
     directory() {
       let closing = this.create.name.length > 0 ? "/" : "";
@@ -202,6 +208,9 @@ export default {
     validDatasetName() {
       if (this.create.name.length === 0) return "Dataset name is required";
       return "";
+    },
+    user() {
+      return this.$store.state.user.user;
     }
   },
   created() {

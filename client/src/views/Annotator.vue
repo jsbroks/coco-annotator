@@ -96,9 +96,9 @@
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
 
-      <div v-show="!doneLoading">
+      <!-- <div v-show="!doneLoading">
         <i class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
-      </div>
+      </div> -->
 
     </div>
   </div>
@@ -215,7 +215,8 @@ export default {
       dataset: {},
       loading: {
         image: true,
-        data: true
+        data: true,
+        loader: null
       },
       search: ""
     };
@@ -230,7 +231,12 @@ export default {
       let data = {
         mode: this.mode,
         user: {
-          keyboardShortcuts: []
+          polygon: this.$refs.polygon.export(),
+          eraser: this.$refs.eraser.export(),
+          brush: this.$refs.brush.export(),
+          magicwand: this.$refs.magicwand.export(),
+          select: this.$refs.select.export(),
+          settings: this.$refs.settings.export()
         },
         image: {
           id: this.image.id,
@@ -269,6 +275,7 @@ export default {
         .post("/api/annotator/data", JSON.stringify(data))
         .then(() => {
           this.removeProcess(process);
+          //TODO: updateUser
           if (callback != null) callback();
         })
         .catch(() => {});
@@ -332,6 +339,7 @@ export default {
       let process = "Initializing canvas";
       this.addProcess(process);
       this.loading.image = true;
+      4;
       let canvas = document.getElementById("editor");
       this.paper.setup(canvas);
       this.paper.view.viewSize = [
@@ -552,6 +560,11 @@ export default {
     }
   },
   watch: {
+    doneLoading() {
+      if (this.loading.loader) {
+        this.loading.loader.hide();
+      }
+    },
     currentCategory() {
       if (this.currentCategory != null) {
         if (
@@ -604,12 +617,23 @@ export default {
         return null;
       }
       return this.currentCategory.getAnnotation(this.current.annotation);
+    },
+    user() {
+      return this.$store.user.user;
     }
   },
   beforeRouteLeave(to, from, next) {
     this.save(next);
   },
   mounted() {
+    this.loading.loader = this.$loading.show({
+      color: "white",
+      backgroundColor: "#4b5162",
+      height: 150,
+      opacity: 0.7,
+      width: 150
+    });
+
     this.initCanvas();
   },
   created() {

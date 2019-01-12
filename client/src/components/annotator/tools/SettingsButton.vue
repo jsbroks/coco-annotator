@@ -36,7 +36,7 @@
             </div>
 
             <ul class="list-group" style="height: 50%;">
-              <CustomShortcut v-for="(command, index) in commands" :key="index" :shortcut="command" />
+              <CustomShortcut v-for="(command, index) in commands" :key="index" :shortcut="command" ref="shortcuts"/>
             </ul>
 
           </div>
@@ -75,6 +75,13 @@ export default {
   methods: {
     exportMetadata() {
       return this.$refs.metadata.export();
+    },
+    export() {
+      let data = { shortcuts: [] };
+      this.$refs.shortcuts.forEach(shortcut => {
+        data.shortcuts.push(shortcut.export());
+      });
+      return data;
     }
   }
 };

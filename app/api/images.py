@@ -1,4 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
+from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from flask import send_file
 
@@ -38,7 +39,9 @@ copy_annotations.add_argument('category_ids', location='json', type=list,
 
 @api.route('/')
 class Images(Resource):
+
     @api.expect(image_all)
+    @login_required
     def get(self):
         """ Returns all images """
         args = image_all.parse_args()
@@ -46,7 +49,7 @@ class Images(Resource):
         page = args['page']-1
         fields = args.get('fields', "")
 
-        images = ImageModel.objects(deleted=False)
+        images = current_user.images.filter(deleted=False)
         total = images.count()
         pages = int(total/per_page) + 1
 
@@ -64,6 +67,7 @@ class Images(Resource):
         }
 
     @api.expect(image_upload)
+    @login_required
     def post(self):
         """ Creates an image """
         args = image_upload.parse_args()
@@ -103,6 +107,7 @@ class Images(Resource):
 class ImageId(Resource):
 
     @api.expect(image_download)
+    @login_required
     def get(self, image_id):
         """ Returns category by ID """
         args = image_download.parse_args()
@@ -110,7 +115,7 @@ class ImageId(Resource):
         width = args['width']
         height = args['height']
 
-        image = ImageModel.objects(id=image_id, deleted=False).first()
+        image = current_user.images.filter(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
@@ -134,9 +139,10 @@ class ImageId(Resource):
 
         return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
 
+    @login_required
     def delete(self, image_id):
         """ Deletes an image by ID """
-        image = ImageModel.objects(id=image_id, deleted=False).first()
+        image = current_user.images.filter(id=image_id, deleted=False).first()
         if image is None:
             return {"message": "Invalid image id"}, 400
 
@@ -148,12 +154,13 @@ class ImageId(Resource):
 class ImageCopyAnnotations(Resource):
 
     @api.expect(copy_annotations)
+    @login_required
     def post(self, from_id, to_id):
         args = copy_annotations.parse_args()
         category_ids = args.get('category_ids')
 
-        image_from = ImageModel.objects(id=from_id).first()
-        image_to = ImageModel.objects(id=to_id).first()
+        image_from = current_user.images.filter(id=from_id).first()
+        image_to = current_user.images.filter(id=to_id).first()
 
         if image_from is None or image_to is None:
             return {'success': False, 'message': 'Invalid image ids'}, 400
@@ -180,6 +187,7 @@ class ImageCopyAnnotations(Resource):
 class ImageCoco(Resource):
 
     @api.expect(image_download)
+    @login_required
     def get(self, image_id):
         """ Returns coco of image and annotations """
         args = image_download.parse_args()
@@ -187,7 +195,7 @@ class ImageCoco(Resource):
         width = args['width']
         height = args['height']
 
-        image = ImageModel.objects(id=image_id, deleted=False).first()
+        image = current_user.images.filter(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
@@ -211,9 +219,11 @@ class ImageCoco(Resource):
 
 @api.route('/<int:image_id>/coco')
 class ImageCoco(Resource):
+
+    @login_required
     def get(self, image_id):
         """ Returns coco of image and annotations """
-        image = ImageModel.objects(id=image_id).exclude('deleted_date').first()
+        image = current_user.images.filter(id=image_id).exclude('deleted_date').first()
 
         if image is None:
             return {"message": "Invalid image ID"}, 400

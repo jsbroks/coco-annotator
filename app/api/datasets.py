@@ -1,4 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
+from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from mongoengine.errors import NotUniqueError
 from threading import Thread
@@ -45,15 +46,19 @@ dataset_generate.add_argument('keywords', location='json', type=list, default=[]
                               help="Keywords associated with images")
 dataset_generate.add_argument('limit', location='json', type=int, default=100, help="Number of images per keyword")
 
+share = reqparse.RequestParser()
+share.add_argument('users', location='json', type=list, default=[], help="List of users")
+
 
 @api.route('/')
 class Dataset(Resource):
-
+    @login_required
     def get(self):
         """ Returns all datasets """
-        return query_util.fix_ids(DatasetModel.objects(deleted=False).all())
+        return query_util.fix_ids(current_user.datasets.filter(deleted=False).all())
 
     @api.expect(dataset_create)
+    @login_required
     def post(self):
         """ Creates a dataset """
         args = dataset_create.parse_args()
@@ -89,11 +94,13 @@ def download_images(output_dir, args):
 
 @api.route('/<int:dataset_id>/generate')
 class DatasetGenerate(Resource):
+    @api.expect(dataset_generate)
+    @login_required
     def post(self, dataset_id):
         """ Adds images found on google to the dataset """
         args = dataset_generate.parse_args()
 
-        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
@@ -105,10 +112,16 @@ class DatasetGenerate(Resource):
 
 @api.route('/<int:dataset_id>')
 class DatasetId(Resource):
-
+    @login_required
     def delete(self, dataset_id):
-        """ Deletes dataset by ID"""
-        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        """ Deletes dataset by ID (only owners of datasets can delete them)"""
+
+        datasets = DatasetModel.objects(id=dataset_id, deleted=False)
+        if not current_user.is_admin:
+            datasets = datasets.filter(owner=current_user.username)
+
+        dataset = datasets.first()
+
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
@@ -118,7 +131,7 @@ class DatasetId(Resource):
     @api.expect(update_dataset)
     def post(self, dataset_id):
         """ Updates dataset by ID """
-        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
@@ -129,14 +142,29 @@ class DatasetId(Resource):
         if categories is not None:
             dataset.categories = CategoryModel.bulk_create(categories)
 
-
         if default_annotation_metadata is not None:
             dataset.default_annotation_metadata = default_annotation_metadata
 
         dataset.update(
-            set__categories=dataset.categories,
+            categories=dataset.categories,
             default_annotation_metadata=dataset.default_annotation_metadata
         )
+
+        return {"success": True}
+
+
+@api.route('/<int:dataset_id>/share')
+class DatasetIdShare(Resource):
+    @api.expect(share)
+    @login_required
+    def post(self, dataset_id):
+        args = share.parse_args()
+
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        dataset.update(users=args.get('users'))
 
         return {"success": True}
 
@@ -144,17 +172,17 @@ class DatasetId(Resource):
 @api.route('/data')
 class Dataset(Resource):
     @api.expect(page_data)
+    @login_required
     def get(self):
         """ Endpoint called by dataset viewer client """
+
         args = page_data.parse_args()
         limit = args['limit']
         page = args['page']
         folder = args['folder']
 
-        datasets = DatasetModel.objects(deleted=False)
-
+        datasets = current_user.datasets.filter(deleted=False)
         pagination = Pagination(datasets.count(), limit, page)
-
         datasets = query_util.fix_ids(datasets[pagination.start:pagination.end])
 
         for dataset in datasets:
@@ -171,7 +199,7 @@ class Dataset(Resource):
             "pagination": pagination.export(),
             "folder": folder,
             "datasets": datasets,
-            "categories": query_util.fix_ids(CategoryModel.objects(deleted=False).all())
+            "categories": query_util.fix_ids(current_user.categories.filter(deleted=False).all())
         }
 
 
@@ -179,6 +207,7 @@ class Dataset(Resource):
 class DatasetDataId(Resource):
 
     @api.expect(page_data)
+    @login_required
     def get(self, dataset_id):
         """ Endpoint called by image viewer client """
 
@@ -189,7 +218,7 @@ class DatasetDataId(Resource):
         folder = args['folder']
 
         # Check if dataset exists
-        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {'message', 'Invalid dataset id'}, 400
 
@@ -232,10 +261,11 @@ class DatasetDataId(Resource):
 @api.route('/<int:dataset_id>/coco')
 class ImageCoco(Resource):
 
+    @login_required
     def get(self, dataset_id):
         """ Returns coco of images and annotations in the dataset """
 
-        dataset = DatasetModel.objects(id=dataset_id).first()
+        dataset = current_user.datasets.filter(id=dataset_id).first()
 
         if dataset is None:
             return {"message": "Invalid dataset ID"}, 400
@@ -243,12 +273,13 @@ class ImageCoco(Resource):
         return coco_util.get_dataset_coco(dataset)
 
     @api.expect(coco_upload)
+    @login_required
     def post(self, dataset_id):
         """ Adds coco formatted annotations to the dataset """
         args = coco_upload.parse_args()
         coco = args['coco']
 
-        dataset = DatasetModel.objects(id=dataset_id).first()
+        dataset = current_user.datasets.filter(id=dataset_id).first()
         images = ImageModel.objects(dataset_id=dataset_id)
         categories = CategoryModel.objects
 

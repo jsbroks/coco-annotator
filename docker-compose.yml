@@ -16,7 +16,6 @@ services:
             - '8080:8080'
         volumes:
             - './client:/workspace/client'
-        command: 'npm run serve'
         networks:
             - cocoannotator
         depends_on:
@@ -35,7 +34,6 @@ services:
         environment:
           - FLASK_APP=app
           - FLASK_ENV=development
-        command: 'flask run --host=0.0.0.0'
         networks:
             - cocoannotator
         depends_on:

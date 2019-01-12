@@ -70,6 +70,12 @@ export default {
     increaseRadius() {
       if (!this.isActive) return;
       this.brush.pathOptions.radius += 2;
+    },
+    export() {
+      return {
+        strokeColor: this.brush.pathOptions.strokeColor,
+        radius: this.brush.pathOptions.radius
+      };
     }
   },
   computed: {

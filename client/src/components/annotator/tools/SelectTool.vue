@@ -39,6 +39,11 @@ export default {
     };
   },
   methods: {
+    export() {
+      return {
+        showText: this.hover.showText
+      };
+    },
     generateStringFromMetadata() {
       let string = " ";
       let metadata = this.hover.annotation.$refs.metadata.metadataList;
@@ -54,6 +59,13 @@ export default {
         });
       }
 
+      if (this.$store.getters["user/loginEnabled"]) {
+        let creator = this.hover.annotation.annotation.creator;
+        if (creator != null) {
+          string += "Created by " + creator + "\n";
+        }
+      }
+
       return string.replace(/\n/g, " \n ").slice(0, -2);
     },
     hoverText() {
@@ -64,16 +76,9 @@ export default {
 
       let position = this.hover.position.add(this.hover.textShift, 0);
 
-      if (
-        this.hover.text == null ||
-        this.hover.annotationText != this.hover.anntoation
-      ) {
+      if (this.hover.text == null) {
         let content = this.generateStringFromMetadata();
 
-        if (this.hover.text != null) {
-          this.hover.text.remove();
-          this.hover.box.remove();
-        }
         this.hover.text = new paper.PointText(position);
         this.hover.text.justification = "left";
         this.hover.text.fillColor = "black";
@@ -91,7 +96,6 @@ export default {
         this.hover.box.opacity = 0.5;
 
         this.hover.box.insertAbove(this.rect);
-        this.hover.annotationText = this.hover.annotation;
       }
 
       this.hover.shift =

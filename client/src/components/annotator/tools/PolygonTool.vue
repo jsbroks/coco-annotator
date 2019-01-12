@@ -13,6 +13,10 @@ export default {
     scale: {
       type: Number,
       default: 1
+    },
+    settings: {
+      type: [Object, null],
+      default: null
     }
   },
   data() {
@@ -48,6 +52,17 @@ export default {
   },
   methods: {
     ...mapMutations(["addUndo", "removeUndos"]),
+    export() {
+      return {
+        completeDistance: this.polygon.completeDistance,
+        minDistance: this.polygon.minDistance,
+        strokeColor: this.polygon.strokeColor,
+
+        blackOrWhite: this.color.blackOrWhite,
+        auto: this.color.auto,
+        radius: this.color.radius
+      };
+    },
     /**
      * Creates a new selection polygon path
      */
@@ -237,6 +252,7 @@ export default {
       }
     }
   },
+  created() {},
   mounted() {
     this.tool.minDistance = this.minDistance;
   }

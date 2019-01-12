@@ -18,7 +18,6 @@ services:
         environment:
           - FLASK_APP=app
           - FLASK_ENV=production
-        command: 'gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py'
         depends_on:
             - database
     database:

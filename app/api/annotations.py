@@ -1,4 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
+from flask_login import login_required, current_user
 
 from ..models import AnnotationModel
 from ..util import query_util, color_util
@@ -17,11 +18,13 @@ create_annotation.add_argument('color', location='json')
 @api.route('/')
 class Annotation(Resource):
 
+    @login_required
     def get(self):
         """ Returns all annotations """
-        return query_util.fix_ids(AnnotationModel.objects.exclude("paper_object").all())
+        return query_util.fix_ids(current_user.annotations.exclude("paper_object").all())
 
     @api.expect(create_annotation)
+    @login_required
     def post(self):
         """ Creates an annotation """
         args = create_annotation.parse_args()
@@ -42,18 +45,21 @@ class Annotation(Resource):
 
 @api.route('/<int:annotation_id>')
 class AnnotationId(Resource):
+
+    @login_required
     def get(self, annotation_id):
         """ Returns annotation by ID """
-        annotation = AnnotationModel.objects(id=annotation_id).first()
+        annotation = current_user.annotations.filter(id=annotation_id).first()
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
 
         return query_util.fix_ids(annotation)
 
+    @login_required
     def delete(self, annotation_id):
         """ Deletes an annotation by ID """
-        annotation = AnnotationModel.objects(id=annotation_id).first()
+        annotation = current_user.annotations.filter(id=annotation_id).first()
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
