@@ -5,7 +5,7 @@
     <div class="card mb-4 box-shadow">
 
       <!-- Display Image -->
-      <img @click="onImageClick" :src="imageUrl" class="card-img-top" style="width: 100%; display: block;">
+      <img @click="onImageClick" :src="imageUrl" class="card-img-top" @error="imageError = true" style="width: 100%; display: block;">
 
       <!-- Card Body -->
       <div class="card-body">
@@ -157,9 +157,11 @@ export default {
   },
   data() {
     return {
+      imageError: false,
       selectedCategories: [],
       defaultMetadata: this.dataset.default_annotation_metadata,
       noImageUrl: require("@/assets/no-image.png"),
+      notFoundImageUrl: require("@/assets/404-image.png"),
       sharedUsers: this.dataset.users
     };
   },
@@ -229,11 +231,14 @@ export default {
       return 100 * (this.dataset.numberAnnotated / this.dataset.numberImages);
     },
     imageUrl() {
+      if (this.imageError) {
+        return this.notFoundImageUrl;
+      }
       if (this.dataset.numberImages > 0) {
         return "/api/image/" + this.dataset.first_image_id + "?width=250";
-      } else {
-        return this.noImageUrl;
       }
+
+      return this.noImageUrl;
     },
     listCategories() {
       let list = [];
