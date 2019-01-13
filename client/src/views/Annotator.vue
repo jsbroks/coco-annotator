@@ -415,15 +415,13 @@ export default {
       return this.$refs.category[index];
     },
     // Current Annotation Operations
-    uniteCurrentAnnotation(compound) {
+    uniteCurrentAnnotation(compound, simplify = true, undoable = true) {
       if (this.currentAnnotation == null) return;
-
-      this.currentAnnotation.unite(compound);
+      this.currentAnnotation.unite(compound, simplify, undoable);
     },
-    subtractCurrentAnnotation(compound) {
+    subtractCurrentAnnotation(compound, simplify = true, undoable = true) {
       if (this.currentCategory == null) return;
-
-      this.currentAnnotation.subtract(compound);
+      this.currentAnnotation.subtract(compound, simplify, undoable);
     },
 
     setCursor(newCursor) {

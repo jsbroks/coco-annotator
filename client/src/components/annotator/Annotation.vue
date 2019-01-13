@@ -203,6 +203,21 @@ export default {
       }
       return this.compoundPath;
     },
+    createUndoAction(actionName) {
+      if (this.compoundPath == null) this.createCompoundPath();
+
+      let copy = this.compoundPath.clone();
+      copy.visible = false;
+      this.pervious.push(copy);
+
+      let action = new UndoAction({
+        name: "Annotaiton " + this.annotation.id,
+        action: actionName,
+        func: this.undoCompound,
+        args: {}
+      });
+      this.addUndo(action);
+    },
     simplifyPath() {
       let flatten = 1;
       let simplify = this.simplify;
@@ -235,43 +250,39 @@ export default {
       this.compoundPath.remove();
       this.compoundPath = this.pervious.pop();
     },
-    unite(compound) {
+    /**
+     * Unites current annotation path with anyother path.
+     * @param {paper.CompoundPath} compound compound to unite current annotation path with
+     * @param {boolean} simplify simplify compound after unite
+     * @param {undoable} undoable add an undo action
+     */
+    unite(compound, simplify = true, undoable = true) {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.unite(compound);
+      if (undoable) this.createUndoAction("Unite");
 
-      this.compoundPath.visible = false;
-      this.pervious.push(this.compoundPath);
-
-      let action = new UndoAction({
-        name: "Annotaiton " + this.annotation.id,
-        action: "United",
-        func: this.undoCompound,
-        args: {}
-      });
-      this.addUndo(action);
-
+      this.compoundPath.remove();
       this.compoundPath = newCompound;
-      this.simplifyPath();
+
+      if (simplify) this.simplifyPath();
     },
-    subtract(compound) {
+    /**
+     * Subtract current annotation path with anyother path.
+     * @param {paper.CompoundPath} compound compound to subtract current annotation path with
+     * @param {boolean} simplify simplify compound after subtraction
+     * @param {undoable} undoable add an undo action
+     */
+    subtract(compound, simplify = true, undoable = true) {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.subtract(compound);
+      if (undoable) this.createUndoAction("Subtract");
 
-      this.compoundPath.visible = false;
-      this.pervious.push(this.compoundPath);
-
-      let action = new UndoAction({
-        name: "Annotaiton " + this.annotation.id,
-        action: "Subtract",
-        func: this.undoCompound,
-        args: {}
-      });
-      this.addUndo(action);
-
+      this.compoundPath.remove();
       this.compoundPath = newCompound;
-      this.simplifyPath();
+
+      if (simplify) this.simplifyPath();
     },
     setColor() {
       if (this.compoundPath == null) return;
