@@ -22,6 +22,8 @@ export default {
       hover: {
         showText: true,
         text: null,
+        // ID of annotation text has been generated for
+        textId: -1,
         box: null,
         textShift: 0,
         fontSize: this.sacleFactor,
@@ -75,8 +77,17 @@ export default {
       if (this.hover.annotation == null) return;
 
       let position = this.hover.position.add(this.hover.textShift, 0);
+      console.log(this.hover.annotation.annotation.id);
+      if (
+        this.hover.text == null ||
+        this.hover.annotation.annotation.id !== this.hover.textId
+      ) {
+        if (this.hover.text !== null) {
+          this.hover.text.remove();
+          this.hover.box.remove();
+        }
 
-      if (this.hover.text == null) {
+        this.hover.textId = this.hover.annotation.annotation.id;
         let content = this.generateStringFromMetadata();
 
         this.hover.text = new paper.PointText(position);
