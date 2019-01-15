@@ -38,8 +38,10 @@ Several annotation tools are currently available, with most applications as a de
  - Allow custom metadata for each instance or object
  - Magic wand/select tool
  - Generate datasets using google images
+ - User authenication system
 
 For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
+
 # Demo
 
 | Login Information |
