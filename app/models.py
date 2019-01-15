@@ -1,4 +1,5 @@
 import os
+import cv2
 import json
 import datetime
 import numpy as np
@@ -7,10 +8,11 @@ from flask_mongoengine import MongoEngine
 from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
 
-from .util.coco_util import decode_seg
+
 from .util import color_util
 from .config import Config
 from PIL import Image
+
 
 db = MongoEngine()
 
@@ -365,4 +367,16 @@ def create_from_json(json_file):
                 dataset_json['categories'] = category_ids
                 upsert(DatasetModel, query={ "name": name}, update=dataset_json)
 
+
+def decode_seg(mask, segmentation):
+    """
+    Create binary mask from segmentation
+    """
+    pts = [
+        np.array(anno).reshape(-1, 2).round().astype(int)
+        for anno in segmentation
+    ]
+    mask = cv2.fillPoly(mask, pts, 1)
+
+    return mask
 

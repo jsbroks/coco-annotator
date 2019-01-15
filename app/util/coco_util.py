@@ -1,6 +1,4 @@
 import pycocotools.mask as mask
-import numpy as np
-import cv2
 
 from .query_util import fix_ids
 from ..models import *
@@ -90,6 +88,7 @@ def get_image_coco(image):
     :param image: ImageModel
     :return: Coco in dictionary format
     """
+    print(DatasetModel, flush=True)
     dataset = DatasetModel.objects(id=image.dataset_id).first()
     image = fix_ids(image)
 
@@ -174,19 +173,6 @@ def get_dataset_coco(dataset):
         coco.get('images').append(image)
 
     return coco
-
-
-def decode_seg(mask, segmentation):
-    """
-    Create binary mask from segmentation
-    """
-    pts = [
-        np.array(anno).reshape(-1, 2).round().astype(int)
-        for anno in segmentation
-    ]
-    mask = cv2.fillPoly(mask, pts, 1)
-
-    return mask
 
 
 def _fit(value, max_value, min_value):

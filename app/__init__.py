@@ -6,7 +6,7 @@ from watchdog.observers import Observer
 from .image_folder import ImageFolderHandler
 from .api import blueprint as api
 from .config import Config
-from .models import db, ImageModel, create_from_json
+from .models import *
 from .authentication import login_manager
 from .util import query_util, color_util
 
