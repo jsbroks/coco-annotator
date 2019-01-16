@@ -2,7 +2,6 @@ import numpy as np
 
 from ..models import AnnotationModel
 from .color_util import hex_to_rgb
-from .coco_util import decode_seg
 
 from PIL import Image
 

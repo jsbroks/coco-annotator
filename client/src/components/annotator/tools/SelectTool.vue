@@ -77,7 +77,7 @@ export default {
       if (this.hover.annotation == null) return;
 
       let position = this.hover.position.add(this.hover.textShift, 0);
-      console.log(this.hover.annotation.annotation.id);
+
       if (
         this.hover.text == null ||
         this.hover.annotation.annotation.id !== this.hover.textId

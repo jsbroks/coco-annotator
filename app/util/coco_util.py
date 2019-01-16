@@ -88,7 +88,6 @@ def get_image_coco(image):
     :param image: ImageModel
     :return: Coco in dictionary format
     """
-    print(DatasetModel, flush=True)
     dataset = DatasetModel.objects(id=image.dataset_id).first()
     image = fix_ids(image)
 

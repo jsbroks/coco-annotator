@@ -204,7 +204,12 @@ class AnnotationModel(db.DynamicDocument):
     def mask(self):
         """ Returns binary mask of annotation """
         mask = np.zeros((self.height, self.width))
-        return decode_seg(mask, self.segmentation)
+        pts = [
+            np.array(anno).reshape(-1, 2).round().astype(int)
+            for anno in self.segmentation
+        ]
+        mask = cv2.fillPoly(mask, pts, 1)
+        return mask
 
     def clone(self):
         """ Creates a clone """
@@ -215,6 +220,7 @@ class AnnotationModel(db.DynamicDocument):
 
 
 class CategoryModel(db.DynamicDocument):
+
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique_with=['creator'])
     supercategory = db.StringField(default="")
@@ -366,17 +372,4 @@ def create_from_json(json_file):
 
                 dataset_json['categories'] = category_ids
                 upsert(DatasetModel, query={ "name": name}, update=dataset_json)
-
-
-def decode_seg(mask, segmentation):
-    """
-    Create binary mask from segmentation
-    """
-    pts = [
-        np.array(anno).reshape(-1, 2).round().astype(int)
-        for anno in segmentation
-    ]
-    mask = cv2.fillPoly(mask, pts, 1)
-
-    return mask
 

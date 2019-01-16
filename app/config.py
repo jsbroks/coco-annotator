@@ -1,10 +1,12 @@
 import os
 
+from .util.version_util import get_tag
+
 
 class Config:
 
     NAME = "COCO Annotator"
-    VERSION = "0.1"
+    VERSION = get_tag()
 
     # Flask instance
     SWAGGER_UI_JSONEDITOR = True
