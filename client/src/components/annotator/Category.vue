@@ -279,10 +279,8 @@ export default {
       }
     },
     annotationDeleted(index) {
-      if (this.selectedAnnotation == index) {
-        if (index === this.category.annotations.length) {
-          this.selectedAnnotation--;
-        }
+      if (this.selectedAnnotation >= index) {
+        this.selectedAnnotation--;
       }
 
       let indices = {
