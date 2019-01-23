@@ -18,7 +18,7 @@ class ImageFolderHandler(FileSystemEventHandler):
         if i+1 < len(folders) and folders[i+1] == "_thumbnails":
             return
         
-        if not event.is_directory and path.endswith(self.pattern):
+        if not event.is_directory and path.lower().endswith(self.pattern):
 
             image = ImageModel.objects(path=event.src_path).first()
 
