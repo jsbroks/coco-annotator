@@ -64,6 +64,23 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     return segments, mask.area(rle), mask.toBbox(rle)
 
 
+def get_annotations_iou(annotation_a, annotation_b):
+    """
+    Computes the IOU between two annotation objects
+    """
+    seg_a = list([list(part) for part in annotation_a.segmentation])
+    seg_b = list([list(part) for part in annotation_b.segmentation])
+
+    rles_a = mask.frPyObjects(
+        seg_a, annotation_a.height, annotation_a.width)
+
+    rles_b = mask.frPyObjects(
+        seg_b, annotation_b.height, annotation_b.width)
+
+    ious = mask.iou(rles_a, rles_b, [0])
+    return ious[0][0]
+
+
 def get_image_coco(image):
     """
     Generates coco for an image

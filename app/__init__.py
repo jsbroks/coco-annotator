@@ -3,10 +3,12 @@ from werkzeug.contrib.fixers import ProxyFix
 from flask_cors import CORS
 from watchdog.observers import Observer
 
-from .image_folder import ImageFolderHandler, load_images
+from .image_folder import ImageFolderHandler
 from .api import blueprint as api
 from .config import Config
-from .models import db
+from .models import *
+from .authentication import login_manager
+from .util import query_util, color_util
 
 import threading
 import requests
@@ -30,28 +32,36 @@ def run_watcher():
 
 def create_app():
 
-    if os.environ.get("APP_WORKER_ID", "1") == "1":
+    if os.environ.get("APP_WORKER_ID", "1") == "1" and not Config.TESTING:
         print("Creating file watcher on PID: {}".format(os.getpid()), flush=True)
         watcher_thread = threading.Thread(target=run_watcher)
         watcher_thread.start()
 
-    if Config.LOAD_IMAGES_ON_START:
-        load_images(Config.DATASET_DIRECTORY)
+    flask = Flask(__name__,
+                  static_url_path='',
+                  static_folder='../dist')
 
-    return Flask(__name__,
-                 static_url_path='',
-                 static_folder='../dist')
+    flask.config.from_object(Config)
+
+    CORS(flask)
+
+    flask.wsgi_app = ProxyFix(flask.wsgi_app)
+    flask.register_blueprint(api)
+
+    db.init_app(flask)
+    login_manager.init_app(flask)
+
+    return flask
 
 
 app = create_app()
 
-CORS(app)
 
-app.config.from_object(Config)
-db.init_app(app)
+if Config.INITIALIZE_FROM_FILE:
+    create_from_json(Config.INITIALIZE_FROM_FILE)
 
-app.wsgi_app = ProxyFix(app.wsgi_app)
-app.register_blueprint(api)
+if Config.LOAD_IMAGES_ON_START:
+    ImageModel.load_images(Config.DATASET_DIRECTORY)
 
 
 @app.route('/', defaults={'path': ''})
@@ -60,7 +70,7 @@ def index(path):
 
     if app.debug:
         return requests.get('http://frontend:8080/{}'.format(path)).text
-    
+
     return app.send_static_file('index.html')
 
 

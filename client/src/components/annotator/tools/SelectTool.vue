@@ -22,13 +22,16 @@ export default {
       hover: {
         showText: true,
         text: null,
+        // ID of annotation text has been generated for
+        textId: -1,
         box: null,
         textShift: 0,
         fontSize: this.sacleFactor,
         shift: 0,
         rounded: 0,
         category: null,
-        annotation: null
+        annotation: null,
+        annotationText: null
       },
       hitOptions: {
         segments: true,
@@ -38,6 +41,11 @@ export default {
     };
   },
   methods: {
+    export() {
+      return {
+        showText: this.hover.showText
+      };
+    },
     generateStringFromMetadata() {
       let string = " ";
       let metadata = this.hover.annotation.$refs.metadata.metadataList;
@@ -53,6 +61,13 @@ export default {
         });
       }
 
+      if (this.$store.getters["user/loginEnabled"]) {
+        let creator = this.hover.annotation.annotation.creator;
+        if (creator != null) {
+          string += "Created by " + creator + "\n";
+        }
+      }
+
       return string.replace(/\n/g, " \n ").slice(0, -2);
     },
     hoverText() {
@@ -63,7 +78,16 @@ export default {
 
       let position = this.hover.position.add(this.hover.textShift, 0);
 
-      if (this.hover.text == null) {
+      if (
+        this.hover.text == null ||
+        this.hover.annotation.annotation.id !== this.hover.textId
+      ) {
+        if (this.hover.text !== null) {
+          this.hover.text.remove();
+          this.hover.box.remove();
+        }
+
+        this.hover.textId = this.hover.annotation.annotation.id;
         let content = this.generateStringFromMetadata();
 
         this.hover.text = new paper.PointText(position);
@@ -136,6 +160,8 @@ export default {
         let item = event.item;
         this.$parent.hover.category = item.data.categoryId;
         this.hover.category = this.$parent.getCategory(item.data.categoryId);
+
+        if (this.hover.category == null) return;
 
         for (let i = 0; i < item.children.length; i++) {
           let child = item.children[i];

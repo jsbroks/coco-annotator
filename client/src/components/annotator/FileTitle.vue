@@ -1,7 +1,6 @@
 <template>
   <div>
     <i v-show="previousimage != null" class="fa fa-arrow-left image-arrows" style="float:left" @click="route(previousimage)" />
-
     <i v-show="nextimage != null" class="fa fa-arrow-right image-arrows" style="float:right" @click="route(nextimage)" />
 
     <h6 class="text-center" style="color: white;">

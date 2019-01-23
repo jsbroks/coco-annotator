@@ -54,14 +54,23 @@ export default {
       this.moveBrush(event.point);
     },
     onMouseDown() {
+      this.$parent.currentAnnotation.createUndoAction("Unite");
       this.draw();
+    },
+    onMouseUp() {
+      this.$parent.currentAnnotation.simplifyPath();
     },
     onMouseDrag(event) {
       this.moveBrush(event.point);
       this.draw();
     },
+    /**
+     * Unites current brush with selected annotation
+     */
     draw() {
-      this.$parent.uniteCurrentAnnotation(this.brush.path);
+      // Undo action, will be handled on mouse down
+      // Simplify, will be handled on mouse up
+      this.$parent.currentAnnotation.unite(this.brush.path, false, false);
     },
     decreaseRadius() {
       if (!this.isActive) return;
@@ -70,6 +79,12 @@ export default {
     increaseRadius() {
       if (!this.isActive) return;
       this.brush.pathOptions.radius += 2;
+    },
+    export() {
+      return {
+        strokeColor: this.brush.pathOptions.strokeColor,
+        radius: this.brush.pathOptions.radius
+      };
     }
   },
   computed: {

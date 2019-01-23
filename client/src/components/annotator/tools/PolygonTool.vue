@@ -1,6 +1,10 @@
 <script>
 import paper from "paper";
 import tool from "@/mixins/toolBar/tool";
+import UndoAction from "@/undo";
+
+import { invertColor } from "@/libs/colors";
+import { mapMutations } from "vuex";
 
 export default {
   name: "PolygonTool",
@@ -9,6 +13,10 @@ export default {
     scale: {
       type: Number,
       default: 1
+    },
+    settings: {
+      type: [Object, null],
+      default: null
     }
   },
   data() {
@@ -27,14 +35,44 @@ export default {
           strokeColor: "black",
           strokeWidth: 1
         }
-      }
+      },
+      color: {
+        blackOrWhite: true,
+        auto: true,
+        radius: 10,
+        circle: null
+      },
+      actionTypes: Object.freeze({
+        ADD_POINTS: "Added Points",
+        CLOSED_POLYGON: "Closed Polygon",
+        DELETE_POLYGON: "Delete Polygon"
+      }),
+      actionPoints: 0
     };
   },
   methods: {
+    ...mapMutations(["addUndo", "removeUndos"]),
+    export() {
+      return {
+        completeDistance: this.polygon.completeDistance,
+        minDistance: this.polygon.minDistance,
+        strokeColor: this.polygon.strokeColor,
+
+        blackOrWhite: this.color.blackOrWhite,
+        auto: this.color.auto,
+        radius: this.color.radius
+      };
+    },
     /**
      * Creates a new selection polygon path
      */
     createPolygon() {
+      if (this.color.auto) {
+        this.color.circle = new paper.Path.Circle(
+          new paper.Point(0, 0),
+          this.color.radius
+        );
+      }
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
     },
     /**
@@ -45,10 +83,30 @@ export default {
 
       this.polygon.path.remove();
       this.polygon.path = null;
+
+      if (this.color.circle == null) return;
+      this.color.circle.remove();
+      this.color.circle = null;
+    },
+    autoStrokeColor(point) {
+      if (this.color.circle == null) return;
+      if (this.polygon.path == null) return;
+      if (!this.color.auto) return;
+
+      this.color.circle.position = point;
+      let raster = this.$parent.image.raster;
+      let color = raster.getAverageColor(this.color.circle);
+      if (color) {
+        this.polygon.pathOptions.strokeColor = invertColor(
+          color.toCSS(true),
+          this.color.blackOrWhite
+        );
+      }
     },
     onMouseDrag(event) {
       if (this.polygon.path == null) return;
-
+      this.actionPoints++;
+      this.autoStrokeColor(event.point);
       this.polygon.path.add(event.point);
       this.autoComplete(30);
     },
@@ -59,17 +117,49 @@ export default {
         this.createPolygon();
       }
 
+      this.actionPoints = 1;
       this.polygon.path.add(event.point);
+
       if (this.autoComplete(3)) return;
+
       if (this.polygon.guidance && wasNull) this.polygon.path.add(event.point);
+    },
+    onMouseUp() {
+      if (this.polygon.path == null) return;
+      let action = new UndoAction({
+        name: this.name,
+        action: this.actionTypes.ADD_POINTS,
+        func: this.undoPoints,
+        args: {
+          points: this.actionPoints
+        }
+      });
+
+      this.addUndo(action);
     },
     onMouseMove(event) {
       if (this.polygon.path == null) return;
-      if (!this.polygon.guidance) return;
       if (this.polygon.path.segments.length === 0) return;
+      this.autoStrokeColor(event.point);
 
+      if (!this.polygon.guidance) return;
       this.removeLastPoint();
       this.polygon.path.add(event.point);
+    },
+    /**
+     * Undo points
+     */
+    undoPoints(args) {
+      if (this.polygon.path == null) return;
+
+      let points = args.points;
+      let length = this.polygon.path.segments.length;
+
+      if (this.polygon.guidance) {
+        length -= 1;
+      }
+
+      this.polygon.path.removeSegments(length - points, length);
     },
     /**
      * Completes polygon if point being added is close to first point
@@ -105,6 +195,12 @@ export default {
 
       this.polygon.path.remove();
       this.polygon.path = null;
+      if (this.color.circle) {
+        this.color.circle.remove();
+        this.color.circle = null;
+      }
+
+      this.removeUndos(this.actionTypes.ADD_POINTS);
       return true;
     },
     removeLastPoint() {
@@ -113,7 +209,7 @@ export default {
   },
   computed: {
     isDisabled() {
-      return this.$parent.current.annotation == -1;
+      return this.$parent.current.annotation === -1;
     }
   },
   watch: {
@@ -137,8 +233,26 @@ export default {
     },
     "polygon.minDistance"(newDistance) {
       this.tool.minDistance = newDistance;
+    },
+    "polygon.pathOptions.strokeColor"(newColor) {
+      if (this.polygon.path == null) return;
+
+      this.polygon.path.strokeColor = newColor;
+    },
+    "color.auto"(value) {
+      if (value && this.polygon.path) {
+        this.color.circle = new paper.Path.Circle(
+          new paper.Point(0, 0),
+          this.color.radius
+        );
+      }
+      if (!value && this.color.circle) {
+        this.color.circle.remove();
+        this.color.circle = null;
+      }
     }
   },
+  created() {},
   mounted() {
     this.tool.minDistance = this.minDistance;
   }

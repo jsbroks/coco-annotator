@@ -1,4 +1,5 @@
-from flask_restplus import Namespace, Api, Resource
+from flask_restplus import Namespace, Resource
+from flask_login import login_required, current_user
 from flask import request
 
 from ..util import query_util
@@ -12,6 +13,7 @@ api = Namespace('annotator', description='Annotator related operations')
 @api.route('/data')
 class AnnotatorData(Resource):
 
+    @login_required
     def post(self):
         """
         Called when saving data from the annotator client
@@ -22,11 +24,17 @@ class AnnotatorData(Resource):
 
         image_model = ImageModel.objects(id=image_id).first()
 
+        # Check if current user can access dataset
+        if current_user.datasets.filter(id=image_model.dataset_id).first() is None:
+            return {'success': False, 'message': 'Could not find associated dataset'}
+
         if image_model is None:
-            return {'message': 'image does not exist'}, 400
+            return {'success': False, 'message': 'Image does not exist'}, 400
 
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
+
+        current_user.update(preferences=data.get('user', {}))
 
         annotated = False
         # Iterate every category passed in the data
@@ -93,15 +101,18 @@ class AnnotatorData(Resource):
 @api.route('/data/<int:image_id>')
 class AnnotatorId(Resource):
 
+    @login_required
     def get(self, image_id):
         """ Called when loading from the annotator client """
-
         image = ImageModel.objects(id=image_id).first()
 
         if image is None:
-            return {'success': False}, 400
+            return {'success': False, 'message': 'Could not load image'}, 400
 
-        dataset = DatasetModel.objects(id=image.dataset_id).first()
+        dataset = current_user.datasets.filter(id=image.dataset_id).first()
+        if dataset is None:
+            return {'success': False, 'message': 'Could not find associated dataset'}, 400
+
         categories = CategoryModel.objects(deleted=False).in_bulk(dataset.categories).items()
 
         # Get next and previous image

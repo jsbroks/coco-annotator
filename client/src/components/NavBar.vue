@@ -2,24 +2,34 @@
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
 
     <a class="navbar-brand" href="/">
-      <strong>COCO Annotator</strong>
-      <span class="subscript">{{ tag }}</span>
+      <strong>{{ name }}</strong>
+      <span class="subscript">{{ version }}</span>
     </a>
 
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler"
+      type="button" data-toggle="collapse"
+      data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon" />
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
+
         <li class="nav-item" :class="{ active: $route.name === 'datasets' }">
-          <router-link class="nav-link" to="/datasets">Datasets</router-link>
+          <RouterLink class="nav-link" to="/datasets">Datasets</RouterLink>
         </li>
         <li class="nav-item" :class="{ active: $route.name === 'categories' }">
-          <router-link class="nav-link" to="/categories">Categories</router-link>
+          <RouterLink class="nav-link" to="/categories">Categories</RouterLink>
         </li>
         <li class="nav-item" :class="{ active: $route.name === 'undo' }">
-          <router-link class="nav-link" to="/undo">Undo</router-link>
+          <RouterLink class="nav-link" to="/undo">Undo</RouterLink>
+        </li>
+        <li v-show="$store.getters['user/isAdmin']" class="nav-item" :class="{ active: $route.name === 'admin' }">
+          <RouterLink class="nav-link" to="/admin/panel">Admin</RouterLink>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/api">API</a>
@@ -27,39 +37,32 @@
         <li class="nav-item">
           <a class="nav-link" href="https://github.com/jsbroks/coco-annotator/wiki">Help</a>
         </li>
+        
       </ul>
       <Status />
+      <User v-if="loginEnabled" />
+      
     </div>
   </nav>
 </template>
 
 <script>
+import User from "@/components/User";
 import Status from "@/components/Status";
-import axios from "axios";
 
 export default {
   name: "NavBar",
-  components: { Status },
-  data() {
-    return {
-      valid: true,
-      tag: "loading"
-    };
-  },
-  methods: {
-    getTag() {
-      axios
-        .get("/api/info/")
-        .then(response => {
-          this.tag = response.data.git.tag;
-        })
-        .catch(() => {
-          this.tag = "unknown";
-        });
+  components: { Status, User },
+  computed: {
+    version() {
+      return this.$store.state.info.version;
+    },
+    loginEnabled() {
+      return this.$store.state.info.loginEnabled;
+    },
+    name() {
+      return this.$store.state.info.name;
     }
-  },
-  mounted() {
-    this.getTag();
   }
 };
 </script>

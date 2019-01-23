@@ -23,7 +23,7 @@
         <input v-model="search" class="annotation-search" placeholder="Search" />
       </li>
 
-      <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :simplify="simplify" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" />
+      <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :simplify="simplify" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" @deleted="annotationDeleted"/>
     </ul>
 
     <div class="modal fade" tabindex="-1" role="dialog" :id="'categorySettings' + category.id">
@@ -101,7 +101,7 @@ export default {
     return {
       group: null,
       color: this.category.color,
-      selectedAnnotation: 0,
+      selectedAnnotation: -1,
       showAnnotations: false,
       isVisible: false,
       search: ""
@@ -135,15 +135,11 @@ export default {
 
           let annotationId = this.category.annotations.length - 1;
 
-          this.$emit("click", {
-            annotation: annotationId,
-            category: this.index
-          });
-
           if (this.isCurrent) {
             this.isVisible = true;
             this.showAnnotations = true;
           }
+
           let annotations = this.$refs.annotation;
           if (annotations == null) return;
 
@@ -153,6 +149,14 @@ export default {
           } else {
             this.$parent.scrollElement(annotation.$el);
           }
+
+          this.selectedAnnotation = annotationId;
+          this.$nextTick(() => {
+            this.$emit("click", {
+              annotation: annotationId,
+              category: this.index
+            });
+          });
         });
     },
     /**
@@ -247,8 +251,6 @@ export default {
     getAnnotation(index) {
       let ref = this.$refs.annotation;
       if (ref == null) return null;
-      if (index >= ref.length) return null;
-
       return this.$refs.annotation[index];
     },
     /**
@@ -275,6 +277,19 @@ export default {
           this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
         }
       }
+    },
+    annotationDeleted(index) {
+      if (this.selectedAnnotation >= index) {
+        this.selectedAnnotation--;
+      }
+
+      let indices = {
+        annotation: this.selectedAnnotation,
+        category: this.index
+      };
+      this.$emit("click", indices);
+
+      if (this.category.annotations.length === 0) this.isVisible = false;
     }
   },
   computed: {
@@ -289,7 +304,6 @@ export default {
     isHover() {
       return this.hover.category === this.index;
     },
-
     backgroundColor() {
       if (this.isHover && !this.showAnnotations) {
         return "#646c82";

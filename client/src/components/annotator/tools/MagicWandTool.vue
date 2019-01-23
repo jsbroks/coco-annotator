@@ -25,6 +25,24 @@ export default {
     };
   },
   methods: {
+    /**
+     * Exports settings
+     * @returns {object} current settings
+     */
+    export() {
+      return {
+        threshold: this.wand.threshold,
+        blur: this.wand.blur
+      };
+    },
+    /**
+     * Creates MagicWand selection
+     * @param {number} x x position
+     * @param {number} y y position
+     * @param {number} thr threashold
+     * @param {number} rad radius blur
+     * @returns {paper.CompoundPath} create selection
+     */
     flood(x, y, thr, rad) {
       let image = {
         data: this.imageInfo.data.data,
@@ -55,10 +73,14 @@ export default {
       }
       return null;
     },
+    onMouseUp() {
+      // this.$parent.currentAnnotation.simplifyPath();
+    },
     onMouseDown(event) {
       let x = Math.round(this.imageInfo.width / 2 + event.point.x);
       let y = Math.round(this.imageInfo.height / 2 + event.point.y);
 
+      // Check if valid coordinates
       if (
         x > this.imageInfo.width ||
         y > this.imageInfo.height ||
@@ -68,28 +90,29 @@ export default {
         return;
       }
 
+      // Create shape and apply to current annotation
       let path = this.flood(x, y, this.wand.threshold, this.wand.blur);
-
       if (event.modifiers.shift) {
-        this.$parent.subtractCurrentAnnotation(path);
+        this.$parent.currentAnnotation.unite(path);
       } else {
-        this.$parent.uniteCurrentAnnotation(path);
+        this.$parent.currentAnnotation.unite(path);
       }
 
       if (path != null) path.remove();
     },
-
     onMouseDrag(event) {
       this.onMouseDown(event);
     }
   },
   computed: {
     isDisabled() {
-      return this.$parent.current.annotation == -1;
+      return this.$parent.current.annotation === -1;
     }
   },
   watch: {
+    // Generate data whenever the image changes
     raster(raster) {
+      if (raster == null) return;
       if (Object.keys(raster).length === 0) return;
 
       this.imageInfo.width = raster.width;

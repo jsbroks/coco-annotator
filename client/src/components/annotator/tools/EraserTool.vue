@@ -59,10 +59,16 @@ export default {
       this.erase();
     },
     onMouseDown() {
+      this.$parent.currentAnnotation.createUndoAction("Subtract");
       this.erase();
     },
+    onMouseUp() {
+      this.$parent.currentAnnotation.simplifyPath();
+    },
     erase() {
-      this.$parent.subtractCurrentAnnotation(this.eraser.brush);
+      // Undo action, will be handled on mouse down
+      // Simplify, will be handled on mouse up
+      this.$parent.currentAnnotation.subtract(this.eraser.brush, false, false);
     },
     decreaseRadius() {
       if (!this.isActive) return;
@@ -71,6 +77,12 @@ export default {
     increaseRadius() {
       if (!this.isActive) return;
       this.eraser.pathOptions.radius += 2;
+    },
+    export() {
+      return {
+        strokeColor: this.eraser.pathOptions.strokeColor,
+        radius: this.eraser.pathOptions.radius
+      };
     }
   },
   computed: {

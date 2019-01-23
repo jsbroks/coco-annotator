@@ -61,6 +61,9 @@ import paper from "paper";
 import axios from "axios";
 import simplifyjs from "simplify-js";
 
+import { mapMutations } from "vuex";
+import UndoAction from "@/undo";
+
 import Metadata from "@/components/Metadata";
 
 export default {
@@ -109,10 +112,12 @@ export default {
       compoundPath: null,
       metadata: [],
       isEmpty: true,
-      name: ""
+      name: "",
+      pervious: []
     };
   },
   methods: {
+    ...mapMutations(["addUndo"]),
     initAnnotation() {
       let metaName = this.annotation.metadata.name;
       if (metaName) {
@@ -182,6 +187,8 @@ export default {
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
         this.$parent.category.annotations.splice(this.index, 1);
+        this.$emit("deleted", this.index);
+
         if (this.compoundPath != null) this.compoundPath.remove();
       });
     },
@@ -195,6 +202,21 @@ export default {
         this.createCompoundPath();
       }
       return this.compoundPath;
+    },
+    createUndoAction(actionName) {
+      if (this.compoundPath == null) this.createCompoundPath();
+
+      let copy = this.compoundPath.clone();
+      copy.visible = false;
+      this.pervious.push(copy);
+
+      let action = new UndoAction({
+        name: "Annotaiton " + this.annotation.id,
+        action: actionName,
+        func: this.undoCompound,
+        args: {}
+      });
+      this.addUndo(action);
     },
     simplifyPath() {
       let flatten = 1;
@@ -223,23 +245,44 @@ export default {
         this.compoundPath.addChild(newPath);
       });
     },
-    unite(compound) {
+    undoCompound() {
+      if (this.pervious.length == 0) return;
+      this.compoundPath.remove();
+      this.compoundPath = this.pervious.pop();
+    },
+    /**
+     * Unites current annotation path with anyother path.
+     * @param {paper.CompoundPath} compound compound to unite current annotation path with
+     * @param {boolean} simplify simplify compound after unite
+     * @param {undoable} undoable add an undo action
+     */
+    unite(compound, simplify = true, undoable = true) {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.unite(compound);
+      if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
-      this.simplifyPath();
+
+      if (simplify) this.simplifyPath();
     },
-    subtract(compound) {
+    /**
+     * Subtract current annotation path with anyother path.
+     * @param {paper.CompoundPath} compound compound to subtract current annotation path with
+     * @param {boolean} simplify simplify compound after subtraction
+     * @param {undoable} undoable add an undo action
+     */
+    subtract(compound, simplify = true, undoable = true) {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.subtract(compound);
+      if (undoable) this.createUndoAction("Subtract");
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
-      this.simplifyPath();
+
+      if (simplify) this.simplifyPath();
     },
     setColor() {
       if (this.compoundPath == null) return;
@@ -290,6 +333,7 @@ export default {
     compoundPath() {
       if (this.compoundPath == null) return;
 
+      this.compoundPath.visible = this.isVisible;
       this.$parent.group.addChild(this.compoundPath);
       this.setColor();
       this.isEmpty = this.compoundPath.isEmpty();

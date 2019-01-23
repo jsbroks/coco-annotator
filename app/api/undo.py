@@ -1,4 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
+from flask_login import login_required, current_user
 
 import datetime
 from ..models import *
@@ -24,7 +25,9 @@ models = [
 
 @api.route('/list/')
 class Undo(Resource):
+
     @api.expect(model_list)
+    @login_required
     def get(self):
         """ Returns all partially delete models """
         args = model_list.parse_args()
@@ -50,7 +53,9 @@ class Undo(Resource):
 
 @api.route('/')
 class Undo(Resource):
+
     @api.expect(model_data)
+    @login_required
     def post(self):
         """ Undo a partial delete give id and instance """
         args = model_data.parse_args()
@@ -75,6 +80,7 @@ class Undo(Resource):
         return {"success": True}
 
     @api.expect(model_data)
+    @login_required
     def delete(self):
         """ Undo a partial delete give id and instance """
         args = model_data.parse_args()

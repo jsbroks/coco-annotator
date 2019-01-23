@@ -11,15 +11,16 @@
         </h2>
 
         <p class="text-center">
-          Loaded <strong>{{ datasets.length }}</strong> datasets.</p>
-
+          Loaded <strong>{{ datasets.length }}</strong> datasets.
+        </p>
+        
         <div class="row justify-content-md-center">
           <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
             <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createDataset">
               Create
             </button>
             <button type="button" class="btn btn-primary">Import</button>
-            <button type=" button" class="btn btn-secondary" @click="updatePage">Refresh</button>
+            <button type=" button" class="btn btn-secondary" @click="updatePage(page)">Refresh</button>
           </div>
         </div>
 
@@ -45,18 +46,17 @@
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group" required>
+              <div class="form-group" :class="{'was-validated': validDatasetName.length !== 0}">
                 <label>Dataset Name</label>
-                <input v-model="create.name" class="form-control" placeholder="Dataset name">
+                <input v-model="create.name" class="form-control" placeholder="Dataset name" required>
+                <div class="invalid-feedback">
+                  {{ validDatasetName }}
+                </div>
               </div>
 
               <div class="form-group">
-                <label>Default Categories <i v-if="categories.length === 0">(No categories found)</i></label>
-                <select v-model="create.categories" multiple class="form-control">
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
+                <label>Default Categories</label>
+                <TagsInput v-model="create.categories" element-id="createCategory" :existing-tags="categoryTags" :typeahead="true" :typeahead-activation-threshold="0"></TagsInput>
               </div>
 
               <div class="form-group" required>
@@ -115,11 +115,12 @@ import toastrs from "@/mixins/toastrs";
 import DatasetCard from "@/components/cards/DatasetCard";
 import Pagination from "@/components/Pagination";
 
+import TagsInput from "@/components/TagsInput";
 import { mapMutations } from "vuex";
 
 export default {
   name: "Datasets",
-  components: { DatasetCard, Pagination },
+  components: { DatasetCard, Pagination, TagsInput },
   mixins: [toastrs],
   data() {
     return {
@@ -159,7 +160,8 @@ export default {
           this.page = response.data.pagination.page;
 
           this.removeProcess(process);
-        });
+        })
+        .catch(() => this.removeProcess(process));
     },
     createDataset() {
       if (this.create.name.length < 1) return;
@@ -186,10 +188,29 @@ export default {
         });
     }
   },
+  watch: {
+    user() {
+      this.updatePage();
+    }
+  },
   computed: {
     directory() {
       let closing = this.create.name.length > 0 ? "/" : "";
       return "/datasets/" + this.create.name + closing;
+    },
+    categoryTags() {
+      let tags = {};
+      this.categories.forEach(category => {
+        tags[category.name] = category.name;
+      });
+      return tags;
+    },
+    validDatasetName() {
+      if (this.create.name.length === 0) return "Dataset name is required";
+      return "";
+    },
+    user() {
+      return this.$store.state.user.user;
     }
   },
   created() {
