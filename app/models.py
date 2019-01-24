@@ -42,7 +42,10 @@ class DatasetModel(db.DynamicDocument):
             ImageModel.load_images(directory, self.id)
 
         self.directory = directory
-        self.owner = current_user.username
+        if current_user:
+            self.owner = current_user.username
+        else:
+            self.owner = 'system'
 
         return super(DatasetModel, self).save(*args, **kwargs)
 
@@ -195,7 +198,11 @@ class AnnotationModel(db.DynamicDocument):
         if self.color is None:
             self.color = color_util.random_color_hex()
 
-        self.creator = current_user.username
+        if current_user:
+            self.creator = current_user.username
+        else:
+            self.creator = 'system'
+
         return super(AnnotationModel, self).save(*args, **kwargs)
 
     def is_empty(self):
@@ -257,6 +264,8 @@ class CategoryModel(db.DynamicDocument):
 
         if current_user:
             self.creator = current_user.username
+        else:
+            self.creator = 'system'
       
         return super(CategoryModel, self).save(*args, **kwargs)
 
