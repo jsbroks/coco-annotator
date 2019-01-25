@@ -274,11 +274,10 @@ export default {
       axios
         .post("/api/annotator/data", JSON.stringify(data))
         .then(() => {
-          this.removeProcess(process);
           //TODO: updateUser
           if (callback != null) callback();
         })
-        .catch(() => {});
+        .finally(() => this.removeProcess(process));
     },
     onwheel(e) {
       let view = this.paper.view;
@@ -382,7 +381,6 @@ export default {
           this.categories = response.data.categories;
 
           // Update status
-          this.removeProcess(process);
           this.loading.data = false;
 
           this.$nextTick(() => {
@@ -397,7 +395,8 @@ export default {
             "Redirecting to previous page."
           );
           this.$router.go(-1);
-        });
+        })
+        .finally(() => this.removeProcess(process));
     },
     onCategoryClick(indices) {
       this.current.annotation = indices.annotation;

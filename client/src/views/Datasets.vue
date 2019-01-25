@@ -158,10 +158,8 @@ export default {
           this.subdirectories = response.data.subdirectories;
           this.pages = response.data.pagination.pages;
           this.page = response.data.pagination.page;
-
-          this.removeProcess(process);
         })
-        .catch(() => this.removeProcess(process));
+        .finally(() => this.removeProcess(process));
     },
     createDataset() {
       if (this.create.name.length < 1) return;

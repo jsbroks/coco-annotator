@@ -124,11 +124,13 @@ export default {
       let process = "Loading users";
       this.addProcess(process);
 
-      axios.get("/api/admin/users?limit=" + this.limit).then(response => {
-        this.users = response.data.users;
-        this.total = response.data.total;
-        this.removeProcess(process);
-      });
+      axios
+        .get("/api/admin/users?limit=" + this.limit)
+        .then(response => {
+          this.users = response.data.users;
+          this.total = response.data.total;
+        })
+        .finally(() => this.removeProcess(process));
     },
     createUser(event) {
       event.preventDefault();

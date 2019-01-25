@@ -172,12 +172,11 @@ export default {
           this.pages = response.data.pagination.pages;
 
           this.subdirectories = response.data.subdirectories;
-
-          this.removeProcess(process);
         })
         .catch(error => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
-        });
+        })
+        .finally(() => this.removeProcess(process));
     },
     removeFolder(folder) {
       let index = this.folders.indexOf(folder);
@@ -197,13 +196,11 @@ export default {
             "Content-Type": "multipart/form-data"
           }
         })
-        .then(() => {
-          this.removeProcess(process);
-        })
+        .then(() => {})
         .catch(error => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
-          this.removeProcess(process);
-        });
+        })
+        .finally(() => this.removeProcess(process));
     }
   },
   watch: {

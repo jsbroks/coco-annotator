@@ -134,9 +134,8 @@ export default {
           this.page = response.data.pagination.page;
           this.pages = response.data.pagination.pages;
           this.categoryCount = response.data.pagination.total;
-
-          this.removeProcess(process);
-        });
+        })
+        .finally(() => this.removeProcess(process));
     },
     createCategory() {
       if (this.createName.length < 1) return;

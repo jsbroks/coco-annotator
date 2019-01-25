@@ -95,8 +95,8 @@ export default {
         .get("/api/undo/list/?type=" + this.type + "&limit=" + this.limit)
         .then(response => {
           this.undos = response.data;
-          this.removeProcess(process);
-        });
+        })
+        .finally(() => this.removeProcess(process));;
     },
     undoModel(id, instance) {
       axios.post("/api/undo/?id=" + id + "&instance=" + instance).then(() => {

@@ -140,7 +140,6 @@ export default {
             }
           )
           .then(() => {
-            this.removeProcess(process);
             this.$parent.getData();
           })
           .catch(error => {
@@ -148,8 +147,8 @@ export default {
               "Copying Annotations",
               error.response.data.message
             );
-            this.removeProcess(process);
-          });
+          })
+          .finally(() => this.removeProcess(process));
       });
     }
   },

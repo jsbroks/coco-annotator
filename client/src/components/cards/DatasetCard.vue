@@ -184,14 +184,16 @@ export default {
       let process = "Generating COCO for " + this.dataset.name;
       this.addProcess(process);
 
-      axios.get("/api/dataset/" + this.dataset.id + "/coco").then(reponse => {
-        let dataStr =
-          "data:text/json;charset=utf-8," +
-          encodeURIComponent(JSON.stringify(reponse.data));
+      axios
+        .get("/api/dataset/" + this.dataset.id + "/coco")
+        .then(reponse => {
+          let dataStr =
+            "data:text/json;charset=utf-8," +
+            encodeURIComponent(JSON.stringify(reponse.data));
 
-        this.downloadURI(dataStr, this.dataset.name + ".json");
-        this.removeProcess(process);
-      });
+          this.downloadURI(dataStr, this.dataset.name + ".json");
+        })
+        .finally(() => this.removeProcess(process));
     },
     onDeleteClick() {
       axios.delete("/api/dataset/" + this.dataset.id).then(() => {
