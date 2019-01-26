@@ -2,45 +2,20 @@ version: '3'
 volumes:
     mongodb_data:
         external: false
-networks:
-    cocoannotator:
-        external: false
-
 services:
-    frontend:
-        container_name: annotator_client
-        build:
-            context: .
-            dockerfile: ./docker/client/Dockerfile
-        ports:
-            - '8080:8080'
-        volumes:
-            - './client:/workspace/client'
-        networks:
-            - cocoannotator
-        depends_on:
-            - flask
     flask:
-        container_name: annotator_flask
-        build:
-            context: .
-            dockerfile: ./docker/api/Dockerfile
+        image: jsbroks/coco-annotator:latest
+        restart: always
         ports:
             - '5000:5000'
         volumes:
             - './datasets:/datasets'
-            - './app:/workspace/app'
-            - './.git:/workspace/.git'
-        environment:
-          - FLASK_APP=app
-          - FLASK_ENV=development
-        networks:
-            - cocoannotator
         depends_on:
             - database
     database:
         image: mongo:4
         container_name: annotator_mongodb
+        restart: always
         environment:
             - MONGO_DATA_DIR=/data/db
             - MONGO_LOG_DIR=/dev/null
@@ -49,5 +24,3 @@ services:
         ports:
             - '27017:27017'
         command: 'mongod --smallfiles --logpath=/dev/null'
-        networks:
-            - cocoannotator
