@@ -11,11 +11,10 @@ services:
         volumes:
             - './datasets:/datasets'
             - './app:/workspace/app'
-            - './.git:/workspace/.git'
         depends_on:
             - database
     database:
-        image: mongo:latest
+        image: mongo:4
         container_name: annotator_mongodb
         restart: always
         environment:
