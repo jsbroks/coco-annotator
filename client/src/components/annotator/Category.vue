@@ -118,6 +118,15 @@ export default {
     createAnnotation() {
       let parent = this.$parent;
       let categories = parent.categories;
+      let annotationId = this.category.annotations.length;
+      
+      this.selectedAnnotation = annotationId;
+      this.$nextTick(() => {
+        this.$emit("click", {
+          annotation: annotationId,
+          category: this.index
+        });
+      });
 
       axios
         .post("/api/annotation/", {
@@ -133,8 +142,6 @@ export default {
 
           this.category.annotations.push(response.data);
 
-          let annotationId = this.category.annotations.length - 1;
-
           if (this.isCurrent) {
             this.isVisible = true;
             this.showAnnotations = true;
@@ -149,14 +156,6 @@ export default {
           } else {
             this.$parent.scrollElement(annotation.$el);
           }
-
-          this.selectedAnnotation = annotationId;
-          this.$nextTick(() => {
-            this.$emit("click", {
-              annotation: annotationId,
-              category: this.index
-            });
-          });
         });
     },
     /**
