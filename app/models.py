@@ -3,7 +3,9 @@ import cv2
 import json
 import datetime
 import numpy as np
+import imantics as im
 
+from PIL import Image
 from flask_mongoengine import MongoEngine
 from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
@@ -129,6 +131,10 @@ class ImageModel(db.DynamicDocument):
             os.makedirs(directory)
 
         return '/'.join(folders)
+    
+    def thumbnail(self):
+        image = self()
+        return Image.fromarray(image.draw(color_by_category=True, bbox=False))
 
     def copy_annotations(self, annotations):
         """
@@ -147,6 +153,18 @@ class ImageModel(db.DynamicDocument):
             clone.save(copy=True)
 
         return annotations.count()
+
+    def __call__(self):
+        image = im.Image.from_path(self.path)
+        
+        annotations = AnnotationModel.objects(image_id=self.id).all()
+        for annotation in annotations:
+            category = CategoryModel.objects(id=annotation.category_id).first()
+            if category:
+                polygons = im.Polygons(annotation.segmentation)
+                image.add(im.Annotation.from_polygons(image, category(), polygons))
+
+        return image
 
 
 class AnnotationModel(db.DynamicDocument):
@@ -269,6 +287,10 @@ class CategoryModel(db.DynamicDocument):
       
         return super(CategoryModel, self).save(*args, **kwargs)
 
+    def __call__(self):
+        """ Generates imantics category object """
+        return im.Category(self.name, color=self.color, parent=self.supercategory,\
+                           metadata=self.metadata, id=self.id)
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

@@ -184,7 +184,7 @@ class ImageCopyAnnotations(Resource):
 
 
 @api.route('/<int:image_id>/thumbnail')
-class ImageCoco(Resource):
+class ImageThumbnail(Resource):
 
     @api.expect(image_download)
     @login_required
@@ -206,7 +206,7 @@ class ImageCoco(Resource):
         if height < 1:
             height = image.height
 
-        pil_image = thumbnail_util.generate_thumbnail(image, save=False)
+        pil_image = image.thumbnail()
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
 
         image_io = io.BytesIO()

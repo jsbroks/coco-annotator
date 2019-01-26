@@ -12,3 +12,4 @@ google_images_download
 watchdog==0.8.3
 pytest==3.9.3
 pytest-ordering
+imantics
