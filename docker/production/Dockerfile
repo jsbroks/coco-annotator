@@ -8,6 +8,7 @@ RUN npm install -g --quiet \
         @vue/cli-service@3.3.0
 
 COPY ./client/package* /workspace/
+
 RUN npm install
 ENV NODE_PATH=/workspace/node_modules
 
@@ -35,6 +36,7 @@ RUN pip install -r requirements.txt
 RUN pip install pycocotools
 
 COPY ./.git .git/
+COPY ./app app/
 
 EXPOSE 5000
 CMD gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py --log-level debug

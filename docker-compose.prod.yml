@@ -10,7 +10,6 @@ services:
             - '5000:5000'
         volumes:
             - './datasets:/datasets'
-            - './app:/workspace/app'
         depends_on:
             - database
     database:
