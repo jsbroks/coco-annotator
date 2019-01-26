@@ -42,7 +42,7 @@ class Users(Resource):
         total = user_model.count()
         pages = int(total/per_page) + 1
 
-        user_model = user_model.skip(page*per_page).limit(per_page).exclude("preferences")
+        user_model = user_model.skip(page*per_page).limit(per_page).exclude("preferences", "password")
 
         return {
             "total": total,
