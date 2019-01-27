@@ -1,37 +1,96 @@
 <template>
-  <div class="card" v-show="showCategory" :style="{ 'background-color': backgroundColor, 'border-color': borderColor }">
-
+  <div
+    class="card"
+    v-show="showCategory"
+    :style="{
+      'background-color': backgroundColor,
+      'border-color': borderColor
+    }"
+  >
     <div class="card-header" :id="'heading' + category.id">
       <div :style="{ color: isVisible ? 'white' : 'gray' }">
         <div @click="onEyeClick">
-          <i v-if="isVisible" class="fa fa-eye category-icon" :style="{ color: showAnnotations ? 'white' : color }" aria-hidden="true" />
+          <i
+            v-if="isVisible"
+            class="fa fa-eye category-icon"
+            :style="{ color: showAnnotations ? 'white' : color }"
+            aria-hidden="true"
+          />
           <i v-else class="fa fa-eye-slash category-icon" aria-hidden="true" />
         </div>
 
-        <button class="btn btn-link btn-sm collapsed category-text" style="color: inherit" aria-expanded="false" :aria-controls="'collapse' + category.id" @click="onClick">
+        <button
+          class="btn btn-link btn-sm collapsed category-text"
+          style="color: inherit"
+          aria-expanded="false"
+          :aria-controls="'collapse' + category.id"
+          @click="onClick"
+        >
           {{ category.name }} ({{ category.annotations.length }})
         </button>
 
-        <i class="fa fa-gear category-icon" data-toggle="modal" :data-target="'#categorySettings' + category.id" style="float: right; color: white" aria-hidden="true" />
+        <i
+          class="fa fa-gear category-icon"
+          data-toggle="modal"
+          :data-target="'#categorySettings' + category.id"
+          style="float: right; color: white"
+          aria-hidden="true"
+        />
 
-        <i @click="createAnnotation" class="fa fa-plus category-icon" style="float: right; color: white; padding-right: 0" aria-hidden="true" />
+        <i
+          @click="createAnnotation"
+          class="fa fa-plus category-icon"
+          style="float: right; color: white; padding-right: 0"
+          aria-hidden="true"
+        />
       </div>
     </div>
 
     <ul v-show="showAnnotations" ref="collapse" class="list-group">
-      <li v-show="this.category.annotations.length > 1" class="list-group-item btn btn-link btn-sm text-left" :style="{ 'background-color': backgroundColor, color: 'white' }">
-        <input v-model="search" class="annotation-search" placeholder="Search" />
+      <li
+        v-show="this.category.annotations.length > 1"
+        class="list-group-item btn btn-link btn-sm text-left"
+        :style="{ 'background-color': backgroundColor, color: 'white' }"
+      >
+        <input
+          v-model="search"
+          class="annotation-search"
+          placeholder="Search"
+        />
       </li>
 
-      <Annotation v-for="(annotation, listIndex) in category.annotations" :search="search" :key="annotation.id" :simplify="simplify" :annotation="annotation" :current='current.annotation' @click="onAnnotationClick(listIndex)" :opacity="opacity" :index="listIndex" ref="annotation" :hover="hover.annotation" @deleted="annotationDeleted"/>
+      <Annotation
+        v-for="(annotation, listIndex) in category.annotations"
+        :search="search"
+        :key="annotation.id"
+        :simplify="simplify"
+        :annotation="annotation"
+        :current="current.annotation"
+        @click="onAnnotationClick(listIndex)"
+        :opacity="opacity"
+        :index="listIndex"
+        ref="annotation"
+        :hover="hover.annotation"
+        @deleted="annotationDeleted"
+      />
     </ul>
 
-    <div class="modal fade" tabindex="-1" role="dialog" :id="'categorySettings' + category.id">
+    <div
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      :id="'categorySettings' + category.id"
+    >
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ category.name }}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -40,13 +99,19 @@
               <div class="form-group row">
                 <label class="col-sm-2 col-form-label">Color</label>
                 <div class="col-sm-9">
-                  <input v-model="color" type="color" class="form-control">
+                  <input v-model="color" type="color" class="form-control" />
                 </div>
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -119,14 +184,6 @@ export default {
       let parent = this.$parent;
       let categories = parent.categories;
       let annotationId = this.category.annotations.length;
-      
-      this.selectedAnnotation = annotationId;
-      this.$nextTick(() => {
-        this.$emit("click", {
-          annotation: annotationId,
-          category: this.index
-        });
-      });
 
       axios
         .post("/api/annotation/", {
@@ -142,10 +199,16 @@ export default {
 
           this.category.annotations.push(response.data);
 
-          if (this.isCurrent) {
-            this.isVisible = true;
-            this.showAnnotations = true;
-          }
+          this.selectedAnnotation = annotationId;
+          this.$nextTick(() => {
+            this.$emit("click", {
+              annotation: annotationId,
+              category: this.index
+            });
+          });
+
+          this.isVisible = true;
+          this.showAnnotations = true;
 
           let annotations = this.$refs.annotation;
           if (annotations == null) return;

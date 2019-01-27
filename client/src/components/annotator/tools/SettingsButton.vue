@@ -1,24 +1,45 @@
 <template>
   <div>
-    <i v-tooltip.right="name" class="fa fa-x fa-cog" style="color: white" data-toggle="modal" data-target="#settings"></i>
+    <i
+      v-tooltip.right="name"
+      class="fa fa-x fa-cog"
+      style="color: white"
+      data-toggle="modal"
+      data-target="#settings"
+    ></i>
 
-    <br>
+    <br />
     <!-- Modal -->
-    <div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="settingsLabel" aria-hidden="true">
+    <div
+      class="modal fade"
+      id="settings"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="settingsLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="settingsLabel">Image Settings</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-
             <div class="form-group row">
               <label class="col-sm-2 col-form-label">simplify</label>
               <div class="col-sm-9">
-                <input v-model.number="$parent.simplify" type="number" class="form-control">
+                <input
+                  v-model.number="$parent.simplify"
+                  type="number"
+                  class="form-control"
+                />
               </div>
             </div>
 
@@ -36,17 +57,26 @@
             </div>
 
             <ul class="list-group" style="height: 50%;">
-              <CustomShortcut v-for="(command, index) in commands" :key="index" :shortcut="command" ref="shortcuts"/>
+              <CustomShortcut
+                v-for="(command, index) in commands"
+                :key="index"
+                :shortcut="command"
+                ref="shortcuts"
+              />
             </ul>
-
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 

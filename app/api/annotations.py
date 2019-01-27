@@ -1,8 +1,9 @@
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
+from imantics import Color
 
 from ..models import AnnotationModel
-from ..util import query_util, color_util
+from ..util import query_util
 
 import datetime
 
@@ -35,7 +36,6 @@ class Annotation(Resource):
 
         try:
             annotation = AnnotationModel(image_id=image_id, category_id=category_id, metadata=metadata)
-            annotation.color = color_util.random_color_hex() if color is None else color
             annotation.save()
         except (ValueError, TypeError) as e:
             return {'message': str(e)}, 400

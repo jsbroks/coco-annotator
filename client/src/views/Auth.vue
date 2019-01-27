@@ -1,29 +1,37 @@
 <template>
   <div class="bg-light">
     <div style="padding-top: 55px" />
-    <div class="album py-5 container" style="overflow: auto; height: calc(100vh - 55px)">
+    <div
+      class="album py-5 container"
+      style="overflow: auto; height: calc(100vh - 55px)"
+    >
       <div class="row">
         <div class="col-sm text-left">
           <!-- Change this section to whatever you would like -->
           <h1>COCO Annotator</h1>
-          <hr>
+          <hr />
           <div v-if="totalUsers === 0">
             <h3>You have successfully installed COCO Annotator!</h3>
             <p>Use the registeration form to create an admin account</p>
             <p>
               If you have any questions please checkout the
-              <a href="https://github.com/jsbroks/coco-annotator/wiki">wiki</a> before
-              posting <a href="https://github.com/jsbroks/coco-annotator/issues">issues</a>.
+              <a href="https://github.com/jsbroks/coco-annotator/wiki">wiki</a>
+              before posting
+              <a href="https://github.com/jsbroks/coco-annotator/issues"
+                >issues</a
+              >.
             </p>
           </div>
           <div v-else>
             <p>
-              COCO Annotator is a web-based image annotation tool designed for versatility and efficiently
-              label images to create training data for image localization and object detection.
-              <br><br>
+              COCO Annotator is a web-based image annotation tool designed for
+              versatility and efficiently label images to create training data
+              for image localization and object detection.
+              <br /><br />
               Login to create a datasets.
-              <br><br>
-              Find out more <a href="https://github.com/jsbroks/coco-annotator">Github</a>
+              <br /><br />
+              Find out more
+              <a href="https://github.com/jsbroks/coco-annotator">Github</a>
             </p>
           </div>
           <!-- End of section -->
@@ -31,36 +39,46 @@
         <div class="col-sm">
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item" v-show="totalUsers !== 0">
-              <a class="nav-link"
-                 :class="{ active: tab === 'login'}"
-                 id="home-tab"
-                 data-toggle="tab"
-                 href="#login"
-                 role="tab"
-                 aria-controls="home"
-                 aria-selected="true"
-                 @click="tab = 'login'"
+              <a
+                class="nav-link"
+                :class="{ active: tab === 'login' }"
+                id="home-tab"
+                data-toggle="tab"
+                href="#login"
+                role="tab"
+                aria-controls="home"
+                aria-selected="true"
+                @click="tab = 'login'"
               >
                 Login
               </a>
             </li>
             <li class="nav-item" v-show="showRegistrationForm">
-              <a class="nav-link"
-                 :class="{ active: tab === 'register'}"
-                 id="contact-tab"
-                 data-toggle="tab"
-                 href="#register"
-                 role="tab"
-                 aria-controls="contact"
-                 aria-selected="false" @click="tab = 'register'"
-                 ref="registerTab"
+              <a
+                class="nav-link"
+                :class="{ active: tab === 'register' }"
+                id="contact-tab"
+                data-toggle="tab"
+                href="#register"
+                role="tab"
+                aria-controls="contact"
+                aria-selected="false"
+                @click="tab = 'register'"
+                ref="registerTab"
               >
                 Register
               </a>
             </li>
           </ul>
-          <div class="tab-content panel border-bottom border-right border-left text-left">
-            <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+          <div
+            class="tab-content panel border-bottom border-right border-left text-left"
+          >
+            <div
+              class="tab-pane fade show active"
+              id="login"
+              role="tabpanel"
+              aria-labelledby="login-tab"
+            >
               <form class="vld-parent" ref="loginForm">
                 <div class="form-group">
                   <label>Username</label>
@@ -68,26 +86,47 @@
                     v-model="loginForm.username"
                     type="text"
                     class="form-control"
-                    required>
+                    required
+                  />
                   <div class="invalid-feedback">Invalid username format</div>
                 </div>
                 <div class="form-group">
-                  <label >Password</label>
-                  <input v-model="loginForm.password" type="password" class="form-control">
+                  <label>Password</label>
+                  <input
+                    v-model="loginForm.password"
+                    type="password"
+                    class="form-control"
+                  />
                 </div>
-                <button type="submit" class="btn btn-primary btn-block" :class="{ disabled: !loginValid }" @click.prevent="loginUser">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-block"
+                  :class="{ disabled: !loginValid }"
+                  @click.prevent="loginUser"
+                >
                   Login
                 </button>
               </form>
             </div>
-            <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+            <div
+              class="tab-pane fade"
+              id="register"
+              role="tabpanel"
+              aria-labelledby="register-tab"
+            >
               <div v-if="!showRegistrationForm">
                 You are not allowed to register new accounts
               </div>
               <form v-else class="vld-parent" ref="registerForm">
                 <div class="form-group" novalidate="">
-                  <label>Full Name <span class="text-mute">(Optional)</span></label>
-                  <input v-model="registerForm.name" type="text" class="form-control">
+                  <label
+                    >Full Name <span class="text-mute">(Optional)</span></label
+                  >
+                  <input
+                    v-model="registerForm.name"
+                    type="text"
+                    class="form-control"
+                  />
                 </div>
 
                 <div class="form-group">
@@ -98,7 +137,7 @@
                     type="text"
                     class="form-control"
                     required
-                  >
+                  />
                   <div class="invalid-feedback">Invalid username format</div>
                 </div>
 
@@ -110,21 +149,31 @@
                     type="password"
                     class="form-control"
                     required
-                  >
-                  <div class="invalid-feedback">Minimum length of 5 characters.</div>
+                  />
+                  <div class="invalid-feedback">
+                    Minimum length of 5 characters.
+                  </div>
                 </div>
-                
+
                 <div class="form-group">
                   <label>Confirm Password</label>
                   <input
                     v-model="registerForm.confirmPassword"
-                    :class="{ 'is-valid': registerForm.confirmPassword.length > 0
-                            && registerForm.confirmPassword === registerForm.password }"
+                    :class="{
+                      'is-valid':
+                        registerForm.confirmPassword.length > 0 &&
+                        registerForm.confirmPassword === registerForm.password
+                    }"
                     type="password"
                     class="form-control"
-                  >
+                  />
                 </div>
-                <button type="submit" class="btn btn-primary btn-block" :class="{ disabled: !registerValid }" @click.prevent="registerUser">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-block"
+                  :class="{ disabled: !registerValid }"
+                  @click.prevent="registerUser"
+                >
                   Register
                 </button>
               </form>

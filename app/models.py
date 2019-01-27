@@ -3,13 +3,14 @@ import cv2
 import json
 import datetime
 import numpy as np
+import imantics as im
 
+from PIL import Image
 from flask_mongoengine import MongoEngine
 from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
 
 
-from .util import color_util
 from .config import Config
 from PIL import Image
 
@@ -129,6 +130,10 @@ class ImageModel(db.DynamicDocument):
             os.makedirs(directory)
 
         return '/'.join(folders)
+    
+    def thumbnail(self):
+        image = self().draw(color_by_category=True, bbox=False)
+        return Image.fromarray(image)
 
     def copy_annotations(self, annotations):
         """
@@ -147,6 +152,15 @@ class ImageModel(db.DynamicDocument):
             clone.save(copy=True)
 
         return annotations.count()
+
+    def __call__(self):
+
+        image = im.Image.from_path(self.path)
+        for annotation in AnnotationModel.objects(image_id=self.id, deleted=False).all():
+            if not annotation.is_empty():
+                image.add(annotation())
+
+        return image
 
 
 class AnnotationModel(db.DynamicDocument):
@@ -196,7 +210,7 @@ class AnnotationModel(db.DynamicDocument):
                 self.metadata = dataset.default_annotation_metadata.copy()
 
         if self.color is None:
-            self.color = color_util.random_color_hex()
+            self.color = im.Color.random().hex
 
         if current_user:
             self.creator = current_user.username
@@ -225,6 +239,23 @@ class AnnotationModel(db.DynamicDocument):
 
         return AnnotationModel(**create)
 
+    def __call__(self):
+
+        category = CategoryModel.objects(id=self.category_id).first()
+        if category:
+            category = category()
+
+        data = {
+            'image': None,
+            'category': category,
+            'color': self.color,
+            'polygons': self.segmentation,
+            'width': self.width,
+            'height': self.height,
+            'metadata': self.metadata
+        }
+
+        return im.Annotation(**data)
 
 class CategoryModel(db.DynamicDocument):
 
@@ -260,7 +291,7 @@ class CategoryModel(db.DynamicDocument):
     def save(self, *args, **kwargs):
 
         if not self.color:
-            self.color = color_util.random_color_hex()
+            self.color = im.Color.random().hex
 
         if current_user:
             self.creator = current_user.username
@@ -269,6 +300,16 @@ class CategoryModel(db.DynamicDocument):
       
         return super(CategoryModel, self).save(*args, **kwargs)
 
+    def __call__(self):
+        """ Generates imantics category object """
+        data = {
+            'name': self.name,
+            'color': self.color,
+            'parent': self.supercategory,
+            'metadata': self.metadata,
+            'id': self.id
+        }
+        return im.Category(**data)
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

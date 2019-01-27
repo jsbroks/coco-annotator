@@ -1,19 +1,27 @@
 <template>
   <div class="col-md-3">
-
     <!-- Dataset Card -->
     <div class="card mb-4 box-shadow">
-
       <!-- Display Image -->
-      <img @click="onImageClick" :src="imageUrl" class="card-img-top" @error="imageError = true" style="width: 100%; display: block;">
+      <img
+        @click="onImageClick"
+        :src="imageUrl"
+        class="card-img-top"
+        @error="imageError = true"
+        style="width: 100%; display: block;"
+      />
 
       <!-- Card Body -->
       <div class="card-body">
-        <span class="d-inline-block text-truncate" style="max-width: 85%; float: left">
+        <span
+          class="d-inline-block text-truncate"
+          style="max-width: 85%; float: left"
+        >
           <strong class="card-title">{{ dataset.name }}</strong>
         </span>
 
-        <i class="card-text fa fa-ellipsis-v fa-x icon-more"
+        <i
+          class="card-text fa fa-ellipsis-v fa-x icon-more"
           :id="'dropdownDataset' + dataset.id"
           data-toggle="dropdown"
           aria-haspopup="true"
@@ -21,42 +29,71 @@
           aria-hidden="true"
         />
 
-        <br>
+        <br />
 
         <div>
           <div v-if="dataset.numberImages > 0">
-            {{ dataset.numberAnnotated }} of {{ dataset.numberImages }} images annotated.
+            {{ dataset.numberAnnotated }} of {{ dataset.numberImages }} images
+            annotated.
             <div class="progress">
-              <div class="progress-bar" role="progressbar" :style="{ width: percent + '%' }"></div>
+              <div
+                class="progress-bar"
+                role="progressbar"
+                :style="{ width: percent + '%' }"
+              ></div>
             </div>
           </div>
 
           <p v-else>No images in dataset.</p>
-          <span v-for="(category, index) in listCategories"
-            :key="index" class="badge badge-pill badge-primary category-badge"
-            :style="{ 'background-color': category.color}"
+          <span
+            v-for="(category, index) in listCategories"
+            :key="index"
+            class="badge badge-pill badge-primary category-badge"
+            :style="{ 'background-color': category.color }"
           >
             {{ category.name }}
           </span>
         </div>
 
-        <div class="dropdown-menu" :aria-labelledby="'dropdownDataset' + dataset.id">
-          <button class="dropdown-item" data-toggle="modal" :data-target="'#datasetEdit' + dataset.id">
+        <div
+          class="dropdown-menu"
+          :aria-labelledby="'dropdownDataset' + dataset.id"
+        >
+          <button
+            class="dropdown-item"
+            data-toggle="modal"
+            :data-target="'#datasetEdit' + dataset.id"
+          >
             Edit
           </button>
-          <button v-if="isOwner" class="dropdown-item" data-toggle="modal" :data-target="'#datasetShare' + dataset.id">
+          <button
+            v-if="isOwner"
+            class="dropdown-item"
+            data-toggle="modal"
+            :data-target="'#datasetShare' + dataset.id"
+          >
             Share
           </button>
-          <button class="dropdown-item" @click="onCocoDownloadClick">Download COCO</button>
-          <hr>
-          <button class="dropdown-item delete" v-show="isOwner" @click="onDeleteClick">Delete</button>
+          <button class="dropdown-item" @click="onCocoDownloadClick">
+            Download COCO
+          </button>
+          <hr />
+          <button
+            class="dropdown-item delete"
+            v-show="isOwner"
+            @click="onDeleteClick"
+          >
+            Delete
+          </button>
         </div>
       </div>
 
-      <div v-show="$store.getters['user/loginEnabled']" class="card-footer text-muted">
+      <div
+        v-show="$store.getters['user/loginEnabled']"
+        class="card-footer text-muted"
+      >
         Created by {{ dataset.owner }}
       </div>
-
     </div>
 
     <!-- Edit Dataset -->
@@ -65,13 +102,17 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ dataset.name }}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <form>
-              
               <div class="form-group">
                 <label>Default Categories</label>
                 <TagsInput
@@ -83,18 +124,31 @@
                 />
               </div>
 
-              <Metadata :metadata="defaultMetadata"
+              <Metadata
+                :metadata="defaultMetadata"
                 title="Default Annotation Metadata"
-                key-name="Default Key" 
+                key-name="Default Key"
                 value-name="Default Value"
                 ref="defaultAnnotation"
               />
-
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" @click="onSave" data-dismiss="modal">Save</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-success"
+              @click="onSave"
+              data-dismiss="modal"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -106,7 +160,12 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ dataset.name }}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -125,8 +184,21 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" @click="onShare" data-dismiss="modal">Save</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-success"
+              @click="onShare"
+              data-dismiss="modal"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

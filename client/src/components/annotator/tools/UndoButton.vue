@@ -1,4 +1,3 @@
-
 <script>
 import button from "@/mixins/toolBar/button";
 

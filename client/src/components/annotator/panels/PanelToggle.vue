@@ -1,5 +1,9 @@
 <template>
-  <button class="btn btn-outline-light tool-input-button" :class="{ active: value }" @click="$emit('update', !value)">
+  <button
+    class="btn btn-outline-light tool-input-button"
+    :class="{ active: value }"
+    @click="$emit('update', !value)"
+  >
     {{ name }}
   </button>
 </template>
