@@ -79,6 +79,7 @@ class AnnotatorData(Resource):
                     segmentation, area, bbox = coco_util.\
                         paperjs_to_coco(width, height, paperjs_object)
 
+
                     db_annotation.update(
                         set__segmentation=segmentation,
                         set__area=area,
