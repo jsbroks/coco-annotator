@@ -199,15 +199,14 @@ export default {
 
           this.category.annotations.push(response.data);
 
-          console.log(this.index, annotationId)
           this.selectedAnnotation = annotationId;
           this.$nextTick(() => {
-          this.$emit("click", {
+            this.$emit("click", {
               annotation: annotationId,
               category: this.index
             });
           });
-          
+
           this.isVisible = true;
           this.showAnnotations = true;
 

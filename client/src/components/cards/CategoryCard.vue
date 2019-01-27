@@ -37,11 +37,11 @@
           class="dropdown-menu"
           :aria-labelledby="'dropdownCategory' + category.id"
         >
-          <a class="dropdown-item" @click="onEditClick">Edit</a>
+          <!--<a class="dropdown-item" @click="onEditClick">Edit</a>-->
           <a class="dropdown-item" @click="onDeleteClick">Delete</a>
-          <a class="dropdown-item" @click="onDownloadClick"
+          <!--<a class="dropdown-item" @click="onDownloadClick"
             >Download COCO & Images</a
-          >
+          >-->
         </div>
       </div>
 
