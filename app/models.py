@@ -133,7 +133,7 @@ class ImageModel(db.DynamicDocument):
         return '/'.join(folders)
     
     def thumbnail(self):
-        image = self().draw(color_by_category=True)
+        image = self().draw(color_by_category=True, bbox=False)
         return Image.fromarray(image)
 
     def copy_annotations(self, annotations):

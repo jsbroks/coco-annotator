@@ -241,7 +241,11 @@ class DatasetDataId(Resource):
 
         for image in images:
             image_id = image.get('id')
-            image['annotations'] = AnnotationModel.objects(image_id=image_id, deleted=False).count()
+            query = AnnotationModel.objects(image_id=image_id, deleted=False)
+            image['annotations'] = query.count()
+            category_ids = query.distinct('category_id')
+            image['categories'] = query_util.fix_ids(CategoryModel.objects(id__in=category_ids).only('name', 'color'))
+
 
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f)]

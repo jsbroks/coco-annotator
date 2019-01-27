@@ -34,6 +34,14 @@
             >
           </p>
           <p v-else>Image has no annotations</p>
+          <span
+            v-for="(category, index) in image.categories"
+            :key="index"
+            class="badge badge-pill badge-primary category-badge"
+            :style="{ 'background-color': category.color }"
+          >
+            {{ category.name }}
+          </span>
         </div>
 
         <div
@@ -148,5 +156,9 @@ p {
   padding: 0;
   float: right;
   color: black;
+}
+.category-badge {
+  float: left;
+  margin: 0 2px 5px 0;
 }
 </style>
