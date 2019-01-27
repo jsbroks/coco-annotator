@@ -7,10 +7,19 @@
           <span class="sr-only">Previous</span>
         </a>
       </li>
-      <li v-for="pageIndex in range" :key="pageIndex" :class="{ 'page-item': true, active: pageIndex + startPage == page }">
-        <a class="page-link" @click="page = pageIndex + startPage">{{ pageIndex + startPage}}</a>
+      <li
+        v-for="pageIndex in range"
+        :key="pageIndex"
+        :class="{ 'page-item': true, active: pageIndex + startPage == page }"
+      >
+        <a class="page-link" @click="page = pageIndex + startPage">{{
+          pageIndex + startPage
+        }}</a>
       </li>
-      <li :class="{ 'page-item': true, disabled: page == pages }" @click="nextPage">
+      <li
+        :class="{ 'page-item': true, disabled: page == pages }"
+        @click="nextPage"
+      >
         <a class="page-link" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
           <span class="sr-only">Next</span>

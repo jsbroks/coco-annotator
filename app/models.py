@@ -133,8 +133,8 @@ class ImageModel(db.DynamicDocument):
         return '/'.join(folders)
     
     def thumbnail(self):
-        image = self()
-        return Image.fromarray(image.draw(color_by_category=True, bbox=False))
+        image = self().draw(color_by_category=True)
+        return Image.fromarray(image)
 
     def copy_annotations(self, annotations):
         """
@@ -155,14 +155,10 @@ class ImageModel(db.DynamicDocument):
         return annotations.count()
 
     def __call__(self):
+
         image = im.Image.from_path(self.path)
-        
-        annotations = AnnotationModel.objects(image_id=self.id).all()
-        for annotation in annotations:
-            category = CategoryModel.objects(id=annotation.category_id).first()
-            if category:
-                polygons = im.Polygons(annotation.segmentation)
-                image.add(im.Annotation.from_polygons(image, category(), polygons))
+        for annotation in AnnotationModel.objects(image_id=self.id, deleted=False).all():
+            image.add(annotation())
 
         return image
 
@@ -243,6 +239,23 @@ class AnnotationModel(db.DynamicDocument):
 
         return AnnotationModel(**create)
 
+    def __call__(self):
+
+        category = CategoryModel.objects(id=self.category_id).first()
+        if category:
+            category = category()
+
+        data = {
+            'image': None,
+            'category': category,
+            'color': self.color,
+            'polygons': self.segmentation,
+            'width': self.width,
+            'height': self.height,
+            'metadata': self.metadata
+        }
+
+        return im.Annotation(**data)
 
 class CategoryModel(db.DynamicDocument):
 
@@ -289,8 +302,14 @@ class CategoryModel(db.DynamicDocument):
 
     def __call__(self):
         """ Generates imantics category object """
-        return im.Category(self.name, color=self.color, parent=self.supercategory,\
-                           metadata=self.metadata, id=self.id)
+        data = {
+            'name': self.name,
+            'color': self.color,
+            'parent': self.supercategory,
+            'metadata': self.metadata,
+            'id': self.id
+        }
+        return im.Category(**data)
 
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

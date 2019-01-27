@@ -5,11 +5,18 @@
     </div>
     <div class="row" style="cell">
       <div class="col-sm">
-        {{ shortcut.name }} <p v-show="readonly" class="mute">(readonly)</p>
+        {{ shortcut.name }}
+        <p v-show="readonly" class="mute">(readonly)</p>
       </div>
 
       <div class="col-sm">
-        <input :id="_uid" :value="keys.join('+').toUpperCase()" type="text" class="input" :readonly="readonly">
+        <input
+          :id="_uid"
+          :value="keys.join('+').toUpperCase()"
+          type="text"
+          class="input"
+          :readonly="readonly"
+        />
       </div>
     </div>
   </div>

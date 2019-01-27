@@ -1,13 +1,29 @@
 <template>
   <div class="form-inline my-2 my-lg-0" style="margin-right: 10px">
     <div class="dropdown show">
-      <a class="btn-outline-light btn-sm dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <a
+        class="btn-outline-light btn-sm dropdown-toggle"
+        href="#"
+        role="button"
+        id="dropdownMenuLink"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
         {{ display }}
       </a>
 
-      <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink" role="menu">
+      <ul
+        class="dropdown-menu dropdown-menu-right"
+        aria-labelledby="dropdownMenuLink"
+        role="menu"
+      >
         <li>
-          <a v-show="$store.getters['user/isAdmin']" class="dropdown-item" href="#">
+          <a
+            v-show="$store.getters['user/isAdmin']"
+            class="dropdown-item"
+            href="#"
+          >
             <RouterLink class="route" to="/admin/panel">Admin Panel</RouterLink>
           </a>
         </li>
@@ -16,7 +32,9 @@
             <RouterLink class="route" to="/user">User Settings</RouterLink>
           </a>
         </li>
-        <li><a class="dropdown-item" href="#" @click="logoutButton">Logout</a></li>
+        <li>
+          <a class="dropdown-item" href="#" @click="logoutButton">Logout</a>
+        </li>
       </ul>
     </div>
   </div>

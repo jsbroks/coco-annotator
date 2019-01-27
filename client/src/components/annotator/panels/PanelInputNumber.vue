@@ -3,7 +3,14 @@
     <div class="input-group-prepend tool-option-pre">
       <span class="input-group-text tool-option-font">{{ name }}</span>
     </div>
-    <input v-model.number="localValue" type="number" :min="min" :max="max" :step="step" class="form-control tool-option-input">
+    <input
+      v-model.number="localValue"
+      type="number"
+      :min="min"
+      :max="max"
+      :step="step"
+      class="form-control tool-option-input"
+    />
   </div>
 </template>
 

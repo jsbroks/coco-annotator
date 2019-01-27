@@ -1,30 +1,72 @@
 <template>
   <div v-show="showSideMenu">
-    <li class="list-group-item btn btn-link btn-sm text-left" :style="{ 'background-color': backgroundColor, color: 'white' }">
-
+    <li
+      class="list-group-item btn btn-link btn-sm text-left"
+      :style="{ 'background-color': backgroundColor, color: 'white' }"
+    >
       <div @click="isVisible = !isVisible">
-        <i v-if="isVisible" class="fa fa-eye annotation-icon" :style="{ float: 'left', 'padding-right': '10px', color: color }" />
-        <i v-else class="fa fa-eye-slash annotation-icon" style="float: left; padding-right: 10px; color: gray" />
+        <i
+          v-if="isVisible"
+          class="fa fa-eye annotation-icon"
+          :style="{ float: 'left', 'padding-right': '10px', color: color }"
+        />
+        <i
+          v-else
+          class="fa fa-eye-slash annotation-icon"
+          style="float: left; padding-right: 10px; color: gray"
+        />
       </div>
 
-      <a @click="onAnnotationClick" :style="{ float: 'left', width: '70%', color: isVisible ? 'white' : 'gray' }">
+      <a
+        @click="onAnnotationClick"
+        :style="{
+          float: 'left',
+          width: '70%',
+          color: isVisible ? 'white' : 'gray'
+        }"
+      >
         <span v-if="name.length === 0">{{ index + 1 }}</span>
         <span v-else> {{ name }} </span> {{ annotation.name }}
-        <i v-if="isEmpty" style="padding-left: 5px; color: lightgray">(Empty)</i>
-        <i v-else style="padding-left: 5px; color: lightgray">(id: {{ annotation.id }})</i>
+        <i v-if="isEmpty" style="padding-left: 5px; color: lightgray"
+          >(Empty)</i
+        >
+        <i v-else style="padding-left: 5px; color: lightgray"
+          >(id: {{ annotation.id }})</i
+        >
       </a>
 
-      <i class="fa fa-gear annotation-icon" style="float:right" data-toggle="modal" :data-target="'#annotationSettings' + annotation.id" />
-      <i @click="deleteAnnotation" class="fa fa-trash-o annotation-icon" style="float:right" />
-
+      <i
+        class="fa fa-gear annotation-icon"
+        style="float:right"
+        data-toggle="modal"
+        :data-target="'#annotationSettings' + annotation.id"
+      />
+      <i
+        @click="deleteAnnotation"
+        class="fa fa-trash-o annotation-icon"
+        style="float:right"
+      />
     </li>
 
-    <div class="modal fade" tabindex="-1" role="dialog" :id="'annotationSettings' + annotation.id">
+    <div
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      :id="'annotationSettings' + annotation.id"
+    >
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{ index + 1 }} <i style="color: darkgray">(id: {{ annotation.id }})</i></h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <h5 class="modal-title">
+              {{ index + 1 }}
+              <i style="color: darkgray">(id: {{ annotation.id }})</i>
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -33,22 +75,32 @@
               <div class="form-group row">
                 <label class="col-sm-2 col-form-label">Color</label>
                 <div class="col-sm-9">
-                  <input v-model="color" type="color" class="form-control">
+                  <input v-model="color" type="color" class="form-control" />
                 </div>
               </div>
 
               <div class="form-group row">
                 <label class="col-sm-2 col-form-label">Name</label>
                 <div class="col-sm-9">
-                  <input v-model="name" class="form-control">
+                  <input v-model="name" class="form-control" />
                 </div>
               </div>
 
-              <Metadata :metadata="annotation.metadata" ref="metadata" exclude="name" />
+              <Metadata
+                :metadata="annotation.metadata"
+                ref="metadata"
+                exclude="name"
+              />
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

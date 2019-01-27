@@ -1,6 +1,10 @@
 <template>
   <div>
-    <i class="fa fa-plus" style="float: right; margin: 0 4px; color: green" @click="createMetadata" />
+    <i
+      class="fa fa-plus"
+      style="float: right; margin: 0 4px; color: green"
+      @click="createMetadata"
+    />
 
     <p class="title" style="margin: 0">{{ title }}</p>
 
@@ -17,15 +21,28 @@
       <li v-if="metadataList.length == 0" class="list-group-item meta-item">
         <i class="subtitle">No items in metadata.</i>
       </li>
-      <li v-for="(object, index) in metadataList" :key="index" class="list-group-item meta-item">
+      <li
+        v-for="(object, index) in metadataList"
+        :key="index"
+        class="list-group-item meta-item"
+      >
         <div class="row" style="cell">
-
           <div class="col-sm">
-            <input v-model="object.key" type="text" class="meta-input" :placeholder="keyTitle">
+            <input
+              v-model="object.key"
+              type="text"
+              class="meta-input"
+              :placeholder="keyTitle"
+            />
           </div>
 
           <div class="col-sm">
-            <input v-model="object.value" type="text" class="meta-input" :placeholder="valueTitle">
+            <input
+              v-model="object.value"
+              type="text"
+              class="meta-input"
+              :placeholder="valueTitle"
+            />
           </div>
         </div>
       </li>

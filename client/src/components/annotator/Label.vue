@@ -7,10 +7,13 @@
           <i v-else class="fa fa-square-o category-icon" />
         </div>
 
-        <span class="btn btn-link btn-sm collapsed category-text" style="color: inherit" aria-expanded="false">
+        <span
+          class="btn btn-link btn-sm collapsed category-text"
+          style="color: inherit"
+          aria-expanded="false"
+        >
           {{ category.name }}
         </span>
-
       </div>
     </div>
   </div>

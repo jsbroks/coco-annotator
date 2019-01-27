@@ -1,7 +1,16 @@
 <template>
   <div class="form-inline my-2 my-lg-0" style="margin-right: 10px">
-    <div class="my-sm-0 btn-sm disabled" :class="buttonType" style="border: none">
-      <i v-if="allLoaded" class="fa fa-check fa-x status-icon" style="float:left"> </i>
+    <div
+      class="my-sm-0 btn-sm disabled"
+      :class="buttonType"
+      style="border: none"
+    >
+      <i
+        v-if="allLoaded"
+        class="fa fa-check fa-x status-icon"
+        style="float:left"
+      >
+      </i>
       <i v-else class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
       {{ message }}
     </div>

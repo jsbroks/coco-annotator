@@ -4,13 +4,31 @@
     <PanelButton name="Delete Polygon" @click="polygon.deletePolygon" />
     <PanelToggle name="Guidance" v-model="polygon.polygon.guidance" />
     <PanelToggle name="Auto Select Color" v-model="polygon.color.auto" />
-    <PanelToggle v-show="polygon.color.auto" name="Only Back or White" v-model="polygon.color.blackOrWhite" />
-    <PanelInputString name="Stroke Color" v-model="polygon.polygon.pathOptions.strokeColor" />
-    <PanelInputNumber name="Auto Complete Distance" min="0" max="1000" step="5" v-model="polygon.polygon.completeDistance" />
-    <PanelInputNumber name="Min Distance" min="0" max="500" step="2" v-model="polygon.polygon.minDistance" />
+    <PanelToggle
+      v-show="polygon.color.auto"
+      name="Only Back or White"
+      v-model="polygon.color.blackOrWhite"
+    />
+    <PanelInputString
+      name="Stroke Color"
+      v-model="polygon.polygon.pathOptions.strokeColor"
+    />
+    <PanelInputNumber
+      name="Auto Complete Distance"
+      min="0"
+      max="1000"
+      step="5"
+      v-model="polygon.polygon.completeDistance"
+    />
+    <PanelInputNumber
+      name="Min Distance"
+      min="0"
+      max="500"
+      step="2"
+      v-model="polygon.polygon.minDistance"
+    />
   </div>
 </template>
-
 
 <script>
 import PanelButton from "@/components/annotator/panels/PanelButton";
