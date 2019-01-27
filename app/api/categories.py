@@ -2,7 +2,7 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 
 from ..util.pagination_util import Pagination
-from ..util import query_util, color_util
+from ..util import query_util
 from ..models import CategoryModel, AnnotationModel
 
 import datetime

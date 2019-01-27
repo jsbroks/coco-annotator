@@ -11,7 +11,6 @@ from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
 
 
-from .util import color_util
 from .config import Config
 from PIL import Image
 
@@ -158,7 +157,8 @@ class ImageModel(db.DynamicDocument):
 
         image = im.Image.from_path(self.path)
         for annotation in AnnotationModel.objects(image_id=self.id, deleted=False).all():
-            image.add(annotation())
+            if not annotation.is_empty():
+                image.add(annotation())
 
         return image
 
@@ -210,7 +210,7 @@ class AnnotationModel(db.DynamicDocument):
                 self.metadata = dataset.default_annotation_metadata.copy()
 
         if self.color is None:
-            self.color = color_util.random_color_hex()
+            self.color = im.Color.random().hex
 
         if current_user:
             self.creator = current_user.username
@@ -291,7 +291,7 @@ class CategoryModel(db.DynamicDocument):
     def save(self, *args, **kwargs):
 
         if not self.color:
-            self.color = color_util.random_color_hex()
+            self.color = im.Color.random().hex
 
         if current_user:
             self.creator = current_user.username

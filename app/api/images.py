@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from flask import send_file
 
-from ..util import query_util, coco_util, thumbnail_util
+from ..util import query_util, coco_util
 from ..models import *
 
 import datetime

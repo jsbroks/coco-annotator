@@ -185,14 +185,6 @@ export default {
       let categories = parent.categories;
       let annotationId = this.category.annotations.length;
 
-      this.selectedAnnotation = annotationId;
-      this.$nextTick(() => {
-        this.$emit("click", {
-          annotation: annotationId,
-          category: this.index
-        });
-      });
-
       axios
         .post("/api/annotation/", {
           image_id: parent.image.id,
@@ -207,10 +199,17 @@ export default {
 
           this.category.annotations.push(response.data);
 
-          if (this.isCurrent) {
-            this.isVisible = true;
-            this.showAnnotations = true;
-          }
+          console.log(this.index, annotationId)
+          this.selectedAnnotation = annotationId;
+          this.$nextTick(() => {
+          this.$emit("click", {
+              annotation: annotationId,
+              category: this.index
+            });
+          });
+          
+          this.isVisible = true;
+          this.showAnnotations = true;
 
           let annotations = this.$refs.annotation;
           if (annotations == null) return;
