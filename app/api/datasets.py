@@ -7,7 +7,7 @@ from threading import Thread
 from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
-from ..util import query_util, coco_util
+from ..util import query_util, coco_util, color_util
 from ..models import *
 
 
