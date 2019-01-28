@@ -384,7 +384,7 @@ class ImageCoco(Resource):
                 annotation.category_id = category_model_id
                 # annotation.iscrowd = is_crowd
                 annotation.segmentation = segmentation
-                annotation.color = color_util.random_color_hex()
+                annotation.color = im.Color.random().hex
                 annotation.save()
 
                 image_model.update(set__annotated=True)
