@@ -17,6 +17,10 @@ class Autoannotator:
     verbose = False
 
     @classmethod
+    def log(cls, msg):
+        print(f"[{cls.__name__}] {msg}", flush=True)
+
+    @classmethod
     def submit(cls, annotation_id):
         """
         Submit a (changed) annotation to the queue for processing
@@ -91,21 +95,20 @@ class Autoannotator:
             score, _ = compare_ssim(
                 patch, img_patch, full=True, multichannel=True)
             if cls.verbose:
-                print(f"Annotation {annotation.id} vs. "
-                      f"image {image_to.file_name} score = {score}",
-                      flush=True)
+                cls.log(f"Annotation {annotation.id} vs. "
+                      f"image {image_to.file_name} score = {score}")
             
             if (1.0 - score) > cls.diff_threshold:
                 mismatched += 1
                 if mismatched > cls.max_mismatched:
                     if cls.verbose:
-                        print(f"Exceeded {cls.max_mismatched} consecutive "
-                              f"mismatched images; aborting further attempts")
+                        cls.log(f"Exceeded {cls.max_mismatched} consecutive "
+                                f"mismatched images; aborting further attempts")
                     return
                 continue
             if cls.verbose:
-                print(f"Annotation {annotation.id} matches "
-                      f"image {image_to.file_name}; copying...", flush=True)
+                cls.log(f"Annotation {annotation.id} matches "
+                        f"image {image_to.file_name}; copying...")
             mismatched = 0
             image_to.copy_annotations(
                 AnnotationModel.objects(id=annotation.id))
@@ -126,12 +129,11 @@ class Autoannotator:
         matching is abandonded for the current annotation.
         """
         if cls.verbose:
-            print(f"Processing annotation id {annotation_id}", flush=True)
+            cls.log(f"Processing annotation id {annotation_id}")
 
         annotation = AnnotationModel.objects(id=annotation_id).first()
         if annotation is None:
-            print(f"Error: no annotation matching id {annotation_id}",
-                  flush=True)
+            cls.log(f"Error: no annotation matching id {annotation_id}")
             return
 
         image_from = ImageModel.objects(id=annotation.image_id).first()
@@ -148,8 +150,8 @@ class Autoannotator:
         dataset_id = image_from.dataset_id
         
         if cls.verbose:
-            print("Searching for images with file_name greater than "
-                  f"{image_from.file_name}", flush=True)
+            cls.log("Searching for images with file_name greater than "
+                  f"{image_from.file_name}")
         images_after = list(ImageModel.objects(
             dataset_id=dataset_id,
             file_name__gt=image_from.file_name,
@@ -161,8 +163,8 @@ class Autoannotator:
             mask=mask, bbox=bbox, patch=patch)
 
         if cls.verbose:
-            print("Searching for images with file_name less than "
-                  f"{image_from.file_name}", flush=True)
+            cls.log("Searching for images with file_name less than "
+                    f"{image_from.file_name}")
         images_before = list(ImageModel.objects(
             dataset_id=dataset_id,
             file_name__lt=image_from.file_name,
