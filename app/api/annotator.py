@@ -4,6 +4,8 @@ from flask import request
 
 from ..util import query_util
 from ..util import coco_util
+from ..util.autoannotator import Autoannotator
+from ..util import annotation_util
 from ..models import *
 
 
@@ -79,6 +81,10 @@ class AnnotatorData(Resource):
                     segmentation, area, bbox = coco_util.\
                         paperjs_to_coco(width, height, paperjs_object)
 
+                    if Autoannotator.enabled:
+                        if not annotation_util.segmentation_equal(
+                                segmentation, db_annotation.segmentation):
+                            Autoannotator.submit(annotation_id)
 
                     db_annotation.update(
                         set__segmentation=segmentation,

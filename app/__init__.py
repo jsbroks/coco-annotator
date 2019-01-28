@@ -9,6 +9,7 @@ from .config import Config
 from .models import *
 from .authentication import login_manager
 from .util import query_util, color_util
+from .util.autoannotator import Autoannotator
 
 import threading
 import requests
@@ -62,6 +63,11 @@ if Config.INITIALIZE_FROM_FILE:
 
 if Config.LOAD_IMAGES_ON_START:
     ImageModel.load_images(Config.DATASET_DIRECTORY)
+
+if Config.AUTOANNOTATOR_ENABLED:
+    Autoannotator.start(
+        max_workers=Config.AUTOANNOTATOR_MAX_WORKERS,
+        max_queue_size=Config.AUTOANNOTATOR_QUEUE_SIZE)
 
 
 @app.route('/', defaults={'path': ''})
