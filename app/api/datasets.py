@@ -7,9 +7,9 @@ from threading import Thread
 from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
-from ..util import query_util, coco_util, color_util
+from ..util import query_util, coco_util
 from ..models import *
-
+import imantics as im
 
 import datetime
 import json
@@ -312,7 +312,7 @@ class ImageCoco(Resource):
                 errors.append({'category': category_name,
                                'message': 'Creating category ' + category_name + '.'})
 
-                new_category = CategoryModel(name=category_name, color=color_util.random_color_hex())
+                new_category = CategoryModel(name=category_name, color=im.Color.random().hex)
                 new_category.save()
                 categories_id[category_id] = new_category.id
                 print("Category not found! (Creating new one)", flush=True)
