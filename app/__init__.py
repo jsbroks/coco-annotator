@@ -67,7 +67,10 @@ if Config.LOAD_IMAGES_ON_START:
 if Config.AUTOANNOTATOR_ENABLED:
     Autoannotator.start(
         max_workers=Config.AUTOANNOTATOR_MAX_WORKERS,
-        max_queue_size=Config.AUTOANNOTATOR_QUEUE_SIZE)
+        max_queue_size=Config.AUTOANNOTATOR_QUEUE_SIZE,
+        max_mismatched=Config.AUTOANNOTATOR_MAX_MISMATCHED,
+        diff_threshold=Config.AUTOANNOTATOR_DIFF_THRESHOLD,
+        verbose=Config.AUTOANNOTATOR_VERBOSE)
 
 
 @app.route('/', defaults={'path': ''})
