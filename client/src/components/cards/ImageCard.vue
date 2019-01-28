@@ -1,26 +1,58 @@
 <template>
   <div class="col-md-3">
     <div class="card mb-4 box-shadow">
-      <img class="card-img-top" @click="openAnnotator" style="width: 100%; display: block" :src="imageUrl">
+      <img
+        class="card-img-top"
+        @click="openAnnotator"
+        style="width: 100%; display: block"
+        :src="imageUrl"
+      />
       <div class="card-body">
-
-        <span class="d-inline-block text-truncate" style="max-width: 85%; float: left">
-          <strong class="card-title">{{ image.id }}. {{ image.file_name }}</strong>
+        <span
+          class="d-inline-block text-truncate"
+          style="max-width: 85%; float: left"
+        >
+          <strong class="card-title"
+            >{{ image.id }}. {{ image.file_name }}</strong
+          >
         </span>
 
-        <i class="card-text fa fa-ellipsis-v fa-x icon-more" :id="'dropdownImage' + image.id" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true" />
-        <br>
+        <i
+          class="card-text fa fa-ellipsis-v fa-x icon-more"
+          :id="'dropdownImage' + image.id"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-hidden="true"
+        />
+        <br />
         <div>
           <p v-if="image.annotations > 0">
-            {{ image.annotations }} annotation<span v-show="image.annotations > 1">s</span>
+            {{ image.annotations }} annotation<span
+              v-show="image.annotations > 1"
+              >s</span
+            >
           </p>
           <p v-else>Image has no annotations</p>
+          <span
+            v-for="(category, index) in image.categories"
+            :key="index"
+            class="badge badge-pill badge-primary category-badge"
+            :style="{ 'background-color': category.color }"
+          >
+            {{ category.name }}
+          </span>
         </div>
 
-        <div class="dropdown-menu" :aria-labelledby="'dropdownImage' + image.id">
+        <div
+          class="dropdown-menu"
+          :aria-labelledby="'dropdownImage' + image.id"
+        >
           <a class="dropdown-item" @click="onDeleteClick">Delete</a>
           <a class="dropdown-item" @click="openAnnotator">Annotate</a>
-          <a class="dropdown-item" @click="onDownloadClick">Download Image & COCO</a>
+          <a class="dropdown-item" @click="onDownloadClick"
+            >Download Image & COCO</a
+          >
         </div>
       </div>
     </div>
@@ -124,5 +156,9 @@ p {
   padding: 0;
   float: right;
   color: black;
+}
+.category-badge {
+  float: left;
+  margin: 0 2px 5px 0;
 }
 </style>

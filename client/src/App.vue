@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <NavBar v-show="showNavBar"/>
+    <NavBar v-show="showNavBar" />
     <RouterView :key="$route.fullPath" />
   </div>
 </template>

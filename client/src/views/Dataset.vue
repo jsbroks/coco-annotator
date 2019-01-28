@@ -1,19 +1,37 @@
 <template>
   <div>
     <div style="padding-top: 55px" />
-    <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
+    <div
+      class="album py-5 bg-light"
+      style="overflow: auto; height: calc(100vh - 55px)"
+    >
       <div class="container">
         <h2 class="text-center">Dataset of {{ dataset.name }}</h2>
         <p class="text-center">
-          Total of <strong>{{ imageCount }}</strong> images displayed on <strong>{{ pages }}</strong> pages.
+          Total of <strong>{{ imageCount }}</strong> images displayed on
+          <strong>{{ pages }}</strong> pages.
         </p>
 
         <div class="row justify-content-md-center">
-          <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
-            <button type="button" class="btn btn-success" data-toggle="modal" data-target="#generateDataset">
+          <div
+            class="col-md-auto btn-group"
+            role="group"
+            style="padding-bottom: 20px"
+          >
+            <button
+              type="button"
+              class="btn btn-success"
+              data-toggle="modal"
+              data-target="#generateDataset"
+            >
               Generate
             </button>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cocoUpload">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-toggle="modal"
+              data-target="#cocoUpload"
+            >
               Import COCO
             </button>
             <!-- <button type="button" class="btn btn-info">
@@ -23,55 +41,97 @@
         </div>
         <div v-if="subdirectories.length > 0" class="text-center">
           <h5>Subdirectories</h5>
-          <button v-for="(subdirectory, subId) in subdirectories" :key="subId" class="btn badge badge-pill badge-primary category-badge" style="margin: 2px" @click="folders.push(subdirectory)">{{ subdirectory }}
+          <button
+            v-for="(subdirectory, subId) in subdirectories"
+            :key="subId"
+            class="btn badge badge-pill badge-primary category-badge"
+            style="margin: 2px"
+            @click="folders.push(subdirectory)"
+          >
+            {{ subdirectory }}
           </button>
         </div>
 
         <ol class="breadcrumb">
           <li class="breadcrumb-item"></li>
           <li class="breadcrumb-item active">
-            <button class="btn btn-sm btn-link" @click="folders = []">{{ dataset.name }} </button>
+            <button class="btn btn-sm btn-link" @click="folders = []">
+              {{ dataset.name }}
+            </button>
           </li>
-          <li v-for="(folder, folderId) in folders" :key="folderId" class="breadcrumb-item">
-            <button class="btn btn-sm btn-link" :disabled="folders[folders.length - 1] === folder" @click="removeFolder(folder)">{{ folder }}</button>
+          <li
+            v-for="(folder, folderId) in folders"
+            :key="folderId"
+            class="breadcrumb-item"
+          >
+            <button
+              class="btn btn-sm btn-link"
+              :disabled="folders[folders.length - 1] === folder"
+              @click="removeFolder(folder)"
+            >
+              {{ folder }}
+            </button>
           </li>
         </ol>
 
-        <p class="text-center" v-if="images.length < 1">No images found in directory.</p>
+        <p class="text-center" v-if="images.length < 1">
+          No images found in directory.
+        </p>
         <div v-else>
           <Pagination :pages="pages" @pagechange="updatePage" />
           <div class="row">
             <ImageCard v-for="image in images" :key="image.id" :image="image" />
           </div>
-          <hr>
+          <hr />
         </div>
       </div>
     </div>
-    
+
     <div class="modal fade" tabindex="-1" role="dialog" id="generateDataset">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Generate a Dataset</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <form>
-               <div class="form-group">
+              <div class="form-group">
                 <label>Keyword</label>
-                <input class="form-control" v-model="keyword"/>
+                <input class="form-control" v-model="keyword" />
               </div>
               <div class="form-group">
                 <label>Limit</label>
-                <input class="form-control" type="number" v-model="generateLimit"/>
+                <input
+                  class="form-control"
+                  type="number"
+                  v-model="generateLimit"
+                />
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="generateDataset">Generate</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="generateDataset"
+            >
+              Generate
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -81,7 +141,12 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Upload COCO Annotaitons</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -89,13 +154,26 @@
             <form>
               <div class="form-group">
                 <label for="coco">COCO Annotation file (.json)</label>
-                <input type="file" class="form-control-file" id="coco">
+                <input type="file" class="form-control-file" id="coco" />
               </div>
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="uploadCoco" data-dismiss="modal">Upload</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="uploadCoco"
+              data-dismiss="modal"
+            >
+              Upload
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

@@ -1,72 +1,138 @@
 <template>
   <div style="display: block; height: inherit;">
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
-      
       <div v-show="mode == 'segment'">
-        <hr>
-        
-        <SelectTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="select" />
-        <hr>
+        <hr />
 
-        <PolygonTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="polygon" />
-        <MagicWandTool v-model="activeTool" :raster="image.raster" @setcursor="setCursor" ref="magicwand" />
+        <SelectTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="select"
+        />
+        <hr />
 
-        <BrushTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="brush" />
-        <EraserTool v-model="activeTool" :scale="image.scale" @setcursor="setCursor" ref="eraser" />
+        <PolygonTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="polygon"
+        />
+        <MagicWandTool
+          v-model="activeTool"
+          :raster="image.raster"
+          @setcursor="setCursor"
+          ref="magicwand"
+        />
+
+        <BrushTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="brush"
+        />
+        <EraserTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="eraser"
+        />
       </div>
-      <hr>
+      <hr />
 
       <div v-show="mode == 'segment'">
-        <CopyAnnotationsButton :categories="categories" :image-id="image.id" :next="image.next" :previous="image.previous"/>
+        <CopyAnnotationsButton
+          :categories="categories"
+          :image-id="image.id"
+          :next="image.next"
+          :previous="image.previous"
+        />
         <ShowAllButton />
         <HideAllButton />
       </div>
-      
+
       <CenterButton />
       <UndoButton />
 
-      <hr>
+      <hr />
 
       <DownloadButton :image="image" />
       <SaveButton />
-      <ModeButton v-model="mode"/>
-      <SettingsButton :metadata="image.metadata" :commands="commands" ref="settings" />
+      <ModeButton v-model="mode" />
+      <SettingsButton
+        :metadata="image.metadata"
+        :commands="commands"
+        ref="settings"
+      />
 
-      <hr>
+      <hr />
       <DeleteButton :image="image" />
-
     </aside>
 
     <aside v-show="panels.show.right" class="right-panel shadow-lg">
-      <hr>
-      <FileTitle :previousimage="image.previous" :nextimage="image.next" :filename="image.filename" />
+      <hr />
+      <FileTitle
+        :previousimage="image.previous"
+        :nextimage="image.next"
+        :filename="image.filename"
+      />
 
       <div v-if="categories.length > 5">
         <div style="padding: 0px 5px">
-          <input v-model="search" class="search" placeholder="Category Search">
+          <input
+            v-model="search"
+            class="search"
+            placeholder="Category Search"
+          />
         </div>
       </div>
-      
-      <div class="sidebar-section" :style="{'max-height': mode == 'label' ? '100%': '57%'}">
-        <p v-if="categories.length == 0" style="color: lightgray; font-size: 12px">
+
+      <div
+        class="sidebar-section"
+        :style="{ 'max-height': mode == 'label' ? '100%' : '57%' }"
+      >
+        <p
+          v-if="categories.length == 0"
+          style="color: lightgray; font-size: 12px"
+        >
           No categories have been added to this image.
         </p>
 
-        <div v-show="mode == 'segment'" style="overflow: auto; max-height: 100%">
-          <Category v-for="(category, index) in categories" :key="category.id + '-category'" :simplify="simplify" :categorysearch="search" :category="category" :opacity="shapeOpacity" :hover="hover" :index="index" @click="onCategoryClick" :current="current" ref="category" />
+        <div
+          v-show="mode == 'segment'"
+          style="overflow: auto; max-height: 100%"
+        >
+          <Category
+            v-for="(category, index) in categories"
+            :key="category.id + '-category'"
+            :simplify="simplify"
+            :categorysearch="search"
+            :category="category"
+            :opacity="shapeOpacity"
+            :hover="hover"
+            :index="index"
+            @click="onCategoryClick"
+            :current="current"
+            ref="category"
+          />
         </div>
 
         <div v-show="mode == 'label'" style="overflow: auto; max-height: 100%">
-          <CLabel v-for="category in categories" v-model="image.categoryIds" :key="category.id + '-label'" :category="category" :search="search"/>
+          <CLabel
+            v-for="category in categories"
+            v-model="image.categoryIds"
+            :key="category.id + '-label'"
+            :category="category"
+            :search="search"
+          />
         </div>
       </div>
 
       <div v-show="mode == 'segment'">
-        <hr>
+        <hr />
         <h6 class="sidebar-title text-center">{{ activeTool }}</h6>
 
         <div class="tool-section" style="max-height: 30%; color: lightgray">
-
           <div v-if="$refs.polygon != null">
             <PolygonPanel :polygon="$refs.polygon" />
           </div>
@@ -86,7 +152,6 @@
           <div v-if="$refs.eraser != null">
             <EraserPanel :eraser="$refs.eraser" />
           </div>
-
         </div>
       </div>
     </aside>
@@ -99,7 +164,6 @@
       <!-- <div v-show="!doneLoading">
         <i class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
       </div> -->
-
     </div>
   </div>
 </template>
@@ -646,7 +710,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 /* width */

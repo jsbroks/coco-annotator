@@ -4,7 +4,6 @@
   </div>
 </template>
 
-
 <script>
 import PanelToggle from "@/components/annotator/panels/PanelToggle";
 

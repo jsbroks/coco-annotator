@@ -3,7 +3,7 @@
     <div class="input-group-prepend tool-option-pre">
       <span class="input-group-text tool-option-font">{{ name }}</span>
     </div>
-    <input v-model="localValue" class="form-control tool-option-input">
+    <input v-model="localValue" class="form-control tool-option-input" />
   </div>
 </template>
 

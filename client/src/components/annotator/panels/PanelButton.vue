@@ -1,5 +1,8 @@
 <template>
-  <button class="btn btn-outline-light tool-input-button" @click="$emit('click')">
+  <button
+    class="btn btn-outline-light tool-input-button"
+    @click="$emit('click')"
+  >
     {{ name }}
   </button>
 </template>

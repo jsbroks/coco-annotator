@@ -7,7 +7,7 @@
       data-toggle="modal"
       data-target="#copyAnnotations"
     ></i>
-    <br>
+    <br />
     <!-- Modal -->
     <div
       id="copyAnnotations"
@@ -21,18 +21,34 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="copyAnnotationsLabel">Copy Annotations From Image</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <h5 class="modal-title" id="copyAnnotationsLabel">
+              Copy Annotations From Image
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <form novalidate="true">
-
-              <button type="button" class="btn btn-sm btn-light" style="float: left" @click="fromId = previous.toString()">
+              <button
+                type="button"
+                class="btn btn-sm btn-light"
+                style="float: left"
+                @click="fromId = previous.toString()"
+              >
                 <i class="fa fa-arrow-left"></i> Previous Image
               </button>
-              <button type="button" class="btn btn-sm btn-light" style="float: right; margin-left: 8px" @click="fromId = next.toString()">
+              <button
+                type="button"
+                class="btn btn-sm btn-light"
+                style="float: right; margin-left: 8px"
+                @click="fromId = next.toString()"
+              >
                 Next Image <i class="fa fa-arrow-right"></i>
               </button>
 
@@ -40,10 +56,13 @@
                 <label>Image ID</label>
                 <input
                   v-model="fromId"
-                  :class="{'form-control': true, 'is-invalid': validImageId.length !== 0}"
+                  :class="{
+                    'form-control': true,
+                    'is-invalid': validImageId.length !== 0
+                  }"
                   placeholder="Enter an image ID"
                   required
-                >
+                />
                 <div class="invalid-feedback">{{ validImageId }}</div>
               </div>
 
@@ -58,12 +77,19 @@
                   :typeahead-activation-threshold="0"
                 />
               </div>
-
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="close()">Close</button>
-            <button type="button" class="btn btn-primary" @click="copyAnnotations()">Copy</button>
+            <button type="button" class="btn btn-secondary" @click="close()">
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="copyAnnotations()"
+            >
+              Copy
+            </button>
           </div>
         </div>
       </div>

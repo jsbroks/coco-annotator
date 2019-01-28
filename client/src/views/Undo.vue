@@ -1,7 +1,10 @@
 <template>
   <div>
     <div style="padding-top: 55px" />
-    <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
+    <div
+      class="album py-5 bg-light"
+      style="overflow: auto; height: calc(100vh - 55px)"
+    >
       <div class="container">
         <h2 class="text-center">Undo</h2>
         <p class="text-center">
@@ -9,10 +12,20 @@
         </p>
 
         <div class="row justify-content-md-center">
-          <div class="col-md-auto btn-group" role="group" style="padding-bottom: 20px">
-            <button type="button" class="btn btn-success disabled">Undo All</button>
-            <button type="button" class="btn btn-danger disabled">Delete All</button>
-            <button type="button" class="btn btn-secondary" @click="updatePage">Refresh</button>
+          <div
+            class="col-md-auto btn-group"
+            role="group"
+            style="padding-bottom: 20px"
+          >
+            <button type="button" class="btn btn-success disabled">
+              Undo All
+            </button>
+            <button type="button" class="btn btn-danger disabled">
+              Delete All
+            </button>
+            <button type="button" class="btn btn-secondary" @click="updatePage">
+              Refresh
+            </button>
           </div>
         </div>
 
@@ -32,7 +45,10 @@
             <span>Limit</span>
           </div>
           <div class="col-md-2">
-            <select v-model="limit" class="form-control form-control-sm text-inline">
+            <select
+              v-model="limit"
+              class="form-control form-control-sm text-inline"
+            >
               <option>50</option>
               <option>100</option>
               <option>500</option>
@@ -57,12 +73,26 @@
 
             <tbody>
               <tr v-for="(undo, index) in undos" :key="index">
-                <td>{{ undo.ago.length > 0 ? undo.ago : 0 + " seconds" }} ago</td>
+                <td>
+                  {{ undo.ago.length > 0 ? undo.ago : 0 + " seconds" }} ago
+                </td>
                 <td>{{ undo.instance }}</td>
                 <td>{{ undo.id }}</td>
                 <td>{{ undo.name }}</td>
-                <td><i class="fa fa-undo text-center undo-icon" aria-hidden="true" @click="undoModel(undo.id, undo.instance)" /></td>
-                <td><i class="fa fa-remove text-center delete-icon" aria-hidden="true" @click="deleteModel(undo.id, undo.instance)" /></td>
+                <td>
+                  <i
+                    class="fa fa-undo text-center undo-icon"
+                    aria-hidden="true"
+                    @click="undoModel(undo.id, undo.instance)"
+                  />
+                </td>
+                <td>
+                  <i
+                    class="fa fa-remove text-center delete-icon"
+                    aria-hidden="true"
+                    @click="deleteModel(undo.id, undo.instance)"
+                  />
+                </td>
               </tr>
             </tbody>
           </table>
@@ -96,7 +126,7 @@ export default {
         .then(response => {
           this.undos = response.data;
         })
-        .finally(() => this.removeProcess(process));;
+        .finally(() => this.removeProcess(process));
     },
     undoModel(id, instance) {
       axios.post("/api/undo/?id=" + id + "&instance=" + instance).then(() => {

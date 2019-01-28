@@ -1,18 +1,26 @@
 <template>
   <div>
     <div style="padding-top: 55px" />
-    <div class="album py-5 bg-light" style="overflow: auto; height: calc(100vh - 55px)">
+    <div
+      class="album py-5 bg-light"
+      style="overflow: auto; height: calc(100vh - 55px)"
+    >
       <div class="container">
         <h2 class="text-center">Hello, {{ displayName }}</h2>
-        
-        <br>
+
+        <br />
         <div style="text-align: left">
           <h4>Change Password</h4>
-          <br>
+          <br />
           <form>
             <div class="form-group">
               <label>Current Password</label>
-              <input v-model="changePassword.password" type="password" class="form-control" required >
+              <input
+                v-model="changePassword.password"
+                type="password"
+                class="form-control"
+                required
+              />
             </div>
             <div class="form-group">
               <label>New Password</label>
@@ -22,25 +30,34 @@
                 type="password"
                 class="form-control"
                 required
-              >
-              <div class="invalid-feedback">Minimum length of 5 characters.</div>
+              />
+              <div class="invalid-feedback">
+                Minimum length of 5 characters.
+              </div>
             </div>
             <div class="form-group">
               <label>Confirm Password</label>
               <input
                 v-model="changePassword.confirm_password"
-                :class="{ 'is-valid': changePassword.confirm_password.length > 0
-                        && changePassword.confirm_password === changePassword.new_password }"
+                :class="{
+                  'is-valid':
+                    changePassword.confirm_password.length > 0 &&
+                    changePassword.confirm_password ===
+                      changePassword.new_password
+                }"
                 type="password"
                 class="form-control"
-              >
+              />
             </div>
-            <button type="submit" class="btn btn-primary btn-block" @click.prevent="changeUserPassword">
+            <button
+              type="submit"
+              class="btn btn-primary btn-block"
+              @click.prevent="changeUserPassword"
+            >
               Submit
             </button>
           </form>
         </div>
-
       </div>
     </div>
   </div>
