@@ -39,4 +39,4 @@ COPY ./.git /workspace/.git
 COPY ./app /workspace/app
 
 EXPOSE 5000
-CMD gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py --log-level debug
+CMD gunicorn -w 4 -b 0.0.0.0:5000 app:app --timeout 180 --config app/gunicorn_config.py --log-level debug
