@@ -276,33 +276,34 @@ export default {
       this.addUndo(action);
     },
     simplifyPath() {
-      let flatten = 1;
       let simplify = this.simplify;
 
-      this.compoundPath.flatten(flatten);
+      this.compoundPath.flatten(1);
 
       if (this.compoundPath instanceof paper.Path) {
         this.compoundPath = new paper.CompoundPath(this.compoundPath);
         this.compoundPath.data.annotationId = this.index;
       }
 
+      let newChildren = [];
       this.compoundPath.children.forEach(path => {
         let points = [];
 
         path.segments.forEach(seg => {
           points.push({ x: seg.point.x, y: seg.point.y });
         });
-
         points = simplifyjs(points, simplify, true);
-        path.remove();
 
         let newPath = new paper.Path(points);
         newPath.closePath();
 
-        this.compoundPath.addChild(newPath);
+        newChildren.push(newPath);
       });
 
-      this.compoundPath.fullySelected = true;
+      this.compoundPath.removeChildren();
+      this.compoundPath.addChildren(newChildren);
+
+      this.compoundPath.fullySelected = this.isCurrent;
     },
     undoCompound() {
       if (this.pervious.length == 0) return;
@@ -325,7 +326,6 @@ export default {
       this.compoundPath.remove();
       this.compoundPath = newCompound;
 
-      this.compoundPath.fullySelected = true;
       if (simplify) this.simplifyPath();
     },
     /**
@@ -369,6 +369,8 @@ export default {
         color: this.color,
         metadata: metadata
       };
+
+      this.simplifyPath();
 
       let json = this.compoundPath.exportJSON({
         asString: false,
