@@ -1,0 +1,287 @@
+import threading
+import json
+import imantics as im
+from collections import OrderedDict
+from ..models import (
+    ImageModel, AnnotationModel, CategoryModel,
+    DatasetModel, CocoImportModel)
+from concurrent.futures import ThreadPoolExecutor, TimeoutError, wait
+
+
+class CocoImporter:
+    executor = ThreadPoolExecutor(
+        thread_name_prefix=__name__,
+        max_workers=4)
+    verbose = False
+    import_lock = threading.Lock()
+    image_count_threshold = 1000
+    annotation_count_threshold = 1000
+
+    @classmethod
+    def import_coco(cls, coco_raw, dataset_id, creator):
+        """
+        Submit a new coco file for import
+        """
+        db_coco_import = CocoImportModel(creator=creator).save()
+
+        coco_import = CocoImport(
+            coco_raw, dataset_id, db_coco_import.id, creator,
+            verbose=cls.verbose)
+        cls.executor.submit(
+            coco_import.do_import, executor=cls.executor)
+        return db_coco_import.id
+
+
+class CocoImport:
+    """
+    Represents a single import attempt
+    """
+    def __init__(self, coco_raw, dataset_id, import_id, creator,
+                 verbose=False):
+        self.coco_json = json.load(coco_raw)
+        self.dataset_id = dataset_id
+        self.import_id = import_id
+        self.creator = creator
+        self.verbose = verbose
+        self.items_complete = 0
+        self.items_total = 1
+        self.items_complete_lock = threading.Lock()
+        self.errors = list()
+
+    def log(self, msg):
+        """
+        Log a message from this import instance
+        """
+        print(f"[{self.__class__.__name__}:{self.import_id}] {msg}",
+              flush=True)
+
+    def update_progress(self):
+        with self.items_complete_lock:
+            progress = float(self.items_complete) / float(self.items_total)
+
+        if self.verbose:
+            self.log(f"Completed {self.items_complete} / {self.items_total};"
+                     f" updating progress to {progress:.04f}")
+        coco_import = CocoImportModel.objects(id=self.import_id).first()
+        coco_import.update(set__progress=progress)
+
+    def get_progress(self):
+        """
+        Get the current progress of the import as a fraction of the total
+        """
+        with self.items_complete_lock:
+            return float(self.items_complete) / float(self.items_total)
+
+    def do_import(self, executor):
+        """
+        Perform the coco import
+        """
+        if self.verbose:
+            self.log("Beginning import")
+
+        
+        dataset = DatasetModel.objects(id=self.dataset_id).first()
+        images = ImageModel.objects(dataset_id=self.dataset_id)
+        categories = CategoryModel.objects
+
+        coco_images = self.coco_json.get('images')
+        coco_annotations = self.coco_json.get('annotations')
+        coco_categories = self.coco_json.get('categories')
+
+        if self.verbose:
+            self.log(f"Importing {len(coco_categories)} categories, "
+                        f"{len(coco_images)} images, and "
+                        f"{len(coco_annotations)} annotations")
+
+        self.items_total = (
+            len(coco_images) + len(coco_annotations) + len(coco_categories))
+
+        categories_id = {}
+        images_id = {}
+
+        
+        # Create any missing categories
+        for category in coco_categories:
+            category_name = category.get('name')
+            if self.verbose:
+                self.log("Loading category {category_name}")
+
+            category_id = category.get('id')
+            category_model = categories.filter(
+                name__exact=category_name).all()
+
+            if not category_model:
+                self.errors.append({
+                    'category': category_name,
+                    'message': 'Creating category ' + category_name + '.'
+                })
+
+                new_category = CategoryModel(
+                    name=category_name, color=im.Color.random().hex)
+                new_category.save()
+                categories_id[category_id] = new_category.id
+                if self.verbose:
+                    self.log("Category not found! (Creating new one)")
+                continue
+
+            if len(category_model) > 1:
+                self.errors.append({
+                    'category': category_name,
+                    'message': 'To many categories found with file name.'
+                })
+                continue
+
+            category_model = category_model[0]
+            categories_id[category_id] = category_model.id
+
+        with self.items_complete_lock:
+            self.items_complete += len(coco_categories)
+        self.update_progress()
+
+        # Add any new categories to dataset
+        for value in categories_id.values():
+            if value not in dataset.categories:
+                dataset.categories.append(value)
+
+        dataset.update(set__categories=dataset.categories)
+
+        if len(coco_images) > CocoImporter.image_count_threshold:
+            # split images up into batches, import them in parallel
+            imports = list()
+            remaining = coco_images
+            while remaining:
+                if len(remaining) > CocoImporter.image_count_threshold:
+                    subset = remaining[
+                        0:CocoImporter.image_count_threshold]
+                    remaining = remaining[
+                        CocoImporter.image_count_threshold:]
+                else:
+                    subset = remaining
+                    remaining = []
+                imports.append(
+                    executor.submit(self.import_images, coco_images=subset,
+                                    images=images, images_id=images_id))
+            # process all images before moving on to annotations
+            while True:
+                finished, unfinished = wait(imports, timeout=3)
+                self.update_progress()
+                if not unfinished:
+                    break
+        else:
+            self.import_images(coco_images, images, images_id)
+
+        self.update_progress()
+
+        if len(coco_annotations) > CocoImporter.annotation_count_threshold:
+            # split annotations up into batches, import them in parallel
+            imports = list()
+            remaining = coco_annotations
+            while remaining:
+                if len(remaining) > CocoImporter.annotation_count_threshold:
+                    subset = remaining[
+                        0:CocoImporter.annotation_count_threshold]
+                    remaining = remaining[
+                        CocoImporter.annotation_count_threshold:]
+                else:
+                    subset = remaining
+                    remaining = []
+
+                imports.append(
+                    executor.submit(
+                        self.import_annotations, coco_annotations=subset,
+                        categories_id=categories_id, images_id=images_id))
+            while True:
+                finished, unfinished = wait(imports, timeout=3)
+                self.update_progress()
+                if not unfinished:
+                    break
+        else:
+            self.import_annotations(coco_annotations, categories_id, images_id)
+
+        with self.items_complete_lock:
+            self.items_complete = self.items_total
+        self.update_progress()
+        # release resources
+        self.coco_json = None
+
+    def import_images(self, coco_images, images, images_id):
+        """
+        Import/load all images in the provided subset
+        """
+        # Find all images
+        for image in coco_images:
+            image_id = image.get('id')
+            image_filename = image.get('file_name')
+
+            if self.verbose:
+                self.log(f"Loading image {image_filename}")
+            image_model = images.filter(file_name__exact=image_filename).all()
+
+            with self.items_complete_lock:
+                self.items_complete += 1
+
+            if not image_model:
+                self.errors.append({'file_name': image_filename,
+                                    'message': 'Could not find image.'})
+                continue
+
+            if len(image_model) > 1:
+                self.errors.append({
+                    'file_name': image_filename,
+                    'message': ('To many images found with '
+                                'the same file name.')})
+                continue
+
+            image_model = image_model[0]
+            if self.verbose:
+                self.log(f"Found image {image_filename}")
+            images_id[image_id] = image_model
+
+    def import_annotations(self, coco_annotations, categories_id, images_id):
+        """
+        Import all annotations in the provided subset
+        """
+        for annotation in coco_annotations:
+            image_id = annotation.get('image_id')
+            category_id = annotation.get('category_id')
+            segmentation = annotation.get('segmentation', [])
+            # is_crowd = annotation.get('iscrowed', False)
+
+            with self.items_complete_lock:
+                self.items_complete += 1
+
+            if not segmentation:
+                continue
+
+            if self.verbose:
+                self.log("Loading annotation data "
+                         f"(image:{image_id} category:{category_id})")
+
+            try:
+                image_model = images_id[image_id]
+                category_model_id = categories_id[category_id]
+            except KeyError:
+                continue
+
+            # Check if annotation already exists
+            annotation = AnnotationModel.objects(image_id=image_model.id,
+                                                 category_id=category_model_id,
+                                                 segmentation=segmentation,
+                                                 deleted=False).first()
+            # Create annotation
+            if annotation is None:
+                if self.verbose:
+                    self.log("Creating Annotation for "
+                             f"(image:{image_id} category:{category_id})")
+                annotation = AnnotationModel(image_id=image_model.id)
+                annotation.category_id = category_model_id
+                # annotation.iscrowd = is_crowd
+                annotation.segmentation = segmentation
+                annotation.color = im.Color.random().hex
+                annotation.save()
+
+                image_model.update(set__annotated=True)
+            elif self.verbose:
+                self.log("Annotation for "
+                         f"(image:{image_id} category:{category_id}) "
+                         "already exists")
