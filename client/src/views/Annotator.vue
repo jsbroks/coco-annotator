@@ -637,10 +637,10 @@ export default {
         }
       }
     },
-    currentAnnotation() {
-      if (this.currentAnnotation != null) {
-        if (this.currentCategory.showAnnotations) {
-          let element = this.currentAnnotation.$el;
+    currentAnnotation(newElement) {
+      if (newElement != null) {
+        if (newElement.showAnnotations) {
+          let element = newElement.$el;
           this.scrollElement(element);
         }
       }

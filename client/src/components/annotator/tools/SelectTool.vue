@@ -17,8 +17,15 @@ export default {
       name: "Select",
       cursor: "pointer",
       movePath: false,
+      point: null,
       segment: null,
       scaleFactor: 15,
+      edit: {
+        indicatorWidth: 0,
+        indicatorSize: 0,
+        center: null,
+        canMove: false
+      },
       hover: {
         showText: true,
         text: null,
@@ -36,7 +43,18 @@ export default {
       hitOptions: {
         segments: true,
         stroke: true,
-        tolerance: 2
+        fill: false,
+        tolerance: 5,
+        match: hit => {
+          if (this.point == null) return true;
+          if (
+            hit.item instanceof paper.Path ||
+            hit.item instanceof paper.CompoundPath
+          ) {
+            return !hit.item.hasOwnProperty("indicator");
+          }
+          return true;
+        }
       }
     };
   },
@@ -94,6 +112,7 @@ export default {
         this.hover.text.justification = "left";
         this.hover.text.fillColor = "black";
         this.hover.text.content = content;
+        this.hover.text.indicator = true;
 
         this.hover.text.fontSize = this.hover.fontSize;
 
@@ -101,7 +120,7 @@ export default {
           this.hover.text.bounds,
           this.hover.rounded
         );
-
+        this.hover.box.indicator = true;
         this.hover.box.fillColor = "white";
         this.hover.box.strokeColor = "white";
         this.hover.box.opacity = 0.5;
@@ -120,7 +139,7 @@ export default {
     onMouseDown(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,
-        this.hitResult
+        this.hitOptions
       );
 
       if (!hitResult) return;
@@ -132,21 +151,57 @@ export default {
         return;
       }
 
-      this.path = hitResult.item;
+      let path = hitResult.item;
 
       if (hitResult.type === "segment") {
         this.segment = hitResult.segment;
       } else if (hitResult.type === "stroke") {
         let location = hitResult.location;
-        this.segment = this.path.insert(location.index + 1, event.point);
+        this.segment = path.insert(location.index + 1, event.point);
       }
+
+      if (this.point != null) {
+        this.edit.canMove = this.point.contains(event.point);
+      }
+    },
+    createPoint(point) {
+      if (this.point != null) {
+        this.point.remove();
+      }
+
+      this.point = new paper.Path.Circle(point, this.edit.indicatorSize);
+      this.point.strokeColor = "white";
+      this.point.strokeWidth = this.edit.indicatorWidth;
+      this.point.indicator = true;
     },
     onMouseDrag(event) {
       if (this.segment) {
+        if (!this.edit.canMove) return;
+        this.createPoint(event.point);
         this.segment.point = event.point;
       }
     },
     onMouseMove(event) {
+      let hitResult = this.$parent.paper.project.hitTest(
+        event.point,
+        this.hitOptions
+      );
+
+      if (hitResult) {
+        let point = null;
+
+        if (hitResult.type === "segment") {
+          point = hitResult.segment.location.point;
+        } else if (hitResult.type === "stroke") {
+          point = hitResult.location.point;
+        }
+
+        if (point != null) {
+          this.edit.center = point;
+          this.createPoint(point);
+        }
+      }
+
       this.$parent.hover.annotation = -1;
       this.$parent.hover.category = -1;
 
@@ -185,7 +240,7 @@ export default {
         }
       } else {
         this.hover.category = null;
-        this.hover.annotation = -1;
+        this.hover.annotation = null;
 
         if (this.hover.text != null) {
           this.hover.text.remove();
@@ -197,20 +252,51 @@ export default {
     }
   },
   watch: {
-    scale(newScale) {
-      this.hover.rounded = newScale * 5;
-      this.hover.textShift = newScale * 40;
-      this.hover.fontSize = newScale * this.scaleFactor;
+    scale: {
+      handler(newScale) {
+        this.hover.rounded = newScale * 5;
+        this.hover.textShift = newScale * 40;
+        this.hover.fontSize = newScale * this.scaleFactor;
+        this.edit.distance = newScale * 40;
+        this.edit.indicatorSize = newScale * 10;
+        this.edit.indicatorWidth = newScale * 2;
 
-      if (this.hover.text != null) {
-        this.hover.text.fontSize = this.hover.fontSize;
-        this.hover.shift =
-          (this.hover.text.bounds.bottomRight.x -
-            this.hover.text.bounds.bottomLeft.x) /
-          2;
-        let totalShift = this.hover.shift + this.hover.textShift;
-        this.hover.text.position = this.hover.position.add(totalShift, 0);
-        this.hover.box.bounds = this.hover.text.bounds;
+        if (this.edit.center) {
+          this.createPoint(this.edit.center);
+        }
+
+        if (this.hover.text != null) {
+          this.hover.text.fontSize = this.hover.fontSize;
+          this.hover.shift =
+            (this.hover.text.bounds.bottomRight.x -
+              this.hover.text.bounds.bottomLeft.x) /
+            2;
+          let totalShift = this.hover.shift + this.hover.textShift;
+          this.hover.text.position = this.hover.position.add(totalShift, 0);
+          this.hover.box.bounds = this.hover.text.bounds;
+        }
+      },
+      immediate: true
+    },
+    isActive(active) {
+      if (active) {
+        this.tool.activate();
+      } else {
+        if (this.hover.text) {
+          this.hover.text.remove();
+          this.hover.box.remove();
+
+          this.hover.box = null;
+          this.hover.text = null;
+        }
+        if (this.point) {
+          this.point.remove();
+          this.point = null;
+          this.segment = null;
+        }
+        if (this.hover.annotation) {
+          this.hover.annotation.compoundPath.selected = false;
+        }
       }
     }
   }

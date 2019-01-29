@@ -235,6 +235,10 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.setColor();
+
+      this.compoundPath.onClick = () => {
+        this.$emit("click", this.index);
+      };
     },
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
@@ -259,6 +263,7 @@ export default {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let copy = this.compoundPath.clone();
+      copy.fullySelected = false;
       copy.visible = false;
       this.pervious.push(copy);
 
@@ -296,11 +301,14 @@ export default {
 
         this.compoundPath.addChild(newPath);
       });
+
+      this.compoundPath.fullySelected = true;
     },
     undoCompound() {
       if (this.pervious.length == 0) return;
       this.compoundPath.remove();
       this.compoundPath = this.pervious.pop();
+      this.compoundPath.fullySelected = this.isCurrent;
     },
     /**
      * Unites current annotation path with anyother path.
@@ -317,6 +325,7 @@ export default {
       this.compoundPath.remove();
       this.compoundPath = newCompound;
 
+      this.compoundPath.fullySelected = true;
       if (simplify) this.simplifyPath();
     },
     /**
@@ -392,6 +401,10 @@ export default {
     },
     annotation() {
       this.initAnnotation();
+    },
+    isCurrent() {
+      if (this.compoundPath == null) return;
+      this.compoundPath.fullySelected = this.isCurrent;
     }
   },
   computed: {

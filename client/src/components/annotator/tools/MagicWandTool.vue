@@ -20,7 +20,7 @@ export default {
       cursor: "crosshair",
       wand: {
         threshold: 30,
-        blur: 5
+        blur: 40
       }
     };
   },
@@ -93,9 +93,9 @@ export default {
       // Create shape and apply to current annotation
       let path = this.flood(x, y, this.wand.threshold, this.wand.blur);
       if (event.modifiers.shift) {
-        this.$parent.currentAnnotation.unite(path);
+        this.$parent.currentAnnotation.subtract(path, true);
       } else {
-        this.$parent.currentAnnotation.unite(path);
+        this.$parent.currentAnnotation.unite(path, true);
       }
 
       if (path != null) path.remove();
