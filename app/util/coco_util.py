@@ -35,13 +35,16 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         segments_to_add = []
 
         for point in child_segments:
-            if len(point) != 2:
-                continue
-
-            x = _fit(round(center[0] + point[0], 2), image_width, 0)
-            y = _fit(round(center[1] + point[1], 2), image_height, 0)
-
-            segments_to_add.extend([x, y])
+            
+            # Cruve
+            if len(point) == 4:
+                point = point[0]
+            
+            # Point
+            if len(point) == 2:
+                x = _fit(round(center[0] + point[0], 2), image_width, 0)
+                y = _fit(round(center[1] + point[1], 2), image_height, 0)
+                segments_to_add.extend([x, y])
 
         # Make sure shape is not all outside the image
         if sum(segments_to_add) == 0:

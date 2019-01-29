@@ -272,6 +272,8 @@ export default {
     onAnnotationClick(index) {
       let indices = { annotation: index, category: this.index };
       this.selectedAnnotation = index;
+      this.showAnnotations = true;
+
       this.$emit("click", indices);
     },
     /**

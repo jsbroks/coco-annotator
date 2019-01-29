@@ -235,6 +235,10 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.setColor();
+
+      this.compoundPath.onClick = () => {
+        this.$emit("click", this.index);
+      };
     },
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
@@ -259,6 +263,7 @@ export default {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let copy = this.compoundPath.clone();
+      copy.fullySelected = false;
       copy.visible = false;
       this.pervious.push(copy);
 
@@ -271,36 +276,40 @@ export default {
       this.addUndo(action);
     },
     simplifyPath() {
-      let flatten = 1;
       let simplify = this.simplify;
 
-      this.compoundPath.flatten(flatten);
+      this.compoundPath.flatten(1);
 
       if (this.compoundPath instanceof paper.Path) {
         this.compoundPath = new paper.CompoundPath(this.compoundPath);
         this.compoundPath.data.annotationId = this.index;
       }
 
+      let newChildren = [];
       this.compoundPath.children.forEach(path => {
         let points = [];
 
         path.segments.forEach(seg => {
           points.push({ x: seg.point.x, y: seg.point.y });
         });
-
         points = simplifyjs(points, simplify, true);
-        path.remove();
 
         let newPath = new paper.Path(points);
         newPath.closePath();
 
-        this.compoundPath.addChild(newPath);
+        newChildren.push(newPath);
       });
+
+      this.compoundPath.removeChildren();
+      this.compoundPath.addChildren(newChildren);
+
+      this.compoundPath.fullySelected = this.isCurrent;
     },
     undoCompound() {
       if (this.pervious.length == 0) return;
       this.compoundPath.remove();
       this.compoundPath = this.pervious.pop();
+      this.compoundPath.fullySelected = this.isCurrent;
     },
     /**
      * Unites current annotation path with anyother path.
@@ -361,6 +370,8 @@ export default {
         metadata: metadata
       };
 
+      this.simplifyPath();
+
       let json = this.compoundPath.exportJSON({
         asString: false,
         precision: 1
@@ -392,6 +403,10 @@ export default {
     },
     annotation() {
       this.initAnnotation();
+    },
+    isCurrent() {
+      if (this.compoundPath == null) return;
+      this.compoundPath.fullySelected = this.isCurrent;
     }
   },
   computed: {
