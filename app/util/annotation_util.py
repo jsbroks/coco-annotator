@@ -26,6 +26,7 @@ def bbox_for_contours(contours):
         bbox = rect_union(bbox, cv2.boundingRect(cnt))
     return bbox
 
+
 def segmentation_to_contours(segmentation):
     contours = list()
     for poly in segmentation:
@@ -45,7 +46,15 @@ def segmentation_equal(seg_a, seg_b):
     """
     if len(seg_a) != len(seg_b):
         return False
-    for i in range(len(seg_a)):
+
+    for i, _ in enumerate(seg_a):
+        # remove excess points used for closing the loop
+        if len(seg_a[i]) >= 4:
+            if seg_a[i][0] == seg_a[i][-2] and seg_a[i][1] == seg_a[i][-1]:
+                seg_a[i] = seg_a[i][:-2]
+        if len(seg_b[i]) >= 4:
+            if seg_b[i][0] == seg_b[i][-2] and seg_b[i][1] == seg_b[i][-1]:
+                seg_b[i] = seg_b[i][:-2]
         if len(seg_a[i]) != len(seg_b[i]):
             return False
         for j in range(len(seg_a[i])):
