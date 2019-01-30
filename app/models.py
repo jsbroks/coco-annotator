@@ -151,6 +151,9 @@ class ImageModel(db.DynamicDocument):
 
             clone.save(copy=True)
 
+        if not self.annotated:
+            self.update(set__annotated=True)
+
         return annotations.count()
 
     def __call__(self):
