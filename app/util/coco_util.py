@@ -57,8 +57,8 @@ def paperjs_to_coco(image_width, image_height, paperjs):
 
         if len(segments_to_add) == 4:
             # len 4 means this is a line with no width; it contributes
-            # no area to the mask, and if we include it, coco will treat 
-            # it instead as a bbox
+            # no area to the mask, and if we include it, coco will treat
+            # it instead as a bbox (and throw an error)
             continue
 
         segments.append(np.array(segments_to_add))
