@@ -124,13 +124,6 @@ class Autoannotator:
         mismatched = [0] * len(annotations)
         finished = [False] * len(annotations)
 
-        if cls.verbose:
-            cls.log(f"compare_and_copy: annotations: {annotations}, "
-                    f"category_names: {category_names}, "
-                    f"masks: {masks}, bboxes: {bboxes}, patches: {patches}; "
-                    f"replaced: {replaced}, matched: {matched}, "
-                    f"mismatched: {mismatched}, finished: {finished}")
-
         for image_to in images:
             if np.alltrue(finished):
                 break
@@ -245,7 +238,7 @@ class Autoannotator:
         if cls.verbose:
             cls.log(f"Processing annotation ids {annotation_ids}")
 
-        annotations = AnnotationModel.objects(ids__in=annotation_ids)
+        annotations = AnnotationModel.objects(id__in=annotation_ids).all()
         if annotations is None:
             cls.log(f"Error: no annotations matching ids {annotation_ids}")
             return
@@ -274,18 +267,20 @@ class Autoannotator:
             patch = cv2.bitwise_and(img, img, mask=mask)
             patch = patch[y:y + h, x:x + w]
             patches.append(patch)
+            cls.log(f"Added category_name: {category_names[-1]}, "
+                    f"mask: {mask}, patch: {patch}, bbox: {bbox}")
 
         images_before, images_after = cls.images_before_and_after(image_from)
 
         cls.executor.submit(cls.compare_and_copy,
-                            annotations=annotation, 
+                            annotations=annotations, 
                             category_names=category_names,
                             image_from=image_from,
                             images=images_after,
                             masks=masks, bboxes=bboxes, patches=patches)
 
         cls.executor.submit(cls.compare_and_copy,
-                            annotations=annotation, 
+                            annotations=annotations, 
                             category_names=category_names,
                             image_from=image_from,
                             images=images_before,
