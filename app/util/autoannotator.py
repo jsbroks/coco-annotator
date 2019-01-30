@@ -38,10 +38,14 @@ class Autoannotator:
             prev_complete = Future()
             cls.queue.put((image_id, annotation_ids,
                            prev_complete, next_complete))
-            if wait_for_next:
-                wait([next_complete], timeout=3)
-            if wait_for_prev:
-                wait([prev_complete], timeout=3)
+
+            if wait_for_next or wait_for_prev:
+                awaited = list()
+                if wait_for_next:
+                    awaited.append(next_complete)
+                if wait_for_prev:
+                    awaited.append(next_complete)
+                wait(awaited, timeout=3)
 
     @classmethod
     def start(cls, max_workers=10, max_queue_size=32,
