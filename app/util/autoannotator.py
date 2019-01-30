@@ -250,14 +250,14 @@ class Autoannotator:
 
         image_from = ImageModel.objects(id=image_id).first()
         img = cv2.imread(image_from.path)
-        mask_base = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
 
         for annotation in annotations:
             category_names.append(CategoryModel.objects(
                 id=annotation.category_id).first().name)
 
             contours = segmentation_to_contours(annotation.segmentation)
-            mask = cv2.drawContours(mask_base, contours, -1, 1, -1)
+            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+            mask = cv2.drawContours(mask, contours, -1, 1, -1)
             masks.append(mask)
 
             bbox = bbox_for_contours(contours)
