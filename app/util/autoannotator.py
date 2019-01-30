@@ -8,7 +8,7 @@ from skimage.measure import compare_ssim
 from ..util.annotation_util import (
     segmentation_equal, extract_cropped_patch, segmentation_to_contours,
     bbox_for_contours)
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Future
 from ..util.coco_util import get_annotations_iou
 import sortedcontainers
 
@@ -26,12 +26,22 @@ class Autoannotator:
         print(f"[{cls.__name__}] {msg}", flush=True)
 
     @classmethod
-    def submit(cls, image_id, annotation_ids):
+    def submit(cls, image_id, annotation_ids, wait_for_next=False,
+               wait_for_prev=False):
         """
-        Submit a (changed) annotation to the queue for processing
+        Submit a (changed) annotation to the queue for processing;
+        if wait_for_next or wait_for_prev is set, the method will not
+        return until the next and/or previous images have been processed
         """
         if cls.queue is not None:
-            cls.queue.put((image_id, annotation_ids))
+            next_complete = Future()
+            prev_complete = Future()
+            cls.queue.put((image_id, annotation_ids,
+                           prev_complete, next_complete))
+            if wait_for_next:
+                next_complete.result(timeout=3)
+            if wait_for_prev:
+                prev_complete.result(timeout=3)
 
     @classmethod
     def start(cls, max_workers=10, max_queue_size=32,
@@ -105,15 +115,18 @@ class Autoannotator:
         annotation is copied to this other image
         """
         while True:
-            image_id, annotation_ids = cls.queue.get()
+            (image_id, annotation_ids,
+             prev_complete, next_complete) = cls.queue.get()
             if annotation_ids is not None:
                 cls.executor.submit(cls.propagate_annotations,
                                     image_id=image_id,
-                                    annotation_ids=annotation_ids)
+                                    annotation_ids=annotation_ids,
+                                    prev_complete=prev_complete,
+                                    next_complete=next_complete)
 
     @classmethod
     def compare_and_copy(cls, annotations, category_names, image_from,
-                         images, masks, bboxes, patches):
+                         images, masks, bboxes, patches, first_complete):
         """
         Compares the provided annotation against all images in the
         images iterable and copies the annotation to those images where
@@ -124,7 +137,13 @@ class Autoannotator:
         mismatched = [0] * len(annotations)
         finished = [False] * len(annotations)
 
-        for image_to in images:
+        if not images:
+            first_complete.set_result(True)
+
+        for index, image_to in enumerate(images):
+            if index > 0:
+                first_complete.set_result(True)
+
             if np.alltrue(finished):
                 break
 
@@ -212,6 +231,9 @@ class Autoannotator:
                 to_remove.delete()
                 replaced[i] += 1
 
+        if len(images) == 1:
+            first_complete.set_result(True)
+
         if cls.verbose:
             msg = ""
             for i, annotation in enumerate(annotations):
@@ -222,7 +244,8 @@ class Autoannotator:
             cls.log(msg)
 
     @classmethod
-    def propagate_annotations(cls, image_id, annotation_ids):
+    def propagate_annotations(cls, image_id, annotation_ids,
+                              prev_complete, next_complete):
         """
         Searches consecutive images within the same dataset both before and 
         after the image containing the specified annotation (ordered by 
@@ -273,11 +296,13 @@ class Autoannotator:
                             category_names=category_names,
                             image_from=image_from,
                             images=images_after,
-                            masks=masks, bboxes=bboxes, patches=patches)
+                            masks=masks, bboxes=bboxes, patches=patches,
+                            first_complete=next_complete)
 
         cls.executor.submit(cls.compare_and_copy,
                             annotations=annotations,
                             category_names=category_names,
                             image_from=image_from,
                             images=images_before,
-                            masks=masks, bboxes=bboxes, patches=patches)
+                            masks=masks, bboxes=bboxes, patches=patches,
+                            first_complete=prev_complete)

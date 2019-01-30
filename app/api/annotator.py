@@ -101,7 +101,8 @@ class AnnotatorData(Resource):
                         annotated = True
 
         if autoannotator_ids:
-            Autoannotator.submit(image_id, autoannotator_ids)
+            Autoannotator.submit(image_id, autoannotator_ids,
+                                 wait_for_next=True, wait_for_prev=True)
 
         image_model.update(
             set__metadata=image.get('metadata', {}),
