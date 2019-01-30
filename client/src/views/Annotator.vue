@@ -454,7 +454,7 @@ export default {
         this.text.topRight.justification = 'right';
         this.text.topRight.fontSize = fontSize
         this.text.topRight.fillColor = "white";
-        this.text.topRight.content = height + "x" + width;
+        this.text.topRight.content = width + "x" + height;
       };
     },
     getData(callback) {
