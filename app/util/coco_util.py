@@ -55,7 +55,7 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         if num_widths + num_heights == len(segments_to_add):
             continue
 
-        segments.append(segments_to_add)
+        segments.append(np.array(segments_to_add))
 
     if len(segments) < 1:
         return [], 0, [0, 0, 0, 0]
