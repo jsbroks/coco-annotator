@@ -60,7 +60,7 @@ class CocoImport:
         progress in the db; adding to more than items_total is safely handled
         """
         with self.items_complete_lock:
-            self.items_complete = max(
+            self.items_complete = min(
                 self.items_complete + count,
                 self.items_total)
 
