@@ -199,6 +199,11 @@ export default {
         if (point != null) {
           this.edit.center = point;
           this.createPoint(point);
+        } else {
+          if (this.point != null) {
+            this.point.remove();
+            this.point = null;
+          }
         }
       }
 
@@ -261,7 +266,7 @@ export default {
         this.edit.indicatorSize = newScale * 10;
         this.edit.indicatorWidth = newScale * 2;
 
-        if (this.edit.center) {
+        if (this.edit.center && this.point != null) {
           this.createPoint(this.edit.center);
         }
 

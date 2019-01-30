@@ -7,9 +7,17 @@ export default {
   name: "MagicWand",
   mixins: [tool],
   props: {
-    raster: {
-      type: Object,
+    width: {
+      type: null,
       required: true
+    },
+    height: {
+      type: null,
+      required: true
+    },
+    imageData: {
+      required: true,
+      validator: prop => typeof prop === "object" || prop === null
     }
   },
   data() {
@@ -44,10 +52,12 @@ export default {
      * @returns {paper.CompoundPath} create selection
      */
     flood(x, y, thr, rad) {
+      if (this.imageData == null) return;
+
       let image = {
-        data: this.imageInfo.data.data,
-        width: this.imageInfo.width,
-        height: this.imageInfo.height,
+        data: this.imageData.data,
+        width: this.width,
+        height: this.height,
         bytes: 4
       };
       let mask = MagicWand.floodFill(image, x, y, thr);
@@ -77,25 +87,21 @@ export default {
       // this.$parent.currentAnnotation.simplifyPath();
     },
     onMouseDown(event) {
-      let x = Math.round(this.imageInfo.width / 2 + event.point.x);
-      let y = Math.round(this.imageInfo.height / 2 + event.point.y);
+      let x = Math.round(this.width / 2 + event.point.x);
+      let y = Math.round(this.height / 2 + event.point.y);
 
       // Check if valid coordinates
-      if (
-        x > this.imageInfo.width ||
-        y > this.imageInfo.height ||
-        x < 0 ||
-        y < 0
-      ) {
+      if (x > this.width || y > this.height || x < 0 || y < 0) {
         return;
       }
 
       // Create shape and apply to current annotation
       let path = this.flood(x, y, this.wand.threshold, this.wand.blur);
+
       if (event.modifiers.shift) {
-        this.$parent.currentAnnotation.subtract(path, true);
+        this.$parent.currentAnnotation.subtract(path);
       } else {
-        this.$parent.currentAnnotation.unite(path, true);
+        this.$parent.currentAnnotation.unite(path);
       }
 
       if (path != null) path.remove();
@@ -107,29 +113,6 @@ export default {
   computed: {
     isDisabled() {
       return this.$parent.current.annotation === -1;
-    }
-  },
-  watch: {
-    // Generate data whenever the image changes
-    raster(raster) {
-      if (raster == null) return;
-      if (Object.keys(raster).length === 0) return;
-
-      this.imageInfo.width = raster.width;
-      this.imageInfo.height = raster.height;
-
-      // Create a copy of image data
-      let tempCtx = document.createElement("canvas").getContext("2d");
-      tempCtx.canvas.width = raster.width;
-      tempCtx.canvas.height = raster.height;
-      tempCtx.drawImage(raster.image, 0, 0);
-
-      this.imageInfo.data = tempCtx.getImageData(
-        0,
-        0,
-        raster.width,
-        raster.height
-      );
     }
   }
 };
