@@ -56,12 +56,10 @@ def paperjs_to_coco(image_width, image_height, paperjs):
             continue
 
         if len(segments_to_add) == 4:
-            # coco tools assumes that len(4) means bbox
-            # instead of poly; it seems they expect polygon
-            # loops to be closed; we'll close the loop to
-            # avoid the problem
-            # here: https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/_mask.pyx#L292
-            segments_to_add.extend(segments_to_add[0:2])
+            # len 4 means this is a line with no width; it contributes
+            # no area to the mask, and if we include it, coco will treat 
+            # it instead as a bbox
+            continue
 
         segments.append(np.array(segments_to_add))
 
