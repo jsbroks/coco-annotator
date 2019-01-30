@@ -86,9 +86,14 @@ class Autoannotator:
                             "images")
 
         index = images.index(image_model)
-        return (
-            images.islice(0, index, reverse=True),
-            images.islice(index + 1))
+        if index == 0:
+            return ([], images)
+        elif index == len(images) - 1:
+            return (reversed(images), [])
+        else:
+            return (
+                images.islice(0, index, reverse=True),
+                images.islice(index + 1))
 
     @classmethod
     def do_propagate_annotations(cls):
