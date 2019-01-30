@@ -20,7 +20,9 @@
         />
         <MagicWandTool
           v-model="activeTool"
-          :raster="image.raster"
+          :width="image.raster.width"
+          :height="image.raster.height"
+          :image-data="image.data"
           @setcursor="setCursor"
           ref="magicwand"
         />
@@ -273,7 +275,8 @@ export default {
         previous: null,
         next: null,
         filename: "",
-        categoryIds: []
+        categoryIds: [],
+        data: null
       },
       categories: [],
       dataset: {},
@@ -402,7 +405,7 @@ export default {
       let process = "Initializing canvas";
       this.addProcess(process);
       this.loading.image = true;
-      4;
+
       let canvas = document.getElementById("editor");
       this.paper.setup(canvas);
       this.paper.view.viewSize = [
@@ -410,21 +413,28 @@ export default {
         window.innerHeight
       ];
       this.paper.activate();
-      let img = new Image();
-      img.onload = () => {
-        // Create image object
-        this.image.raster = new paper.Raster({
-          source: this.image.url,
-          position: new paper.Point(0, 0)
-        });
+
+      this.image.raster = new paper.Raster(this.image.url);
+      this.image.raster.onLoad = () => {
         this.image.raster.sendToBack();
         this.fit();
         this.image.ratio =
           (this.image.raster.width * this.image.raster.height) / 1000000;
         this.removeProcess(process);
         this.loading.image = false;
+
+        let tempCtx = document.createElement("canvas").getContext("2d");
+        tempCtx.canvas.width = this.image.raster.width;
+        tempCtx.canvas.height = this.image.raster.height;
+        tempCtx.drawImage(this.image.raster.image, 0, 0);
+
+        this.image.data = tempCtx.getImageData(
+          0,
+          0,
+          this.image.raster.width,
+          this.image.raster.height
+        );
       };
-      img.src = this.image.url;
     },
     getData(callback) {
       let process = "Loading annotation data";

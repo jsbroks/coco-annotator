@@ -371,12 +371,12 @@ export default {
       };
 
       this.simplifyPath();
-
+      this.compoundPath.fullySelected = false;
       let json = this.compoundPath.exportJSON({
         asString: false,
         precision: 1
       });
-
+      this.compoundPath.fullySelected = this.isCurrent;
       if (this.annotation.paper_object !== json) {
         annotationData.compoundPath = json;
       }
