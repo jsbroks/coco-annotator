@@ -278,6 +278,10 @@ export default {
         categoryIds: [],
         data: null
       },
+      text: {
+        topLeft: null,
+        topRight: null
+      },
       categories: [],
       dataset: {},
       loading: {
@@ -382,7 +386,7 @@ export default {
 
       this.paper.view.zoom = Math.min(
         (canvas.width / parentX) * 0.95,
-        (canvas.height / parentY) * 0.85
+        (canvas.height / parentY) * 0.80
       );
 
       this.image.scale = 1 / this.paper.view.zoom;
@@ -416,24 +420,41 @@ export default {
 
       this.image.raster = new paper.Raster(this.image.url);
       this.image.raster.onLoad = () => {
+        let width = this.image.raster.width;
+        let height = this.image.raster.height;
+
         this.image.raster.sendToBack();
         this.fit();
         this.image.ratio =
-          (this.image.raster.width * this.image.raster.height) / 1000000;
+          (width * height) / 1000000;
         this.removeProcess(process);
         this.loading.image = false;
 
         let tempCtx = document.createElement("canvas").getContext("2d");
-        tempCtx.canvas.width = this.image.raster.width;
-        tempCtx.canvas.height = this.image.raster.height;
+        tempCtx.canvas.width = width;
+        tempCtx.canvas.height = height;
         tempCtx.drawImage(this.image.raster.image, 0, 0);
 
         this.image.data = tempCtx.getImageData(
           0,
           0,
-          this.image.raster.width,
-          this.image.raster.height
+          width,
+          height
         );
+        let fontSize = width * 0.025;
+
+        let positionTopLeft = new Point(-width/2, -height/2 - fontSize*0.5);
+        this.text.topLeft = new paper.PointText(positionTopLeft);
+        this.text.topLeft.fontSize = fontSize
+        this.text.topLeft.fillColor = "white";
+        this.text.topLeft.content = this.image.filename;
+
+        let positionTopRight = new Point(width/2, -height/2 - fontSize*0.4);
+        this.text.topRight = new paper.PointText(positionTopRight);
+        this.text.topRight.justification = 'right';
+        this.text.topRight.fontSize = fontSize
+        this.text.topRight.fillColor = "white";
+        this.text.topRight.content = height + "x" + width;
       };
     },
     getData(callback) {
@@ -456,6 +477,10 @@ export default {
 
           // Update status
           this.loading.data = false;
+
+          if (this.text.topLeft != null) {
+            this.text.topLeft.content = this.image.filename;
+          }
 
           this.$nextTick(() => {
             this.showAll();
