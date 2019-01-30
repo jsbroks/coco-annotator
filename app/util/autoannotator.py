@@ -8,7 +8,7 @@ from skimage.measure import compare_ssim
 from ..util.annotation_util import (
     segmentation_equal, extract_cropped_patch, segmentation_to_contours,
     bbox_for_contours)
-from concurrent.futures import ThreadPoolExecutor, Future
+from concurrent.futures import ThreadPoolExecutor, Future, wait
 from ..util.coco_util import get_annotations_iou
 import sortedcontainers
 
@@ -39,9 +39,9 @@ class Autoannotator:
             cls.queue.put((image_id, annotation_ids,
                            prev_complete, next_complete))
             if wait_for_next:
-                next_complete.result(timeout=3)
+                wait([next_complete], timeout=3)
             if wait_for_prev:
-                prev_complete.result(timeout=3)
+                wait([prev_complete], timeout=3)
 
     @classmethod
     def start(cls, max_workers=10, max_queue_size=32,
