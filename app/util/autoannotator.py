@@ -189,10 +189,10 @@ class Autoannotator:
                     existing_annotations_replaced += existing_replaced
 
                 if cls.verbose:
-                    cls.log(f"Annotation {category_name}({annotation.id}) matches "
-                            f"image {image_to.file_name} with score {score:.5f}; "
-                            "copying...")
-                
+                    cls.log(f"Annotation {category_name}({annotation.id}) "
+                            f"matches image {image_to.file_name} "
+                            f"with score {score:.5f}; copying...")
+
                 mismatched[i] = 0
                 matched[i] += 1
                 annotations_ids_to_copy.append(annotation.id)
