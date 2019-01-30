@@ -57,11 +57,18 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     if len(segments) < 1:
         return [], 0, [0, 0, 0, 0]
 
+    area, bbox = get_segmentation_area_and_bbox(
+        segments, image_height, image_width)
+
+    return segments, area, bbox
+
+
+def get_segmentation_area_and_bbox(segmentation, image_height, image_width):
     # Convert into rle
-    rles = mask.frPyObjects(segments, image_height, image_width)
+    rles = mask.frPyObjects(segmentation, image_height, image_width)
     rle = mask.merge(rles)
 
-    return segments, mask.area(rle), mask.toBbox(rle)
+    return mask.area(rle), mask.toBbox(rle)
 
 
 def get_annotations_iou(annotation_a, annotation_b):
