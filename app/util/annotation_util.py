@@ -2,14 +2,14 @@ import cv2
 import numpy as np
 
 
-def extract_patch(segmentation, img):
+def extract_cropped_patch(img, mask, bbox):
     """
-    Creates a copy of img where all pixes outside of the segmentation
-    are set to zero 
+    Creates a copy of img whereever the pixels of mask are non-zero,
+    then crops the copy by the provided bbox
     """
-    mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
-    mask = cv2.drawContours(mask, segmentation, -1, 255, -1)
-    return cv2.bitwise_and(img, img, mask=mask)
+    patch = cv2.bitwise_and(img, img, mask=mask)
+    x, y, w, h = bbox
+    return patch[y:y + h, x:x + w]
 
 
 def rect_union(a, b):

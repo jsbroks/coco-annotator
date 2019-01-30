@@ -39,6 +39,10 @@ class AnnotatorData(Resource):
         current_user.update(preferences=data.get('user', {}))
 
         annotated = False
+
+        if Autoannotator.enabled:
+            autoannotator_ids = list()
+
         # Iterate every category passed in the data
         for category in data.get('categories', []):
             category_id = category.get('id')
@@ -84,7 +88,7 @@ class AnnotatorData(Resource):
                     if Autoannotator.enabled:
                         if not annotation_util.segmentation_equal(
                                 segmentation, db_annotation.segmentation):
-                            Autoannotator.submit(annotation_id)
+                            autoannotator_ids.append(annotation_id)
 
                     db_annotation.update(
                         set__segmentation=segmentation,
@@ -95,6 +99,9 @@ class AnnotatorData(Resource):
 
                     if area > 0:
                         annotated = True
+
+        if autoannotator_ids:
+            Autoannotator.submit(image_id, autoannotator_ids)
 
         image_model.update(
             set__metadata=image.get('metadata', {}),
