@@ -165,7 +165,7 @@ class Autoannotator:
             existing_is_better = False
             existing_replaced = list()
             for existing_ann in AnnotationModel.objects(
-                    image_id=image_from.id,
+                    image_id=image_to.id,
                     category_id=annotation.category_id,
                     deleted=False).all():
                 existing_iou = get_annotations_iou(annotation, existing_ann)
