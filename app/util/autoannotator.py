@@ -3,12 +3,14 @@ import queue
 import cv2
 import pymongo
 import numpy as np
-from ..models import ImageModel, AnnotationModel
+from ..models import ImageModel, AnnotationModel, CategoryModel
 from skimage.measure import compare_ssim
 from ..util.annotation_util import (
     segmentation_equal, extract_patch, segmentation_to_contours,
     bbox_for_contours)
 from concurrent.futures import ThreadPoolExecutor
+from ..util.coco_util import get_annotations_iou
+import sortedcontainers
 
 
 class Autoannotator:
@@ -16,6 +18,8 @@ class Autoannotator:
     queue = None
     enabled = False
     verbose = False
+    image_cache = dict()
+    image_cache_lock = threading.Lock()
 
     @classmethod
     def log(cls, msg):
@@ -59,6 +63,49 @@ class Autoannotator:
         cls.enabled = True
 
     @classmethod
+    def images_before_and_after(cls, image_model):
+        """
+        Returns 2 interators: the first is a reversed iterator
+        to images before the provided image (by filename), and
+        the second is a forward iterator to images after the
+        provided image (by filename)
+        """
+        images = None
+        with cls.image_cache_lock:
+            images = cls.image_cache.get(image_model.dataset_id)
+            if images is None:
+                try:
+                    if cls.verbose:
+                        cls.log("Adding cached list for dataset id "
+                                f"{image_model.dataset_id}")
+                    images = sortedcontainers.SortedList(
+                        ImageModel.objects(
+                            dataset_id=image_model.dataset_id,
+                            deleted=False).order_by('+file_name').all(),
+                        key=lambda x: x.file_name)
+                    cls.image_cache[image_model.dataset_id] = images
+                    if cls.verbose:
+                        cls.log("Cached list for dataset id "
+                                f"{image_model.dataset_id} with {len(images)} "
+                                "images")
+                except Exception as e:
+                    if cls.verbose:
+                        cls.log("Error caching list for dataset id "
+                                f"{image_model.dataset_id}: {e}")
+                    raise e
+
+        try:
+            index = images.index(image_model)
+            if cls.verbose:
+                cls.log(f"Found {image_model.file_name} at index {index}")
+            return (
+                images.islice(0, index, reverse=True),
+                images.islice(index + 1))
+        except Exception as e:
+            cls.log(f"Error splitting image list: {e}")
+            raise e
+
+    @classmethod
     def do_propagate_annotations(cls):
         """
         Performs automatic propagation of annotations by comparing
@@ -73,12 +120,15 @@ class Autoannotator:
                 cls.executor.submit(cls.propagate_annotation, *[annotation_id])
 
     @classmethod
-    def compare_and_copy(cls, annotation, image_from,
+    def compare_and_copy(cls, annotation, category_name, image_from,
                          images, mask, bbox, patch):
-        if cls.verbose:
-            print(f"Comparing {annotation.id} vs. "
-                  f"{len(images)} images", flush=True)
-
+        """
+        Compares the provided annotation against all images in the
+        images iterable and copies the annotation to those images where
+        it is a suitable match (and no existing annotation already covers it)
+        """
+        replaced = 0
+        matched = 0
         mismatched = 0
         x, y, w, h = bbox
         for image_to in images:
@@ -88,29 +138,69 @@ class Autoannotator:
             if image_to.width != image_from.width \
                     or image_to.height != image_from.height:
                 continue
+
+            if mismatched > cls.max_mismatched:
+                if cls.verbose:
+                    cls.log(f"Exceeded {cls.max_mismatched} consecutive "
+                            f"mismatched images for {category_name}"
+                            f"({annotation.id}); stopping match test")
+                return
+
             cvimg = cv2.imread(image_to.path)
             img_patch = cv2.bitwise_and(cvimg, cvimg, mask=mask)
             img_patch = img_patch[y:y + h, x:x + w]
             score, _ = compare_ssim(
                 patch, img_patch, full=True, multichannel=True)
             if cls.verbose:
-                cls.log(f"Annotation {annotation.id} vs. "
-                        f"image {image_to.file_name} score = {score}")
+                cls.log(f"Annotation {category_name}({annotation.id}) vs. "
+                        f"image {image_to.file_name} score = {score:.5f}")
 
             if (1.0 - score) > cls.diff_threshold:
                 mismatched += 1
-                if mismatched > cls.max_mismatched:
-                    if cls.verbose:
-                        cls.log(f"Exceeded {cls.max_mismatched} consecutive "
-                                f"mismatched images; aborting further attempts")
-                    return
                 continue
+
+            # look for existing annotations on the same image
+            # having the same category; only add this new annotation
+            # if it has greater area than any existing
+            existing_is_better = False
+            existing_replaced = list()
+            for existing_ann in AnnotationModel.objects(
+                    image_id=image_from.id,
+                    category_id=annotation.category_id):
+                existing_iou = get_annotations_iou(annotation, existing_ann)
+                if existing_iou > 0:
+                    if existing_ann.area >= annotation.area:
+                        if cls.verbose:
+                            cls.log("Found existing intersecting annotation "
+                                    "with greater or equal area for "
+                                    f"{category_name} on image "
+                                    f"{image_to.file_name}; skipping")
+                        existing_is_better = True
+                        break
+                    else:
+                        existing_replaced.append(existing_ann)
+
+            if existing_is_better:
+                mismatched += 1
+                continue
+
             if cls.verbose:
-                cls.log(f"Annotation {annotation.id} matches "
-                        f"image {image_to.file_name}; copying...")
+                cls.log(f"Annotation {category_name}({annotation.id}) matches "
+                        f"image {image_to.file_name} with score {score:.5f}; "
+                        "copying...")
             mismatched = 0
+            matched += 1
             image_to.copy_annotations(
                 AnnotationModel.objects(id=annotation.id))
+
+            for to_remove in existing_replaced:
+                to_remove.delete()
+                replaced += 1
+
+        msg = f"Annotation {annotation.id} was copied to {matched} images"
+        if replaced:
+            msg += f", replacing {replaced} existing annotations"
+        cls.log(msg)
 
     @classmethod
     def propagate_annotation(cls, annotation_id):
@@ -134,6 +224,9 @@ class Autoannotator:
             cls.log(f"Error: no annotation matching id {annotation_id}")
             return
 
+        category_name = CategoryModel.objects(
+            id=annotation.category_id).first().name
+
         image_from = ImageModel.objects(id=annotation.image_id).first()
         img = cv2.imread(image_from.path)
         mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
@@ -145,30 +238,22 @@ class Autoannotator:
         (x, y, w, h) = bbox
         patch = patch[y:y + h, x:x + w]
 
-        dataset_id = image_from.dataset_id
-
+        images_before, images_after = cls.images_before_and_after(image_from)
         if cls.verbose:
-            cls.log("Searching for images with file_name greater than "
-                    f"{image_from.file_name}")
-        images_after = list(ImageModel.objects(
-            dataset_id=dataset_id,
-            file_name__gt=image_from.file_name,
-            deleted=False).order_by('+file_name').all())
-
+            cls.log(f"Comparing annotation {category_name}({annotation_id}) "
+                    "vs. images before")
         cls.executor.submit(cls.compare_and_copy,
-                            annotation=annotation, image_from=image_from,
+                            annotation=annotation, 
+                            category_name=category_name,
+                            image_from=image_from,
                             images=images_after,
                             mask=mask, bbox=bbox, patch=patch)
-
         if cls.verbose:
-            cls.log("Searching for images with file_name less than "
-                    f"{image_from.file_name}")
-        images_before = list(ImageModel.objects(
-            dataset_id=dataset_id,
-            file_name__lt=image_from.file_name,
-            deleted=False).order_by('-file_name').all())
-
+            cls.log(f"Comparing annotation {category_name}({annotation_id}) "
+                    "vs. images after")
         cls.executor.submit(cls.compare_and_copy,
-                            annotation=annotation, image_from=image_from,
+                            annotation=annotation, 
+                            category_name=category_name,
+                            image_from=image_from,
                             images=images_before,
                             mask=mask, bbox=bbox, patch=patch)
