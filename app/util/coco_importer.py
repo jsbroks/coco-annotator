@@ -7,6 +7,7 @@ from ..models import (
     DatasetModel, CocoImportModel)
 from concurrent.futures import ThreadPoolExecutor, TimeoutError, wait
 from ..config import Config
+from .coco_util import get_segmentation_area_and_bbox
 
 class CocoImporter:
     executor = ThreadPoolExecutor(
@@ -102,8 +103,9 @@ class CocoImport:
                      f"{len(coco_images)} images, and "
                      f"{len(coco_annotations)} annotations")
 
-        self.items_total = (
-            len(coco_images) + len(coco_annotations) + len(coco_categories))
+        self.items_total = 2 * len(coco_images)
+        self.items_total += len(coco_annotations)
+        self.items_total += len(coco_categories)
 
         categories_id = {}
         images_id = {}
@@ -204,6 +206,33 @@ class CocoImport:
         else:
             self.import_annotations(coco_annotations, categories_id, images_id)
 
+        images_and_categories = images_id.values()
+        # update the category ids for the images
+        if len(images_and_categories) > CocoImporter.image_batch_size:
+            # split images up into batches, import them in parallel
+            imports = list()
+            remaining = images_and_categories
+            while remaining:
+                if len(remaining) > CocoImporter.image_batch_size:
+                    subset = remaining[
+                        0:CocoImporter.image_batch_size]
+                    remaining = remaining[
+                        CocoImporter.image_batch_size:]
+                else:
+                    subset = remaining
+                    remaining = []
+                imports.append(
+                    executor.submit(self.update_categories,
+                                    images_and_categories=subset))
+            # process all images before moving on to annotations
+            while True:
+                _, unfinished = wait(imports, timeout=3)
+                self.update_progress()
+                if not unfinished:
+                    break
+        else:
+            self.update_categories(images_and_categories)
+
         self.increment_completion(count=self.items_total, update_progress=True)
         # release resources
         self.coco_json = None
@@ -238,7 +267,7 @@ class CocoImport:
             image_model = image_model[0]
             if self.verbose:
                 self.log(f"Found image {image_filename}")
-            images_id[image_id] = image_model
+            images_id[image_id] = (image_model, list())
 
     def import_annotations(self, coco_annotations, categories_id, images_id):
         """
@@ -260,7 +289,7 @@ class CocoImport:
                          f"(image:{image_id} category:{category_id})")
 
             try:
-                image_model = images_id[image_id]
+                image_model, image_category_ids = images_id[image_id]
                 category_model_id = categories_id[category_id]
             except KeyError:
                 continue
@@ -272,6 +301,7 @@ class CocoImport:
                                                  deleted=False).first()
             # Create annotation
             if annotation is None:
+
                 if self.verbose:
                     self.log("Creating Annotation for "
                              f"(image:{image_id} category:{category_id})")
@@ -279,11 +309,30 @@ class CocoImport:
                 annotation.category_id = category_model_id
                 # annotation.iscrowd = is_crowd
                 annotation.segmentation = segmentation
+
+                area, bbox = get_segmentation_area_and_bbox(
+                    segmentation, image_model.height, image_model.width)
+                annotation.area = area
+                annotation.bbox = list(bbox)
                 annotation.color = im.Color.random().hex
                 annotation.save()
 
-                image_model.update(set__annotated=True)
+                image_category_ids.append(category_id)
+
             elif self.verbose:
                 self.log("Annotation for "
                          f"(image:{image_id} category:{category_id}) "
                          "already exists")
+
+    def update_categories(self, images_and_categories):
+        """
+        Updates the categories on the provided set of models
+        """
+        for image_model, category_ids in images_and_categories:
+            all_category_ids = list(image_model.category_ids)
+            all_category_ids += category_ids
+            image_model.update(
+                set__annotated=True,
+                set__category_ids=list(set(all_category_ids)))
+
+            self.increment_completion(1)
