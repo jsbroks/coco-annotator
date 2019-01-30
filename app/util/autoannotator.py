@@ -119,6 +119,13 @@ class Autoannotator:
         mismatched = [0] * len(annotations)
         finished = [False] * len(annotations)
 
+        if cls.verbose:
+            cls.log(f"compare_and_copy: annotations: {annotations}, "
+                    f"category_names: {category_names}, "
+                    f"masks: {masks}, bboxes: {bboxes}, patches: {patches}; "
+                    f"replaced: {replaced}, matched: {matched}, "
+                    f"mismatched: {mismatched}, finished: {finished}")
+
         for image_to in images:
             if np.alltrue(finished):
                 break
@@ -141,7 +148,8 @@ class Autoannotator:
                 category_name = category_names[i]
                 if mismatched[i] > cls.max_mismatched:
                     if cls.verbose:
-                        cls.log(f"Exceeded {cls.max_mismatched} consecutive "
+                        cls.log(
+                            f"Exceeded {cls.max_mismatched} consecutive "
                             f"mismatched images for {category_name}"
                             f"({annotation.id}); stopping match test")
                     finished[i] = True
@@ -168,15 +176,17 @@ class Autoannotator:
                         image_id=image_to.id,
                         category_id=annotation.category_id,
                         deleted=False).all():
-                    existing_iou = get_annotations_iou(annotation, existing_ann)
+                    existing_iou = get_annotations_iou(
+                        annotation, existing_ann)
                     if existing_iou > 0:
                         if existing_ann.area >= annotation.area:
                             if cls.verbose:
-                                cls.log("Found existing intersecting annotation "
-                                        f"{existing_ann.id} "
-                                        "with greater or equal area for "
-                                        f"{category_name} on image "
-                                        f"{image_to.file_name}; skipping")
+                                cls.log(
+                                    "Found existing intersecting annotation "
+                                    f"{existing_ann.id} "
+                                    "with greater or equal area for "
+                                    f"{category_name} on image "
+                                    f"{image_to.file_name}; skipping")
                             existing_is_better = True
                             break
                         else:
@@ -243,7 +253,7 @@ class Autoannotator:
         image_from = ImageModel.objects(id=image_id).first()
         img = cv2.imread(image_from.path)
         mask_base = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
-        
+
         for annotation in annotations:
             category_names.append(CategoryModel.objects(
                 id=annotation.category_id).first().name)
@@ -251,10 +261,10 @@ class Autoannotator:
             contours = segmentation_to_contours(annotation.segmentation)
             mask = cv2.drawContours(mask_base, contours, -1, 1, -1)
             masks.append(mask)
-            
+
             bbox = bbox_for_contours(contours)
             bboxes.append(bbox)
-            
+
             (x, y, w, h) = bbox
             patch = cv2.bitwise_and(img, img, mask=mask)
             patch = patch[y:y + h, x:x + w]
