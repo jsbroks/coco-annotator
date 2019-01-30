@@ -214,10 +214,11 @@ class Autoannotator:
                             existing_replaced.append(existing_ann)
 
                 if existing_is_better:
-                    mismatched += 1
+                    mismatched[i] += 1
                     continue
                 else:
                     existing_annotations_replaced += existing_replaced
+                    replaced[i] += len(existing_replaced)
 
                 if cls.verbose:
                     cls.log(f"Annotation {category_name}({annotation.id}) "
@@ -233,7 +234,6 @@ class Autoannotator:
 
             for to_remove in existing_annotations_replaced:
                 to_remove.delete()
-                replaced[i] += 1
 
         if len(images) == 1:
             first_complete.set_result(True)
