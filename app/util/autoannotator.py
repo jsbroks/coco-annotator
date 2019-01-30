@@ -263,12 +263,8 @@ class Autoannotator:
             bbox = bbox_for_contours(contours)
             bboxes.append(bbox)
 
-            (x, y, w, h) = bbox
-            patch = cv2.bitwise_and(img, img, mask=mask)
-            patch = patch[y:y + h, x:x + w]
+            patch = extract_cropped_patch(img, mask, bbox)
             patches.append(patch)
-            cls.log(f"Added category_name: {category_names[-1]}, "
-                    f"mask: {mask}, patch: {patch}, bbox: {bbox}")
 
         images_before, images_after = cls.images_before_and_after(image_from)
 
