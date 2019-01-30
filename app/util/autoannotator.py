@@ -273,14 +273,14 @@ class Autoannotator:
         images_before, images_after = cls.images_before_and_after(image_from)
 
         cls.executor.submit(cls.compare_and_copy,
-                            annotations=annotations, 
+                            annotations=annotations,
                             category_names=category_names,
                             image_from=image_from,
                             images=images_after,
                             masks=masks, bboxes=bboxes, patches=patches)
 
         cls.executor.submit(cls.compare_and_copy,
-                            annotations=annotations, 
+                            annotations=annotations,
                             category_names=category_names,
                             image_from=image_from,
                             images=images_before,
