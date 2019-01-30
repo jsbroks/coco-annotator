@@ -166,12 +166,14 @@ class Autoannotator:
             existing_replaced = list()
             for existing_ann in AnnotationModel.objects(
                     image_id=image_from.id,
-                    category_id=annotation.category_id):
+                    category_id=annotation.category_id,
+                    deleted=False).all():
                 existing_iou = get_annotations_iou(annotation, existing_ann)
                 if existing_iou > 0:
                     if existing_ann.area >= annotation.area:
                         if cls.verbose:
                             cls.log("Found existing intersecting annotation "
+                                    f"{existing_ann.id} "
                                     "with greater or equal area for "
                                     f"{category_name} on image "
                                     f"{image_to.file_name}; skipping")
