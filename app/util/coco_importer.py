@@ -8,9 +8,10 @@ from ..models import (
 from concurrent.futures import ThreadPoolExecutor, TimeoutError, wait
 from ..config import Config
 from .coco_util import get_segmentation_area_and_bbox
+from .concurrency_util import ExceptionLoggingThreadPoolExecutor
 
 class CocoImporter:
-    executor = ThreadPoolExecutor(
+    executor = ExceptionLoggingThreadPoolExecutor(
         thread_name_prefix=__name__,
         max_workers=Config.COCO_IMPORTER_MAX_WORKERS)
     verbose = Config.COCO_IMPORTER_VERBOSE
