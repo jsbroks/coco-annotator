@@ -17,10 +17,9 @@ class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
         try:
             fn(*args, **kwargs)
         except Exception:
-            msg = (f"[{self._thread_name_prefix}] Encountered error in submitted task; "
-                   f"{tasktraceback.format_exc()}")
+            msg = (f"[{self._thread_name_prefix}]"
+                   f"{traceback.format_exc()}")
             if self.logger:
                 self.logger.error(msg)
             else:
-                print(msg)
-            raise
+                print(msg, flush=True)
