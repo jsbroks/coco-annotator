@@ -386,7 +386,7 @@ export default {
 
       this.paper.view.zoom = Math.min(
         (canvas.width / parentX) * 0.95,
-        (canvas.height / parentY) * 0.80
+        (canvas.height / parentY) * 0.8
       );
 
       this.image.scale = 1 / this.paper.view.zoom;
@@ -425,8 +425,7 @@ export default {
 
         this.image.raster.sendToBack();
         this.fit();
-        this.image.ratio =
-          (width * height) / 1000000;
+        this.image.ratio = (width * height) / 1000000;
         this.removeProcess(process);
         this.loading.image = false;
 
@@ -435,24 +434,25 @@ export default {
         tempCtx.canvas.height = height;
         tempCtx.drawImage(this.image.raster.image, 0, 0);
 
-        this.image.data = tempCtx.getImageData(
-          0,
-          0,
-          width,
-          height
-        );
+        this.image.data = tempCtx.getImageData(0, 0, width, height);
         let fontSize = width * 0.025;
 
-        let positionTopLeft = new Point(-width/2, -height/2 - fontSize*0.5);
+        let positionTopLeft = new paper.Point(
+          -width / 2,
+          -height / 2 - fontSize * 0.5
+        );
         this.text.topLeft = new paper.PointText(positionTopLeft);
-        this.text.topLeft.fontSize = fontSize
+        this.text.topLeft.fontSize = fontSize;
         this.text.topLeft.fillColor = "white";
         this.text.topLeft.content = this.image.filename;
 
-        let positionTopRight = new Point(width/2, -height/2 - fontSize*0.4);
+        let positionTopRight = new paper.Point(
+          width / 2,
+          -height / 2 - fontSize * 0.4
+        );
         this.text.topRight = new paper.PointText(positionTopRight);
-        this.text.topRight.justification = 'right';
-        this.text.topRight.fontSize = fontSize
+        this.text.topRight.justification = "right";
+        this.text.topRight.fontSize = fontSize;
         this.text.topRight.fillColor = "white";
         this.text.topRight.content = width + "x" + height;
       };

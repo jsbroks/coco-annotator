@@ -1,32 +1,53 @@
 <template>
   <div class="col-md-3">
-    <div class="card mb-4 box-shadow">
+    <div
+      class="card mb-4 box-shadow"
+      @mouseover="hover = true"
+      @mouseleave="hover = false"
+    >
       <img
         class="card-img-top"
         @click="openAnnotator"
         style="width: 100%; display: block"
         :src="imageUrl"
       />
-      <div class="card-body">
-        <span
-          class="d-inline-block text-truncate"
-          style="max-width: 85%; float: left"
-        >
-          <strong class="card-title"
-            >{{ image.id }}. {{ image.file_name }}</strong
+      <div class="card-body" style="width: 100%">
+        <div class="row" style="width: 100%">
+          <span
+            :class="{ 'text-truncate': !hover }"
+            style="width: 100%; float: left"
           >
-        </span>
+            <strong class="card-title">
+              {{ image.id }}. {{ image.file_name }}
+            </strong>
+          </span>
 
-        <i
-          class="card-text fa fa-ellipsis-v fa-x icon-more"
-          :id="'dropdownImage' + image.id"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-          aria-hidden="true"
-        />
-        <br />
-        <div>
+          <i
+            class="card-text fa fa-ellipsis-v fa-x icon-more"
+            :id="'dropdownImage' + image.id"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-hidden="true"
+          />
+
+          <div
+            class="dropdown-menu"
+            :aria-labelledby="'dropdownImage' + image.id"
+          >
+            <button class="btn dropdown-item" @click="onDeleteClick">
+              Delete
+            </button>
+            <button class="btn dropdown-item" @click="openAnnotator">
+              Annotate
+            </button>
+            <button class="btn dropdown-item" @click="onDownloadClick">
+              Download Image & COCO
+            </button>
+          </div>
+        </div>
+
+        <div class="row">
           <p v-if="image.annotations > 0">
             {{ image.annotations }} annotation<span
               v-show="image.annotations > 1"
@@ -34,6 +55,9 @@
             >
           </p>
           <p v-else>Image has no annotations</p>
+        </div>
+
+        <div class="row">
           <span
             v-for="(category, index) in image.categories"
             :key="index"
@@ -42,17 +66,6 @@
           >
             {{ category.name }}
           </span>
-        </div>
-
-        <div
-          class="dropdown-menu"
-          :aria-labelledby="'dropdownImage' + image.id"
-        >
-          <a class="dropdown-item" @click="onDeleteClick">Delete</a>
-          <a class="dropdown-item" @click="openAnnotator">Annotate</a>
-          <a class="dropdown-item" @click="onDownloadClick"
-            >Download Image & COCO</a
-          >
         </div>
       </div>
     </div>
@@ -72,6 +85,7 @@ export default {
   },
   data() {
     return {
+      hover: false,
       showAnnotations: true
     };
   },
@@ -132,11 +146,12 @@ export default {
 
 <style scoped>
 .card-img-overlay {
-  padding: 0 10px 0 0;
+  padding: 0;
 }
 
 .card-body {
-  padding: 10px 10px 0 10px;
+  margin: 5px 5px 0 5px;
+  padding: 10px 20px;
 }
 
 p {
@@ -151,9 +166,9 @@ p {
   background-color: #4b5162;
 }
 .icon-more {
-  width: 10%;
-  margin: 3px 0;
-  padding: 0;
+  position: absolute;
+  right: 5px;
+  padding: 3px 10px;
   float: right;
   color: black;
 }
