@@ -17,8 +17,9 @@ class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
         try:
             fn(*args, **kwargs)
         except Exception:
+            msg = (f"[{self._thread_name_prefix}]"
+                   f"{traceback.format_exc()}")
             if self.logger:
-                self.logger.exception()
+                self.logger.error(msg)
             else:
-                traceback.print_exc()
-            raise
+                print(msg, flush=True)
