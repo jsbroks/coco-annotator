@@ -70,5 +70,5 @@ class Autoexporter:
             cls.log(f"Processing image {image_model.file_name}...")
 
         coco_json = get_image_coco(image_model)
-        coco_path = os.path.splitext(image_model.image_path)[0] + '.coco.json'
+        coco_path = os.path.splitext(image_model.path)[0] + '.coco.json'
         json.dump(coco_json, open(coco_path, 'w'))
