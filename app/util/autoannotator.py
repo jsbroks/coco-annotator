@@ -8,8 +8,9 @@ from skimage.measure import compare_ssim
 from ..util.annotation_util import (
     segmentation_equal, extract_cropped_patch, segmentation_to_contours,
     bbox_for_contours)
-from concurrent.futures import ThreadPoolExecutor, Future, wait
+from concurrent.futures import Future, wait
 from ..util.coco_util import get_annotations_iou
+from ..util.concurrency_util import ExceptionLoggingThreadPoolExecutor
 import sortedcontainers
 
 
@@ -49,7 +50,8 @@ class Autoannotator:
 
     @classmethod
     def start(cls, max_workers=10, max_queue_size=32,
-              max_mismatched=10, diff_threshold=0.01, verbose=False):
+              max_mismatched=10, diff_threshold=0.01, verbose=False,
+              logger=None):
         """
         Start the autoannotator background process;
 
@@ -70,9 +72,10 @@ class Autoannotator:
         cls.max_mismatched = max_mismatched
         cls.diff_threshold = diff_threshold
         cls.verbose = verbose
-        cls.executor = ThreadPoolExecutor(
+        cls.executor = ExceptionLoggingThreadPoolExecutor(
             thread_name_prefix=cls.__name__,
-            max_workers=max_workers)
+            max_workers=max_workers,
+            logger=logger)
         cls.executor.submit(cls.do_propagate_annotations)
         cls.enabled = True
 

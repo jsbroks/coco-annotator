@@ -70,7 +70,8 @@ if Config.AUTOANNOTATOR_ENABLED:
         max_queue_size=Config.AUTOANNOTATOR_QUEUE_SIZE,
         max_mismatched=Config.AUTOANNOTATOR_MAX_MISMATCHED,
         diff_threshold=Config.AUTOANNOTATOR_DIFF_THRESHOLD,
-        verbose=Config.AUTOANNOTATOR_VERBOSE)
+        verbose=Config.AUTOANNOTATOR_VERBOSE,
+        logger=app.logger)
 
 
 @app.route('/', defaults={'path': ''})
