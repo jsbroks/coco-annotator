@@ -106,11 +106,11 @@ class Autoannotator:
         if index == 0:
             return ([], images)
         elif index == len(images) - 1:
-            return (reversed(images), [])
+            return (list(reversed(images)), [])
         else:
             return (
-                images.islice(0, index, reverse=True),
-                images.islice(index + 1))
+                list(images.islice(0, index, reverse=True)),
+                list(images.islice(index + 1)))
 
     @classmethod
     def do_propagate_annotations(cls):
@@ -161,7 +161,8 @@ class Autoannotator:
                     or image_to.height != image_from.height:
                 continue
 
-            cvimg = cv2.imread(image_to.path)
+            if not image_to.__dict__.get('cvimg'):
+                image_to.cvimg = cv2.imread(image_to.path)
 
             annotations_ids_to_copy = list()
             existing_annotations_replaced = list()
@@ -179,16 +180,20 @@ class Autoannotator:
                     finished[i] = True
                     continue
 
-                to_patch = extract_cropped_patch(cvimg, masks[i], bboxes[i])
+                to_patch = extract_cropped_patch(
+                    image_to.cvimg, masks[i], bboxes[i])
 
                 score, _ = compare_ssim(
                     patches[i], to_patch, full=True, multichannel=True)
                 if cls.verbose:
-                    cls.log(f"Annotation {category_name}({annotation.id}) vs. "
-                            f"image {image_to.file_name} score = {score:.5f}")
+                    msg = (f"Annotation {category_name}({annotation.id}) vs. "
+                           f"image {image_to.file_name} score: {score:.5f}: ")
 
                 if (1.0 - score) > cls.diff_threshold:
                     mismatched[i] += 1
+                    if cls.verbose:
+                        msg += "mismatch"
+                        cls.log(msg)
                     continue
 
                 # look for existing annotations on the same image
@@ -218,15 +223,16 @@ class Autoannotator:
 
                 if existing_is_better:
                     mismatched[i] += 1
+                    if cls.verbose:
+                        msg += "match, less coverage than existing"
+                        cls.log(msg)
                     continue
                 else:
+                    if cls.verbose:
+                        msg += "match, copying"
+                        cls.log(msg)
                     existing_annotations_replaced += existing_replaced
                     replaced[i] += len(existing_replaced)
-
-                if cls.verbose:
-                    cls.log(f"Annotation {category_name}({annotation.id}) "
-                            f"matches image {image_to.file_name} "
-                            f"with score {score:.5f}; copying...")
 
                 mismatched[i] = 0
                 matched[i] += 1
@@ -279,21 +285,25 @@ class Autoannotator:
         patches = list()
 
         image_from = ImageModel.objects(id=image_id).first()
-        img = cv2.imread(image_from.path)
+        if not image_from.__dict__.get('cvimg'):
+            image_from.cvimg = cv2.imread(image_from.path)
 
         for annotation in annotations:
             category_names.append(CategoryModel.objects(
                 id=annotation.category_id).first().name)
 
             contours = segmentation_to_contours(annotation.segmentation)
-            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+            mask = np.zeros(
+                (image_from.cvimg.shape[0], image_from.cvimg.shape[1]),
+                dtype=np.uint8)
             mask = cv2.drawContours(mask, contours, -1, 1, -1)
             masks.append(mask)
 
             bbox = bbox_for_contours(contours)
             bboxes.append(bbox)
 
-            patch = extract_cropped_patch(img, mask, bbox)
+            patch = extract_cropped_patch(
+                image_from.cvimg, mask, bbox)
             patches.append(patch)
 
         images_before, images_after = cls.images_before_and_after(image_from)
