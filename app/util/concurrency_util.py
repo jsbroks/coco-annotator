@@ -16,11 +16,11 @@ class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
         """
         try:
             fn(*args, **kwargs)
-        except Exception as e:
-            print(f"[{self._thread_name_prefix}] "
-                  f"Encountered error in submitted task: {e}")
+        except Exception:
+            msg = (f"[{self._thread_name_prefix}] Encountered error in submitted task; "
+                   f"{tasktraceback.format_exc()}")
             if self.logger:
-                self.logger.exception()
+                self.logger.error(msg)
             else:
-                traceback.print_exc()
+                print(msg)
             raise
