@@ -12,6 +12,7 @@ from concurrent.futures import Future, wait
 from ..util.coco_util import get_annotations_iou
 from ..util.concurrency_util import ExceptionLoggingThreadPoolExecutor
 import sortedcontainers
+from functools import lru_cache
 
 
 class Autoannotator:
@@ -113,10 +114,9 @@ class Autoannotator:
                 list(images.islice(index + 1)))
 
     @classmethod
+    @lru_cache(maxsize=64)
     def get_cvimg(cls, image_model):
-        if '_cv2_img' not in image_model.__dict__:
-            image_model._cv2_img = cv2.imread(image_model.path)
-        return image_model._cv2_img
+        return cv2.imread(image_model.path)
 
     @classmethod
     def do_propagate_annotations(cls):
