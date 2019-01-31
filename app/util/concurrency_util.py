@@ -16,7 +16,9 @@ class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
         """
         try:
             fn(*args, **kwargs)
-        except Exception:
+        except Exception as e:
+            print(f"[{self._thread_name_prefix}] "
+                  f"Encountered error in submitted task: {e}")
             if self.logger:
                 self.logger.exception()
             else:
