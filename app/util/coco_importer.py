@@ -206,7 +206,7 @@ class CocoImport:
         else:
             self.import_annotations(coco_annotations, categories_id, images_id)
 
-        images_and_categories = images_id.values()
+        images_and_categories = list(images_id.values())
         # update the category ids for the images
         if len(images_and_categories) > CocoImporter.image_batch_size:
             # split images up into batches, import them in parallel
