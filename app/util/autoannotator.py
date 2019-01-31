@@ -113,6 +113,12 @@ class Autoannotator:
                 list(images.islice(index + 1)))
 
     @classmethod
+    def get_cvimg(cls, image_model):
+        if '_cv2_img' not in image_model.__dict__:
+            image_model._cv2_img = cv2.imread(image_model.path)
+        return image_model._cv2_img
+
+    @classmethod
     def do_propagate_annotations(cls):
         """
         Performs automatic propagation of annotations by comparing
@@ -161,8 +167,7 @@ class Autoannotator:
                     or image_to.height != image_from.height:
                 continue
 
-            if not image_to.__dict__.get('cvimg'):
-                image_to.cvimg = cv2.imread(image_to.path)
+            to_cvimg = cls.get_cvimg(image_to)
 
             annotations_ids_to_copy = list()
             existing_annotations_replaced = list()
@@ -181,7 +186,7 @@ class Autoannotator:
                     continue
 
                 to_patch = extract_cropped_patch(
-                    image_to.cvimg, masks[i], bboxes[i])
+                    to_cvimg, masks[i], bboxes[i])
 
                 score, _ = compare_ssim(
                     patches[i], to_patch, full=True, multichannel=True)
@@ -285,8 +290,7 @@ class Autoannotator:
         patches = list()
 
         image_from = ImageModel.objects(id=image_id).first()
-        if not image_from.__dict__.get('cvimg'):
-            image_from.cvimg = cv2.imread(image_from.path)
+        from_cvimg = cls.get_cvimg(image_from)
 
         for annotation in annotations:
             category_names.append(CategoryModel.objects(
@@ -294,7 +298,7 @@ class Autoannotator:
 
             contours = segmentation_to_contours(annotation.segmentation)
             mask = np.zeros(
-                (image_from.cvimg.shape[0], image_from.cvimg.shape[1]),
+                (from_cvimg.shape[0], from_cvimg.shape[1]),
                 dtype=np.uint8)
             mask = cv2.drawContours(mask, contours, -1, 1, -1)
             masks.append(mask)
@@ -303,7 +307,7 @@ class Autoannotator:
             bboxes.append(bbox)
 
             patch = extract_cropped_patch(
-                image_from.cvimg, mask, bbox)
+                from_cvimg, mask, bbox)
             patches.append(patch)
 
         images_before, images_after = cls.images_before_and_after(image_from)
