@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_socketio import SocketIO
 from werkzeug.contrib.fixers import ProxyFix
 from flask_cors import CORS
 from watchdog.observers import Observer
@@ -14,6 +15,9 @@ import threading
 import requests
 import time
 import os
+
+
+socketio = SocketIO()
 
 
 def run_watcher():
@@ -50,6 +54,7 @@ def create_app():
 
     db.init_app(flask)
     login_manager.init_app(flask)
+    socketio.init_app(flask)
 
     return flask
 
@@ -72,5 +77,3 @@ def index(path):
         return requests.get('http://frontend:8080/{}'.format(path)).text
 
     return app.send_static_file('index.html')
-
-

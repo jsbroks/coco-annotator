@@ -8,6 +8,13 @@ module.exports = {
         pathRewrite: {
           "^/api": ""
         }
+      },
+      "/socket.io*": {
+        target: "http://flask:5000/socket.io",
+        changeOrigin: true,
+        pathRewrite: {
+          "^/socket.io": ""
+        }
       }
     }
   },
