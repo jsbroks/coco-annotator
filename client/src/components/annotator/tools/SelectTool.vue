@@ -64,6 +64,15 @@ export default {
         showText: this.hover.showText
       };
     },
+    generateTitle() {
+      let string = " ";
+      if (this.hover.category && this.hover.annotation) {
+        string += `ID: ${this.hover.annotation.annotation.id}`;
+        string += '\n'
+        string += `Category: ${this.hover.category.category.name}`;
+      }
+      return string.replace(/\n/g, " \n ").slice(0, -2);
+    },
     generateStringFromMetadata() {
       let string = " ";
       let metadata = this.hover.annotation.$refs.metadata.metadataList;
@@ -106,7 +115,8 @@ export default {
         }
 
         this.hover.textId = this.hover.annotation.annotation.id;
-        let content = this.generateStringFromMetadata();
+        let content = this.generateTitle() + ' \n ' +
+          this.generateStringFromMetadata();
 
         this.hover.text = new paper.PointText(position);
         this.hover.text.justification = "left";
