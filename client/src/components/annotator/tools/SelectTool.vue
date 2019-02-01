@@ -67,10 +67,9 @@ export default {
     generateTitle() {
       let string = " ";
       if (this.hover.category && this.hover.annotation) {
-        string += this.hover.category.category.name;
-        string += ' : '
-        string += this.hover.annotation.annotation.id;
+        string += `ID: ${this.hover.annotation.annotation.id}`;
         string += '\n'
+        string += `Category: ${this.hover.category.category.name}`;
       }
       return string.replace(/\n/g, " \n ").slice(0, -2);
     },
