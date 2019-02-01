@@ -10,6 +10,7 @@ class Autoexporter:
     queue = None
     enabled = False
     verbose = False
+    extension = None
 
     @classmethod
     def log(cls, msg):
@@ -28,6 +29,7 @@ class Autoexporter:
             cls.executor.shutdown()
             del cls.executor
         cls.verbose = verbose
+        cls.extension = extension
         cls.executor = ExceptionLoggingThreadPoolExecutor(
             thread_name_prefix=cls.__name__,
             max_workers=max_workers,
@@ -52,5 +54,5 @@ class Autoexporter:
             cls.log(f"Processing image {image_model.file_name}...")
 
         coco_json = get_image_coco(image_model)
-        coco_path = os.path.splitext(image_model.path)[0] + '.coco.json'
+        coco_path = os.path.splitext(image_model.path)[0] + cls.extension
         json.dump(coco_json, open(coco_path, 'w'))
