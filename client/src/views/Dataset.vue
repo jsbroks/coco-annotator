@@ -1,57 +1,12 @@
 <template>
-  <div>
+  <div @mousemove="mouseMove">
     <div style="padding-top: 55px" />
     <div
       class="album py-5 bg-light"
       style="overflow: auto; height: calc(100vh - 55px)"
+      :style="{ 'margin-left': sidebar.width + 'px' }"
     >
       <div class="container">
-        <h2 class="text-center">Dataset of {{ dataset.name }}</h2>
-        <p class="text-center">
-          Total of <strong>{{ imageCount }}</strong> images displayed on
-          <strong>{{ pages }}</strong> pages.
-        </p>
-
-        <div class="row justify-content-md-center">
-          <div
-            class="col-md-auto btn-group"
-            role="group"
-            style="padding-bottom: 20px"
-          >
-            <button
-              type="button"
-              class="btn btn-success"
-              data-toggle="modal"
-              data-target="#generateDataset"
-            >
-              Generate
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              data-toggle="modal"
-              data-target="#cocoUpload"
-            >
-              Import COCO
-            </button>
-            <!-- <button type="button" class="btn btn-info">
-              Download COCO
-            </button> -->
-          </div>
-        </div>
-        <div v-if="subdirectories.length > 0" class="text-center">
-          <h5>Subdirectories</h5>
-          <button
-            v-for="(subdirectory, subId) in subdirectories"
-            :key="subId"
-            class="btn badge badge-pill badge-primary category-badge"
-            style="margin: 2px"
-            @click="folders.push(subdirectory)"
-          >
-            {{ subdirectory }}
-          </button>
-        </div>
-
         <ol class="breadcrumb">
           <li class="breadcrumb-item"></li>
           <li class="breadcrumb-item active">
@@ -85,6 +40,66 @@
           <hr />
         </div>
       </div>
+    </div>
+
+    <div
+      id="filter"
+      ref="sidebar"
+      class="sidebar"
+      :style="{ width: sidebar.width + 'px' }"
+    >
+      <div style="padding-top: 10px" />
+      <h3>{{ dataset.name }}</h3>
+      <p class="text-center" style="color: lightgray">
+        Total of <strong style="color: white">{{ imageCount }}</strong> images
+        displayed on <strong style="color: white">{{ pages }}</strong> pages.
+      </p>
+      <div class="row justify-content-md-center sidebar-section-buttons">
+        <button
+          type="button"
+          class="btn btn-success btn-block"
+          data-toggle="modal"
+          data-target="#generateDataset"
+        >
+          Generate
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-block"
+          data-toggle="modal"
+          data-target="#cocoUpload"
+        >
+          Import COCO
+        </button>
+
+        <!-- <button type="button" class="btn btn-info">
+          Download COCO
+        </button> -->
+      </div>
+      <hr />
+      <h6 class="sidebar-title text-center">Subdirectories</h6>
+      <div class="sidebar-section" style="max-height: 30%; color: lightgray">
+        <div v-if="subdirectories.length > 0">
+          <button
+            v-for="(subdirectory, subId) in subdirectories"
+            :key="subId"
+            class="btn badge badge-pill badge-primary category-badge"
+            style="margin: 2px"
+            @click="folders.push(subdirectory)"
+          >
+            {{ subdirectory }}
+          </button>
+        </div>
+        <p v-else style="margin: 0; font-size: 13px; color: gray">
+          No subdirectory found.
+        </p>
+      </div>
+      <hr />
+      <h6 class="sidebar-title text-center">Filtering Options</h6>
+      <div
+        class="sidebar-section"
+        style="max-height: 30%; color: lightgray"
+      ></div>
     </div>
 
     <div class="modal fade" tabindex="-1" role="dialog" id="generateDataset">
@@ -216,7 +231,13 @@ export default {
       status: {
         data: { state: true, message: "Loading data" }
       },
-      keyword: ""
+      keyword: "",
+      mouseDown: false,
+      sidebar: {
+        drag: false,
+        width: 300,
+        canResize: false
+      }
     };
   },
   methods: {
@@ -279,11 +300,44 @@ export default {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
+    },
+    mouseMove(event) {
+      let element = this.$refs.sidebar;
+
+      let sidebarWidth = element.offsetWidth;
+      let clickWidth = event.x;
+      let pixelsFromSide = Math.abs(sidebarWidth - clickWidth);
+
+      this.sidebar.drag = pixelsFromSide < 4;
+
+      if (this.sidebar.canResize) {
+        event.preventDefault();
+        let max = window.innerWidth * 0.5;
+        this.sidebar.width = Math.min(Math.max(event.x, 200), max);
+      }
+    },
+    startDrag() {
+      this.mouseDown = true;
+      this.sidebar.canResize = this.sidebar.drag;
+    },
+    stopDrag() {
+      this.mouseDown = false;
+      this.sidebar.canResize = false;
     }
   },
   watch: {
     folders() {
       this.updatePage();
+    },
+    "sidebar.drag"(canDrag) {
+      let el = this.$refs.sidebar;
+      if (canDrag) {
+        this.$el.style.cursor = "ew-resize";
+        el.style.borderRight = "4px solid #383c4a";
+      } else {
+        this.$el.style.cursor = "default";
+        el.style.borderRight = "";
+      }
     }
   },
   beforeRouteUpdate() {
@@ -291,8 +345,19 @@ export default {
     this.updatePage();
   },
   created() {
+    this.sidebar.width = window.innerWidth * 0.2;
+    if (this.sidebar.width < 90) this.sidebar.width = 0;
+
     this.dataset.id = parseInt(this.identifier);
     this.updatePage();
+  },
+  mounted() {
+    window.addEventListener("mouseup", this.stopDrag);
+    window.addEventListener("mousedown", this.startDrag);
+  },
+  destroyed() {
+    window.removeEventListener("mouseup", this.stopDrag);
+    window.removeEventListener("mousedown", this.startDrag);
   }
 };
 </script>
@@ -305,5 +370,45 @@ export default {
 
 .btn-link {
   padding: 0px;
+}
+
+.sidebar .title {
+  color: white;
+}
+
+.sidebar {
+  height: 100%;
+  position: fixed;
+  color: white;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #4b5162;
+  overflow-x: hidden;
+  padding-top: 60px;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.sidebar-title {
+  color: white;
+}
+
+.sidebar-section-buttons {
+  margin: 5px;
+}
+
+.sidebar-section {
+  margin: 5px;
+  border-radius: 5px;
+  background-color: #383c4a;
+  padding: 0 5px 2px 5px;
+  overflow: auto;
 }
 </style>
