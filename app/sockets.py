@@ -33,7 +33,7 @@ def annotate(image):
         # invalid image ID
         return True
     
-    emit('annotate', {
+    emit('annotating', {
         'image_id': image_id,
         'active': active,
         'username': current_user.username

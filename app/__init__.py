@@ -53,6 +53,10 @@ def create_app():
     login_manager.init_app(flask)
     socketio.init_app(flask)
 
+    # Remove all poeple who were annotating when
+    # the server shutdown
+    ImageModel.objects.update(annotating=[])
+
     return flask
 
 

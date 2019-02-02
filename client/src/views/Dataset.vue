@@ -326,10 +326,11 @@ export default {
     }
   },
   sockets: {
-    annotate(data) {
-      let image = this.images.find(i => i.id == data.image_id)
+    annotating(data) {
+      let image = this.images.find(i => i.id == data.image_id);
+      if (image == null) return;
       if (data.active) {
-        image.annotating.push(data.username)
+        image.annotating.push(data.username);
       } else {
         image.annotating.splice(image.annotating.indexOf(data.username), 1);
       }
