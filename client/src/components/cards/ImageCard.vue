@@ -2,16 +2,23 @@
   <div class="col-md-3">
     <div
       class="card mb-4 box-shadow"
+      :class="{'border': annotated, 'border-danger': annotated}"
       @mouseover="hover = true"
       @mouseleave="hover = false"
     >
       <img
         class="card-img-top"
+        :style="{'opacity': annotated ? 0.3 : 1}"
         @click="openAnnotator"
         style="width: 100%; display: block"
         :src="imageUrl"
       />
-      <div class="card-body" style="width: 100%">
+
+      <b v-if="annotated" class="overlay-text text-center">
+        Being annotated by {{image.annotating.join(', ')}}
+      </b>
+
+      <div class="card-body" style="width: 100%" :style="{'opacity': annotated ? 0.3 : 1}">
         <div class="row" style="width: 100%">
           <span
             :class="{ 'text-truncate': !hover }"
@@ -127,7 +134,7 @@ export default {
     }
   },
   computed: {
-    imageUrl: function() {
+    imageUrl() {
       let d = new Date();
       if (this.image.annotations > 0 && this.showAnnotations) {
         return (
@@ -139,6 +146,10 @@ export default {
       } else {
         return "/api/image/" + this.image.id + "?width=250";
       }
+    },
+    annotated() {
+      if (!this.image.annotating) return 0;
+      return this.image.annotating.length > 0;
     }
   }
 };
@@ -147,6 +158,13 @@ export default {
 <style scoped>
 .card-img-overlay {
   padding: 0;
+}
+
+.overlay-text {
+  position: absolute;
+  padding: 10px;
+  top: 30px;
+  width: 100%;
 }
 
 .card-body {

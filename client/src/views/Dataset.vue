@@ -325,6 +325,16 @@ export default {
       this.sidebar.canResize = false;
     }
   },
+  sockets: {
+    annotate(data) {
+      let image = this.images.find(i => i.id == data.image_id)
+      if (data.active) {
+        image.annotating.push(data.username)
+      } else {
+        image.annotating.splice(image.annotating.indexOf(data.username), 1);
+      }
+    }
+  },
   watch: {
     folders() {
       this.updatePage();

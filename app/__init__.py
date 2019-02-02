@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_socketio import SocketIO
 from werkzeug.contrib.fixers import ProxyFix
 from flask_cors import CORS
 from watchdog.observers import Observer
@@ -8,6 +7,7 @@ from .image_folder import ImageFolderHandler
 from .api import blueprint as api
 from .config import Config
 from .models import *
+from .sockets import socketio
 from .authentication import login_manager
 from .util import query_util, color_util
 
@@ -15,9 +15,6 @@ import threading
 import requests
 import time
 import os
-
-
-socketio = SocketIO()
 
 
 def run_watcher():

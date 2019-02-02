@@ -719,6 +719,7 @@ export default {
     }
   },
   beforeRouteLeave(to, from, next) {
+    this.$socket.emit('annotating', {image_id: this.image.id, active: false});
     this.save(next);
   },
   mounted() {
@@ -731,6 +732,8 @@ export default {
     });
 
     this.initCanvas();
+
+    this.$socket.emit('annotating', {image_id: this.image.id, active: true});
   },
   created() {
     this.paper = new paper.PaperScope();
