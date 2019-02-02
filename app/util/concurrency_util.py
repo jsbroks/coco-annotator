@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import traceback
 
+
 class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
     def __init__(self, max_workers, thread_name_prefix=None, logger=None):
         super().__init__(max_workers=max_workers,

@@ -10,6 +10,7 @@ from ..config import Config
 from .coco_util import get_segmentation_area_and_bbox
 from .concurrency_util import ExceptionLoggingThreadPoolExecutor
 
+
 class CocoImporter:
     executor = ExceptionLoggingThreadPoolExecutor(
         thread_name_prefix=__name__,
@@ -28,8 +29,10 @@ class CocoImporter:
         coco_import = CocoImport(
             coco_raw, dataset_id, db_coco_import.id, creator,
             verbose=cls.verbose)
+
         cls.executor.submit(
-            coco_import.do_import, executor=cls.executor)
+            coco_import.perform_import, executor=cls.executor)
+        
         return db_coco_import.id
 
 
@@ -84,7 +87,7 @@ class CocoImport:
             set__progress=progress,
             set__errors=self.errors)
 
-    def do_import(self, executor):
+    def perform_import(self, executor):
         """
         Perform the coco import
         """
