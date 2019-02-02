@@ -300,7 +300,7 @@ class ImageCocoId(Resource):
 
     @login_required
     def get(self, import_id):
-        """ Adds coco formatted annotations to the dataset """
+        """ Returns current progress and errors of a coco import """
         coco_import = CocoImportModel.objects(
             id=import_id, creator=current_user.username).first()
 
