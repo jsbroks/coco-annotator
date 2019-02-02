@@ -236,6 +236,7 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.fullySelected = this.isCurrent;
+      
       this.setColor();
 
       this.compoundPath.onClick = () => {

@@ -734,7 +734,6 @@ export default {
     this.initCanvas();
 
     this.$socket.emit("annotating", { image_id: this.image.id, active: true });
-    this.autosave = setInterval(this.save, 30*1000);
   },
   created() {
     this.paper = new paper.PaperScope();
@@ -743,9 +742,6 @@ export default {
     this.image.url = "/api/image/" + this.image.id;
 
     this.getData();
-  },
-  destroyed() {
-    clearInterval(this.autoSave);
   }
 };
 </script>
