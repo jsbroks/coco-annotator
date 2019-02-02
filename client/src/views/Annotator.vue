@@ -719,7 +719,7 @@ export default {
     }
   },
   beforeRouteLeave(to, from, next) {
-    this.$socket.emit('annotating', {image_id: this.image.id, active: false});
+    this.$socket.emit("annotating", { image_id: this.image.id, active: false });
     this.save(next);
   },
   mounted() {
@@ -733,7 +733,8 @@ export default {
 
     this.initCanvas();
 
-    this.$socket.emit('annotating', {image_id: this.image.id, active: true});
+    this.$socket.emit("annotating", { image_id: this.image.id, active: true });
+    this.autosave = setInterval(this.save, 30*1000);
   },
   created() {
     this.paper = new paper.PaperScope();

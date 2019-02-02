@@ -21,12 +21,22 @@ def authenticated_only(f):
     return wrapped
 
 
+@socketio.on('annotation')
+@authenticated_only
+def annotation(data):
+
+    image_id = data.get('image_id')
+    emit('annotation', data, broadcast=True)
+
 @socketio.on('annotating')
 @authenticated_only
-def annotate(image):
+def annotating(data):
+    """
+    Socket for handling image locking
+    """
 
-    image_id = image.get('image_id')
-    active = image.get('active')
+    image_id = data.get('image_id')
+    active = data.get('active')
     
     image = ImageModel.objects(id=image_id).first()
     if image is None:
@@ -37,7 +47,7 @@ def annotate(image):
         'image_id': image_id,
         'active': active,
         'username': current_user.username
-    }, broadcast=True)
+    }, broadcast=True, include_self=False)
 
     if active:
         join_room(image_id)
@@ -52,9 +62,10 @@ def annotate(image):
 @socketio.on('disconnect')
 def disconnect():
     if current_user.is_authenticated:
-
+        image_id = session.get('annotating')
+        
         # Remove user from room
-        if session.get('annotating') is not None:
+        if image_id is not None:
             image = ImageModel.objects(id=image_id).first()
             if image is not None:
                 image.update(pull__annotating=current_user.username)
