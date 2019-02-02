@@ -331,8 +331,8 @@ export default {
       if (image == null) return;
 
       if (data.active) {
-        let found = image.annotating.find(a => data.username == a.username);
-        if (found == null) {
+        let found = image.annotating.indexOf(data.username);
+        if (found < 0) {
           image.annotating.push(data.username);
         }
       } else {
