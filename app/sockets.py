@@ -50,6 +50,20 @@ def annotating(data):
     }, broadcast=True, include_self=False)
 
     if active:
+        # Remove user from pervious room
+        previous = session.get('annotating')
+        if previous is not None:
+            leave_room(previous)
+            previous_image = ImageModel.objects(id=previous).first()
+
+            if previous_image is not None:
+                previous_image.update(pull__annotating=current_user.username)
+                emit('annotating', {
+                    'image_id': previous,
+                    'active': False,
+                    'username': current_user.username
+                }, broadcast=True, include_self=False)
+
         join_room(image_id)
         session['annotating'] = image_id
         image.update(add_to_set__annotating=current_user.username)
@@ -63,7 +77,7 @@ def annotating(data):
 def disconnect():
     if current_user.is_authenticated:
         image_id = session.get('annotating')
-        
+
         # Remove user from room
         if image_id is not None:
             image = ImageModel.objects(id=image_id).first()

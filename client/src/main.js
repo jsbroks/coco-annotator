@@ -24,7 +24,7 @@ Vue.use(VTooltip);
 Vue.use(Loading);
 Vue.use(
   new VueSocketIO({
-    debug: true,
+    debug: false,
     connection: window.location.origin
   })
 );

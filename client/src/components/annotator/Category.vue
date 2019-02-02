@@ -182,7 +182,6 @@ export default {
      */
     createAnnotation() {
       let parent = this.$parent;
-      let categories = parent.categories;
       let annotationId = this.category.annotations.length;
 
       axios
@@ -415,13 +414,11 @@ export default {
       if (annotation.image_id != this.$parent.image.id) return;
       if (annotation.category_id != this.category.id) return;
 
-      let found = this.category.annotations.findIndex(a => a.id == annotation.id);
+      let found = this.category.annotations.findIndex(
+        a => a.id == annotation.id
+      );
 
-      if (found > -1) {
-        if (action == "delete") {
-
-        }
-      } else {
+      if (found == -1) {
         if (action == "create") {
           this.category.annotations.push(annotation);
         }

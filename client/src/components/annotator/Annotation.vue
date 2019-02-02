@@ -236,7 +236,7 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.fullySelected = this.isCurrent;
-      
+
       this.setColor();
 
       this.compoundPath.onClick = () => {
@@ -245,11 +245,18 @@ export default {
     },
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
-        this.$parent.category.annotations.splice(this.index, 1);
-        this.$emit("deleted", this.index);
+        this.$socket.emit("annotation", {
+          action: "delete",
+          annotation: this.annotation
+        });
+        this.delete();
 
-        if (this.compoundPath != null) this.compoundPath.remove();
+        this.$emit("deleted", this.index);
       });
+    },
+    delete() {
+      this.$parent.category.annotations.splice(this.index, 1);
+      if (this.compoundPath != null) this.compoundPath.remove();
     },
     onAnnotationClick() {
       if (this.isVisible) {
@@ -461,7 +468,16 @@ export default {
       if (this.uuid == data.uuid) return;
       if (annotation.id != this.annotation.id) return;
 
-      this.createCompoundPath(annotation.paper_object, annotation.segmentation);
+      if (data.action == "modify") {
+        this.createCompoundPath(
+          annotation.paper_object,
+          annotation.segmentation
+        );
+      }
+
+      if (data.action == "delete") {
+        this.delete();
+      }
     }
   },
   mounted() {
