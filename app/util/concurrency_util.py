@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 import traceback
+import sys
 
 
 class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
@@ -13,14 +14,14 @@ class ExceptionLoggingThreadPoolExecutor(ThreadPoolExecutor):
 
     def exception_logger(self, fn, *args, **kwargs): 
         """
-        Waits for future's result and logs any thrown exception
+        Logs any thrown exception
         """
         try:
-            fn(*args, **kwargs)
+            return fn(*args, **kwargs)
         except Exception:
             msg = (f"[{self._thread_name_prefix}]"
                    f"{traceback.format_exc()}")
             if self.logger:
                 self.logger.error(msg)
             else:
-                print(msg, flush=True)
+                print(msg, flush=True, file=sys.stderr)
