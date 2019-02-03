@@ -318,6 +318,13 @@ class LicenseModel(db.DynamicDocument):
     url = db.StringField()
 
 
+class CocoImportModel(db.DynamicDocument):
+    id = db.SequenceField(primary_key=True)
+    creator = db.StringField(required=True)
+    progress = db.FloatField(default=0.0, min_value=0.0, max_value=1.0)
+    errors = db.ListField(default=[])
+
+
 class UserModel(db.DynamicDocument, UserMixin):
     password = db.StringField(required=True)
     username = db.StringField(max_length=25, required=True, unique=True)
