@@ -258,6 +258,7 @@ class AnnotationModel(db.DynamicDocument):
 
         return im.Annotation(**data)
 
+
 class CategoryModel(db.DynamicDocument):
 
     id = db.SequenceField(primary_key=True)
@@ -312,10 +313,44 @@ class CategoryModel(db.DynamicDocument):
         }
         return im.Category(**data)
 
+
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField()
     url = db.StringField()
+
+
+class TaskModel(db.DynamicDocument):
+    id = db.SequenceField(primary_key=True)
+    
+    # Type of task: Importer, Exporter, Scanner, etc.
+    group = db.StringField(required=True)
+    name = db.StringField(required=True) 
+    desciption = db.StringField()
+
+    creator = db.StringField(required=True)
+
+    #: Start date of the executor 
+    start_date = db.DateTimeField()
+    #: End date of the executor 
+    end_date = db.DateTimeField()
+    completed = db.BooleanField(default=False)
+    failed = db.BooleanField(default=False)
+    
+    # If any of the information is relevant to the task
+    # it should be added
+    dataset_id = db.IntField()
+    image_id = db.IntField()
+    category_id = db.IntField()
+
+    progress = db.FloatField(default=0.0, min_value=0.0, max_value=1.0)
+
+    logs = db.ListField(default=[])
+    errors = db.ListField(default=[])
+
+    priority = db.IntField()
+
+    metadata = db.DictField(default={})
 
 
 class CocoImportModel(db.DynamicDocument):
