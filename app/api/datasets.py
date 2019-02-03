@@ -9,7 +9,7 @@ from google_images_download import google_images_download as gid
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
 from ..models import *
-
+from ..util.coco_importer import CocoImporter
 
 import datetime
 import json
@@ -284,114 +284,30 @@ class ImageCoco(Resource):
         coco = args['coco']
 
         dataset = current_user.datasets.filter(id=dataset_id).first()
-        images = ImageModel.objects(dataset_id=dataset_id)
-        categories = CategoryModel.objects
-
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
-        coco_json = json.load(coco)
-        coco_images = coco_json.get('images')
-        coco_annotations = coco_json.get('annotations')
-        coco_categories = coco_json.get('categories')
-
-        errors = []
-
-        categories_id = {}
-        images_id = {}
-
-        # Create any missing categories
-        for category in coco_categories:
-            category_name = category.get('name')
-            print("Loading category {}".format(category_name), flush=True)
-
-            category_id = category.get('id')
-            category_model = categories.filter(name__exact=category_name).all()
-
-            if len(category_model) == 0:
-                errors.append({'category': category_name,
-                               'message': 'Creating category ' + category_name + '.'})
-
-                new_category = CategoryModel(name=category_name, color=color_util.random_color_hex())
-                new_category.save()
-                categories_id[category_id] = new_category.id
-                print("Category not found! (Creating new one)", flush=True)
-                continue
-
-            if len(category_model) > 1:
-                errors.append({'category': category_name,
-                               'message': 'To many categories found with file name.'})
-                continue
-
-            category_model = category_model[0]
-            categories_id[category_id] = category_model.id
-
-        # Add any new categories to dataset
-        for key, value in categories_id.items():
-            if value not in dataset.categories:
-                dataset.categories.append(value)
-
-        dataset.update(set__categories=dataset.categories)
-
-        # Find all images
-        for image in coco_images:
-            image_id = image.get('id')
-            image_filename = image.get('file_name')
-
-            print("Loading image {}".format(image_filename), flush=True)
-            image_model = images.filter(file_name__exact=image_filename).all()
-
-            if len(image_model) == 0:
-                errors.append({'file_name': image_filename,
-                               'message': 'Could not find image.'})
-                continue
-
-            if len(image_model) > 1:
-                errors.append({'file_name': image_filename,
-                               'message': 'To many images found with the same file name.'})
-                continue
-
-            image_model = image_model[0]
-            print("Image found", flush=True)
-            images_id[image_id] = image_model
-
-        # Generate annotations
-        for annotation in coco_annotations:
-            image_id = annotation.get('image_id')
-            category_id = annotation.get('category_id')
-            segmentation = annotation.get('segmentation', [])
-            is_crowd = annotation.get('iscrowed', False)
-
-            if len(segmentation) == 0:
-                continue
-
-            print("Loading annotation data (image:{} category:{})".format(image_id, category_id), flush=True)
-
-            try:
-                image_model = images_id[image_id]
-                category_model_id = categories_id[category_id]
-            except KeyError:
-                continue
-
-            # Check if annotation already exists
-            annotation = AnnotationModel.objects(image_id=image_model.id,
-                                                 category_id=category_model_id,
-                                                 segmentation=segmentation, delete=False).first()
-            # Create annotation
-            if annotation is None:
-                print("Creating annotation", flush=True)
-                annotation = AnnotationModel(image_id=image_model.id)
-                annotation.category_id = category_model_id
-                # annotation.iscrowd = is_crowd
-                annotation.segmentation = segmentation
-                annotation.color = color_util.random_color_hex()
-                annotation.save()
-
-                image_model.update(set__annotated=True)
-            else:
-                print("Annotation already exists", flush=True)
+        import_id = CocoImporter.import_coco(
+            coco, dataset_id, current_user.username)
 
         return {
-            'errors': errors
+            "import_id": import_id
         }
 
+
+@api.route('/coco/<int:import_id>')
+class ImageCocoId(Resource):
+
+    @login_required
+    def get(self, import_id):
+        """ Returns current progress and errors of a coco import """
+        coco_import = CocoImportModel.objects(
+            id=import_id, creator=current_user.username).first()
+
+        if not coco_import:
+            return {'message': 'No such coco import'}, 400
+
+        return {
+            "progress": coco_import.progress,
+            "errors": coco_import.errors
+        }

@@ -21,8 +21,14 @@ class Config:
     INITIALIZE_FROM_FILE = os.getenv("INITIALIZE_FROM_FILE")
     LOAD_IMAGES_ON_START = os.getenv("LOAD_IMAGES_ON_START", False)
 
+    # Coco Importer Options
+    COCO_IMPORTER_VERBOSE = os.getenv("COCO_IMPORTER_VERBOSE", False)
+    COCO_IMPORTER_MAX_WORKERS = int(os.getenv("COCO_IMPORTER_MAX_WORKERS", 4))
+    COCO_IMPORTER_IMAGE_BATCH_SIZE = int(
+        os.getenv("COCO_IMPORTER_IMAGE_BATCH_SIZE", 1000))
+    COCO_IMPORTER_ANNOTATION_BATCH_SIZE = int(
+        os.getenv("COCO_IMPORTER_ANNOTATION_BATCH_SIZE", 1000))
+
     # User Options
     LOGIN_DISABLED = os.getenv('LOGIN_DISABLED', False)
     ALLOW_REGISTRATION = True
-
-
