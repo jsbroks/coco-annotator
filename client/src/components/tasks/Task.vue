@@ -88,8 +88,7 @@ export default {
 }
 
 .logs {
-  
-  background-color: #383c4a;
+  background-color: #4b5162;
   border-radius: 5px;
   max-height: 250px;
   overflow-y: auto;
@@ -107,6 +106,7 @@ export default {
 }
 
 .title {
+  padding: 3px 15px;
   cursor: pointer;
 }
 </style>

@@ -4,6 +4,10 @@
 
      <div class="card-header text-left" @click="showTasks = !showTasks">
         {{ name }}
+
+        <span style="float: right; color: light-gray">
+          {{ tasks.length }} task<span v-show="tasks.length != 1">s</span>
+        </span>
       </div>
 
       <div v-show="showTasks" class="card-body">
@@ -46,7 +50,8 @@ export default {
 }
 
 .card-header {
-  background-color: white;
+  color: white;
+  background-color: #383c4a;
 }
 
 .card-body {
