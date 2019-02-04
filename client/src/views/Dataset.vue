@@ -71,7 +71,13 @@
         >
           Import COCO
         </button>
-
+        <button
+          type="button"
+          class="btn btn-secondary btn-block"
+          @click="scan"
+        >
+          Scan
+        </button>
         <!-- <button type="button" class="btn btn-info">
           Download COCO
         </button> -->
@@ -276,6 +282,17 @@ export default {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
+    },
+    scan() {
+      axios
+        .get("/api/dataset/" + this.dataset.id + "/scan")
+        .then(response => {
+          console.log(response.data)
+        })
+        .catch(error => {
+          this.axiosReqestError("Scanning Dataset", error.response.data.message);
+        })
+        .finally(() => this.removeProcess(process));      
     },
     removeFolder(folder) {
       let index = this.folders.indexOf(folder);

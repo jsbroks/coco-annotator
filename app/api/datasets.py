@@ -311,3 +311,19 @@ class ImageCocoId(Resource):
             "progress": coco_import.progress,
             "errors": coco_import.errors
         }
+
+
+@api.route('/<int:dataset_id>/scan')
+class DatasetScan(Resource):
+    
+    @login_required
+    def get(self, dataset_id):
+
+        dataset = DatasetModel.objects(id=dataset_id).first()
+        
+        if not dataset:
+            return {'message': 'Invalid dataset ID'}, 400
+        
+        task = dataset.scan()
+
+        return { 'id': task.id }

@@ -19,7 +19,7 @@ db = MongoEngine()
 
 
 class DatasetModel(db.DynamicDocument):
-
+    
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique=True)
     directory = db.StringField()
@@ -49,6 +49,16 @@ class DatasetModel(db.DynamicDocument):
             self.owner = 'system'
 
         return super(DatasetModel, self).save(*args, **kwargs)
+    
+    def scan(self):
+
+        task = TaskModel(
+            name="Scanning {}".format(self.name),
+            dataset_id=self.id,
+            group="Directory Scan"
+        )
+
+        return task
 
 
 class ImageModel(db.DynamicDocument):
@@ -328,7 +338,7 @@ class TaskModel(db.DynamicDocument):
     name = db.StringField(required=True) 
     desciption = db.StringField()
 
-    creator = db.StringField(required=True)
+    creator = db.StringField()
 
     #: Start date of the executor 
     start_date = db.DateTimeField()
