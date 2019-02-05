@@ -1,10 +1,12 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    
     <i class="fa fa-circle" :style="{ color: color }" style="padding: 0 10px; font-size: 10px" v-tooltip="backendStatus"></i>
-    <a class="navbar-brand" href="/">
+
+    <RouterLink class="navbar-brand" to="/">
       <strong>{{ name }}</strong>
       <span class="subscript">{{ version }}</span>
-    </a>
+    </RouterLink>
 
     <button
       class="navbar-toggler"
@@ -47,8 +49,8 @@
           >
         </li>
       </ul>
-      <Status />
-      <User v-if="loginEnabled" />
+      <Status class="nav-link left" />
+      <User class="nav-link left" v-if="loginEnabled" />
     </div>
   </nav>
 </template>
@@ -110,5 +112,9 @@ export default {
 
 .navbar {
   background-color: #383c4a;
+}
+
+.left {
+  padding: 0
 }
 </style>
