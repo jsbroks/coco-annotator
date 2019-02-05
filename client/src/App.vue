@@ -43,29 +43,9 @@ export default {
     },
     loading() {
       return this.$store.state.info.loading;
-    },
-    socketConnected() {
-      return this.$store.state.info.socket;
     }
   },
   watch: {
-    socketConnected(connected) {
-      
-      if (connected == null) return;
-
-      let options = {
-        progressBar: true,
-        positionClass: "toast-bottom-left",
-        timeOut: 2000
-      };
-      let title = "Socket Connection"
-
-      if (connected) {
-        this.$toastr.success("Sucessfully connected", title, options);
-      } else {
-        this.$toastr.success("Failed to connect. Your experence may be hindered.", title, options);
-      }
-    },
     loading() {
       if (!this.loading && this.loader != null) {
         this.loader.hide();
