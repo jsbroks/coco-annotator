@@ -5,11 +5,15 @@ import datetime
 import numpy as np
 import imantics as im
 
+
+from time import sleep
+from threading import Thread
 from PIL import Image
+
+from flask_socketio import emit
 from flask_mongoengine import MongoEngine
 from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
-
 
 from .config import Config
 from PIL import Image
@@ -50,6 +54,37 @@ class DatasetModel(db.DynamicDocument):
 
         return super(DatasetModel, self).save(*args, **kwargs)
     
+    def download_images(self, keywords, limit=100):
+
+        task = TaskModel(
+            name="Downloading {} images to {} with keywords {}".format(limit, self.name, keywords),
+            dataset_id=self.id,
+            group="Downloading Images"
+        )
+
+        def download_images(task, dataset, keywords, limit):
+            def custom_print(string):
+                __builtins__.print("%f -- %s" % (time.time(), string))
+
+                print = dprint
+                task.log()
+            for keyword in args['keywords']:
+                response = gid.googleimagesdownload()
+                response.download({
+                    "keywords": keyword,
+                    "limit": args['limit'],
+                    "output_directory": output_dir,
+                    "no_numbering": True,
+                    "format": "jpg",
+                    "type": "photo",
+                    "print_urls": False,
+                    "print_paths": False,
+                    "print_size": False
+                })
+
+
+        return task
+
     def scan(self):
 
         task = TaskModel(
@@ -58,6 +93,23 @@ class DatasetModel(db.DynamicDocument):
             group="Directory Scan"
         )
 
+        task.save()
+        
+        def test(task, socket):
+            count = 1
+            while True:
+                if count == 101:
+                    break
+                log = "Message {}".format(count)
+                task.log(log, "INFO")
+                task.set_progress(count, socket)
+                count += 1
+                sleep(1)
+        
+        task.start(test)
+        # from .sockets import socketio
+        # thread = socketio.start_background_task(test, task=task, socket=socketio)
+        
         return task
 
 
@@ -353,7 +405,7 @@ class TaskModel(db.DynamicDocument):
     image_id = db.IntField()
     category_id = db.IntField()
 
-    progress = db.FloatField(default=0.0, min_value=0.0, max_value=1.0)
+    progress = db.FloatField(default=0.0, min_value=0.0, max_value=100.0)
 
     logs = db.ListField(default=[])
     errors = db.ListField(default=[])
@@ -361,6 +413,48 @@ class TaskModel(db.DynamicDocument):
     priority = db.IntField()
 
     metadata = db.DictField(default={})
+
+    def error(self, string):
+        pass
+    
+    def warning(self, string):
+        pass
+    
+    def info(self, string, type="INFO"):
+        pass
+    
+    def log(self, string, level):
+
+        level = level.upper()
+        date = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        
+        message = f"[{date}] [{level}] {string}"
+        self.update(push__logs=message)
+
+    def set_progress(self, percent, socket=None):
+        self.update(progress=percent)
+
+        if socket is not None:
+            socket.emit('taskProgress', {
+                'id': self.id,
+                'progress': percent
+            }, broadcast=True)
+
+    def start(self, target, *args, **kwargs):
+        
+        from .sockets import socketio
+
+        thread = socketio.start_background_task(
+            target,
+            task=self,
+            socket=socketio,
+            *args,
+            **kwargs
+        )
+        return thread
+
+    def scan(self, dataset):
+        self.update("")
 
 
 class CocoImportModel(db.DynamicDocument):

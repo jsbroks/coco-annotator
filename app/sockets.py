@@ -8,7 +8,7 @@ from flask_login import current_user
 from .models import ImageModel
 
 
-socketio = SocketIO()
+socketio = SocketIO(async_mode='threading')
 
 
 def authenticated_only(f):

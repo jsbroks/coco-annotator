@@ -287,12 +287,15 @@ export default {
       axios
         .get("/api/dataset/" + this.dataset.id + "/scan")
         .then(response => {
-          console.log(response.data)
+          console.log(response.data);
         })
         .catch(error => {
-          this.axiosReqestError("Scanning Dataset", error.response.data.message);
+          this.axiosReqestError(
+            "Scanning Dataset",
+            error.response.data.message
+          );
         })
-        .finally(() => this.removeProcess(process));      
+        .finally(() => this.removeProcess(process));
     },
     removeFolder(folder) {
       let index = this.folders.indexOf(folder);

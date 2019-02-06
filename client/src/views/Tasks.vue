@@ -11,7 +11,7 @@
       
         <hr>
 
-        <TaskGroup v-for="group in groups" :key="group" :name="group" :tasks="tasks[group]" />
+        <TaskGroup v-for="group in groups" :key="group" :name="group" :tasks="groupping[group]" />
       </div>
     </div>
   </div>
@@ -31,93 +31,16 @@ export default {
   data() {
     return {
       total: 0,
-      tasks: {
-        Import: [
-          {
-            id: 1203,
-            progress: 0,
-            name: "Importing test 1",
-            errors: ["Could not import Image 1"],
-            logs: ["Starting Task", "Importing images"]
-          },
-          {
-            id: 1203,
-            progress: 10,
-            name: "Importing test 1",
-            errors: ["Could not import Image 1"],
-            logs: ["Starting Task", "Importing images"]
-          },
-          {
-            id: 1203,
-            progress: 20,
-            name: "Importing test 1",
-            errors: ["Could not import Image 1"],
-            logs: [
-              "Starting Task",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images",
-              "Importing images"
-            ]
-          },
-          {
-            id: 1203,
-            name: "Importing test 1",
-            errors: ["Could not import Image 1"],
-            logs: ["Starting Task", "Importing images"]
-          }
-        ],
-        Export: [
-          {
-            id: 1203,
-            name: "Exporting test 1",
-            errors: ["Could not import Image 1"],
-            logs: ["Starting Task", "Importing images"]
-          }
-        ],
-        Scan: [
-          {
-            id: 1203,
-            name: "Scaning test 1",
-            errors: ["Could not import Image 1"],
-            logs: ["Starting Task", "Importing images"]
-          }
-        ]
-      }
+      tasks: []
     };
   },
   methods: {
     ...mapMutations(["addProcess", "removeProcess"]),
-    updatePage() {}
+    updatePage() {
+      axios.get("/api/tasks/").then(response => {
+        this.tasks = response.data;
+      });
+    }
   },
   watch: {
     user() {
@@ -129,7 +52,22 @@ export default {
       return this.$store.state.user.user;
     },
     groups() {
-      return Object.keys(this.tasks);
+      return Object.keys(this.groupping);
+    },
+    groupping() {
+      let groupping = {};
+
+      this.tasks.forEach(task => {
+        if (task.hasOwnProperty("group")) {
+          let group = task.group;
+
+          if (!groupping.hasOwnProperty(group)) groupping[group] = [];
+
+          groupping[group].push(task);
+        }
+      });
+
+      return groupping;
     }
   },
   created() {

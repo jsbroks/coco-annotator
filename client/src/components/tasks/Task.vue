@@ -23,7 +23,7 @@
     </div>
 
     <div class="progress">
-      <div class="progress-bar" :style="{ 'width': task.progress + '%' }"></div>
+      <div class="progress-bar" :class="{ 'bg-success': task.progress >= 100 || task.completed }" :style="{ 'width': task.progress + '%' }"></div>
     </div>
 
   </div>
@@ -42,6 +42,16 @@ export default {
     return {
       showLogs: false
     };
+  },
+  sockets: {
+    taskLogs(data) {
+      if (data.id !== this.task.id) return;
+    },
+    taskProgress(data) {
+      if (data.id !== this.task.id) return;
+
+      this.task.progress = data.progress;
+    }
   },
   computed: {
     warnings() {
@@ -93,9 +103,10 @@ export default {
   max-height: 250px;
   overflow-y: auto;
 
-  -webkit-box-shadow: inset 0px 0px 30px 2px rgba(0,0,0,0.2);
-  -moz-box-shadow: inset 0px 0px 30px 2px rgba(0,0,0,0.2);
-  box-shadow: inset 0px 0px 30px 2px rgba(0,0,0,0.2);
+  -webkit-box-shadow: inset 0px 0px 30px 2px rgba(0, 0, 0, 0.2);
+  -moz-box-shadow: inset 0px 0px 30px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0px 0px 30px 2px rgba(0, 0, 0, 0.2);
+  font-family: "Courier New", Courier, monospace;
 }
 
 .log {

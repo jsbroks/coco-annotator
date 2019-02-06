@@ -11,7 +11,7 @@
       </div>
 
       <div v-show="showTasks" class="card-body">
-        <Task v-for="task in tasks" :task="task" />
+        <Task :key="index" v-for="(task, index) in tasks" :task="task" />
       </div>
     </div>
   </div>
