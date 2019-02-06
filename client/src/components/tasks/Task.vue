@@ -18,12 +18,20 @@
   
     <div v-show="showLogs" class="card-body">
       <div class="logs">
-        <p class="log" :key="index" v-for="(line, index) in logs.slice().reverse()">{{ line }}</p>
+        <p
+          class="log"
+          :key="index"
+          v-for="(line, index) in logs.slice().reverse()"
+        >{{ line }}</p>
       </div>
     </div>
 
     <div class="progress">
-      <div class="progress-bar" :class="{ 'bg-success': task.progress >= 100 || task.completed }" :style="{ 'width': task.progress + '%' }"></div>
+      <div
+        class="progress-bar"
+        :class="{ 'bg-success': task.progress >= 100 || task.completed }"
+        :style="{ 'width': task.progress + '%' }"
+      ></div>
     </div>
 
   </div>
