@@ -37,3 +37,8 @@ def scan_func(task, socket, dataset):
 
     task.info(f"Created {count} new image(s)")
     task.set_progress(100, socket=socket)
+
+
+def import_coco_func(task, socket, dataset):
+    pass
+

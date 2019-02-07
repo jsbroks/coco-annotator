@@ -14,7 +14,11 @@ class Task(Resource):
     @login_required
     def get(self):
         """ Returns all tasks """
-        return query_util.fix_ids(TaskModel.objects.all())
+        query = TaskModel.objects.only(
+            'group', 'id', 'name', 'completed', 'progress',
+            'priority', 'creator', 'desciption'
+        ).all()
+        return query_util.fix_ids(query)
 
 
 @api.route('/<int:task_id>')
@@ -28,3 +32,15 @@ class TaskId(Resource):
 
         task.delete()
         return {"success": True}
+
+
+@api.route('/<int:task_id>/logs')
+class TaskId(Resource):
+    @login_required
+    def get(self, task_id):
+        """ Deletes task """
+        task = TaskModel.objects(id=task_id).first()
+        if task is None:
+            return {"message": "Invalid task id"}, 400
+
+        return {'logs': task.logs}

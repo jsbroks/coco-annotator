@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!deleted" class="card text-left">
+  <div class="card text-left">
   
     <div class="card-body title" @click="showLogs = !showLogs">
       
@@ -9,12 +9,12 @@
       
       <div style="float: right">
        
-        <span v-show="task.errors.length > 0" class="badge badge-danger">
-          {{ task.errors.length }} error<span v-show="errors.length > 1">s</span>
+        <span v-show="errors > 0" class="badge badge-danger">
+          {{ errors }} error<span v-show="errors > 1">s</span>
         </span>
         
-        <span v-show="warnings.length > 0" class="badge badge-warning">
-          {{ warnings.length }} warning<span v-show="warnings.length > 1">s</span>
+        <span v-show="warnings > 0" class="badge badge-warning">
+          {{ warnings }} warning<span v-show="warnings > 1">s</span>
         </span>
 
       </div>
@@ -47,8 +47,7 @@
 </template>
 
 <script>
-
-import axios from 'axios';
+import Tasks from "@/models/tasks";
 
 export default {
   name: "Task",
@@ -60,10 +59,10 @@ export default {
   },
   data() {
     return {
+      logs: ["Loading logs"],
       showLogs: false,
       onlyErrors: false,
-      onlyWarnings: false,
-      deleted: false
+      onlyWarnings: false
     };
   },
   sockets: {
@@ -83,27 +82,29 @@ export default {
       return "whtie";
     },
     deleteTask() {
-      this.deleted = true;
-      axios.delete("/api/tasks/" + this.task.id);
+      Tasks.delete(this.task.id).finally(() => {
+        this.$parent.$parent.updatePage();
+      });
+    },
+    getLogs() {
+      Tasks.getLogs(this.task.id).then(response => {
+        this.logs = response.data.logs;
+      });
     }
+  },
+  watch: {
+    showLogs: "getLogs"
   },
   computed: {
     warnings() {
       let warnings = this.task.warnings;
-      if (warnings == null) return [];
+      if (warnings == null) return 0;
       return warnings;
     },
     errors() {
       let errors = this.task.errors;
-      if (errors == null) return [];
+      if (errors == null) return 0;
       return errors;
-    },
-    logs() {
-      let logs = this.task.logs;
-      if (logs == null || this.task.logs.length == 0) return ["Logs are empty"];
-      if (this.onlyErrors) return this.task.errors;
-      if (this.onlyWarnings) return this.task.warnings
-      return logs;
     }
   }
 };

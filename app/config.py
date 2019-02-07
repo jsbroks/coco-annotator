@@ -19,7 +19,6 @@ class Config:
     # Dataset Options
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
     INITIALIZE_FROM_FILE = os.getenv("INITIALIZE_FROM_FILE")
-    LOAD_IMAGES_ON_START = os.getenv("LOAD_IMAGES_ON_START", False)
 
     # Coco Importer Options
     COCO_IMPORTER_VERBOSE = os.getenv("COCO_IMPORTER_VERBOSE", False)

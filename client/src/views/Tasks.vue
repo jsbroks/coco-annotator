@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import axios from "axios";
 import toastrs from "@/mixins/toastrs";
 import TaskGroup from "@/components/tasks/TaskGroup";
+import Tasks from "@/models/tasks";
 
 import { mapMutations } from "vuex";
 
@@ -42,15 +42,17 @@ export default {
   methods: {
     ...mapMutations(["addProcess", "removeProcess"]),
     updatePage() {
-      axios.get("/api/tasks/").then(response => {
-        this.tasks = response.data;
-      });
+      let process = "Loading tasks";
+      this.addProcess(process);
+      Tasks.get()
+        .then(response => {
+          this.tasks = response.data;
+        })
+        .finally(() => this.removeProcess(process));
     }
   },
   watch: {
-    user() {
-      this.updatePage();
-    }
+    user: "updatePage"
   },
   computed: {
     user() {

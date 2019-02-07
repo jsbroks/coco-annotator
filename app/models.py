@@ -43,8 +43,6 @@ class DatasetModel(db.DynamicDocument):
 
         if not os.path.exists(directory):
             os.makedirs(directory)
-        else:
-            ImageModel.load_images(directory, self.id)
 
         self.directory = directory
         if current_user:
@@ -84,14 +82,23 @@ class DatasetModel(db.DynamicDocument):
 
         return task
 
-    def scan(self):
-        
-        from .util.task_util import scan_func
-
+    def import_coco(self, coco_json):
+        from .util.task_util import import_coco_func
         task = TaskModel(
             name="Scanning {} for new images".format(self.name),
             dataset_id=self.id,
-            group="Scan Datasets Directory"
+            group="Annotation Import"
+        )
+        task.save()
+        task.start(import_coco_func, dataset=self)
+        return task
+
+    def scan(self):
+        from .util.task_util import scan_func
+        task = TaskModel(
+            name="Scanning {} for new images".format(self.name),
+            dataset_id=self.id,
+            group="Directory Image Scan"
         )
         task.save()
         task.start(scan_func, dataset=self)
@@ -153,20 +160,6 @@ class ImageModel(db.DynamicDocument):
         pil_image.close()
 
         return image
-
-    @classmethod
-    def load_images(cls, directory, dataset_id=None):
-        print("Checking all images in dataset directory (may take a few minutes)")
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                path = os.path.join(root, file)
-
-                if path.endswith(cls.PATTERN):
-                    db_image = cls.objects(path=path).first()
-
-                    if db_image is None:
-                        print("New file found: {}".format(path))
-                        cls.create_from_path(path, dataset_id).save()
 
     def thumbnail_path(self):
         folders = self.path.split('/')
@@ -393,12 +386,15 @@ class TaskModel(db.DynamicDocument):
     progress = db.FloatField(default=0.0, min_value=0.0, max_value=100.0)
 
     logs = db.ListField(default=[])
-    errors = db.ListField(default=[])
-    warnings = db.ListField(default=[])
+    errors = db.IntField(default=0)
+    warnings = db.IntField(default=0)
 
     priority = db.IntField()
 
     metadata = db.DictField(default={})
+
+    _update_every = 10
+    _progress_update = 0
 
     def error(self, string):
         self._log(string, level="ERROR")
@@ -421,21 +417,27 @@ class TaskModel(db.DynamicDocument):
         }
 
         if level == "ERROR":
-            statment['push__errors'] = message
+            statment['inc__errors'] = 1
         
         if level == "WARNING":
-            statment['push__warnings'] = message
+            statment['inc__warnings'] = 1
 
         self.update(**statment)
 
     def set_progress(self, percent, socket=None):
+        
         self.update(progress=percent, completed=(percent >= 100))
 
-        if socket is not None:
-            socket.emit('taskProgress', {
-                'id': self.id,
-                'progress': percent
-            }, broadcast=True)
+        # Send socket update every 10%
+        if self._progress_update < percent or percent >= 100:
+            
+            if socket is not None:
+                socket.emit('taskProgress', {
+                    'id': self.id,
+                    'progress': percent
+                }, broadcast=True)
+            
+            self._progress_update += self._update_every
 
     def start(self, target, *args, **kwargs):
         
