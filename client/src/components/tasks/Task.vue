@@ -6,13 +6,17 @@
       {{ task.name }}
 
       <span class="time text-muted">(Running for {{ time }})</span>
+      
       <div style="float: right">
+       
         <span v-show="task.errors.length > 0" class="badge badge-danger">
           {{ task.errors.length }} error<span v-show="errors.length > 1">s</span>
         </span>
+        
         <span v-show="warnings.length > 0" class="badge badge-warning">
           {{ warnings.length }} warning<span v-show="warnings.length > 1">s</span>
         </span>
+
       </div>
     </div>
   
@@ -22,6 +26,7 @@
           class="log"
           :key="index"
           v-for="(line, index) in logs.slice().reverse()"
+          :style="{ 'color': textColor(line) }"
         >{{ line }}</p>
       </div>
     </div>
@@ -29,9 +34,10 @@
     <div class="progress">
       <div
         class="progress-bar"
-        :class="{ 'bg-success': task.progress >= 100 || task.completed }"
-        :style="{ 'width': task.progress + '%' }"
-      ></div>
+        :class="{ 'bg-success': task.progress >= 100 || task.completed}"
+        :style="{ 'width': task.progress + '%'}"
+      >
+      </div>
     </div>
 
   </div>
@@ -48,7 +54,9 @@ export default {
   },
   data() {
     return {
-      showLogs: false
+      showLogs: false,
+      onlyErrors: false,
+      onlyWarnings: false
     };
   },
   sockets: {
@@ -59,6 +67,13 @@ export default {
       if (data.id !== this.task.id) return;
 
       this.task.progress = data.progress;
+    }
+  },
+  methods: {
+    textColor(text) {
+      if (text.includes("[ERROR]")) return "red";
+      if (text.includes("[WARNING]")) return "yellow";
+      return "whtie";
     }
   },
   computed: {
@@ -75,6 +90,8 @@ export default {
     logs() {
       let logs = this.task.logs;
       if (logs == null || this.task.logs.length == 0) return ["Logs are empty"];
+      if (this.onlyErrors) return this.task.errors;
+      if (this.onlyWarnings) return this.task.warnings
       return logs;
     },
     time() {

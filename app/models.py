@@ -82,34 +82,19 @@ class DatasetModel(db.DynamicDocument):
                     "print_size": False
                 })
 
-
         return task
 
     def scan(self):
+        
+        from .util.task_util import scan_func
 
         task = TaskModel(
-            name="Scanning {}".format(self.name),
+            name="Scanning {} for new images".format(self.name),
             dataset_id=self.id,
-            group="Directory Scan"
+            group="Scan Datasets Directory"
         )
-
         task.save()
-        
-        def test(task, socket):
-            count = 1
-            while True:
-                if count == 101:
-                    break
-                log = "Message {}".format(count)
-                task.log(log, "INFO")
-                task.set_progress(count, socket)
-                count += 1
-                sleep(1)
-        
-        task.start(test)
-        # from .sockets import socketio
-        # thread = socketio.start_background_task(test, task=task, socket=socketio)
-        
+        task.start(scan_func, dataset=self)
         return task
 
 
@@ -409,30 +394,42 @@ class TaskModel(db.DynamicDocument):
 
     logs = db.ListField(default=[])
     errors = db.ListField(default=[])
+    warnings = db.ListField(default=[])
 
     priority = db.IntField()
 
     metadata = db.DictField(default={})
 
     def error(self, string):
-        pass
+        self._log(string, level="ERROR")
     
     def warning(self, string):
-        pass
+        self._log(string, level="WARNING")
     
-    def info(self, string, type="INFO"):
-        pass
+    def info(self, string):
+        self._log(string, level="INFO")
     
-    def log(self, string, level):
+    def _log(self, string, level):
 
         level = level.upper()
         date = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         
         message = f"[{date}] [{level}] {string}"
-        self.update(push__logs=message)
+
+        statment = {
+            'push__logs': message
+        }
+
+        if level == "ERROR":
+            statment['push__errors'] = message
+        
+        if level == "WARNING":
+            statment['push__warnings'] = message
+
+        self.update(**statment)
 
     def set_progress(self, percent, socket=None):
-        self.update(progress=percent)
+        self.update(progress=percent, completed=(percent >= 100))
 
         if socket is not None:
             socket.emit('taskProgress', {
@@ -452,10 +449,6 @@ class TaskModel(db.DynamicDocument):
             **kwargs
         )
         return thread
-
-    def scan(self, dataset):
-        self.update("")
-
 
 class CocoImportModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
