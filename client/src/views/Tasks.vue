@@ -11,7 +11,12 @@
       
         <hr>
 
-        <TaskGroup v-for="group in groups" :key="group" :name="group" :tasks="groupping[group]" />
+        <TaskGroup
+          v-for="group in groups"
+          :key="group"
+          :name="group"
+          :tasks="groupping[group]"
+        />
       </div>
     </div>
   </div>

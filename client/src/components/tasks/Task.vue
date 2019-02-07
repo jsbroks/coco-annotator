@@ -1,11 +1,11 @@
 <template>
-  <div class="card text-left">
+  <div v-if="!deleted" class="card text-left">
   
     <div class="card-body title" @click="showLogs = !showLogs">
       
       {{ task.name }}
 
-      <span class="time text-muted">(Running for {{ time }})</span>
+      <!--<span class="time text-muted">(Running for {{ time }})</span>-->
       
       <div style="float: right">
        
@@ -29,13 +29,16 @@
           :style="{ 'color': textColor(line) }"
         >{{ line }}</p>
       </div>
+      <button class="btn btn-danger btn-block btn-sm delete" @click="deleteTask">
+        Delete Task
+      </button>
     </div>
 
     <div class="progress">
       <div
         class="progress-bar"
-        :class="{ 'bg-success': task.progress >= 100 || task.completed}"
-        :style="{ 'width': task.progress + '%'}"
+        :class="{ 'bg-success': task.progress >= 100 || task.completed }"
+        :style="{ 'width': task.progress + '%' }"
       >
       </div>
     </div>
@@ -44,6 +47,9 @@
 </template>
 
 <script>
+
+import axios from 'axios';
+
 export default {
   name: "Task",
   props: {
@@ -56,7 +62,8 @@ export default {
     return {
       showLogs: false,
       onlyErrors: false,
-      onlyWarnings: false
+      onlyWarnings: false,
+      deleted: false
     };
   },
   sockets: {
@@ -74,6 +81,10 @@ export default {
       if (text.includes("[ERROR]")) return "red";
       if (text.includes("[WARNING]")) return "yellow";
       return "whtie";
+    },
+    deleteTask() {
+      this.deleted = true;
+      axios.delete("/api/tasks/" + this.task.id);
     }
   },
   computed: {
@@ -93,9 +104,6 @@ export default {
       if (this.onlyErrors) return this.task.errors;
       if (this.onlyWarnings) return this.task.warnings
       return logs;
-    },
-    time() {
-      return "10 seconds";
     }
   }
 };
@@ -139,6 +147,10 @@ export default {
   font-size: 13px;
   margin: 0;
   padding: 0 5px;
+}
+
+.delete {
+  margin: 2px 0;
 }
 
 .title {

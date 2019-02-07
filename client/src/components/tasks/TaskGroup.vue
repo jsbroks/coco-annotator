@@ -6,7 +6,7 @@
         {{ name }}
 
         <span style="float: right; color: light-gray">
-          {{ tasks.length }} task<span v-show="tasks.length != 1">s</span>
+          {{ runningTasks }} task<span v-show="tasks.length != 1">s</span> running
         </span>
       </div>
 
@@ -38,7 +38,11 @@ export default {
       showTasks: false
     };
   },
-  computed: {}
+  computed: {
+    runningTasks() {
+      return this.tasks.filter(t => t.progress < 100).length;
+    }
+  }
 };
 </script>
 
