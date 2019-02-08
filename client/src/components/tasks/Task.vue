@@ -29,7 +29,7 @@
           :style="{ 'color': textColor(line) }"
         >{{ line }}</p>
       </div>
-      <button class="btn btn-danger btn-block btn-sm delete" @click="deleteTask">
+      <button v-show="task.completed" class="btn btn-danger btn-block btn-sm delete" @click="deleteTask">
         Delete Task
       </button>
     </div>
@@ -37,7 +37,7 @@
     <div class="progress">
       <div
         class="progress-bar"
-        :class="{ 'bg-success': task.progress >= 100 || task.completed }"
+        :class="{ 'bg-success': task.completed }"
         :style="{ 'width': task.progress + '%' }"
       >
       </div>

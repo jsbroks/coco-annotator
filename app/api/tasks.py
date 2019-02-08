@@ -28,9 +28,13 @@ class TaskId(Resource):
     def delete(self, task_id):
         """ Deletes task """
         task = TaskModel.objects(id=task_id).first()
+
         if task is None:
             return {"message": "Invalid task id"}, 400
 
+        if not task.completed:
+            return {"message": "Task is not completed"}, 400
+        
         task.delete()
         return {"success": True}
 
@@ -43,5 +47,5 @@ class TaskId(Resource):
         task = TaskModel.objects(id=task_id).first()
         if task is None:
             return {"message": "Invalid task id"}, 400
-
+        
         return {'logs': task.logs}
