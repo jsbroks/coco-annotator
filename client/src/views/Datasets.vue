@@ -182,14 +182,12 @@
 </template>
 
 <script>
-import axios from "axios";
-
 import toastrs from "@/mixins/toastrs";
-
+import Datasets from "@/models/datasets";
 import DatasetCard from "@/components/cards/DatasetCard";
 import Pagination from "@/components/Pagination";
-
 import TagsInput from "@/components/TagsInput";
+
 import { mapMutations } from "vuex";
 
 export default {
@@ -219,12 +217,10 @@ export default {
       page = page || this.page;
       this.page = page;
 
-      axios
-        .get("/api/dataset/data", {
-          params: {
-            limit: this.limit,
-            page: page
-          }
+      Datasets
+        .allData({
+          limit: this.limit,
+          page: page
         })
         .then(response => {
           this.datasets = response.data.datasets;
@@ -242,11 +238,8 @@ export default {
       for (let key in this.create.categories) {
         categories.push(this.create.categories[key]);
       }
-
-      axios
-        .post("/api/dataset/?name=" + this.create.name, {
-          categories: categories
-        })
+      Datasets
+        .create(this.create.name, categories)
         .then(() => {
           this.create.name = "";
           this.create.categories = [];

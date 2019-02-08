@@ -3,7 +3,7 @@ import axios from "axios";
 const baseURL = "/api/tasks/";
 
 export default {
-  get() {
+  all() {
     return axios.get(baseURL);
   },
   delete(id) {

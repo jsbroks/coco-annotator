@@ -44,7 +44,7 @@ export default {
     updatePage() {
       let process = "Loading tasks";
       this.addProcess(process);
-      Tasks.get()
+      Tasks.all()
         .then(response => {
           this.tasks = response.data;
         })

@@ -203,10 +203,8 @@
 </template>
 
 <script>
-import axios from "axios";
-
 import toastrs from "@/mixins/toastrs";
-
+import Dataset from "@/models/datasets";
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 
@@ -250,24 +248,21 @@ export default {
     ...mapMutations(["addProcess", "removeProcess"]),
     generateDataset() {
       if (this.keyword.length === 0) return;
-      axios
-        .post("/api/dataset/" + this.dataset.id + "/generate", {
+
+      Dataset.generate(this.dataset.id, {
           keywords: [this.keyword],
           limit: this.generateLimit
         })
-        .then(() => {});
     },
     updatePage(page) {
       let process = "Loading images from dataset";
       this.addProcess(process);
 
-      axios
-        .get("/api/dataset/" + this.dataset.id + "/data", {
-          params: {
-            page: page,
-            limit: this.limit,
-            folder: this.folders.join("/")
-          }
+      Dataset
+        .getData(this.dataset.id, {
+          page: page,
+          limit: this.limit,
+          folder: this.folders.join("/")
         })
         .then(response => {
           this.images = response.data.images;
@@ -284,8 +279,8 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     scan() {
-      axios
-        .get("/api/dataset/" + this.dataset.id + "/scan")
+      Dataset
+        .scan(this.dataset.id)
         .then(response => {
           console.log(response.data);
         })
@@ -305,17 +300,9 @@ export default {
       let process = "Uploading COCO annotation file";
       this.addProcess(process);
 
-      let form = new FormData();
-
       let uploaded = document.getElementById("coco");
-      form.append("coco", uploaded.files[0]);
-      axios
-        .post("/api/dataset/" + this.dataset.id + "/coco", form, {
-          headers: {
-            "Content-Type": "multipart/form-data"
-          }
-        })
-        .then(() => {})
+      Dataset
+        .uploadCoco(this.dataset.id, uploaded.files[0])
         .catch(error => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
