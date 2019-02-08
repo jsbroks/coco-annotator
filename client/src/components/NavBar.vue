@@ -1,9 +1,12 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <a class="navbar-brand" href="/">
+    
+    <i class="fa fa-circle" :style="{ color: color }" style="padding: 0 10px; font-size: 10px" v-tooltip="backendStatus"></i>
+
+    <RouterLink class="navbar-brand" to="/">
       <strong>{{ name }}</strong>
       <span class="subscript">{{ version }}</span>
-    </a>
+    </RouterLink>
 
     <button
       class="navbar-toggler"
@@ -49,8 +52,8 @@
           >
         </li>
       </ul>
-      <Status />
-      <User v-if="loginEnabled" />
+      <Status class="nav-link left" />
+      <User class="nav-link left" v-if="loginEnabled" />
     </div>
   </nav>
 </template>
@@ -62,6 +65,12 @@ import Status from "@/components/Status";
 export default {
   name: "NavBar",
   components: { Status, User },
+  data() {
+    return {
+      color: 'white',
+      backendStatus: "Connection unknown"
+    }
+  },
   computed: {
     version() {
       return this.$store.state.info.version;
@@ -71,6 +80,27 @@ export default {
     },
     name() {
       return this.$store.state.info.name;
+    },
+    socket() {
+      return this.$store.state.info.socket;
+    },
+  },
+  watch: {
+    socket(connected) {
+
+      if (connected == null) {
+        this.color = "white";
+        this.backendStatus = "Connection unknown";
+        return;
+      }
+
+      if (connected) {
+        this.color = "green";
+        this.backendStatus = "Connected to backend";
+      } else {
+        this.color = "red";
+        this.backendStatus = "Could not connect to backend"
+      }
     }
   }
 };
@@ -85,5 +115,9 @@ export default {
 
 .navbar {
   background-color: #383c4a;
+}
+
+.left {
+  padding: 0
 }
 </style>

@@ -14,7 +14,7 @@ export default {
   components: { NavBar },
   methods: {
     ...mapMutations("user", ["setUserInfo"]),
-    ...mapMutations("info", ["getServerInfo"]),
+    ...mapMutations("info", ["getServerInfo", "socket"]),
     toAuthPage() {
       this.$router.push({
         name: "authentication"
@@ -64,6 +64,14 @@ export default {
         }
       },
       immediate: true
+    }
+  },
+  sockets: {
+    connect() {
+      this.socket(true)
+    },
+    disconnect() {
+      this.socket(false)
     }
   },
   mounted() {
