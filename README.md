@@ -19,6 +19,8 @@
 [![Demo](https://img.shields.io/badge/demo-online-green.svg)](https://annotator.justinbrooks.ca/)
 [![Build Status](https://travis-ci.org/jsbroks/coco-annotator.svg?branch=master)](https://travis-ci.org/jsbroks/coco-annotator)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jsbroks/coco-annotator.svg)](https://hub.docker.com/r/jsbroks/coco-annotator)
+[![Backers on Open Collective](https://opencollective.com/coco-annotator/backers/badge.svg)](#backers) 
+[![Sponsors on Open Collective](https://opencollective.com/coco-annotator/sponsors/badge.svg)](#sponsors) 
 
 COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-know [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered though an intuitive and customizable interface and provides many tools for creating accurate datasets.
 
@@ -64,6 +66,36 @@ Thanks to all these wonderful libaries/frameworks:
  - [Axios](https://github.com/axios/axios) - Promise based HTTP client
  - [PaperJS](http://paperjs.org/) - Canvas editor library
  - [Bootstrap](https://getbootstrap.com/) - Frontend component library
+
+## Contributors
+
+This project exists thanks to all the people who contribute. 
+<a href="https://github.com/jsbroks/coco-annotator/graphs/contributors"><img src="https://opencollective.com/coco-annotator/contributors.svg?width=890&button=false" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/coco-annotator#backer)]
+
+<a href="https://opencollective.com/coco-annotator#backers" target="_blank"><img src="https://opencollective.com/coco-annotator/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/coco-annotator#sponsor)]
+
+<a href="https://opencollective.com/coco-annotator/sponsor/0/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/1/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/2/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/3/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/4/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/5/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/6/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/7/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/8/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/coco-annotator/sponsor/9/website" target="_blank"><img src="https://opencollective.com/coco-annotator/sponsor/9/avatar.svg"></a>
+
+
 
 # License
 [MIT](https://tldrlegal.com/license/mit-license)
