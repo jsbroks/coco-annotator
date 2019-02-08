@@ -123,7 +123,7 @@ def import_coco_func(task, socket, dataset, coco_json):
     task.info("===== Import Annotations =====")
     for annotation in coco_annotations:
 
-        image_id = annotation.get('id')
+        image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation')
         is_crowd = annotation.get('iscrowed', False)
@@ -142,23 +142,23 @@ def import_coco_func(task, socket, dataset, coco_json):
             task.warning(f"Could not find image assoicated with annotation {annotation.get('id')}")
             continue
         
-        annotation = AnnotationModel.objects(
+        annotation_model = AnnotationModel.objects(
             image_id=image_model.id,
             category_id=category_model_id,
             segmentation=segmentation,
             delete=False
         ).first()
 
-        if annotation is None:
+        if annotation_model is None:
             task.info(f"Creating annotation data ({image_id}, {category_id})")
 
-            annotation = AnnotationModel(image_id=image_model.id)
-            annotation.category_id = category_model_id
+            annotation_model = AnnotationModel(image_id=image_model.id)
+            annotation_model.category_id = category_model_id
             
-            annotation.color = annotation.get('color')
-            annotation.metadata = annotation.get('metadata', {})
-            annotation.segmentation = segmentation
-            annotation.save()
+            annotation_model.color = annotation.get('color')
+            annotation_model.metadata = annotation.get('metadata', {})
+            annotation_model.segmentation = segmentation
+            annotation_model.save()
 
             image_model.update(set__annotated=True)
         else:
