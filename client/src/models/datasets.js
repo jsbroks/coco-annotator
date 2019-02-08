@@ -30,6 +30,9 @@ export default {
   scan(id) {
     return axios.get(baseURL + `${id}/scan`);
   },
+  getCoco(id) {
+    return axios.get(baseURL + `${id}/coco`);
+  },
   uploadCoco(id, file) {
     let form = new FormData();
     form.append("coco", file);

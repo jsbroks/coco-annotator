@@ -82,7 +82,7 @@ class DatasetModel(db.DynamicDocument):
 
         return task
 
-    def import_coco(self, coco_json):
+    def import_coco(self, coco):
         from .util.task_util import import_coco_func
         task = TaskModel(
             name="Scanning {} for new images".format(self.name),
@@ -90,8 +90,9 @@ class DatasetModel(db.DynamicDocument):
             group="Annotation Import"
         )
         task.save()
-        task.start(import_coco_func, dataset=self)
-        return task
+        task.start(import_coco_func, dataset=self, coco_json=coco)
+
+        return task.api_json()
 
     def scan(self):
         from .util.task_util import scan_func
@@ -102,7 +103,8 @@ class DatasetModel(db.DynamicDocument):
         )
         task.save()
         task.start(scan_func, dataset=self)
-        return task
+
+        return task.api_json()
 
 
 class ImageModel(db.DynamicDocument):
@@ -383,7 +385,7 @@ class TaskModel(db.DynamicDocument):
     image_id = db.IntField()
     category_id = db.IntField()
 
-    progress = db.FloatField(default=0.0, min_value=0.0, max_value=100.0)
+    progress = db.FloatField(default=0, min_value=0, max_value=100)
 
     logs = db.ListField(default=[])
     errors = db.IntField(default=0)
@@ -426,7 +428,7 @@ class TaskModel(db.DynamicDocument):
 
     def set_progress(self, percent, socket=None):
         
-        self.update(progress=percent, completed=(percent >= 100))
+        self.update(progress=int(percent), completed=(percent >= 100))
 
         # Send socket update every 10%
         if self._progress_update < percent or percent >= 100:
@@ -451,6 +453,12 @@ class TaskModel(db.DynamicDocument):
             **kwargs
         )
         return thread
+    
+    def api_json(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
 class CocoImportModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

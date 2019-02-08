@@ -16,7 +16,8 @@ class Task(Resource):
         """ Returns all tasks """
         query = TaskModel.objects.only(
             'group', 'id', 'name', 'completed', 'progress',
-            'priority', 'creator', 'desciption'
+            'priority', 'creator', 'desciption', 'errors',
+            'warnings'
         ).all()
         return query_util.fix_ids(query)
 
