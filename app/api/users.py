@@ -22,6 +22,7 @@ set_password = reqparse.RequestParser()
 set_password.add_argument('password', required=True, location='json')
 set_password.add_argument('new_password', required=True, location='json')
 
+from flask_socketio import SocketIO, disconnect
 
 @api.route('/')
 class User(Resource):

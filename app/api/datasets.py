@@ -170,7 +170,7 @@ class DatasetIdShare(Resource):
 
 
 @api.route('/data')
-class Dataset(Resource):
+class DatasetData(Resource):
     @api.expect(page_data)
     @login_required
     def get(self):
@@ -234,7 +234,7 @@ class DatasetDataId(Resource):
             return {'message': 'Directory does not exist.'}, 400
 
         images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False) \
-            .order_by('file_name').only('id', 'file_name')
+            .order_by('file_name').only('id', 'file_name', 'annotating')
 
         pagination = Pagination(images.count(), limit, page)
         images = query_util.fix_ids(images[pagination.start:pagination.end])
@@ -263,12 +263,11 @@ class DatasetDataId(Resource):
 
 
 @api.route('/<int:dataset_id>/coco')
-class ImageCoco(Resource):
+class DatasetCoco(Resource):
 
     @login_required
     def get(self, dataset_id):
         """ Returns coco of images and annotations in the dataset """
-
         dataset = current_user.datasets.filter(id=dataset_id).first()
 
         if dataset is None:
@@ -287,16 +286,11 @@ class ImageCoco(Resource):
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
-        import_id = CocoImporter.import_coco(
-            coco, dataset_id, current_user.username)
-
-        return {
-            "import_id": import_id
-        }
+        return dataset.import_coco(json.load(coco))
 
 
 @api.route('/coco/<int:import_id>')
-class ImageCocoId(Resource):
+class DatasetCocoId(Resource):
 
     @login_required
     def get(self, import_id):
@@ -311,3 +305,17 @@ class ImageCocoId(Resource):
             "progress": coco_import.progress,
             "errors": coco_import.errors
         }
+
+
+@api.route('/<int:dataset_id>/scan')
+class DatasetScan(Resource):
+    
+    @login_required
+    def get(self, dataset_id):
+
+        dataset = DatasetModel.objects(id=dataset_id).first()
+        
+        if not dataset:
+            return {'message': 'Invalid dataset ID'}, 400
+        
+        return dataset.scan()

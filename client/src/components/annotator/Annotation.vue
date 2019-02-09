@@ -165,6 +165,7 @@ export default {
       metadata: [],
       isEmpty: true,
       name: "",
+      uuid: "",
       pervious: []
     };
   },
@@ -234,6 +235,8 @@ export default {
       }
 
       this.compoundPath.data.annotationId = this.index;
+      this.compoundPath.fullySelected = this.isCurrent;
+
       this.setColor();
 
       this.compoundPath.onClick = () => {
@@ -242,11 +245,18 @@ export default {
     },
     deleteAnnotation() {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
-        this.$parent.category.annotations.splice(this.index, 1);
-        this.$emit("deleted", this.index);
+        this.$socket.emit("annotation", {
+          action: "delete",
+          annotation: this.annotation
+        });
+        this.delete();
 
-        if (this.compoundPath != null) this.compoundPath.remove();
+        this.$emit("deleted", this.index);
       });
+    },
+    delete() {
+      this.$parent.category.annotations.splice(this.index, 1);
+      if (this.compoundPath != null) this.compoundPath.remove();
     },
     onAnnotationClick() {
       if (this.isVisible) {
@@ -304,6 +314,8 @@ export default {
       this.compoundPath.addChildren(newChildren);
 
       this.compoundPath.fullySelected = this.isCurrent;
+
+      this.emitModify();
     },
     undoCompound() {
       if (this.pervious.length == 0) return;
@@ -382,6 +394,20 @@ export default {
       }
 
       return annotationData;
+    },
+    emitModify() {
+      this.uuid = Math.random()
+        .toString(36)
+        .replace(/[^a-z]+/g, "");
+      this.annotation.paper_object = this.compoundPath.exportJSON({
+        asString: false,
+        precision: 1
+      });
+      this.$socket.emit("annotation", {
+        uuid: this.uuid,
+        action: "modify",
+        annotation: this.annotation
+      });
     }
   },
   watch: {
@@ -433,6 +459,25 @@ export default {
       if (search === String(this.annotation.id)) return true;
       if (search === String(this.index + 1)) return true;
       return this.name.toLowerCase().includes(this.search);
+    }
+  },
+  sockets: {
+    annotation(data) {
+      let annotation = data.annotation;
+
+      if (this.uuid == data.uuid) return;
+      if (annotation.id != this.annotation.id) return;
+
+      if (data.action == "modify") {
+        this.createCompoundPath(
+          annotation.paper_object,
+          annotation.segmentation
+        );
+      }
+
+      if (data.action == "delete") {
+        this.delete();
+      }
     }
   },
   mounted() {

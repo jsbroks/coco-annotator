@@ -7,12 +7,16 @@ const state = {
   loginEnabled: true,
   version: "loading",
   totalUsers: 1,
-  name: "COCO Annotator"
+  name: "COCO Annotator",
+  socket: null
 };
 
 const getters = {};
 
 const mutations = {
+  socket(state, connected) {
+    state.socket = connected;
+  },
   increamentUserCount(state) {
     state.totalUsers++;
   },

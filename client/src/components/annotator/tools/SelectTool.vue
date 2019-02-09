@@ -68,11 +68,11 @@ export default {
       let string = " ";
       if (this.hover.category && this.hover.annotation) {
         let id = this.hover.textId;
-        let category = this.hover.category.category.name
+        let category = this.hover.category.category.name;
         string += "ID: " + id + " \n";
         string += "Category: " + category + " \n";
       }
-      
+
       if (this.$store.getters["user/loginEnabled"]) {
         let creator = this.hover.annotation.annotation.creator;
         if (creator != null) {

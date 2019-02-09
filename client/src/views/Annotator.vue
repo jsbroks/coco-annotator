@@ -293,7 +293,7 @@ export default {
     };
   },
   methods: {
-    ...mapMutations(["addProcess", "removeProcess", "resetUndo"]),
+    ...mapMutations(["addProcess", "removeProcess", "resetUndo", "setDataset"]),
     save(callback) {
       let process = "Saving";
       this.addProcess(process);
@@ -477,6 +477,8 @@ export default {
 
           // Update status
           this.loading.data = false;
+
+          this.setDataset(this.dataset);
 
           if (this.text.topLeft != null) {
             this.text.topLeft.content = this.image.filename;
@@ -719,9 +721,12 @@ export default {
     }
   },
   beforeRouteLeave(to, from, next) {
+    this.$socket.emit("annotating", { image_id: this.image.id, active: false });
     this.save(next);
   },
   mounted() {
+    this.setDataset(null);
+
     this.loading.loader = this.$loading.show({
       color: "white",
       backgroundColor: "#4b5162",
@@ -731,6 +736,7 @@ export default {
     });
 
     this.initCanvas();
+    this.$socket.emit("annotating", { image_id: this.image.id, active: true });
   },
   created() {
     this.paper = new paper.PaperScope();
@@ -739,9 +745,6 @@ export default {
     this.image.url = "/api/image/" + this.image.id;
 
     this.getData();
-  },
-  destroyed() {
-    clearInterval(this.autoSave);
   }
 };
 </script>

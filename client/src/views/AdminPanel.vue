@@ -165,7 +165,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import AdminPanel from "@/models/admin";
 import toastrs from "@/mixins/toastrs";
 import { mapMutations } from "vuex";
 
@@ -191,8 +191,7 @@ export default {
       let process = "Loading users";
       this.addProcess(process);
 
-      axios
-        .get("/api/admin/users?limit=" + this.limit)
+      AdminPanel.getUsers(this.limit)
         .then(response => {
           this.users = response.data.users;
           this.total = response.data.total;
@@ -202,13 +201,8 @@ export default {
     createUser(event) {
       event.preventDefault();
 
-      axios
-        .post("/api/admin/user/", {
-          ...this.create
-        })
-        .then(() => {
-          this.updatePage();
-        })
+      AdminPanel.createUser(this.create)
+        .then(this.updatePage)
         .catch(error => {
           this.axiosReqestError("Create User", error.response.data.message);
         });
@@ -222,11 +216,8 @@ export default {
       );
       if (!yes) return;
 
-      axios
-        .delete("/api/admin/user/" + user.username)
-        .then(() => {
-          this.updatePage();
-        })
+      AdminPanel.deleteUser(user.username)
+        .then(this.updatePage)
         .catch(error => {
           this.axiosReqestError("Create User", error.response.data.message);
         });

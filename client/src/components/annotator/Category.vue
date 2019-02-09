@@ -182,7 +182,6 @@ export default {
      */
     createAnnotation() {
       let parent = this.$parent;
-      let categories = parent.categories;
       let annotationId = this.category.annotations.length;
 
       axios
@@ -191,10 +190,10 @@ export default {
           category_id: this.category.id
         })
         .then(response => {
-          categories.filter(element => {
-            if (element.id === this.category.id) {
-              return element;
-            }
+          this.$socket.emit("annotation", {
+            action: "create",
+            category_id: this.category.id,
+            annotation: response.data
           });
 
           this.category.annotations.push(response.data);
@@ -405,6 +404,25 @@ export default {
     },
     category() {
       this.initCategory();
+    }
+  },
+  sockets: {
+    annotation(data) {
+      let action = data.action;
+      let annotation = data.annotation;
+
+      if (annotation.image_id != this.$parent.image.id) return;
+      if (annotation.category_id != this.category.id) return;
+
+      let found = this.category.annotations.findIndex(
+        a => a.id == annotation.id
+      );
+
+      if (found == -1) {
+        if (action == "create") {
+          this.category.annotations.push(annotation);
+        }
+      }
     }
   },
   mounted() {

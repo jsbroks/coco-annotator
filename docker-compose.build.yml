@@ -1,33 +1,35 @@
-version: '3'
+version: "3"
 volumes:
-    mongodb_data:
-        external: false
+  mongodb_data:
+    external: false
 services:
-    flask:
-        container_name: annotator_flask
-        restart: always
-        build:
-            context: .
-            dockerfile: ./docker/production/Dockerfile
-        ports:
-            - '5000:5000'
-        volumes:
-            - './datasets:/datasets'
-            - './app:/workspace/app'
-        environment:
-          - FLASK_APP=app
-          - FLASK_ENV=production
-        depends_on:
-            - database
-    database:
-        image: mongo:4
-        container_name: annotator_mongodb
-        restart: always
-        environment:
-            - MONGO_DATA_DIR=/data/db
-            - MONGO_LOG_DIR=/dev/null
-        volumes:
-            - 'mongodb_data:/data/db'
-        ports:
-            - '27017:27017'
-        command: 'mongod --smallfiles --logpath=/dev/null'
+  flask:
+    container_name: annotator_flask
+    restart: always
+    build:
+      context: .
+      dockerfile: ./docker/production/Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./datasets:/datasets"
+      - "./app:/workspace/app"
+    environment:
+      - SECRET_KEY=RandomSecretKeyHere
+      - FILE_WATCHER=true
+      - FLASK_APP=app
+      - FLASK_ENV=production
+    depends_on:
+      - database
+  database:
+    image: mongo:4
+    container_name: annotator_mongodb
+    restart: always
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - "mongodb_data:/data/db"
+    ports:
+      - "27017:27017"
+    command: "mongod --smallfiles --logpath=/dev/null"

@@ -31,7 +31,7 @@ COPY --from=build-stage /workspace/client/dist /workspace/dist
 # Setup flask
 COPY requirements.txt requirements.txt
 
-RUN pip install gunicorn
+RUN pip install gunicorn==19.9.0
 RUN pip install -r requirements.txt
 RUN pip install pycocotools
 
@@ -39,4 +39,4 @@ COPY ./.git /workspace/.git
 COPY ./app /workspace/app
 
 EXPOSE 5000
-CMD gunicorn -w 4 -b 0.0.0.0:5000 app:app --config app/gunicorn_config.py --log-level debug
+CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level debug --no-sendfile
