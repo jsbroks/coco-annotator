@@ -191,8 +191,7 @@ export default {
       let process = "Loading users";
       this.addProcess(process);
 
-      AdminPanel
-        .getUsers(this.limit)
+      AdminPanel.getUsers(this.limit)
         .then(response => {
           this.users = response.data.users;
           this.total = response.data.total;
@@ -202,8 +201,7 @@ export default {
     createUser(event) {
       event.preventDefault();
 
-      AdminPanel
-        .createUser(this.create)
+      AdminPanel.createUser(this.create)
         .then(this.updatePage)
         .catch(error => {
           this.axiosReqestError("Create User", error.response.data.message);
@@ -218,8 +216,7 @@ export default {
       );
       if (!yes) return;
 
-      AdminPanel
-        .deleteUser(user.username)
+      AdminPanel.deleteUser(user.username)
         .then(this.updatePage)
         .catch(error => {
           this.axiosReqestError("Create User", error.response.data.message);

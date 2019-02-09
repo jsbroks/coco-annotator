@@ -121,23 +121,18 @@ export default {
     updatePage() {
       let process = "Loading undo for " + this.type + " instance type";
       this.addProcess(process);
-      
-      Undo
-        .all(this.limit, this.type)
+
+      Undo.all(this.limit, this.type)
         .then(response => {
           this.undos = response.data;
         })
         .finally(() => this.removeProcess(process));
     },
     undoModel(id, instance) {
-      Undo
-        .undo(id, instance)
-        .then(this.updatePage);
+      Undo.undo(id, instance).then(this.updatePage);
     },
     deleteModel(id, instance) {
-      Undo
-        .delete(id, instance)
-        .then(this.updatePage);
+      Undo.delete(id, instance).then(this.updatePage);
     }
   },
   watch: {

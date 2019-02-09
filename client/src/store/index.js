@@ -13,9 +13,13 @@ export default new Vuex.Store({
   },
   state: {
     process: [],
-    undo: []
+    undo: [],
+    dataset: ""
   },
   mutations: {
+    setDataset(state, dataset) {
+      state.dataset = dataset;
+    },
     addProcess(state, process) {
       state.process.push(process);
     },

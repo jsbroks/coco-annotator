@@ -22,8 +22,20 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item" :class="{ active: $route.name === 'datasets' }">
+        <li class="nav-item" :class="{ active: $route.name === 'datasets' || $route.name === 'dataset' }">
           <RouterLink class="nav-link" to="/datasets">Datasets</RouterLink>
+        </li>
+        <li
+          class="nav-item"
+          v-show="$route.name === 'annotate'"
+          :class="{ active: $route.name === 'annotate' }"
+        >
+          <RouterLink
+            class="nav-link"
+            :to="`/dataset/${dataset.id}`"
+          >
+            {{ dataset.name }}
+          </RouterLink>
         </li>
         <li class="nav-item" :class="{ active: $route.name === 'categories' }">
           <RouterLink class="nav-link" to="/categories">Categories</RouterLink>
@@ -39,12 +51,12 @@
           class="nav-item"
           :class="{ active: $route.name === 'admin' }"
         >
-          <RouterLink class="nav-link" to="/admin/panel">Admin</RouterLink>
+          <RouterLink class="nav-link d-none d-xl-block" to="/admin/panel">Admin</RouterLink>
         </li>
-        <li class="nav-item">
+        <li class="nav-item d-none d-xl-block">
           <a class="nav-link" href="/api">API</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item d-none d-xl-block">
           <a
             class="nav-link"
             href="https://github.com/jsbroks/coco-annotator/wiki"
@@ -83,6 +95,12 @@ export default {
     },
     socket() {
       return this.$store.state.info.socket;
+    },
+    dataset() {
+      let dataset = this.$store.state.dataset;
+      if (dataset == null) return { name: "", id: "" };
+
+      return dataset;
     }
   },
   watch: {
