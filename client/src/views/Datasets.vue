@@ -217,11 +217,10 @@ export default {
       page = page || this.page;
       this.page = page;
 
-      Datasets
-        .allData({
-          limit: this.limit,
-          page: page
-        })
+      Datasets.allData({
+        limit: this.limit,
+        page: page
+      })
         .then(response => {
           this.datasets = response.data.datasets;
           this.categories = response.data.categories;
@@ -238,8 +237,7 @@ export default {
       for (let key in this.create.categories) {
         categories.push(this.create.categories[key]);
       }
-      Datasets
-        .create(this.create.name, categories)
+      Datasets.create(this.create.name, categories)
         .then(() => {
           this.create.name = "";
           this.create.categories = [];

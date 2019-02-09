@@ -43,12 +43,28 @@ export default {
     },
     loading() {
       return this.$store.state.info.loading;
+    },
+    socketConnection() {
+      return this.$store.state.info.socket;
     }
   },
   watch: {
     loading() {
       if (!this.loading && this.loader != null) {
         this.loader.hide();
+      }
+    },
+    socketConnection(connected) {
+      if (!connected) {
+        let options = {
+          positionClass: "toast-bottom-left"
+        };
+
+        this.$toastr.warning(
+          "Connection lost to the backend",
+          "Connection Lost",
+          options
+        );
       }
     },
     loginRequired: {
@@ -68,10 +84,10 @@ export default {
   },
   sockets: {
     connect() {
-      this.socket(true)
+      this.socket(true);
     },
     disconnect() {
-      this.socket(false)
+      this.socket(false);
     }
   },
   mounted() {

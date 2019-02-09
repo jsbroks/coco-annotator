@@ -28,7 +28,6 @@ import toastrs from "@/mixins/toastrs";
 import TaskGroup from "@/components/tasks/TaskGroup";
 import Tasks from "@/models/tasks";
 
-
 import { mapMutations } from "vuex";
 
 export default {

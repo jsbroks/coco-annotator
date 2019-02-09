@@ -105,10 +105,9 @@ export default {
     },
     displayLogs() {
       let logs = this.logs;
-      if (this.onlyErrors)
-        return this.logs.filter(t => t.includes("[ERROR]"))
+      if (this.onlyErrors) return this.logs.filter(t => t.includes("[ERROR]"));
       if (this.onlyWarnings)
-        return this.logs.filter(t => t.includes("[WARNING]"))
+        return this.logs.filter(t => t.includes("[WARNING]"));
 
       return logs;
     }

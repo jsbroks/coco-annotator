@@ -290,22 +290,20 @@ export default {
     generateDataset() {
       if (this.keyword.length === 0) return;
 
-      Dataset
-        .generate(this.dataset.id, {
-          keywords: [this.keyword],
-          limit: this.generateLimit
-        })
+      Dataset.generate(this.dataset.id, {
+        keywords: [this.keyword],
+        limit: this.generateLimit
+      });
     },
     updatePage(page) {
       let process = "Loading images from dataset";
       this.addProcess(process);
 
-      Dataset
-        .getData(this.dataset.id, {
-          page: page,
-          limit: this.limit,
-          folder: this.folders.join("/")
-        })
+      Dataset.getData(this.dataset.id, {
+        page: page,
+        limit: this.limit,
+        folder: this.folders.join("/")
+      })
         .then(response => {
           let data = response.data;
 
@@ -327,13 +325,12 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     createScanTask() {
-      Dataset
-        .scan(this.dataset.id)
+      Dataset.scan(this.dataset.id)
         .then(response => {
           this.axiosReqestSuccess(
             "Scanning Dataset",
             `Task has been created with id ${response.data.id}`
-          )
+          );
         })
         .catch(error => {
           this.axiosReqestError(
@@ -352,13 +349,12 @@ export default {
       this.addProcess(process);
 
       let uploaded = document.getElementById("coco");
-      Dataset
-        .uploadCoco(this.dataset.id, uploaded.files[0])
+      Dataset.uploadCoco(this.dataset.id, uploaded.files[0])
         .then(response => {
           this.axiosReqestSuccess(
             "Importing COCO",
             `Task has been created with id ${response.data.id}`
-          )
+          );
         })
         .catch(error => {
           this.axiosReqestError("Importing COCO", error.response.data.message);

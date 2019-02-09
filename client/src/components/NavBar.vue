@@ -67,9 +67,9 @@ export default {
   components: { Status, User },
   data() {
     return {
-      color: 'white',
+      color: "white",
       backendStatus: "Connection unknown"
-    }
+    };
   },
   computed: {
     version() {
@@ -83,11 +83,10 @@ export default {
     },
     socket() {
       return this.$store.state.info.socket;
-    },
+    }
   },
   watch: {
     socket(connected) {
-
       if (connected == null) {
         this.color = "white";
         this.backendStatus = "Connection unknown";
@@ -99,7 +98,7 @@ export default {
         this.backendStatus = "Connected to backend";
       } else {
         this.color = "red";
-        this.backendStatus = "Could not connect to backend"
+        this.backendStatus = "Could not connect to backend";
       }
     }
   }
@@ -118,6 +117,6 @@ export default {
 }
 
 .left {
-  padding: 0
+  padding: 0;
 }
 </style>
