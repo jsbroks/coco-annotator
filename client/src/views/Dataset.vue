@@ -410,8 +410,8 @@ export default {
     queryAnnotated() {
       let showAnnotated = this.panel.showAnnotated;
       let showNotAnnotated = this.panel.showNotAnnotated;
-      
-      if (showAnnotated && showNotAnnotated) return null
+
+      if (showAnnotated && showNotAnnotated) return null;
       if (!showAnnotated && !showNotAnnotated) return " ";
 
       return showAnnotated;
@@ -446,7 +446,9 @@ export default {
     }
   },
   watch: {
-    queryAnnotated() { this.updatePage() },
+    queryAnnotated() {
+      this.updatePage();
+    },
     folders() {
       this.updatePage();
     },

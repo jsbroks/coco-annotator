@@ -1,5 +1,6 @@
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
+from mongoengine.errors import NotUniqueError
 
 from ..util.pagination_util import Pagination
 from ..util import query_util
@@ -37,7 +38,7 @@ class Category(Resource):
         supercategory = args.get('supercategory')
         metadata = args.get('metadata', {})
         color = args.get('color')
-
+        
         try:
             category = CategoryModel(
                 name=name,
@@ -46,8 +47,8 @@ class Category(Resource):
                 metadata=metadata
             )
             category.save()
-        except (ValueError, TypeError) as e:
-            return {'message': str(e)}, 400
+        except NotUniqueError as e:
+            return {'message': 'Category already exists. Check the undo tab to fully delete the category.'}, 400
 
         return query_util.fix_ids(category)
 

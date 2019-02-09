@@ -146,7 +146,9 @@
 </template>
 
 <script>
-import axios from "axios";
+import toastrs from "@/mixins/toastrs";
+
+import Category from "@/models/categories";
 import CategoryCard from "@/components/cards/CategoryCard";
 import Pagination from "@/components/Pagination";
 
@@ -155,6 +157,7 @@ import { mapMutations } from "vuex";
 export default {
   name: "Categories",
   components: { CategoryCard, Pagination },
+  mixins: [toastrs],
   data() {
     return {
       categoryCount: 0,
@@ -178,13 +181,10 @@ export default {
       page = page || this.page;
       this.page = page;
 
-      axios
-        .get("/api/category/data", {
-          params: {
-            page: page,
-            limit: this.limit
-          }
-        })
+      Category.allData({
+        page: page,
+        limit: this.limit
+      })
         .then(response => {
           this.categories = response.data.categories;
           this.page = response.data.pagination.page;
@@ -196,13 +196,18 @@ export default {
     createCategory() {
       if (this.createName.length < 1) return;
 
-      axios
-        .post("/api/category/", {
-          name: this.createName
-        })
+      Category.create({
+        name: this.createName
+      })
         .then(() => {
           this.createName = "";
           this.updatePage();
+        })
+        .catch(error => {
+          this.axiosReqestError(
+            "Creating Category",
+            error.response.data.message
+          );
         });
     },
     previousPage() {
