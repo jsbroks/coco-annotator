@@ -66,9 +66,6 @@ app = create_app()
 if Config.INITIALIZE_FROM_FILE:
     create_from_json(Config.INITIALIZE_FROM_FILE)
 
-if Config.LOAD_IMAGES_ON_START:
-    ImageModel.load_images(Config.DATASET_DIRECTORY)
-
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

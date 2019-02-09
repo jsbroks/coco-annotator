@@ -5,11 +5,15 @@ import datetime
 import numpy as np
 import imantics as im
 
+
+from time import sleep
+from threading import Thread
 from PIL import Image
+
+from flask_socketio import emit
 from flask_mongoengine import MongoEngine
 from mongoengine.queryset.visitor import Q
 from flask_login import UserMixin, current_user
-
 
 from .config import Config
 from PIL import Image
@@ -19,7 +23,7 @@ db = MongoEngine()
 
 
 class DatasetModel(db.DynamicDocument):
-
+    
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique=True)
     directory = db.StringField()
@@ -39,8 +43,6 @@ class DatasetModel(db.DynamicDocument):
 
         if not os.path.exists(directory):
             os.makedirs(directory)
-        else:
-            ImageModel.load_images(directory, self.id)
 
         self.directory = directory
         if current_user:
@@ -49,6 +51,60 @@ class DatasetModel(db.DynamicDocument):
             self.owner = 'system'
 
         return super(DatasetModel, self).save(*args, **kwargs)
+    
+    def download_images(self, keywords, limit=100):
+
+        task = TaskModel(
+            name="Downloading {} images to {} with keywords {}".format(limit, self.name, keywords),
+            dataset_id=self.id,
+            group="Downloading Images"
+        )
+
+        def download_images(task, dataset, keywords, limit):
+            def custom_print(string):
+                __builtins__.print("%f -- %s" % (time.time(), string))
+
+                print = dprint
+                task.log()
+            for keyword in args['keywords']:
+                response = gid.googleimagesdownload()
+                response.download({
+                    "keywords": keyword,
+                    "limit": args['limit'],
+                    "output_directory": output_dir,
+                    "no_numbering": True,
+                    "format": "jpg",
+                    "type": "photo",
+                    "print_urls": False,
+                    "print_paths": False,
+                    "print_size": False
+                })
+
+        return task
+
+    def import_coco(self, coco):
+        from .util.task_util import import_coco_func
+        task = TaskModel(
+            name="Scanning {} for new images".format(self.name),
+            dataset_id=self.id,
+            group="Annotation Import"
+        )
+        task.save()
+        task.start(import_coco_func, dataset=self, coco_json=coco)
+
+        return task.api_json()
+
+    def scan(self):
+        from .util.task_util import scan_func
+        task = TaskModel(
+            name="Scanning {} for new images".format(self.name),
+            dataset_id=self.id,
+            group="Directory Image Scan"
+        )
+        task.save()
+        task.start(scan_func, dataset=self)
+
+        return task.api_json()
 
 
 class ImageModel(db.DynamicDocument):
@@ -106,20 +162,6 @@ class ImageModel(db.DynamicDocument):
         pil_image.close()
 
         return image
-
-    @classmethod
-    def load_images(cls, directory, dataset_id=None):
-        print("Checking all images in dataset directory (may take a few minutes)")
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                path = os.path.join(root, file)
-
-                if path.endswith(cls.PATTERN):
-                    db_image = cls.objects(path=path).first()
-
-                    if db_image is None:
-                        print("New file found: {}".format(path))
-                        cls.create_from_path(path, dataset_id).save()
 
     def thumbnail_path(self):
         folders = self.path.split('/')
@@ -258,6 +300,7 @@ class AnnotationModel(db.DynamicDocument):
 
         return im.Annotation(**data)
 
+
 class CategoryModel(db.DynamicDocument):
 
     id = db.SequenceField(primary_key=True)
@@ -312,11 +355,110 @@ class CategoryModel(db.DynamicDocument):
         }
         return im.Category(**data)
 
+
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField()
     url = db.StringField()
 
+
+class TaskModel(db.DynamicDocument):
+    id = db.SequenceField(primary_key=True)
+    
+    # Type of task: Importer, Exporter, Scanner, etc.
+    group = db.StringField(required=True)
+    name = db.StringField(required=True) 
+    desciption = db.StringField()
+
+    creator = db.StringField()
+
+    #: Start date of the executor 
+    start_date = db.DateTimeField()
+    #: End date of the executor 
+    end_date = db.DateTimeField()
+    completed = db.BooleanField(default=False)
+    failed = db.BooleanField(default=False)
+    
+    # If any of the information is relevant to the task
+    # it should be added
+    dataset_id = db.IntField()
+    image_id = db.IntField()
+    category_id = db.IntField()
+
+    progress = db.FloatField(default=0, min_value=0, max_value=100)
+
+    logs = db.ListField(default=[])
+    errors = db.IntField(default=0)
+    warnings = db.IntField(default=0)
+
+    priority = db.IntField()
+
+    metadata = db.DictField(default={})
+
+    _update_every = 10
+    _progress_update = 0
+
+    def error(self, string):
+        self._log(string, level="ERROR")
+    
+    def warning(self, string):
+        self._log(string, level="WARNING")
+    
+    def info(self, string):
+        self._log(string, level="INFO")
+    
+    def _log(self, string, level):
+
+        level = level.upper()
+        date = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        
+        message = f"[{date}] [{level}] {string}"
+
+        statment = {
+            'push__logs': message
+        }
+
+        if level == "ERROR":
+            statment['inc__errors'] = 1
+        
+        if level == "WARNING":
+            statment['inc__warnings'] = 1
+
+        self.update(**statment)
+
+    def set_progress(self, percent, socket=None):
+        
+        self.update(progress=int(percent), completed=(percent >= 100))
+
+        # Send socket update every 10%
+        if self._progress_update < percent or percent >= 100:
+            
+            if socket is not None:
+                socket.emit('taskProgress', {
+                    'id': self.id,
+                    'progress': percent
+                }, broadcast=True)
+            
+            self._progress_update += self._update_every
+
+    def start(self, target, *args, **kwargs):
+        
+        from .sockets import socketio
+
+        thread = socketio.start_background_task(
+            target,
+            task=self,
+            socket=socketio,
+            *args,
+            **kwargs
+        )
+        return thread
+    
+    def api_json(self):
+        return {
+            "id": self.id,
+            "name": self.name
+        }
 
 class CocoImportModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

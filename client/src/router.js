@@ -11,6 +11,7 @@ import Undo from "@/views/Undo";
 import Dataset from "@/views/Dataset";
 import Auth from "@/views/Auth";
 import User from "@/views/User";
+import Tasks from "@/views/Tasks";
 import PageNotFound from "@/views/PageNotFound";
 
 Vue.use(Router);
@@ -66,6 +67,11 @@ export default new Router({
       path: "/admin/panel",
       name: "admin",
       component: AdminPanel
+    },
+    {
+      path: "/tasks",
+      name: "tasks",
+      component: Tasks
     },
     { path: "*", component: PageNotFound }
   ]

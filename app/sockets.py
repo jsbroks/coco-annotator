@@ -6,18 +6,19 @@ from flask_socketio import SocketIO, disconnect, join_room, leave_room, emit
 from flask_login import current_user
 
 from .models import ImageModel
+from .config import Config
 
 
-socketio = SocketIO()
+socketio = SocketIO(async_mode='threading')
 
 
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
-        if not current_user.is_authenticated:
-            disconnect()
-        else:
+        if current_user.is_authenticated or Config.LOGIN_DISABLED:
             return f(*args, **kwargs)
+        else:
+            disconnect()
     return wrapped
 
 

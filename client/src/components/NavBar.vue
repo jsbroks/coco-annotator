@@ -31,6 +31,9 @@
         <li class="nav-item" :class="{ active: $route.name === 'undo' }">
           <RouterLink class="nav-link" to="/undo">Undo</RouterLink>
         </li>
+        <li class="nav-item" :class="{ active: $route.name === 'tasks' }">
+          <RouterLink class="nav-link" to="/tasks">Tasks</RouterLink>
+        </li>
         <li
           v-show="$store.getters['user/isAdmin']"
           class="nav-item"
