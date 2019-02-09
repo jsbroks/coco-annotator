@@ -3,17 +3,17 @@
   
     <div class="card-body title" @click="showLogs = !showLogs">
       
-      {{ task.name }}
+      <span class="text-muted">{{ task.id }}.</span> {{ task.name }}
 
       <!--<span class="time text-muted">(Running for {{ time }})</span>-->
       
       <div style="float: right">
        
-        <span v-show="errors > 0" class="badge badge-danger">
+        <span v-show="errors > 0" class="badge badge-danger" @click.stop="onlyErrors = !onlyErrors">
           {{ errors }} error<span v-show="errors > 1">s</span>
         </span>
         
-        <span v-show="warnings > 0" class="badge badge-warning">
+        <span v-show="warnings > 0" class="badge badge-warning" @click.stop="onlyWarnings = !onlyWarnings">
           {{ warnings }} warning<span v-show="warnings > 1">s</span>
         </span>
 
@@ -25,12 +25,12 @@
         <p
           class="log"
           :key="index"
-          v-for="(line, index) in logs.slice().reverse()"
+          v-for="(line, index) in displayLogs.slice().reverse()"
           :style="{ 'color': textColor(line) }"
         >{{ line }}</p>
       </div>
       <button v-show="task.completed" class="btn btn-danger btn-block btn-sm delete" @click="deleteTask">
-        Delete Task
+        Delete
       </button>
     </div>
 
@@ -66,9 +66,6 @@ export default {
     };
   },
   sockets: {
-    taskLogs(data) {
-      if (data.id !== this.task.id) return;
-    },
     taskProgress(data) {
       if (data.id !== this.task.id) return;
 
@@ -79,7 +76,7 @@ export default {
     textColor(text) {
       if (text.includes("[ERROR]")) return "red";
       if (text.includes("[WARNING]")) return "yellow";
-      return "whtie";
+      return "white";
     },
     deleteTask() {
       Tasks.delete(this.task.id).finally(() => {
@@ -105,6 +102,15 @@ export default {
       let errors = this.task.errors;
       if (errors == null) return 0;
       return errors;
+    },
+    displayLogs() {
+      let logs = this.logs;
+      if (this.onlyErrors)
+        return this.logs.filter(t => t.includes("[ERROR]"))
+      if (this.onlyWarnings)
+        return this.logs.filter(t => t.includes("[WARNING]"))
+
+      return logs;
     }
   }
 };

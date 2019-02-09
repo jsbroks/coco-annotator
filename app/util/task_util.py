@@ -164,6 +164,6 @@ def import_coco_func(task, socket, dataset, coco_json):
         else:
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
  
-    # task.set_progress(100)
+    task.set_progress(100)
 
 

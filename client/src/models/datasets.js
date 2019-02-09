@@ -42,5 +42,8 @@ export default {
         "Content-Type": "multipart/form-data"
       }
     });
+  },
+  export(id, format) {
+    return axios.get(baseURL + `${id}/${format}`);
   }
 };

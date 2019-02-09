@@ -61,7 +61,15 @@
           data-toggle="modal"
           data-target="#generateDataset"
         >
-          Generate
+          <div v-if="generate.id != null" class="progress">
+            <div
+              class="progress-bar bg-success"
+              :style="{ 'width': `${generate.progress}%` }"
+            >
+              Generating
+            </div>
+          </div>
+          <div v-else>Generate</div>
         </button>
         <button
           type="button"
@@ -69,20 +77,37 @@
           data-toggle="modal"
           data-target="#cocoUpload"
         >
-          Import COCO
+          <div v-if="importing.id != null" class="progress">
+            <div
+              class="progress-bar bg-primary"
+              :style="{ 'width': `${importing.progress}%` }"
+            >
+              Importing
+            </div>
+          </div>
+          <div v-else>Importing COCO</div>
         </button>
         <button
           type="button"
           class="btn btn-secondary btn-block"
-          @click="scan"
+          @click="createScanTask"
         >
-          Scan
+          <div v-if="scan.id != null" class="progress">
+            <div
+              class="progress-bar bg-secondary"
+              :style="{ 'width': `${scan.progress}%` }"
+            >
+              Scanning
+            </div>
+          </div>
+          <div v-else>Scan</div>
         </button>
+
         <!-- <button type="button" class="btn btn-info">
           Download COCO
         </button> -->
       </div>
-      <hr />
+      <hr>
       <h6 class="sidebar-title text-center">Subdirectories</h6>
       <div class="sidebar-section" style="max-height: 30%; color: lightgray">
         <div v-if="subdirectories.length > 0">
@@ -100,7 +125,7 @@
           No subdirectory found.
         </p>
       </div>
-      <hr />
+      <hr>
       <h6 class="sidebar-title text-center">Filtering Options</h6>
       <div
         class="sidebar-section"
@@ -183,7 +208,7 @@
             <button
               type="button"
               class="btn btn-primary"
-              @click="uploadCoco"
+              @click="importCOCO"
               data-dismiss="modal"
             >
               Upload
@@ -241,6 +266,22 @@ export default {
         drag: false,
         width: 300,
         canResize: false
+      },
+      scan: {
+        progress: 0,
+        id: null
+      },
+      generate: {
+        progress: 0,
+        id: null
+      },
+      importing: {
+        progress: 0,
+        id: null
+      },
+      exporting: {
+        progress: 0,
+        id: null
       }
     };
   },
@@ -249,7 +290,8 @@ export default {
     generateDataset() {
       if (this.keyword.length === 0) return;
 
-      Dataset.generate(this.dataset.id, {
+      Dataset
+        .generate(this.dataset.id, {
           keywords: [this.keyword],
           limit: this.generateLimit
         })
@@ -265,24 +307,33 @@ export default {
           folder: this.folders.join("/")
         })
         .then(response => {
-          this.images = response.data.images;
-          this.dataset = response.data.dataset;
+          let data = response.data;
 
-          this.imageCount = response.data.pagination.total;
-          this.pages = response.data.pagination.pages;
+          this.images = data.images;
+          this.dataset = data.dataset;
 
-          this.subdirectories = response.data.subdirectories;
+          this.imageCount = data.pagination.total;
+          this.pages = data.pagination.pages;
+
+          this.subdirectories = data.subdirectories;
+          // this.scan.id = data.scanId;
+          // this.generate.id = data.generateId;
+          // this.importing.id = data.importId;
+          // this.exporting.id = data.exportId;
         })
         .catch(error => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
     },
-    scan() {
+    createScanTask() {
       Dataset
         .scan(this.dataset.id)
         .then(response => {
-          console.log(response.data);
+          this.axiosReqestSuccess(
+            "Scanning Dataset",
+            `Task has been created with id ${response.data.id}`
+          )
         })
         .catch(error => {
           this.axiosReqestError(
@@ -296,15 +347,21 @@ export default {
       let index = this.folders.indexOf(folder);
       this.folders.splice(index + 1, this.folders.length);
     },
-    uploadCoco() {
+    importCOCO() {
       let process = "Uploading COCO annotation file";
       this.addProcess(process);
 
       let uploaded = document.getElementById("coco");
       Dataset
         .uploadCoco(this.dataset.id, uploaded.files[0])
+        .then(response => {
+          this.axiosReqestSuccess(
+            "Importing COCO",
+            `Task has been created with id ${response.data.id}`
+          )
+        })
         .catch(error => {
-          this.axiosReqestError("Loading Dataset", error.response.data.message);
+          this.axiosReqestError("Importing COCO", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
     },
@@ -333,6 +390,19 @@ export default {
     }
   },
   sockets: {
+    taskProgress(data) {
+      if (data.id === this.scan.id) {
+        this.scan.progress = data.progress;
+      }
+
+      if (data.id === this.generate.id) {
+        this.generate.progress = data.progress;
+      }
+
+      if (data.id === this.importing.id) {
+        this.importing.progress = data.progress;
+      }
+    },
     annotating(data) {
       let image = this.images.find(i => i.id == data.image_id);
       if (image == null) return;
@@ -359,6 +429,14 @@ export default {
       } else {
         this.$el.style.cursor = "default";
         el.style.borderRight = "";
+      }
+    },
+    "scan.progress"(progress) {
+      if (progress >= 100) {
+        setTimeout(() => {
+          this.scan.progress = 0;
+          this.scan.id = null;
+        }, 500);
       }
     }
   },
@@ -396,6 +474,11 @@ export default {
 
 .sidebar .title {
   color: white;
+}
+
+.progress {
+  padding: 2px;
+  height: 24px;
 }
 
 .sidebar {
