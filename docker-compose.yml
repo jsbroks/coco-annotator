@@ -4,7 +4,7 @@ volumes:
     external: false
 services:
   flask:
-    image: jsbroks/coco-annotator:latest
+    image: jsbroks/coco-annotator:stable
     restart: always
     ports:
       - "5000:5000"
