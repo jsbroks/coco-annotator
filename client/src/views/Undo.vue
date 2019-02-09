@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import Undo from "@/models/undos";
 
 import { mapMutations } from "vuex";
 
@@ -121,22 +121,23 @@ export default {
     updatePage() {
       let process = "Loading undo for " + this.type + " instance type";
       this.addProcess(process);
-      axios
-        .get("/api/undo/list/?type=" + this.type + "&limit=" + this.limit)
+      
+      Undo
+        .all(this.limit, this.type)
         .then(response => {
           this.undos = response.data;
         })
         .finally(() => this.removeProcess(process));
     },
     undoModel(id, instance) {
-      axios.post("/api/undo/?id=" + id + "&instance=" + instance).then(() => {
-        this.updatePage();
-      });
+      Undo
+        .undo(id, instance)
+        .then(this.updatePage);
     },
     deleteModel(id, instance) {
-      axios.delete("/api/undo/?id=" + id + "&instance=" + instance).then(() => {
-        this.updatePage();
-      });
+      Undo
+        .delete(id, instance)
+        .then(this.updatePage);
     }
   },
   watch: {
