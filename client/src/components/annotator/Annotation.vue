@@ -1,5 +1,9 @@
 <template>
-  <div v-show="showSideMenu">
+  <div
+    v-show="showSideMenu"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+  >
     <li
       class="list-group-item btn btn-link btn-sm text-left"
       :style="{ 'background-color': backgroundColor, color: 'white' }"
@@ -262,6 +266,16 @@ export default {
       if (this.isVisible) {
         this.$emit("click", this.index);
       }
+    },
+    onMouseEnter(event) {
+      if (this.compoundPath == null) return;
+
+      this.compoundPath.selected = true;
+    },
+    onMouseLeave(event) {
+      if (this.compoundPath == null) return;
+      
+      this.compoundPath.selected = false;
     },
     getCompoundPath() {
       if (this.compoundPath == null) {
