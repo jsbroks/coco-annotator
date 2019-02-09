@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import PanelToggle from "@/components/annotator/panels/PanelToggle";
+import PanelToggle from "@/components/PanelToggle";
 
 export default {
   name: "SelectPanel",

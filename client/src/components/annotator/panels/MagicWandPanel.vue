@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import PanelInputNumber from "@/components/annotator/panels/PanelInputNumber";
+import PanelInputNumber from "@/components/PanelInputNumber";
 
 export default {
   name: "MagicWandPanel",

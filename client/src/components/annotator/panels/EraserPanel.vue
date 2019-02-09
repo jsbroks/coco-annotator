@@ -15,8 +15,8 @@
 </template>
 
 <script>
-import PanelInputString from "@/components/annotator/panels/PanelInputString";
-import PanelInputNumber from "@/components/annotator/panels/PanelInputNumber";
+import PanelInputString from "@/components/PanelInputString";
+import PanelInputNumber from "@/components/PanelInputNumber";
 
 export default {
   name: "EraserPanel",

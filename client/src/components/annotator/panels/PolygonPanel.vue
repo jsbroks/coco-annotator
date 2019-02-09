@@ -31,10 +31,10 @@
 </template>
 
 <script>
-import PanelButton from "@/components/annotator/panels/PanelButton";
-import PanelToggle from "@/components/annotator/panels/PanelToggle";
-import PanelInputString from "@/components/annotator/panels/PanelInputString";
-import PanelInputNumber from "@/components/annotator/panels/PanelInputNumber";
+import PanelButton from "@/components/PanelButton";
+import PanelToggle from "@/components/PanelToggle";
+import PanelInputString from "@/components/PanelInputString";
+import PanelInputNumber from "@/components/PanelInputNumber";
 
 export default {
   name: "PolygonPanel",

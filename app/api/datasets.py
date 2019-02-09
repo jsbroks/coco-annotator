@@ -1,3 +1,4 @@
+from flask import request
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
@@ -26,7 +27,7 @@ dataset_create.add_argument('categories', type=list, required=False, location='j
 page_data = reqparse.RequestParser()
 page_data.add_argument('page', default=1, type=int)
 page_data.add_argument('limit', default=20, type=int)
-page_data.add_argument('folder', required=False, default='', help='Folder for data')
+page_data.add_argument('folder', default='', help='Folder for data')
 
 delete_data = reqparse.RequestParser()
 delete_data.add_argument('fully', default=False, type=bool,
@@ -217,6 +218,25 @@ class DatasetDataId(Resource):
         page = args['page']
         folder = args['folder']
 
+        args = dict(request.args)
+        if args.get('limit') != None:
+            del args['limit']
+        if args.get('page') != None:
+            del args['page']
+        if args.get('folder') != None:
+            del args['folder']
+
+        query = {}
+        for key, value in args.items():
+            lower = value.lower()
+            if lower in ["true", "false"]:
+                value = json.loads(lower)
+            
+            if len(lower) != 0:
+                query[key] = value
+        
+        # print(query, flush=True)
+        
         # Check if dataset exists
         dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
@@ -233,9 +253,9 @@ class DatasetDataId(Resource):
         if not os.path.exists(directory):
             return {'message': 'Directory does not exist.'}, 400
 
-        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False) \
+        images = ImageModel.objects(dataset_id=dataset_id, path__startswith=directory, deleted=False, **query) \
             .order_by('file_name').only('id', 'file_name', 'annotating')
-
+        
         pagination = Pagination(images.count(), limit, page)
         images = query_util.fix_ids(images[pagination.start:pagination.end])
 

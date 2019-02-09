@@ -130,7 +130,11 @@
       <div
         class="sidebar-section"
         style="max-height: 30%; color: lightgray"
-      ></div>
+      >
+        <PanelString name="Contains" v-model="query.file_name__icontains" @submit="updatePage" />
+        <PanelToggle name="Show Annotated" v-model="panel.showAnnotated" />
+        <PanelToggle name="Show Not Annotated" v-model="panel.showNotAnnotated" />
+      </div>
     </div>
 
     <div class="modal fade" tabindex="-1" role="dialog" id="generateDataset">
@@ -232,12 +236,19 @@ import toastrs from "@/mixins/toastrs";
 import Dataset from "@/models/datasets";
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
+import PanelString from "@/components/PanelInputString";
+import PanelToggle from "@/components/PanelToggle";
 
 import { mapMutations } from "vuex";
 
 export default {
   name: "Dataset",
-  components: { ImageCard, Pagination },
+  components: {
+    ImageCard,
+    Pagination,
+    PanelString,
+    PanelToggle
+  },
   mixins: [toastrs],
   props: {
     identifier: {
@@ -282,6 +293,14 @@ export default {
       exporting: {
         progress: 0,
         id: null
+      },
+      query: {
+        file_name__icontains: "",
+        ...this.$route.query
+      },
+      panel: {
+        showAnnotated: true,
+        showNotAnnotated: true
       }
     };
   },
@@ -302,7 +321,9 @@ export default {
       Dataset.getData(this.dataset.id, {
         page: page,
         limit: this.limit,
-        folder: this.folders.join("/")
+        folder: this.folders.join("/"),
+        ...this.query,
+        annotated: this.queryAnnotated
       })
         .then(response => {
           let data = response.data;
@@ -385,6 +406,17 @@ export default {
       this.sidebar.canResize = false;
     }
   },
+  computed: {
+    queryAnnotated() {
+      let showAnnotated = this.panel.showAnnotated;
+      let showNotAnnotated = this.panel.showNotAnnotated;
+      
+      if (showAnnotated && showNotAnnotated) return null
+      if (!showAnnotated && !showNotAnnotated) return " ";
+
+      return showAnnotated;
+    }
+  },
   sockets: {
     taskProgress(data) {
       if (data.id === this.scan.id) {
@@ -414,6 +446,7 @@ export default {
     }
   },
   watch: {
+    queryAnnotated() { this.updatePage() },
     folders() {
       this.updatePage();
     },

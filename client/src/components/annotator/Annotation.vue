@@ -267,14 +267,14 @@ export default {
         this.$emit("click", this.index);
       }
     },
-    onMouseEnter(event) {
+    onMouseEnter() {
       if (this.compoundPath == null) return;
 
       this.compoundPath.selected = true;
     },
-    onMouseLeave(event) {
+    onMouseLeave() {
       if (this.compoundPath == null) return;
-      
+
       this.compoundPath.selected = false;
     },
     getCompoundPath() {
