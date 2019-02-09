@@ -16,7 +16,7 @@ class Config:
     SWAGGER_UI_JSONEDITOR = True
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024  # 1GB
     MONGODB_HOST = os.getenv("MONGODB_HOST", "mongodb://database/flask")
-    SECRET_KEY = os.getenv('SECRET_KEY', '<--- YOUR_SECRET_FORM_KEY --->')
+    SECRET_KEY = os.getenv("SECRET_KEY", "<--- DEFAULT_SECRET_KEY --->")
 
     TESTING = os.getenv("TESTING", False)
 
@@ -33,5 +33,5 @@ class Config:
         os.getenv("COCO_IMPORTER_ANNOTATION_BATCH_SIZE", 1000))
 
     # User Options
-    LOGIN_DISABLED = os.getenv('LOGIN_DISABLED', False)
+    LOGIN_DISABLED = os.getenv("LOGIN_DISABLED", False)
     ALLOW_REGISTRATION = True

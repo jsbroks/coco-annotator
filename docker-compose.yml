@@ -9,6 +9,7 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
     volumes:
       - "./datasets:/datasets"

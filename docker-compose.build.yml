@@ -15,6 +15,7 @@ services:
       - "./datasets:/datasets"
       - "./app:/workspace/app"
     environment:
+      - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
       - FLASK_APP=app
       - FLASK_ENV=production
