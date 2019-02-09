@@ -4,7 +4,7 @@ const baseURL = "/api/dataset/";
 
 export default {
   allData(params) {
-    return axios.get(baseURL + "/data", {
+    return axios.get(baseURL + "data", {
       params: {
         ...params
       }

@@ -9,7 +9,7 @@ from .models import ImageModel
 from .config import Config
 
 
-socketio = SocketIO(async_mode='threading')
+socketio = SocketIO()
 
 
 def authenticated_only(f):

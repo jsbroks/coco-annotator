@@ -1,6 +1,7 @@
 from ..models import ImageModel, CategoryModel, AnnotationModel
 
 import imantics as im
+import time
 import os
 
 
@@ -21,6 +22,8 @@ def scan_func(task, socket, dataset):
             pass
            
         for file in files:
+            time.sleep()
+
             path = os.path.join(root, file)
 
             if path.endswith(ImageModel.PATTERN):

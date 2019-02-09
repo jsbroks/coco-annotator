@@ -5,9 +5,7 @@ import datetime
 import numpy as np
 import imantics as im
 
-
 from time import sleep
-from threading import Thread
 from PIL import Image
 
 from flask_socketio import emit

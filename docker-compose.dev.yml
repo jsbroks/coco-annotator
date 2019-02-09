@@ -32,6 +32,7 @@ services:
       - "./:/workspace/"
       - "./.git:/workspace/.git"
     environment:
+      - FILE_WATCHER=true
       - FLASK_APP=app
       - FLASK_ENV=development
     networks:

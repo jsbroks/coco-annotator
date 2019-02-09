@@ -1,15 +1,17 @@
-from flask import Flask
-from werkzeug.contrib.fixers import ProxyFix
-from flask_cors import CORS
-from watchdog.observers import Observer
+import eventlet
+eventlet.monkey_patch(thread=False)
 
-from .image_folder import ImageFolderHandler
-from .api import blueprint as api
-from .config import Config
+from flask import Flask
+from flask_cors import CORS
+from werkzeug.contrib.fixers import ProxyFix
+
 from .models import *
+from .config import Config
 from .sockets import socketio
-from .authentication import login_manager
+from .watcher import run_watcher
+from .api import blueprint as api
 from .util import query_util, color_util
+from .authentication import login_manager
 
 import threading
 import requests
@@ -17,26 +19,10 @@ import time
 import os
 
 
-def run_watcher():
-    observer = Observer()
-    observer.schedule(ImageFolderHandler(), Config.DATASET_DIRECTORY, recursive=True)
-    observer.start()
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-
-    observer.join()
-
-
 def create_app():
 
-    if os.environ.get("APP_WORKER_ID", "1") == "1" and not Config.TESTING:
-        print("Creating file watcher on PID: {}".format(os.getpid()), flush=True)
-        watcher_thread = threading.Thread(target=run_watcher)
-        watcher_thread.start()
+    if Config.FILE_WATCHER:
+        run_watcher()
 
     flask = Flask(__name__,
                   static_url_path='',

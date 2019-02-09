@@ -8,6 +8,10 @@ class Config:
     NAME = "COCO Annotator"
     VERSION = get_tag()
 
+    # File Watcher
+    FILE_WATCHER = os.getenv("FILE_WATCHER", False)
+    IGNORE_DIRECTORIES = ["_thumbnail", "_settings"]
+
     # Flask instance
     SWAGGER_UI_JSONEDITOR = True
     MAX_CONTENT_LENGTH = 1 * 1024 * 1024 * 1024  # 1GB
