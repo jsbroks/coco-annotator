@@ -286,12 +286,6 @@ class DatasetCoco(Resource):
         if dataset is None:
             return {'message': 'Invalid dataset ID'}, 400
 
-        # import_id = CocoImporter.import_coco(
-            # coco, dataset_id, current_user.username)
-
-        # return {
-            # "import_id": import_id
-        # }
         return dataset.import_coco(json.load(coco))
 
 

@@ -180,8 +180,9 @@ def get_dataset_coco(dataset):
         annotations = fix_ids(annotations.all())
 
         for annotation in annotations:
-            del annotation['deleted']
-            coco.get('annotations').append(annotation)
+            if len(annotation.get('segmentation', [])) != 0:
+                del annotation['deleted']
+                coco.get('annotations').append(annotation)
 
         image = fix_ids(image)
         del image['deleted']
