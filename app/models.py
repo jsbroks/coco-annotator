@@ -418,9 +418,11 @@ class TaskModel(db.DynamicDocument):
 
         if level == "ERROR":
             statment['inc__errors'] = 1
+            self.errors += 1
         
         if level == "WARNING":
             statment['inc__warnings'] = 1
+            self.warnings += 1
 
         self.update(**statment)
 
@@ -434,7 +436,9 @@ class TaskModel(db.DynamicDocument):
             if socket is not None:
                 socket.emit('taskProgress', {
                     'id': self.id,
-                    'progress': percent
+                    'progress': percent,
+                    'errors': self.errors,
+                    'warnings': self.warnings
                 }, broadcast=True)
             
             self._progress_update += self._update_every

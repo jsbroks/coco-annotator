@@ -29,7 +29,7 @@
           :style="{ 'color': textColor(line) }"
         >{{ line }}</p>
       </div>
-      <button v-show="task.completed" class="btn btn-danger btn-block btn-sm delete" @click="deleteTask">
+      <button v-show="completed" class="btn btn-danger btn-block btn-sm delete" @click="deleteTask">
         Delete
       </button>
     </div>
@@ -37,7 +37,7 @@
     <div class="progress">
       <div
         class="progress-bar"
-        :class="{ 'bg-success': task.completed }"
+        :class="{ 'bg-success': completed }"
         :style="{ 'width': task.progress + '%' }"
       >
       </div>
@@ -70,6 +70,8 @@ export default {
       if (data.id !== this.task.id) return;
 
       this.task.progress = data.progress;
+      this.task.warnings = data.warnings;
+      this.task.errors = data.errors;
     }
   },
   methods: {
@@ -110,6 +112,9 @@ export default {
         return this.logs.filter(t => t.includes("[WARNING]"));
 
       return logs;
+    },
+    completed() {
+      return this.task.completed || this.task.progress >= 100;
     }
   }
 };
