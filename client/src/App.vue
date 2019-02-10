@@ -54,8 +54,11 @@ export default {
         this.loader.hide();
       }
     },
-    socketConnection(connected) {
-      if (!connected) {
+    socketConnection() {
+      if (this.socketConnection) return;
+
+      setTimeout(() => { 
+        if (this.socketConnection) return;
         let options = {
           positionClass: "toast-bottom-left"
         };
@@ -65,7 +68,7 @@ export default {
           "Connection Lost",
           options
         );
-      }
+      }, 1000)
     },
     loginRequired: {
       handler(newValue) {
