@@ -43,6 +43,10 @@ export default {
         blur: this.wand.blur
       };
     },
+    setPreferences(pref) {
+      this.wand.threshold = pref.threshold || this.wand.threshold;
+      this.wand.blur = pref.blur || this.wand.blur;
+    },
     /**
      * Creates MagicWand selection
      * @param {number} x x position

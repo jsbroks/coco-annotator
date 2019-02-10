@@ -85,6 +85,12 @@ export default {
         strokeColor: this.brush.pathOptions.strokeColor,
         radius: this.brush.pathOptions.radius
       };
+    },
+    setPreferences(pref) {
+      this.brush.pathOptions.strokeColor =
+        pref.strokeColor || this.brush.pathOptions.strokeColor;
+      this.brush.pathOptions.radius =
+        pref.radius || this.brush.pathOptions.radius;
     }
   },
   computed: {

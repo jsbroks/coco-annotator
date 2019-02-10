@@ -64,6 +64,9 @@ export default {
         showText: this.hover.showText
       };
     },
+    setPreferences(pref) {
+      this.hover.showText = pref.showText || this.hover.showText;
+    },
     generateTitle() {
       let string = " ";
       if (this.hover.category && this.hover.annotation) {

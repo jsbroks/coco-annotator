@@ -54,14 +54,22 @@ export default {
     ...mapMutations(["addUndo", "removeUndos"]),
     export() {
       return {
+        guidance: this.polygon.guidance,
         completeDistance: this.polygon.completeDistance,
         minDistance: this.polygon.minDistance,
-        strokeColor: this.polygon.strokeColor,
-
         blackOrWhite: this.color.blackOrWhite,
         auto: this.color.auto,
         radius: this.color.radius
       };
+    },
+    setPreferences(pref) {
+      this.polygon.guidance = pref.guidance || this.polygon.guidance;
+      this.polygon.completeDistance =
+        pref.completeDistance || this.polygon.completeDistance;
+      this.polygon.minDistance = pref.minDistance || this.polygon.minDistance;
+      this.color.blackOrWhite = pref.blackOrWhite || this.color.blackOrWhite;
+      this.color.auto = pref.auto || this.color.auto;
+      this.color.radius = pref.radius || this.color.radius;
     },
     /**
      * Creates a new selection polygon path

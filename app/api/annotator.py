@@ -121,12 +121,16 @@ class AnnotatorId(Resource):
         image_previous = None if image_index - 1 < 0 else images[image_index - 1].id
         image_next = None if image_index + 1 == len(images) else images[image_index + 1].id
 
+        preferences = {}
+        if not Config.LOGIN_DISABLED:
+            preferences = current_user.preferences
+
         # Generate data about the image to return to client
         data = {
             'image': query_util.fix_ids(image),
             'categories': [],
             'dataset': query_util.fix_ids(dataset),
-            'settings': []
+            'preferences': preferences
         }
 
         data['image']['previous'] = image_previous

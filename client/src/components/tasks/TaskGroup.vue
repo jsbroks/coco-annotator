@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      showTasks: false
+      showTasks: true
     };
   },
   computed: {

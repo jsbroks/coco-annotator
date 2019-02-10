@@ -83,6 +83,12 @@ export default {
         strokeColor: this.eraser.pathOptions.strokeColor,
         radius: this.eraser.pathOptions.radius
       };
+    },
+    setPreferences(pref) {
+      this.eraser.pathOptions.strokeColor =
+        pref.strokeColor || this.eraser.pathOptions.strokeColor;
+      this.eraser.pathOptions.radius =
+        pref.radius || this.eraser.pathOptions.radius;
     }
   },
   computed: {

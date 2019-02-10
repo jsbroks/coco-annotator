@@ -457,6 +457,15 @@ export default {
         this.text.topRight.content = width + "x" + height;
       };
     },
+    setPreferences(preferences) {
+      let refs = this.$refs;
+
+      refs.polygon.setPreferences(preferences.polygon || {});
+      refs.select.setPreferences(preferences.select || {});
+      refs.magicwand.setPreferences(preferences.magicwand || {});
+      refs.brush.setPreferences(preferences.brush || {});
+      refs.eraser.setPreferences(preferences.eraser || {});
+    },
     getData(callback) {
       let process = "Loading annotation data";
       this.addProcess(process);
@@ -464,21 +473,25 @@ export default {
       axios
         .get("/api/annotator/data/" + this.image.id)
         .then(response => {
+          let data = response.data;
           // Set image data
-          this.image.metadata = response.data.image.metadata || {};
-          this.image.filename = response.data.image.file_name;
-          this.image.next = response.data.image.next;
-          this.image.previous = response.data.image.previous;
-          this.image.categoryIds = response.data.image.category_ids || [];
+          this.image.metadata = data.image.metadata || {};
+          this.image.filename = data.image.file_name;
+          this.image.next = data.image.next;
+          this.image.previous = data.image.previous;
+          this.image.categoryIds = data.image.category_ids || [];
 
           // Set other data
-          this.dataset = response.data.dataset;
-          this.categories = response.data.categories;
+          this.dataset = data.dataset;
+          this.categories = data.categories;
 
           // Update status
           this.loading.data = false;
 
           this.setDataset(this.dataset);
+
+          let preferences = data.preferences;
+          this.setPreferences(preferences);
 
           if (this.text.topLeft != null) {
             this.text.topLeft.content = this.image.filename;
@@ -736,6 +749,7 @@ export default {
     });
 
     this.initCanvas();
+    this.getData();
     this.$socket.emit("annotating", { image_id: this.image.id, active: true });
   },
   created() {
@@ -743,8 +757,6 @@ export default {
 
     this.image.id = parseInt(this.identifier);
     this.image.url = "/api/image/" + this.image.id;
-
-    this.getData();
   }
 };
 </script>

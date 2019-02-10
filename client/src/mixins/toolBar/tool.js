@@ -38,7 +38,8 @@ export default {
       if (this.isDisabled) return;
 
       this.$emit("update", this.name);
-    }
+    },
+    setPreferences() {}
   },
   computed: {
     isActive() {
