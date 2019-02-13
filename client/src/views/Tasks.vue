@@ -55,13 +55,11 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     showTask(taskId) {
-      console.log("Showing " + taskId);
       if (taskId == null) return;
 
       let task = this.tasks.find(t => t.id == taskId);
       if (task == null) return;
       task.show = true;
-      console.log(task);
     }
   },
   watch: {

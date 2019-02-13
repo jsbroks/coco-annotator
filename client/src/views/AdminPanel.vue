@@ -207,7 +207,7 @@ export default {
           this.axiosReqestError("Create User", error.response.data.message);
         });
     },
-    editUser(user) {},
+    editUser() {},
     deleteUser(user) {
       let yes = confirm(
         "Are you sure you want to delete " +

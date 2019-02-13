@@ -57,7 +57,7 @@ export default {
     socketConnection() {
       if (this.socketConnection) return;
 
-      setTimeout(() => { 
+      setTimeout(() => {
         if (this.socketConnection) return;
         let options = {
           positionClass: "toast-bottom-left"
@@ -68,7 +68,7 @@ export default {
           "Connection Lost",
           options
         );
-      }, 1000)
+      }, 1000);
     },
     loginRequired: {
       handler(newValue) {

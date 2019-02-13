@@ -351,13 +351,18 @@ export default {
           let options = {
             progressBar: true,
             positionClass: "toast-bottom-left",
-            onclick: (r) => {
-              console.log(r)
+            onclick: () => {
               let id = response.data.id;
-              this.$router.push({ path: '/tasks', query: {id: id}});
+              this.$router.push({ path: "/tasks", query: { id: id } });
             }
           };
-          this.$toastr.success(`Scanning task created with id ${response.data.id} (click to view).`, "Scanning Dataset", options);
+          this.$toastr.success(
+            `Scanning task created with id ${
+              response.data.id
+            } (click to view).`,
+            "Scanning Dataset",
+            options
+          );
         })
         .catch(error => {
           this.axiosReqestError(

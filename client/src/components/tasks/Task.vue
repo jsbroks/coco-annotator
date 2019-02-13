@@ -129,14 +129,13 @@ export default {
 
       if (show) {
         setTimeout(() => {
-          this.highlight = true
+          this.highlight = true;
           this.$el.scrollIntoView({
             behavior: "smooth"
           });
-          setTimeout(() => this.highlight = false, 1000)
-        }, 200)
+          setTimeout(() => (this.highlight = false), 1000);
+        }, 200);
       }
-
     }
   }
 };
