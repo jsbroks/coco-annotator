@@ -48,14 +48,32 @@ export default {
       Tasks.all()
         .then(response => {
           this.tasks = response.data;
+          if (this.taskToShow != null) {
+            this.showTask(this.taskToShow);
+          }
         })
         .finally(() => this.removeProcess(process));
+    },
+    showTask(taskId) {
+      console.log("Showing " + taskId);
+      if (taskId == null) return;
+
+      let task = this.tasks.find(t => t.id == taskId);
+      if (task == null) return;
+      task.show = true;
+      console.log(task);
     }
   },
   watch: {
-    user: "updatePage"
+    taskToShow: "showTask"
   },
   computed: {
+    taskToShow() {
+      let taskId = this.$route.query.id;
+      if (taskId == null) return null;
+
+      return parseInt(taskId);
+    },
     user() {
       return this.$store.state.user.user;
     },

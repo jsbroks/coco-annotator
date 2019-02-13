@@ -1,5 +1,9 @@
 <template>
-  <div class="card text-left">
+  <div
+    class="card text-left"
+    :id="'task-' + this.task.id"
+    :style="{ 'background-color': highlight ? 'lightgreen' : 'white'}"
+  >
   
     <div class="card-body title" @click="showLogs = !showLogs">
       
@@ -61,6 +65,7 @@ export default {
     return {
       logs: ["Loading logs"],
       showLogs: false,
+      highlight: false,
       onlyErrors: false,
       onlyWarnings: false
     };
@@ -116,6 +121,23 @@ export default {
     completed() {
       return this.task.completed || this.task.progress >= 100;
     }
+  },
+  mounted() {
+    let show = this.task.show;
+    if (show != null) {
+      this.showLogs = show;
+
+      if (show) {
+        setTimeout(() => {
+          this.highlight = true
+          this.$el.scrollIntoView({
+            behavior: "smooth"
+          });
+          setTimeout(() => this.highlight = false, 1000)
+        }, 200)
+      }
+
+    }
   }
 };
 </script>
@@ -124,7 +146,9 @@ export default {
 .card {
   border: none;
   border-radius: 0;
+  transition: background-color 500ms linear;
 }
+
 .progress {
   height: 3px;
 }
