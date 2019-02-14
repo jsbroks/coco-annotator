@@ -97,7 +97,12 @@ export default {
     }
   },
   watch: {
-    showLogs: "getLogs"
+    showLogs: "getLogs",
+    completed() {
+      if (this.showLogs) {
+        this.getLogs()
+      }
+    }
   },
   computed: {
     warnings() {

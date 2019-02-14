@@ -22,8 +22,6 @@ def scan_func(task, socket, dataset):
             pass
            
         for file in files:
-            time.sleep()
-
             path = os.path.join(root, file)
 
             if path.endswith(ImageModel.PATTERN):
@@ -92,7 +90,7 @@ def import_coco_func(task, socket, dataset, coco_json):
 
         # update progress
         progress += 1
-        task.set_progress((progress/total_items)*100)
+        task.set_progress((progress/total_items)*100, socket=socket)
     
     dataset.update(set__categories=dataset.categories)
 
@@ -107,7 +105,7 @@ def import_coco_func(task, socket, dataset, coco_json):
         
         # update progress
         progress += 1
-        task.set_progress((progress/total_items)*100)
+        task.set_progress((progress/total_items)*100, socket=socket)
 
         image_model = images.filter(file_name__exact=image_filename).all()
 
@@ -132,7 +130,7 @@ def import_coco_func(task, socket, dataset, coco_json):
         is_crowd = annotation.get('iscrowed', False)
 
         progress += 1
-        task.set_progress((progress/total_items)*100)
+        task.set_progress((progress/total_items)*100, socket=socket)
 
         if len(segmentation) == 0:
             task.warning(f"Annotation {annotation.get('id')} has no segmentation")
@@ -167,6 +165,6 @@ def import_coco_func(task, socket, dataset, coco_json):
         else:
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
  
-    task.set_progress(100)
+    task.set_progress(100, socket=socket)
 
 

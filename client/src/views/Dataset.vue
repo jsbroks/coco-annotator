@@ -74,8 +74,7 @@
         <button
           type="button"
           class="btn btn-primary btn-block"
-          data-toggle="modal"
-          data-target="#cocoUpload"
+          @click="importModal"
         >
           <div v-if="importing.id != null" class="progress">
             <div
@@ -238,8 +237,10 @@ import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 import PanelString from "@/components/PanelInputString";
 import PanelToggle from "@/components/PanelToggle";
-
+import JQuery from "jquery";
 import { mapMutations } from "vuex";
+
+let $ = JQuery
 
 export default {
   name: "Dataset",
@@ -346,23 +347,15 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     createScanTask() {
+      if (this.scan.id != null) {
+        this.$router.push({ path: "/tasks", query: { id: this.scan.id } });
+        return;
+      }
+
       Dataset.scan(this.dataset.id)
         .then(response => {
-          let options = {
-            progressBar: true,
-            positionClass: "toast-bottom-left",
-            onclick: () => {
-              let id = response.data.id;
-              this.$router.push({ path: "/tasks", query: { id: id } });
-            }
-          };
-          this.$toastr.success(
-            `Scanning task created with id ${
-              response.data.id
-            } (click to view).`,
-            "Scanning Dataset",
-            options
-          );
+          let id = response.data.id;
+          this.scan.id = id;
         })
         .catch(error => {
           this.axiosReqestError(
@@ -376,17 +369,20 @@ export default {
       let index = this.folders.indexOf(folder);
       this.folders.splice(index + 1, this.folders.length);
     },
+    importModal() {
+      if (this.importing.id != null) {
+        this.$router.push({ path: "/tasks", query: { id: this.importing.id } });
+        return;
+      }
+      
+      $('#cocoUpload').modal('show');
+    },
     importCOCO() {
-      let process = "Uploading COCO annotation file";
-      this.addProcess(process);
-
       let uploaded = document.getElementById("coco");
       Dataset.uploadCoco(this.dataset.id, uploaded.files[0])
         .then(response => {
-          this.axiosReqestSuccess(
-            "Importing COCO",
-            `Task has been created with id ${response.data.id}`
-          );
+          let id = response.data.id;
+          this.importing.id = id;
         })
         .catch(error => {
           this.axiosReqestError("Importing COCO", error.response.data.message);
@@ -430,6 +426,7 @@ export default {
   },
   sockets: {
     taskProgress(data) {
+
       if (data.id === this.scan.id) {
         this.scan.progress = data.progress;
       }
@@ -478,7 +475,15 @@ export default {
         setTimeout(() => {
           this.scan.progress = 0;
           this.scan.id = null;
-        }, 500);
+        }, 1000);
+      }
+    },
+    "importing.progress"(progress) {
+      if (progress >= 100) {
+        setTimeout(() => {
+          this.importing.progress = 0;
+          this.importing.id = null;
+        }, 1000);
       }
     }
   },
