@@ -1,6 +1,7 @@
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 
+import os
 import datetime
 from ..models import *
 
@@ -99,6 +100,9 @@ class Undo(Resource):
 
         if model_object is None:
             return {"message": "Invalid id"}, 400
+
+        if isinstance(model_object, ImageModel):
+            os.remove(model_object.path)
 
         model_object.delete()
 
