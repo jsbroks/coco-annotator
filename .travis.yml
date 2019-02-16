@@ -16,17 +16,14 @@ matrix:
         - docker run -d -p 27017:27017 mongo
         - docker ps -a
       script: pytest
-
-    - language: node_js
-      node_js:
-        - 8
-        - node
-      cache: npm
-      before_install:
-        - npm install -g npm@latest
-        - cd client
-      install:
-        - npm i
-      script: npm test
-
-
+    # - language: node_js
+    #   node_js:
+    #     - 8
+    #     - node
+    #   cache: npm
+    #   before_install:
+    #     - npm install -g npm@latest
+    #     - cd client
+    #   install:
+    #     - npm i
+    #   script: npm test
