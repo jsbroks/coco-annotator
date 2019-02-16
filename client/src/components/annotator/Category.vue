@@ -200,6 +200,7 @@ export default {
 
           this.selectedAnnotation = annotationId;
           this.$nextTick(() => {
+            this.$parent.selectLastEditorTool();
             this.$emit("click", {
               annotation: annotationId,
               category: this.index

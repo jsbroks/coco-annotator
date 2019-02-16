@@ -32,6 +32,14 @@ export default {
       }
     };
   },
+  watch: {
+    isActive(active) {
+      if (active) {
+        this.tool.activate();
+        localStorage.setItem("editorTool", this.name)
+      }
+    }
+  },
   methods: {
     /**
      * Exports settings

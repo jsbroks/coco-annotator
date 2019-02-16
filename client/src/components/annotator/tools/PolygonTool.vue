@@ -221,6 +221,12 @@ export default {
     }
   },
   watch: {
+    isActive(active) {
+      if (active) {
+        this.tool.activate();
+        localStorage.setItem("editorTool", this.name)
+      }
+    },
     /**
      * Change width of stroke based on zoom of image
      */

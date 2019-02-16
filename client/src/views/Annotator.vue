@@ -537,6 +537,10 @@ export default {
       this.currentAnnotation.subtract(compound, simplify, undoable);
     },
 
+    selectLastEditorTool() {
+      this.activeTool = localStorage.getItem("editorTool") || "Select"
+    },
+
     setCursor(newCursor) {
       this.cursor = newCursor;
     },

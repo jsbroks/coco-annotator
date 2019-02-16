@@ -6,14 +6,15 @@
       @mouseover="hover = true"
       @mouseleave="hover = false"
     >
-      <v-lazy-image
-        :src="imageUrl"
-        :src-placeholder="loaderUrl"
-        @click="openAnnotator"
-        class="card-img-top"
-        style="width: 100%; display: block"
-        :style="{'opacity': annotated ? 0.3 : 1}"
-      />
+      <div @click="openAnnotator">
+        <v-lazy-image
+          :src="imageUrl"
+          :src-placeholder="loaderUrl"
+          class="card-img-top"
+          style="width: 100%; display: block"
+          :style="{'opacity': annotated ? 0.3 : 1}"
+        />
+      </div>
 
       <b v-if="annotated" class="overlay-text text-center">
         Being annotated by {{image.annotating.join(', ')}}
