@@ -6,12 +6,13 @@
       @mouseover="hover = true"
       @mouseleave="hover = false"
     >
-      <img
-        class="card-img-top"
-        :style="{'opacity': annotated ? 0.3 : 1}"
-        @click="openAnnotator"
-        style="width: 100%; display: block"
+      <v-lazy-image
         :src="imageUrl"
+        :src-placeholder="loaderUrl"
+        @click="openAnnotator"
+        class="card-img-top"
+        style="width: 100%; display: block"
+        :style="{'opacity': annotated ? 0.3 : 1}"
       />
 
       <b v-if="annotated" class="overlay-text text-center">
@@ -93,7 +94,8 @@ export default {
   data() {
     return {
       hover: false,
-      showAnnotations: true
+      showAnnotations: true,
+      loaderUrl: require("@/assets/loader.gif"),
     };
   },
   methods: {

@@ -1,3 +1,5 @@
+import "intersection-observer";
+
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -7,6 +9,7 @@ import paper from "paper";
 import VTooltip from "v-tooltip";
 import Loading from "vue-loading-overlay";
 import VueSocketIO from "vue-socket.io";
+import { VLazyImagePlugin } from "v-lazy-image";
 
 import "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -22,6 +25,7 @@ window.toastr = require("toastr");
 Vue.use(VueToastr2);
 Vue.use(VTooltip);
 Vue.use(Loading);
+Vue.use(VLazyImagePlugin);
 Vue.use(
   new VueSocketIO({
     debug: false,
