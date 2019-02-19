@@ -336,7 +336,7 @@ export default {
         if (this.group != null) {
           this.group.fillColor = this.color;
           let h = Math.round(this.group.fillColor.hue);
-          let l = Math.round((this.group.fillColor.lightness - 0.2) * 100);
+          let l = Math.round(this.group.fillColor.lightness * 50);
           let s = Math.round(this.group.fillColor.saturation * 100);
           this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
         }

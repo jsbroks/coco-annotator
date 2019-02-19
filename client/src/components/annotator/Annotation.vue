@@ -166,6 +166,7 @@ export default {
       isVisible: true,
       color: this.annotation.color,
       compoundPath: null,
+      keypointsPath: null,
       metadata: [],
       isEmpty: true,
       name: "",
@@ -210,10 +211,13 @@ export default {
         }
       }
 
+
+      if (this.keypointsPath != null) this.keypointsPath.remove();
       if (this.compoundPath != null) this.compoundPath.remove();
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
+      this.keypointsPath = new paper.CompoundPath();
 
       if (json != null) {
         // Import data directroy from paperjs object
@@ -337,6 +341,11 @@ export default {
       this.compoundPath = this.pervious.pop();
       this.compoundPath.fullySelected = this.isCurrent;
     },
+    addKeypoint(point) {
+      let pointPath = new paper.Path.Circle(point, 5);
+
+      this.keypointsPath.addChild(pointPath);
+    },
     /**
      * Unites current annotation path with anyother path.
      * @param {paper.CompoundPath} compound compound to unite current annotation path with
@@ -381,9 +390,12 @@ export default {
 
       this.compoundPath.fillColor = this.color;
       let h = Math.round(this.compoundPath.fillColor.hue);
-      let l = Math.round((this.compoundPath.fillColor.lightness - 0.2) * 100);
+      let l = Math.round(this.compoundPath.fillColor.lightness * 50);
       let s = Math.round(this.compoundPath.fillColor.saturation * 100);
       this.compoundPath.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
+
+      this.keypointsPath.fillColor = "hsl(" + h + "," + s + "%," + l * 2.5 + "%)";
+      this.keypointsPath.strokeColor = "hsl(" + h + "," + s + "%," + l * 0.5 + "%)";
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
@@ -432,6 +444,7 @@ export default {
       if (this.compoundPath == null) return;
 
       this.compoundPath.visible = newVisible;
+      
     },
     compoundPath() {
       if (this.compoundPath == null) return;
@@ -440,6 +453,13 @@ export default {
       this.$parent.group.addChild(this.compoundPath);
       this.setColor();
       this.isEmpty = this.compoundPath.isEmpty();
+    },
+    keypointsPath() {
+      if (this.keypointsPath == null) return;
+
+      this.keypointsPath.visible = this.isVisible;
+      this.$parent.group.addChild(this.keypointsPath);
+      this.setColor();
     },
     annotation() {
       this.initAnnotation();

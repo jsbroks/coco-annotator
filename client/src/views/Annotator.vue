@@ -39,6 +39,12 @@
           @setcursor="setCursor"
           ref="eraser"
         />
+
+        <KeypointTool
+          v-model="activeTool"
+          @setcursor="setCursor"
+          ref="keypoints"
+        />
       </div>
       <hr />
 
@@ -186,6 +192,7 @@ import SelectTool from "@/components/annotator/tools/SelectTool";
 import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
+import KeypointTool from "@/components/annotator/tools/KeypointTool";
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -219,6 +226,7 @@ export default {
     MagicWandTool,
     EraserTool,
     BrushTool,
+    KeypointTool,
     DownloadButton,
     SaveButton,
     SettingsButton,
