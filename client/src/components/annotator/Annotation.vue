@@ -117,6 +117,7 @@ import paper from "paper";
 import axios from "axios";
 import simplifyjs from "simplify-js";
 
+import Keypoint from "@/libs/keypoints";
 import { mapMutations } from "vuex";
 import UndoAction from "@/undo";
 
@@ -166,12 +167,14 @@ export default {
       isVisible: true,
       color: this.annotation.color,
       compoundPath: null,
-      keypointsPath: null,
+      keypoints: [],
       metadata: [],
       isEmpty: true,
       name: "",
       uuid: "",
-      pervious: []
+      pervious: [],
+      skeleton: [[1, 2], [3, 5], [3, 6]],
+      count: 0
     };
   },
   methods: {
@@ -211,13 +214,10 @@ export default {
         }
       }
 
-
-      if (this.keypointsPath != null) this.keypointsPath.remove();
       if (this.compoundPath != null) this.compoundPath.remove();
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
-      this.keypointsPath = new paper.CompoundPath();
 
       if (json != null) {
         // Import data directroy from paperjs object
@@ -342,9 +342,32 @@ export default {
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point) {
-      let pointPath = new paper.Path.Circle(point, 5);
+      this.count++;
+      let keypoint = new Keypoint(point.x, point.y, {
+        indexLabel: this.count
+      });
 
-      this.keypointsPath.addChild(pointPath);
+      let edges = this.skeleton.filter(e => e.includes(this.count));
+      console.log(this.count)
+      edges.forEach(edge => {
+        let otherIndex = edge[0];
+        if (otherIndex == keypoint.indexLabel)
+          otherIndex = edge[1];
+        
+        let otherKeypoint = this.keypoints.find(k => k.indexLabel === otherIndex);
+        if (otherKeypoint != null) {
+          let line = new paper.Path.Line(otherKeypoint, keypoint);
+          keypoint.addLine(line);
+          otherKeypoint.path.bringToFront();
+          keypoint.path.bringToFront();
+        }
+      })
+      
+      this.keypoints.push(keypoint);
+      this.setColor();
+    },
+    drawLines() {
+
     },
     /**
      * Unites current annotation path with anyother path.
@@ -392,10 +415,10 @@ export default {
       let h = Math.round(this.compoundPath.fillColor.hue);
       let l = Math.round(this.compoundPath.fillColor.lightness * 50);
       let s = Math.round(this.compoundPath.fillColor.saturation * 100);
-      this.compoundPath.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
 
-      this.keypointsPath.fillColor = "hsl(" + h + "," + s + "%," + l * 2.5 + "%)";
-      this.keypointsPath.strokeColor = "hsl(" + h + "," + s + "%," + l * 0.5 + "%)";
+      let hsl =  "hsl(" + h + "," + s + "%," + l + "%)";
+      this.compoundPath.strokeColor = hsl;
+      this.keypoints.forEach(k => (k.color = hsl));
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
@@ -444,6 +467,8 @@ export default {
       if (this.compoundPath == null) return;
 
       this.compoundPath.visible = newVisible;
+
+      this.keypoints.forEach(k => (k.visible = newVisible));
       
     },
     compoundPath() {

@@ -325,20 +325,21 @@ export default {
     setColor() {
       if (!this.isVisible) return;
 
+      let annotations = this.$refs.annotation;
       if (this.showAnnotations) {
-        let annotations = this.$refs.annotation;
-        if (annotations) {
-          annotations.forEach(annotation => {
-            annotation.setColor();
-          });
-        }
+        annotations.forEach(a => a.setColor());
       } else {
         if (this.group != null) {
           this.group.fillColor = this.color;
           let h = Math.round(this.group.fillColor.hue);
           let l = Math.round(this.group.fillColor.lightness * 50);
           let s = Math.round(this.group.fillColor.saturation * 100);
-          this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
+          let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
+          this.group.strokeColor = hsl;
+
+          annotations.forEach(a => {
+            a.keypoints.forEach(k => k.color = hsl);
+          });
         }
       }
     },
@@ -392,6 +393,9 @@ export default {
     isVisible(newVisible) {
       if (this.group == null) return;
       this.group.visible = newVisible;
+      this.$refs.annotation.forEach(a => {
+        a.keypoints.forEach(k => (k.visible = newVisible));
+      })
       this.setColor();
     },
     showAnnotations(showing) {
