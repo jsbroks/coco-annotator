@@ -117,7 +117,7 @@ import paper from "paper";
 import axios from "axios";
 import simplifyjs from "simplify-js";
 
-import Keypoint from "@/libs/keypoints";
+import { Keypoint, keypoints } from "@/libs/keypoints";
 import { mapMutations } from "vuex";
 import UndoAction from "@/undo";
 
