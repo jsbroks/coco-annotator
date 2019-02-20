@@ -20,7 +20,7 @@ def scan_func(task, socket, dataset):
             task.set_progress(progress, socket=socket)
         except:
             pass
-           
+
         for file in files:
             path = os.path.join(root, file)
 
@@ -29,7 +29,7 @@ def scan_func(task, socket, dataset):
 
                 if db_image is not None:
                     continue
-                        
+
                 try:
                     ImageModel.create_from_path(path, dataset.id).save()
                     count += 1
@@ -54,7 +54,7 @@ def import_coco_func(task, socket, dataset, coco_json):
     task.info(f"Importing {len(coco_categories)} categories, "
               f"{len(coco_images)} images, and "
               f"{len(coco_annotations)} annotations")
-    
+
     total_items = sum([
         len(coco_categories),
         len(coco_annotations),
@@ -82,8 +82,8 @@ def import_coco_func(task, socket, dataset, coco_json):
             new_category.save()
 
             category_model = new_category
-            dataset.categories.append(value)
-        
+            dataset.categories.append(new_category)
+
         task.info(f"{category_name} category found")
         # map category ids
         categories_id[category_id] = category_model.id
@@ -91,7 +91,7 @@ def import_coco_func(task, socket, dataset, coco_json):
         # update progress
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)
-    
+
     dataset.update(set__categories=dataset.categories)
 
     task.info("===== Loading Images =====")
@@ -102,7 +102,7 @@ def import_coco_func(task, socket, dataset, coco_json):
     for image in coco_images:
         image_id = image.get('id')
         image_filename = image.get('file_name')
-        
+
         # update progress
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)
@@ -112,11 +112,11 @@ def import_coco_func(task, socket, dataset, coco_json):
         if len(image_model) == 0:
             task.warning(f"Could not find image {image_filename}")
             continue
-        
+
         if len(image_model) > 1:
             task.error(f"To many images found with the same file name: {image_filename}")
             continue
-        
+
         task.info(f"Image {image_filename} found")
         image_model = image_model[0]
         images_id[image_id] = image_model
@@ -135,14 +135,14 @@ def import_coco_func(task, socket, dataset, coco_json):
         if len(segmentation) == 0:
             task.warning(f"Annotation {annotation.get('id')} has no segmentation")
             continue
-        
+
         try:
             image_model = images_id[image_id]
             category_model_id = categories_id[category_id]
         except KeyError:
             task.warning(f"Could not find image assoicated with annotation {annotation.get('id')}")
             continue
-        
+
         annotation_model = AnnotationModel.objects(
             image_id=image_model.id,
             category_id=category_model_id,
@@ -155,7 +155,7 @@ def import_coco_func(task, socket, dataset, coco_json):
 
             annotation_model = AnnotationModel(image_id=image_model.id)
             annotation_model.category_id = category_model_id
-            
+
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
             annotation_model.segmentation = segmentation
@@ -164,7 +164,5 @@ def import_coco_func(task, socket, dataset, coco_json):
             image_model.update(set__annotated=True)
         else:
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
- 
+
     task.set_progress(100, socket=socket)
-
-
