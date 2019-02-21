@@ -226,11 +226,11 @@ export default {
     },
     keypointEdges: {
       type: Array,
-      default: []
+      required: true
     },
     keypointLabels: {
       type: Array,
-      default: []
+      required: true
     }
   },
   data() {
@@ -299,7 +299,20 @@ export default {
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
-      this.keypoints = new Keypoints(this.edges, this.annotation.keypoints, width, height);
+      this.keypoints = new Keypoints(this.edges);
+
+      let keypoints = this.annotation.keypoints;
+      if (keypoints) {
+        for (let i = 0; i < keypoints.length; i += 3) {
+          let x = keypoints[i] - width / 2,
+            y = keypoints[i + 1] - height / 2,
+            v = keypoints[i + 2];
+
+          if (v !== 3) {
+            this.addKeypoint(new paper.Point(x, y), v, i / 3 + 1);
+          }
+        }
+      }
 
       if (json != null) {
         // Import data directroy from paperjs object
@@ -420,16 +433,19 @@ export default {
       this.compoundPath = this.pervious.pop();
       this.compoundPath.fullySelected = this.isCurrent;
     },
-    addKeypoint(point) {
+    addKeypoint(point, visibility, index) {
       let keypoint = new Keypoint(point.x, point.y, {
-        onClick: (event) => {
-          this.currentKeypoint = event.target.keypoint
+        visibility: visibility || 0,
+        indexLabel: index || -1,
+        onClick: event => {
+          if (!this.$parent.isCurrent) return;
+          this.currentKeypoint = event.target.keypoint;
           let id = `#keypointSettings${this.annotation.id}`;
           let indexLabel = this.currentKeypoint.indexLabel;
 
           this.keypoint.tag = indexLabel == -1 ? [] : [indexLabel.toString()];
           this.keypoint.visibility = this.currentKeypoint.visibility;
-          
+
           $(id).modal("show");
         }
       });
@@ -484,7 +500,7 @@ export default {
       let l = Math.round(this.compoundPath.fillColor.lightness * 50);
       let s = Math.round(this.compoundPath.fillColor.saturation * 100);
 
-      let hsl =  "hsl(" + h + "," + s + "%," + l + "%)";
+      let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
       this.compoundPath.strokeColor = hsl;
       this.keypoints.color = hsl;
     },
@@ -544,7 +560,7 @@ export default {
       if (this.compoundPath == null) return;
 
       this.compoundPath.visible = newVisible;
-      this.keypoints.visible = newVisible;      
+      this.keypoints.visible = newVisible;
     },
     compoundPath() {
       if (this.compoundPath == null) return;
@@ -566,7 +582,7 @@ export default {
     },
     "keypoint.tag"(newVal) {
       let id = newVal.length === 0 ? -1 : newVal[0];
-      this.keypoints.setKeypointIndex(this.currentKeypoint, id)
+      this.keypoints.setKeypointIndex(this.currentKeypoint, id);
       this.tagRecomputeCounter++;
     },
     "keypoint.visibility"(newVal) {
@@ -604,19 +620,19 @@ export default {
       let l = Math.round(this.compoundPath.fillColor.lightness * 50);
       let s = Math.round(this.compoundPath.fillColor.saturation * 100);
 
-      return [h, s, l]
+      return [h, s, l];
     },
     keypointLabelTags() {
       this.tagRecomputeCounter;
       let tags = {};
 
-      for(let i = 0; i < this.keypointLabels.length; i++) {
+      for (let i = 0; i < this.keypointLabels.length; i++) {
         // Include it tags if it is the current keypoint or not in use.
         if (
-          (this.keypoints && !this.keypoints._labelled[i+1]) ||
-          (this.currentKeypoint &&this.currentKeypoint.indexLabel == i+1)
+          (this.keypoints && !this.keypoints._labelled[i + 1]) ||
+          (this.currentKeypoint && this.currentKeypoint.indexLabel == i + 1)
         ) {
-          tags[i+1] = this.keypointLabels[i];
+          tags[i + 1] = this.keypointLabels[i];
         }
       }
       return tags;

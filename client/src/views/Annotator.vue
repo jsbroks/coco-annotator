@@ -546,7 +546,7 @@ export default {
     },
 
     selectLastEditorTool() {
-      this.activeTool = localStorage.getItem("editorTool") || "Select"
+      this.activeTool = localStorage.getItem("editorTool") || "Select";
     },
 
     setCursor(newCursor) {

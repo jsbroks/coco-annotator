@@ -100,7 +100,7 @@ export default {
     showLogs: "getLogs",
     completed() {
       if (this.showLogs) {
-        this.getLogs()
+        this.getLogs();
       }
     }
   },

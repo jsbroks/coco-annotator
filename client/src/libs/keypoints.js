@@ -1,7 +1,7 @@
 import paper from "paper";
 
 export class Keypoints extends paper.Group {
-  constructor(edges, keypoints, width, height, args) {
+  constructor(edges, args) {
     super();
     args = args || {};
 
@@ -16,20 +16,6 @@ export class Keypoints extends paper.Group {
 
     edges = edges || [];
     edges.forEach(e => this.addEdge(e));
-
-    if (keypoints) {
-      console.log(keypoints);
-      for (let i = 0; i < keypoints.length; i += 3) {
-        let x = keypoints[i] - width / 2,
-          y = keypoints[i + 1] - height / 2,
-          v = keypoints[i + 2];
-        console.log(x, y, v);
-        if (v !== 3) {
-          let point = new Keypoint(x, y, { visibility: v, indexLabel: i });
-          this.addKeypoint(point);
-        }
-      }
-    }
   }
 
   isEmpty() {
@@ -153,7 +139,7 @@ export class Keypoints extends paper.Group {
       if (index == -1) {
         array.push(...[Math.round(point.x), Math.round(point.y), k.visibility]);
       } else {
-        index -= 1;
+        index = (index - 1) * 3;
         array[index] = Math.round(point.x);
         array[index + 1] = Math.round(point.y);
         array[index + 2] = Math.round(k.visibility);

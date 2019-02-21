@@ -69,8 +69,8 @@
         @click="onAnnotationClick(listIndex)"
         :opacity="opacity"
         :index="listIndex"
-        :keypointEdges="keypoint.edges"
-        :keypointLabels="keypoint.labels"
+        :keypoint-edges="keypoint.edges"
+        :keypoint-labels="keypoint.labels"
         ref="annotation"
         :hover="hover.annotation"
         @deleted="annotationDeleted"
@@ -356,7 +356,7 @@ export default {
           let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
           this.group.strokeColor = hsl;
 
-          if (annotations) annotations.forEach(a => a.keypoints.color = hsl);
+          if (annotations) annotations.forEach(a => (a.keypoints.color = hsl));
         }
       }
     },
@@ -411,7 +411,8 @@ export default {
       if (this.group == null) return;
       this.group.visible = newVisible;
       let annotations = this.$refs.annotation;
-      if (annotations) annotations.forEach(a => a.keypoints.visible = newVisible);
+      if (annotations)
+        annotations.forEach(a => (a.keypoints.visible = newVisible));
       this.setColor();
     },
     showAnnotations(showing) {

@@ -1,10 +1,5 @@
 <script>
-import paper from "paper";
 import tool from "@/mixins/toolBar/tool";
-import UndoAction from "@/undo";
-
-import { invertColor } from "@/libs/colors";
-import { mapMutations } from "vuex";
 
 export default {
   name: "KeypointTool",
@@ -28,23 +23,10 @@ export default {
   },
   methods: {
     export() {
-      return {
-      };
-    },
-    setPreferences(pref) {
-      
-    },
-    onMouseDrag(event) {
-
+      return {};
     },
     onMouseDown(event) {
       this.$parent.currentAnnotation.addKeypoint(event.point);
-    },
-    onMouseUp() {
-
-    },
-    onMouseMove(event) {
-
     }
   },
   computed: {
@@ -52,10 +34,8 @@ export default {
       return this.$parent.current.annotation === -1;
     }
   },
-  watch: {
-  },
+  watch: {},
   created() {},
-  mounted() {
-  }
+  mounted() {}
 };
 </script>

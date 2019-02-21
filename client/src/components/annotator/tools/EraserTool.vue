@@ -116,7 +116,7 @@ export default {
 
       if (active) {
         this.tool.activate();
-        localStorage.setItem("editorTool", this.name)
+        localStorage.setItem("editorTool", this.name);
       }
     },
     /**

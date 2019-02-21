@@ -240,7 +240,7 @@ import PanelToggle from "@/components/PanelToggle";
 import JQuery from "jquery";
 import { mapMutations } from "vuex";
 
-let $ = JQuery
+let $ = JQuery;
 
 export default {
   name: "Dataset",
@@ -374,8 +374,8 @@ export default {
         this.$router.push({ path: "/tasks", query: { id: this.importing.id } });
         return;
       }
-      
-      $('#cocoUpload').modal('show');
+
+      $("#cocoUpload").modal("show");
     },
     importCOCO() {
       let uploaded = document.getElementById("coco");
@@ -426,7 +426,6 @@ export default {
   },
   sockets: {
     taskProgress(data) {
-
       if (data.id === this.scan.id) {
         this.scan.progress = data.progress;
       }
