@@ -222,7 +222,7 @@ class AnnotationModel(db.DynamicDocument):
 
     color = db.StringField()
     
-    keypoints = db.ListField(default=[])
+    UNKNOWN = db.ListField(default=[])
 
     metadata = db.DictField(default={})
     paper_object = db.ListField(default=[])
@@ -313,9 +313,8 @@ class CategoryModel(db.DynamicDocument):
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
-    # keypoints
-    edges = db.ListField(default=[])
-    point_labels = db.ListField(default=[])
+    keypoint_edges = db.ListField(default=[])
+    keypoint_labels = db.ListField(default=[])
     
 
     @classmethod

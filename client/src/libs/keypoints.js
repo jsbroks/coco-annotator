@@ -1,11 +1,10 @@
 import paper from "paper";
 
 export class Keypoints extends paper.Group {
-  constructor(labels, edges, keypoints, args) {
+  constructor(edges, keypoints, width, height, args) {
     super();
     args = args || {};
 
-    this.labels = new Set(labels);
     this._edges = {};
 
     this._lines = {};
@@ -15,16 +14,46 @@ export class Keypoints extends paper.Group {
     this.strokeColor = args.strokeColor || "red";
     this.lineWidth = args.strokeWidth || 4;
 
+    edges = edges || [];
     edges.forEach(e => this.addEdge(e));
 
     if (keypoints) {
+      console.log(keypoints);
       for (let i = 0; i < keypoints.length; i += 3) {
-        let x = keypoints[i],
-          y = keypoints[i + 1],
+        let x = keypoints[i] - width / 2,
+          y = keypoints[i + 1] - height / 2,
           v = keypoints[i + 2];
-        let point = new Keypoint(x, y, { visibility: v, indexLabel: i });
-        this.addKeypoint(point);
+        console.log(x, y, v);
+        if (v !== 3) {
+          let point = new Keypoint(x, y, { visibility: v, indexLabel: i });
+          this.addKeypoint(point);
+        }
       }
+    }
+  }
+
+  isEmpty() {
+    return this._keypoints.length === 0;
+  }
+
+  setKeypointIndex(keypoint, newIndex) {
+    let oldIndex = keypoint.indexLabel;
+    if (newIndex == oldIndex) return;
+
+    keypoint.indexLabel = parseInt(newIndex);
+
+    if (oldIndex >= 0) {
+      delete this._labelled[oldIndex];
+
+      let otherIndices = this._edges[oldIndex];
+      if (otherIndices) {
+        otherIndices.forEach(i => this.removeLine([i, oldIndex]));
+      }
+      // TODO: Remove assoicated lines
+    }
+    if (newIndex >= 0) {
+      this._labelled[newIndex] = keypoint;
+      this._drawLines(keypoint);
     }
   }
 
@@ -48,8 +77,8 @@ export class Keypoints extends paper.Group {
 
   moveKeypoint(point, keypoint) {
     let indexLabel = keypoint.indexLabel;
-
     let edges = this._edges[indexLabel];
+
     if (edges) {
       edges.forEach(i => {
         let line = this.getLine([i, indexLabel]);
@@ -107,11 +136,30 @@ export class Keypoints extends paper.Group {
     return this._radius;
   }
 
-  exportJSON() {
+  exportJSON(labels, width, height) {
     let array = [];
+    for (let i = 0; i < labels.length; i++) {
+      let j = i * 3;
+      array[j] = 0;
+      array[j + 1] = 0;
+      array[j + 2] = 3;
+    }
+
     this._keypoints.forEach(k => {
-      array.push(...[k.x, k.y, k.visibility]);
+      let center = new paper.Point(width / 2, height / 2);
+      let point = k.clone().add(center);
+      let index = k.indexLabel;
+
+      if (index == -1) {
+        array.push(...[Math.round(point.x), Math.round(point.y), k.visibility]);
+      } else {
+        index -= 1;
+        array[index] = Math.round(point.x);
+        array[index + 1] = Math.round(point.y);
+        array[index + 2] = Math.round(k.visibility);
+      }
     });
+
     return array;
   }
 
@@ -179,6 +227,8 @@ export class Keypoints extends paper.Group {
     let line = new paper.Path.Line(firstKeypoint, secondKeypoint);
     line.strokeColor = this.strokeColor;
     line.strokeWidth = this.strokeWidth;
+    line.indicator = true;
+
     if (firstKeypoint.path.isBelow(secondKeypoint.path)) {
       line.insertBelow(firstKeypoint.path);
     } else {
@@ -186,6 +236,15 @@ export class Keypoints extends paper.Group {
     }
 
     this._lines[h] = line;
+  }
+
+  removeLine(edge) {
+    let h = this._hashEdge(edge);
+    let line = this._lines[h];
+    if (line) {
+      line.remove();
+      delete this._lines[h];
+    }
   }
 
   /**
@@ -218,7 +277,8 @@ export class Keypoints extends paper.Group {
 export let VisibilityType = {
   NOT_LABELED: 0,
   LABELED_NOT_VISIBLE: 1,
-  LABELED_VISIBLE: 2
+  LABELED_VISIBLE: 2,
+  UNKNOWN: 3
 };
 
 export class Keypoint extends paper.Point {
@@ -233,6 +293,9 @@ export class Keypoint extends paper.Point {
     this.indexLabel = args.indexLabel || -1;
     this.visibility = args.visibility || VisibilityType.NOT_LABELED;
     this.visible = args.visible || true;
+
+    this.onClick = args.onClick;
+
     this._draw();
     this.color = args.color || "red";
     this.setFillColor();
@@ -267,19 +330,32 @@ export class Keypoint extends paper.Point {
     }
 
     this.path = new paper.Path.Circle(this, this.radius);
-    this.path.onMouseDrag = event => {
-      if (this.keypoints) {
-        this.keypoints.moveKeypoint(event.point, this);
-      } else {
-        this.move(event.point);
-      }
-    };
+
+    this.path.onMouseDown = this.onMouseDown;
+    this.path.onMouseUp = this.onMouseUp;
+    this.path.onMouseDrag = this.onMouseDrag;
+    this.path.onDoubleClick = this.onDoubleClick;
+    this.path.onClick = this.onClick;
+
+    this.path.indicator = true;
     this.path.strokeColor = this.color;
     this.path.strokeWidth = storkeWidth;
     this.path.visible = this.visible;
     this.path.keypoint = this;
+    this.path.keypoints = this.keypoints;
 
     this.setFillColor();
+  }
+
+  onMouseDrag(event) {
+    let keypoint = event.target.keypoint;
+    let keypoints = event.target.keypoints;
+
+    if (keypoints) {
+      keypoints.moveKeypoint(event.point, keypoint);
+    } else {
+      keypoint.move(event.point);
+    }
   }
 
   set visible(val) {

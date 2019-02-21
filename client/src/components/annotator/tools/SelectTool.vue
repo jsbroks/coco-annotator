@@ -46,14 +46,7 @@ export default {
         fill: false,
         tolerance: 5,
         match: hit => {
-          if (this.point == null) return true;
-          if (
-            hit.item instanceof paper.Path ||
-            hit.item instanceof paper.CompoundPath
-          ) {
-            return !hit.item.hasOwnProperty("indicator");
-          }
-          return true;
+          return !hit.item.hasOwnProperty("indicator");
         }
       }
     };
@@ -177,6 +170,8 @@ export default {
 
       if (this.point != null) {
         this.edit.canMove = this.point.contains(event.point);
+      } else {
+        this.edit.canMove = false;
       }
     },
     createPoint(point) {
@@ -190,8 +185,7 @@ export default {
       this.point.indicator = true;
     },
     onMouseDrag(event) {
-      if (this.segment) {
-        if (!this.edit.canMove) return;
+      if (this.segment && this.edit.canMove) {
         this.createPoint(event.point);
         this.segment.point = event.point;
       }

@@ -51,6 +51,64 @@
         style="float:right"
       />
     </li>
+    <div
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      :id="'keypointSettings' + annotation.id"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {{ currentKeypoint }}
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label>Label</label>
+                <TagsInput
+                  v-model="keypoint.tag"
+                  element-id="keypointTags"
+                  :existing-tags="keypointLabelTags"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                  :limit="1"
+                ></TagsInput>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-3 col-form-label">Visibility</label>
+                <div class="col-sm-8">
+                  <select v-model="keypoint.visibility" class="form-control">
+                    <option :value="0">NOT LABELED</option>
+                    <option :value="1">LABELED NOT VISIBLE</option>
+                    <option :value="2">LABELED VISIBLE</option>
+                  </select>
+                </div>  
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div
       class="modal fade"
@@ -116,17 +174,22 @@
 import paper from "paper";
 import axios from "axios";
 import simplifyjs from "simplify-js";
+import JQuery from "jquery";
 
-import { Keypoint, keypoints } from "@/libs/keypoints";
+import { Keypoint, Keypoints } from "@/libs/keypoints";
 import { mapMutations } from "vuex";
 import UndoAction from "@/undo";
 
+import TagsInput from "@/components/TagsInput";
 import Metadata from "@/components/Metadata";
+
+let $ = JQuery;
 
 export default {
   name: "Annotaiton",
   components: {
-    Metadata
+    Metadata,
+    TagsInput
   },
   props: {
     annotation: {
@@ -160,6 +223,14 @@ export default {
     simplify: {
       type: Number,
       default: 1
+    },
+    keypointEdges: {
+      type: Array,
+      default: []
+    },
+    keypointLabels: {
+      type: Array,
+      default: []
     }
   },
   data() {
@@ -167,14 +238,20 @@ export default {
       isVisible: true,
       color: this.annotation.color,
       compoundPath: null,
-      keypoints: [],
+      keypoints: null,
       metadata: [],
       isEmpty: true,
       name: "",
       uuid: "",
       pervious: [],
-      skeleton: [[1, 2], [3, 5], [3, 6]],
-      count: 0
+      edges: [[1, 3], [3, 5], [2, 4], [4, 5], [5, 6], [5, 7], [7, 8], [6, 8]],
+      count: 0,
+      currentKeypoint: null,
+      keypoint: {
+        tag: [],
+        visibility: 0
+      },
+      tagRecomputeCounter: 0
     };
   },
   methods: {
@@ -200,6 +277,9 @@ export default {
       json = json || null;
       segments = segments || null;
 
+      let width = this.annotation.width;
+      let height = this.annotation.height;
+
       // Validate json
       if (json != null) {
         if (json.length !== 2) {
@@ -215,19 +295,18 @@ export default {
       }
 
       if (this.compoundPath != null) this.compoundPath.remove();
+      if (this.keypoints != null) this.keypoints.remove();
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
+      this.keypoints = new Keypoints(this.edges, this.annotation.keypoints, width, height);
 
       if (json != null) {
         // Import data directroy from paperjs object
         this.compoundPath.importJSON(json);
       } else if (segments != null) {
         // Load segments input compound path
-        let center = new paper.Point(
-          this.annotation.width / 2,
-          this.annotation.height / 2
-        );
+        let center = new paper.Point(width / 2, height / 2);
 
         for (let i = 0; i < segments.length; i++) {
           let polygon = segments[i];
@@ -342,32 +421,21 @@ export default {
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point) {
-      this.count++;
       let keypoint = new Keypoint(point.x, point.y, {
-        indexLabel: this.count
+        onClick: (event) => {
+          this.currentKeypoint = event.target.keypoint
+          let id = `#keypointSettings${this.annotation.id}`;
+          let indexLabel = this.currentKeypoint.indexLabel;
+
+          this.keypoint.tag = indexLabel == -1 ? [] : [indexLabel.toString()];
+          this.keypoint.visibility = this.currentKeypoint.visibility;
+          
+          $(id).modal("show");
+        }
       });
 
-      let edges = this.skeleton.filter(e => e.includes(this.count));
-      console.log(this.count)
-      edges.forEach(edge => {
-        let otherIndex = edge[0];
-        if (otherIndex == keypoint.indexLabel)
-          otherIndex = edge[1];
-        
-        let otherKeypoint = this.keypoints.find(k => k.indexLabel === otherIndex);
-        if (otherKeypoint != null) {
-          let line = new paper.Path.Line(otherKeypoint, keypoint);
-          keypoint.addLine(line);
-          otherKeypoint.path.bringToFront();
-          keypoint.path.bringToFront();
-        }
-      })
-      
-      this.keypoints.push(keypoint);
-      this.setColor();
-    },
-    drawLines() {
-
+      this.keypoints.addKeypoint(keypoint);
+      this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
     },
     /**
      * Unites current annotation path with anyother path.
@@ -418,7 +486,7 @@ export default {
 
       let hsl =  "hsl(" + h + "," + s + "%," + l + "%)";
       this.compoundPath.strokeColor = hsl;
-      this.keypoints.forEach(k => (k.color = hsl));
+      this.keypoints.color = hsl;
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
@@ -437,6 +505,15 @@ export default {
         asString: false,
         precision: 1
       });
+
+      if (!this.keypoints.isEmpty()) {
+        annotationData.keypoints = this.keypoints.exportJSON(
+          this.keypointLabels,
+          this.annotation.width,
+          this.annotation.height
+        );
+      }
+
       this.compoundPath.fullySelected = this.isCurrent;
       if (this.annotation.paper_object !== json) {
         annotationData.compoundPath = json;
@@ -467,9 +544,7 @@ export default {
       if (this.compoundPath == null) return;
 
       this.compoundPath.visible = newVisible;
-
-      this.keypoints.forEach(k => (k.visible = newVisible));
-      
+      this.keypoints.visible = newVisible;      
     },
     compoundPath() {
       if (this.compoundPath == null) return;
@@ -477,14 +552,10 @@ export default {
       this.compoundPath.visible = this.isVisible;
       this.$parent.group.addChild(this.compoundPath);
       this.setColor();
-      this.isEmpty = this.compoundPath.isEmpty();
+      this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
     },
-    keypointsPath() {
-      if (this.keypointsPath == null) return;
-
-      this.keypointsPath.visible = this.isVisible;
-      this.$parent.group.addChild(this.keypointsPath);
-      this.setColor();
+    keypoints() {
+      this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
     },
     annotation() {
       this.initAnnotation();
@@ -492,6 +563,14 @@ export default {
     isCurrent() {
       if (this.compoundPath == null) return;
       this.compoundPath.fullySelected = this.isCurrent;
+    },
+    "keypoint.tag"(newVal) {
+      let id = newVal.length === 0 ? -1 : newVal[0];
+      this.keypoints.setKeypointIndex(this.currentKeypoint, id)
+      this.tagRecomputeCounter++;
+    },
+    "keypoint.visibility"(newVal) {
+      this.currentKeypoint.visibility = newVal;
     }
   },
   computed: {
@@ -518,6 +597,29 @@ export default {
       if (search === String(this.annotation.id)) return true;
       if (search === String(this.index + 1)) return true;
       return this.name.toLowerCase().includes(this.search);
+    },
+    hsl() {
+      if (this.compoundPath == null) return [0, 0, 0];
+      let h = Math.round(this.compoundPath.fillColor.hue);
+      let l = Math.round(this.compoundPath.fillColor.lightness * 50);
+      let s = Math.round(this.compoundPath.fillColor.saturation * 100);
+
+      return [h, s, l]
+    },
+    keypointLabelTags() {
+      this.tagRecomputeCounter;
+      let tags = {};
+
+      for(let i = 0; i < this.keypointLabels.length; i++) {
+        // Include it tags if it is the current keypoint or not in use.
+        if (
+          (this.keypoints && !this.keypoints._labelled[i+1]) ||
+          (this.currentKeypoint &&this.currentKeypoint.indexLabel == i+1)
+        ) {
+          tags[i+1] = this.keypointLabels[i];
+        }
+      }
+      return tags;
     }
   },
   sockets: {

@@ -69,6 +69,8 @@
         @click="onAnnotationClick(listIndex)"
         :opacity="opacity"
         :index="listIndex"
+        :keypointEdges="keypoint.edges"
+        :keypointLabels="keypoint.labels"
         ref="annotation"
         :hover="hover.annotation"
         @deleted="annotationDeleted"
@@ -102,6 +104,16 @@
                   <input v-model="color" type="color" class="form-control" />
                 </div>
               </div>
+
+              <div class="form-group">
+                <label>Keypoint Labels</label>
+                <TagsInput
+                  v-model="keypoint.labels"
+                  element-id="keypointLabels"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                ></TagsInput>
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -124,10 +136,11 @@ import paper from "paper";
 import axios from "axios";
 
 import Annotation from "@/components/annotator/Annotation";
+import TagsInput from "@/components/TagsInput";
 
 export default {
   name: "Category",
-  components: { Annotation },
+  components: { Annotation, TagsInput },
   props: {
     category: {
       type: Object,
@@ -166,6 +179,10 @@ export default {
     return {
       group: null,
       color: this.category.color,
+      keypoint: {
+        labels: this.category.keypoint_labels,
+        edges: this.category.keypoint_edges
+      },
       selectedAnnotation: -1,
       showAnnotations: false,
       isVisible: false,
@@ -237,7 +254,9 @@ export default {
         visualize: this.isVisible,
         color: this.color,
         metadata: [],
-        annotations: []
+        annotations: [],
+        keypoint_labels: this.keypoint.labels,
+        keypoint_edges: this.keypoint.edges
       };
 
       if (refs.hasOwnProperty("annotation")) {
@@ -327,7 +346,7 @@ export default {
 
       let annotations = this.$refs.annotation;
       if (this.showAnnotations) {
-        annotations.forEach(a => a.setColor());
+        if (annotations) annotations.forEach(a => a.setColor());
       } else {
         if (this.group != null) {
           this.group.fillColor = this.color;
@@ -337,9 +356,7 @@ export default {
           let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
           this.group.strokeColor = hsl;
 
-          annotations.forEach(a => {
-            a.keypoints.forEach(k => k.color = hsl);
-          });
+          if (annotations) annotations.forEach(a => a.keypoints.color = hsl);
         }
       }
     },
@@ -393,9 +410,8 @@ export default {
     isVisible(newVisible) {
       if (this.group == null) return;
       this.group.visible = newVisible;
-      this.$refs.annotation.forEach(a => {
-        a.keypoints.forEach(k => (k.visible = newVisible));
-      })
+      let annotations = this.$refs.annotation;
+      if (annotations) annotations.forEach(a => a.keypoints.visible = newVisible);
       this.setColor();
     },
     showAnnotations(showing) {
