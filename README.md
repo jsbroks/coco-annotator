@@ -62,10 +62,10 @@ Thanks to the backers for making this project possible!
 </p>
 
 <p align="center">
-  <a href="http://robotics.uoguelph.ca/"><img src="https://intvo.com/wp-content/uploads/2019/02/INTVO-6.png" width=200></a>
+  <a href="https://intvo.com/"><img src="https://intvo.com/wp-content/uploads/2019/02/INTVO-6.png" width=200></a>
 </p>
 <p  align="center">
-  <a href="http://robotics.uoguelph.ca/">INTVO</a> (<a href="https://github.com/intvo">GitHub</a>)
+  <a href="https://intvo.com/">INTVO</a> (<a href="https://github.com/intvo">GitHub</a>)
 </p>
 
 # Built With
