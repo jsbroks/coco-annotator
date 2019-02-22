@@ -82,7 +82,7 @@ def import_coco_func(task, socket, dataset, coco_json):
             new_category.save()
 
             category_model = new_category
-            dataset.categories.append(new_category)
+            dataset.categories.append(new_category.id)
 
         task.info(f"{category_name} category found")
         # map category ids
