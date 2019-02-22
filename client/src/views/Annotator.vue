@@ -43,7 +43,7 @@
         <KeypointTool
           v-model="activeTool"
           @setcursor="setCursor"
-          ref="keypoints"
+          ref="keypoint"
         />
       </div>
       <hr />
@@ -160,6 +160,13 @@
           <div v-if="$refs.eraser != null">
             <EraserPanel :eraser="$refs.eraser" />
           </div>
+
+          <div v-if="$refs.keypoint != null">
+            <KeypointPanel
+              :keypoint="$refs.keypoint"
+              :currentAnnotation="currentAnnotation"
+            />
+          </div>
         </div>
       </div>
     </aside>
@@ -210,6 +217,7 @@ import SelectPanel from "@/components/annotator/panels/SelectPanel";
 import MagicWandPanel from "@/components/annotator/panels/MagicWandPanel";
 import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
+import KeypointPanel from "@/components/annotator/panels/KeypointPanel"
 
 import { mapMutations } from "vuex";
 
@@ -239,7 +247,8 @@ export default {
     ModeButton,
     UndoButton,
     HideAllButton,
-    ShowAllButton
+    ShowAllButton,
+    KeypointPanel
   },
   mixins: [toastrs, shortcuts],
   props: {

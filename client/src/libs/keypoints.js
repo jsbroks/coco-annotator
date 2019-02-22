@@ -281,6 +281,7 @@ export class Keypoint extends paper.Point {
     this.visible = args.visible || true;
 
     this.onClick = args.onClick;
+    this.onDoubleClick = args.onDoubleClick;
 
     this._draw();
     this.color = args.color || "red";

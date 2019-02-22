@@ -249,7 +249,8 @@ export default {
       currentKeypoint: null,
       keypoint: {
         tag: [],
-        visibility: 0
+        visibility: 0,
+        label: -1
       },
       tagRecomputeCounter: 0
     };
@@ -433,12 +434,37 @@ export default {
       this.compoundPath = this.pervious.pop();
       this.compoundPath.fullySelected = this.isCurrent;
     },
-    addKeypoint(point, visibility, index) {
+    addKeypoint(point, visibility, label) {
+
+      visibility = visibility || this.keypoint.visibility;
+      label = label || parseInt(this.keypoint.label);
+
       let keypoint = new Keypoint(point.x, point.y, {
         visibility: visibility || 0,
-        indexLabel: index || -1,
+        indexLabel: label || -1,
         onClick: event => {
-          if (!this.$parent.isCurrent) return;
+          // if (this.$parent.isCurrent) return;
+          let keypoint = event.target.keypoint;
+          if (this.currentKeypoint && this.currentKeypoint != keypoint) {
+            let i1 = this.currentKeypoint.indexLabel;
+            let i2 = keypoint.indexLabel;
+            if (this.keypoints && i1 > 0 && i2 > 0) {
+
+              if (!this.keypoints.getLine([i1, i2])) {
+                this.keypoints.addEdge([i1, i2]);
+              } else {
+                this.keypoints.removeLine([i1, i2]);
+              }
+
+              this.currentKeypoint = null;
+              return;
+            }
+          }
+          
+          this.currentKeypoint = event.target.keypoint;  
+        },
+        onDoubleClick: event => {
+          // if (!this.$parent.isCurrent) return;
           this.currentKeypoint = event.target.keypoint;
           let id = `#keypointSettings${this.annotation.id}`;
           let indexLabel = this.currentKeypoint.indexLabel;
@@ -452,6 +478,8 @@ export default {
 
       this.keypoints.addKeypoint(keypoint);
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
+
+      this.tagRecomputeCounter++;
     },
     /**
      * Unites current annotation path with anyother path.
@@ -622,19 +650,41 @@ export default {
 
       return [h, s, l];
     },
-    keypointLabelTags() {
+    notUsedKeypointLabels() {
       this.tagRecomputeCounter;
       let tags = {};
 
       for (let i = 0; i < this.keypointLabels.length; i++) {
         // Include it tags if it is the current keypoint or not in use.
-        if (
-          (this.keypoints && !this.keypoints._labelled[i + 1]) ||
-          (this.currentKeypoint && this.currentKeypoint.indexLabel == i + 1)
-        ) {
+        if (this.keypoints && !this.keypoints._labelled[i + 1]) {
           tags[i + 1] = this.keypointLabels[i];
         }
       }
+
+      return tags;
+    },
+    usedKeypointLabels() {
+      this.tagRecomputeCounter;
+      let tags = {};
+
+      for (let i = 0; i < this.keypointLabels.length; i++) {
+        if (!this.keypoints || this.keypoints._labelled[i + 1]) {
+          tags[i + 1] = this.keypointLabels[i];
+        }
+      }
+
+      return tags;
+    },
+    keypointLabelTags() {
+      this.tagRecomputeCounter;
+      let tags = this.notUsedKeypointLabels;
+
+      Object.keys(this.usedKeypointLabels).forEach(i => {
+        if (this.currentKeypoint && i == this.currentKeypoint.indexLabel) {
+          tags[i] = this.usedKeypointLabels[i];
+        }
+      });
+
       return tags;
     }
   },
@@ -659,6 +709,9 @@ export default {
   },
   mounted() {
     this.initAnnotation();
+    $(`#keypointSettings${this.annotation.id}`).on('hidden.bs.modal', () => {
+      this.currentKeypoint = null;
+    })
   }
 };
 </script>
