@@ -149,6 +149,25 @@ export class Keypoints extends paper.Group {
     return array;
   }
 
+  edges() {
+    let edges = [];
+    let keys = Object.keys(this._edges);
+
+    for (let i = 0; i < keys.length; i++) {
+      let i1 = parseInt(keys[i]);
+      let otherIndices = Array.from(this._edges[i1]);
+
+      for (let j = 0; j < otherIndices.length; j++) {
+        let i2 = parseInt(otherIndices[j]);
+
+        if (i2 < i1) continue;
+        edges.push([i1, i2]);
+      }
+    }
+
+    return edges;
+  }
+
   addEdge(edge) {
     if (edge.length !== 2) return;
 
@@ -388,5 +407,15 @@ export class Keypoint extends paper.Point {
 
   get strokeColor() {
     return this.color;
+  }
+
+  set selected(val) {
+    this._selected = val;
+    if (val) this.radius *= 1.3;
+    else this.radius *= 0.7;
+  }
+
+  get selected() {
+    return this._selected;
   }
 }

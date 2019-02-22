@@ -44,10 +44,10 @@ export default {
       }
     },
     label(label) {
-      this.$parent.currentAnnotation.keypoint.label = label;
+      this.$parent.currentAnnotation.keypoint.next.label = label;
     },
     visibility(visibility) {
-      this.$parent.currentAnnotation.keypoint.visibility = visibility;
+      this.$parent.currentAnnotation.keypoint.next.visibility = visibility;
     }
   },
   computed: {

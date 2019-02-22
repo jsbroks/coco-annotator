@@ -244,13 +244,15 @@ export default {
       name: "",
       uuid: "",
       pervious: [],
-      edges: [[1, 3], [3, 5], [2, 4], [4, 5], [5, 6], [5, 7], [7, 8], [6, 8]],
       count: 0,
       currentKeypoint: null,
       keypoint: {
         tag: [],
         visibility: 0,
-        label: -1
+        next: {
+          label: -1,
+          visibility: 0
+        }
       },
       tagRecomputeCounter: 0
     };
@@ -300,7 +302,7 @@ export default {
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
-      this.keypoints = new Keypoints(this.edges);
+      this.keypoints = new Keypoints(this.keypointEdges);
 
       let keypoints = this.annotation.keypoints;
       if (keypoints) {
@@ -435,27 +437,26 @@ export default {
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point, visibility, label) {
-
-      visibility = visibility || this.keypoint.visibility;
-      label = label || parseInt(this.keypoint.label);
+      visibility = visibility || parseInt(this.keypoint.next.visibility);
+      label = label || parseInt(this.keypoint.next.label);
 
       let keypoint = new Keypoint(point.x, point.y, {
         visibility: visibility || 0,
         indexLabel: label || -1,
         onClick: event => {
-          // if (this.$parent.isCurrent) return;
+          if (this.$parent.isCurrent) return;
           let keypoint = event.target.keypoint;
           if (this.currentKeypoint && this.currentKeypoint != keypoint) {
             let i1 = this.currentKeypoint.indexLabel;
             let i2 = keypoint.indexLabel;
             if (this.keypoints && i1 > 0 && i2 > 0) {
-
-              if (!this.keypoints.getLine([i1, i2])) {
-                this.keypoints.addEdge([i1, i2]);
+              let edge = [i1, i2];
+              if (!this.keypoints.getLine(edge)) {
+                this.$parent.addKeypointEdge(edge);
               } else {
-                this.keypoints.removeLine([i1, i2]);
+                this.$parent.removeKeypointEdge(edge);
               }
-
+              
               this.currentKeypoint = null;
               return;
             }
@@ -464,7 +465,9 @@ export default {
           this.currentKeypoint = event.target.keypoint;  
         },
         onDoubleClick: event => {
-          // if (!this.$parent.isCurrent) return;
+
+          if (!this.$parent.isCurrent) return;
+          
           this.currentKeypoint = event.target.keypoint;
           let id = `#keypointSettings${this.annotation.id}`;
           let indexLabel = this.currentKeypoint.indexLabel;
@@ -608,13 +611,22 @@ export default {
       if (this.compoundPath == null) return;
       this.compoundPath.fullySelected = this.isCurrent;
     },
+    currentKeypoint(point, old) {
+      if (old) old.selected = false;
+      if (point) point.selected = true;
+    },
     "keypoint.tag"(newVal) {
       let id = newVal.length === 0 ? -1 : newVal[0];
       this.keypoints.setKeypointIndex(this.currentKeypoint, id);
       this.tagRecomputeCounter++;
     },
     "keypoint.visibility"(newVal) {
+      if (!this.currentKeypoint) return;
       this.currentKeypoint.visibility = newVal;
+    },
+    "keypointEdges"(newEdges, oldEdges) {
+      newEdges.forEach(e => this.keypoints.addEdge(e));
+      
     }
   },
   computed: {

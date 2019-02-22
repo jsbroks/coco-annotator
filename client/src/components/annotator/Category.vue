@@ -267,6 +267,27 @@ export default {
 
       return categoryData;
     },
+
+    addKeypointEdge(edge) {
+      this.keypoint.edges.push(edge);
+    },
+    removeKeypointEdge(edge) {
+      let index = this.keypoint.edges.findIndex(e => {
+        let i1 = Math.min(edge[0], edge[1]) == Math.min(e[0], e[1]);
+        let i2 = Math.max(edge[0], edge[1]) == Math.max(e[0], e[1]);
+
+        return i1 && i2;
+      })
+
+      if (index !== -1) {
+        let edge = this.keypoint.edges[index];
+        this.keypoint.edges.splice(index, 1);
+        let annotations = this.$refs.annotation;
+        if (annotations) {
+          annotations.forEach(a => a.keypoints.removeLine(edge))
+        }
+      }
+    },
     /**
      * Event handler for visibility button
      */
