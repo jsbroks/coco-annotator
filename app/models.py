@@ -222,7 +222,7 @@ class AnnotationModel(db.DynamicDocument):
 
     color = db.StringField()
     
-    UNKNOWN = db.ListField(default=[])
+    keypoints = db.ListField(default=[])
 
     metadata = db.DictField(default={})
     paper_object = db.ListField(default=[])
