@@ -52,9 +52,21 @@ For examples and more information check out the [wiki](https://github.com/jsbrok
 https://annotator.justinbrooks.ca/
 
 # Backers
+Thanks to the backers for making this project possible!
 
-<p align="center"><a href="http://robotics.uoguelph.ca/"><img src="http://robotics.uoguelph.ca/images/banner.jpg"></p></a>
-<p  align="center">Backed by the <a href="http://robotics.uoguelph.ca/">The Robotics Institute @ Guelph</a> (<a href="https://github.com/uoguelph-ri">GitHub</a>)</p>
+<p align="center">
+  <a href="http://robotics.uoguelph.ca/"><img src="http://robotics.uoguelph.ca/images/banner.jpg" width=200></a>
+</p>
+<p  align="center">
+  <a href="http://robotics.uoguelph.ca/">The Robotics Institute @ Guelph</a> (<a href="https://github.com/uoguelph-ri">GitHub</a>)
+</p>
+
+<p align="center">
+  <a href="http://robotics.uoguelph.ca/"><img src="https://intvo.com/wp-content/uploads/2019/02/INTVO-6.png" width=200></a>
+</p>
+<p  align="center">
+  <a href="http://robotics.uoguelph.ca/">INTVO</a> (<a href="https://github.com/intvo">GitHub</a>)
+</p>
 
 # Built With
 
