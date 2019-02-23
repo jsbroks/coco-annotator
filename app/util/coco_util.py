@@ -227,11 +227,4 @@ def get_dataset_coco(dataset):
 
 
 def _fit(value, max_value, min_value):
-
-    if value > max_value:
-        return max_value
-
-    if value < min_value:
-        return min_value
-
-    return value
+    return max(min(value, max_value), min_value)
