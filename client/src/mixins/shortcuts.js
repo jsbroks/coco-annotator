@@ -85,6 +85,13 @@ export default {
           }
         },
         {
+          default: ["k"],
+          name: "Keypoints Tool",
+          function: () => {
+            if (!this.$refs.magicwand.isDisabled) this.activeTool = "Keypoints";
+          }
+        },
+        {
           default: ["b"],
           name: "Brush Tool",
           function: () => {
