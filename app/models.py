@@ -221,6 +221,8 @@ class AnnotationModel(db.DynamicDocument):
     height = db.IntField()
 
     color = db.StringField()
+    
+    keypoints = db.ListField(default=[])
 
     metadata = db.DictField(default={})
     paper_object = db.ListField(default=[])
@@ -310,6 +312,10 @@ class CategoryModel(db.DynamicDocument):
     creator = db.StringField(default="unknown")
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
+
+    keypoint_edges = db.ListField(default=[])
+    keypoint_labels = db.ListField(default=[])
+    
 
     @classmethod
     def bulk_create(cls, categories):
@@ -461,6 +467,7 @@ class TaskModel(db.DynamicDocument):
             "id": self.id,
             "name": self.name
         }
+
 
 class CocoImportModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)

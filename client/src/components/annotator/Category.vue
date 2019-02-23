@@ -69,10 +69,14 @@
         @click="onAnnotationClick(listIndex)"
         :opacity="opacity"
         :index="listIndex"
+        :keypoint-edges="keypoint.edges"
+        :keypoint-labels="keypoint.labels"
         ref="annotation"
         :hover="hover.annotation"
+        :active-tool="activeTool"
         @deleted="annotationDeleted"
       />
+      
     </ul>
 
     <div
@@ -102,6 +106,16 @@
                   <input v-model="color" type="color" class="form-control" />
                 </div>
               </div>
+
+              <div class="form-group">
+                <label>Keypoint Labels</label>
+                <TagsInput
+                  v-model="keypoint.labels"
+                  element-id="keypointLabels"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                ></TagsInput>
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -116,6 +130,7 @@
         </div>
       </div>
     </div>
+    
   </div>
 </template>
 
@@ -124,10 +139,11 @@ import paper from "paper";
 import axios from "axios";
 
 import Annotation from "@/components/annotator/Annotation";
+import TagsInput from "@/components/TagsInput";
 
 export default {
   name: "Category",
-  components: { Annotation },
+  components: { Annotation, TagsInput },
   props: {
     category: {
       type: Object,
@@ -160,12 +176,20 @@ export default {
     simplify: {
       type: Number,
       default: 1
+    },
+    activeTool: {
+      type: String,
+      required: true
     }
   },
   data: function() {
     return {
       group: null,
       color: this.category.color,
+      keypoint: {
+        labels: this.category.keypoint_labels,
+        edges: this.category.keypoint_edges
+      },
       selectedAnnotation: -1,
       showAnnotations: false,
       isVisible: false,
@@ -237,7 +261,9 @@ export default {
         visualize: this.isVisible,
         color: this.color,
         metadata: [],
-        annotations: []
+        annotations: [],
+        keypoint_labels: this.keypoint.labels,
+        keypoint_edges: this.keypoint.edges
       };
 
       if (refs.hasOwnProperty("annotation")) {
@@ -247,6 +273,27 @@ export default {
       }
 
       return categoryData;
+    },
+
+    addKeypointEdge(edge) {
+      this.keypoint.edges.push(edge);
+    },
+    removeKeypointEdge(edge) {
+      let index = this.keypoint.edges.findIndex(e => {
+        let i1 = Math.min(edge[0], edge[1]) == Math.min(e[0], e[1]);
+        let i2 = Math.max(edge[0], edge[1]) == Math.max(e[0], e[1]);
+
+        return i1 && i2;
+      });
+
+      if (index !== -1) {
+        let edge = this.keypoint.edges[index];
+        this.keypoint.edges.splice(index, 1);
+        let annotations = this.$refs.annotation;
+        if (annotations) {
+          annotations.forEach(a => a.keypoints.removeLine(edge));
+        }
+      }
     },
     /**
      * Event handler for visibility button
@@ -325,20 +372,24 @@ export default {
     setColor() {
       if (!this.isVisible) return;
 
+      let annotations = this.$refs.annotation;
       if (this.showAnnotations) {
-        let annotations = this.$refs.annotation;
-        if (annotations) {
-          annotations.forEach(annotation => {
-            annotation.setColor();
-          });
-        }
+        if (annotations) annotations.forEach(a => a.setColor());
       } else {
         if (this.group != null) {
           this.group.fillColor = this.color;
           let h = Math.round(this.group.fillColor.hue);
-          let l = Math.round((this.group.fillColor.lightness - 0.2) * 100);
+          let l = Math.round(this.group.fillColor.lightness * 50);
           let s = Math.round(this.group.fillColor.saturation * 100);
-          this.group.strokeColor = "hsl(" + h + "," + s + "%," + l + "%)";
+          let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
+          this.group.strokeColor = hsl;
+
+          if (annotations) {
+            annotations.forEach(a => {
+              a.keypoints.color = hsl;
+              a.keypoints.bringToFront();
+            });
+          }
         }
       }
     },
@@ -392,6 +443,9 @@ export default {
     isVisible(newVisible) {
       if (this.group == null) return;
       this.group.visible = newVisible;
+      let annotations = this.$refs.annotation;
+      if (annotations)
+        annotations.forEach(a => (a.keypoints.visible = newVisible));
       this.setColor();
     },
     showAnnotations(showing) {

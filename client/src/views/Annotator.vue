@@ -39,6 +39,12 @@
           @setcursor="setCursor"
           ref="eraser"
         />
+
+        <KeypointTool
+          v-model="activeTool"
+          @setcursor="setCursor"
+          ref="keypoint"
+        />
       </div>
       <hr />
 
@@ -115,6 +121,7 @@
             :index="index"
             @click="onCategoryClick"
             :current="current"
+            :active-tool="activeTool"
             ref="category"
           />
         </div>
@@ -154,6 +161,13 @@
           <div v-if="$refs.eraser != null">
             <EraserPanel :eraser="$refs.eraser" />
           </div>
+
+          <div v-if="$refs.keypoint != null">
+            <KeypointPanel
+              :keypoint="$refs.keypoint"
+              :current-annotation="currentAnnotation"
+            />
+          </div>
         </div>
       </div>
     </aside>
@@ -186,6 +200,7 @@ import SelectTool from "@/components/annotator/tools/SelectTool";
 import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
+import KeypointTool from "@/components/annotator/tools/KeypointTool";
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -203,6 +218,7 @@ import SelectPanel from "@/components/annotator/panels/SelectPanel";
 import MagicWandPanel from "@/components/annotator/panels/MagicWandPanel";
 import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
+import KeypointPanel from "@/components/annotator/panels/KeypointPanel";
 
 import { mapMutations } from "vuex";
 
@@ -219,6 +235,7 @@ export default {
     MagicWandTool,
     EraserTool,
     BrushTool,
+    KeypointTool,
     DownloadButton,
     SaveButton,
     SettingsButton,
@@ -231,7 +248,8 @@ export default {
     ModeButton,
     UndoButton,
     HideAllButton,
-    ShowAllButton
+    ShowAllButton,
+    KeypointPanel
   },
   mixins: [toastrs, shortcuts],
   props: {
@@ -538,7 +556,7 @@ export default {
     },
 
     selectLastEditorTool() {
-      this.activeTool = localStorage.getItem("editorTool") || "Select"
+      this.activeTool = localStorage.getItem("editorTool") || "Select";
     },
 
     setCursor(newCursor) {

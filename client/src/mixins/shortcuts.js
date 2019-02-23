@@ -44,7 +44,16 @@ export default {
           name: "Delete Current Annotation",
           function: () => {
             if (this.currentAnnotation) {
-              this.currentAnnotation.deleteAnnotation();
+              let currentKeypoint = this.currentAnnotation.currentKeypoint;
+              if (currentKeypoint) {
+                this.currentAnnotation.keypoints.deleteKeypoint(
+                  currentKeypoint
+                );
+                this.currentAnnotation.tagRecomputeCounter++;
+                this.currentAnnotation.currentKeypoint = null;
+              } else {
+                this.currentAnnotation.deleteAnnotation();
+              }
             }
           }
         },
@@ -73,6 +82,13 @@ export default {
           function: () => {
             if (!this.$refs.magicwand.isDisabled)
               this.activeTool = "Magic Wand";
+          }
+        },
+        {
+          default: ["k"],
+          name: "Keypoints Tool",
+          function: () => {
+            if (!this.$refs.magicwand.isDisabled) this.activeTool = "Keypoints";
           }
         },
         {

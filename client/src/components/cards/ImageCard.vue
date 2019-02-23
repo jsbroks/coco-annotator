@@ -96,7 +96,7 @@ export default {
     return {
       hover: false,
       showAnnotations: true,
-      loaderUrl: require("@/assets/loader.gif"),
+      loaderUrl: require("@/assets/loader.gif")
     };
   },
   methods: {
