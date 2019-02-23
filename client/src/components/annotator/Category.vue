@@ -73,7 +73,7 @@
         :keypoint-labels="keypoint.labels"
         ref="annotation"
         :hover="hover.annotation"
-        :activeTool="activeTool"
+        :active-tool="activeTool"
         @deleted="annotationDeleted"
       />
       
@@ -284,14 +284,14 @@ export default {
         let i2 = Math.max(edge[0], edge[1]) == Math.max(e[0], e[1]);
 
         return i1 && i2;
-      })
+      });
 
       if (index !== -1) {
         let edge = this.keypoint.edges[index];
         this.keypoint.edges.splice(index, 1);
         let annotations = this.$refs.annotation;
         if (annotations) {
-          annotations.forEach(a => a.keypoints.removeLine(edge))
+          annotations.forEach(a => a.keypoints.removeLine(edge));
         }
       }
     },

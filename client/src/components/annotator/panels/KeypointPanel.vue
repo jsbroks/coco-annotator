@@ -33,12 +33,12 @@ export default {
         1: "LABELED NOT VISIBLE",
         2: "LABELED VISIBLE"
       }
-    }
+    };
   },
   watch: {
     notUsedLabels(notUsedLabels) {
       if (!notUsedLabels) return;
-      let values =  Object.keys(notUsedLabels)
+      let values = Object.keys(notUsedLabels);
       if (values.length !== 0) {
         this.label = values[0];
       }
@@ -52,7 +52,7 @@ export default {
   },
   computed: {
     notUsedLabels() {
-      if (!this.currentAnnotation) return { };
+      if (!this.currentAnnotation) return {};
       return this.currentAnnotation.notUsedKeypointLabels;
     }
   }

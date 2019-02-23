@@ -121,7 +121,7 @@
             :index="index"
             @click="onCategoryClick"
             :current="current"
-            :activeTool="activeTool"
+            :active-tool="activeTool"
             ref="category"
           />
         </div>
@@ -165,7 +165,7 @@
           <div v-if="$refs.keypoint != null">
             <KeypointPanel
               :keypoint="$refs.keypoint"
-              :currentAnnotation="currentAnnotation"
+              :current-annotation="currentAnnotation"
             />
           </div>
         </div>
@@ -218,7 +218,7 @@ import SelectPanel from "@/components/annotator/panels/SelectPanel";
 import MagicWandPanel from "@/components/annotator/panels/MagicWandPanel";
 import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
-import KeypointPanel from "@/components/annotator/panels/KeypointPanel"
+import KeypointPanel from "@/components/annotator/panels/KeypointPanel";
 
 import { mapMutations } from "vuex";
 

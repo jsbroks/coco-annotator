@@ -27,7 +27,7 @@ export default {
     },
     onMouseDown(event) {
       this.$parent.currentAnnotation.addKeypoint(event.point);
-    },
+    }
   },
   computed: {
     isDisabled() {

@@ -308,7 +308,7 @@ export default {
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
       this.keypoints = new Keypoints(this.keypointEdges);
-      
+
       let keypoints = this.annotation.keypoints;
       if (keypoints) {
         for (let i = 0; i < keypoints.length; i += 3) {
@@ -443,8 +443,7 @@ export default {
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point, visibility, label) {
-      if (label == null && this.keypoints.contains(point))
-        return;
+      if (label == null && this.keypoints.contains(point)) return;
 
       visibility = visibility || parseInt(this.keypoint.next.visibility);
       label = label || parseInt(this.keypoint.next.label);
@@ -461,13 +460,13 @@ export default {
             this.currentKeypoint = null;
             return;
           }
-          
+
           if (this.currentKeypoint) {
             let i1 = this.currentKeypoint.indexLabel;
             let i2 = keypoint.indexLabel;
             if (this.keypoints && i1 > 0 && i2 > 0) {
               let edge = [i1, i2];
-              
+
               if (!this.keypoints.getLine(edge)) {
                 this.$parent.addKeypointEdge(edge);
               } else {
@@ -478,11 +477,11 @@ export default {
               return;
             }
           }
-          
-          this.currentKeypoint = event.target.keypoint;  
+
+          this.currentKeypoint = event.target.keypoint;
         },
         onDoubleClick: event => {
-          if (!["Select", "Keypoints"].includes(this.activeTool)) return;          
+          if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           this.currentKeypoint = event.target.keypoint;
           let id = `#keypointSettings${this.annotation.id}`;
           let indexLabel = this.currentKeypoint.indexLabel;
@@ -548,7 +547,6 @@ export default {
         this.$parent.setColor();
         return;
       }
-      
 
       this.compoundPath.fillColor = this.color;
       let h = Math.round(this.compoundPath.fillColor.hue);
@@ -616,7 +614,6 @@ export default {
 
       this.compoundPath.visible = newVisible;
       this.keypoints.visible = newVisible;
-      
     },
     compoundPath() {
       if (this.compoundPath == null) return;
@@ -649,9 +646,8 @@ export default {
       if (!this.currentKeypoint) return;
       this.currentKeypoint.visibility = newVal;
     },
-    "keypointEdges"(newEdges, oldEdges) {
+    keypointEdges(newEdges) {
       newEdges.forEach(e => this.keypoints.addEdge(e));
-      
     }
   },
   computed: {
@@ -747,9 +743,9 @@ export default {
   },
   mounted() {
     this.initAnnotation();
-    $(`#keypointSettings${this.annotation.id}`).on('hidden.bs.modal', () => {
+    $(`#keypointSettings${this.annotation.id}`).on("hidden.bs.modal", () => {
       this.currentKeypoint = null;
-    })
+    });
   }
 };
 </script>

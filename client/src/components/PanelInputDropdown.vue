@@ -4,7 +4,7 @@
       <span class="input-group-text tool-option-font">{{ name }}</span>
     </div>
     <select v-model="localValue" class="form-control tool-option-input">
-      <option v-for="option in options" :value="option.key" :selected="option.selected">{{ option.value }}</option>
+      <option :key="option.key" v-for="option in options" :value="option.key" :selected="option.selected">{{ option.value }}</option>
     </select>
   </div>
 </template>
