@@ -185,9 +185,9 @@ def get_dataset_coco(dataset):
 
     for category in categories:
         category = fix_ids(category[1])
-        
+
         del category['deleted']
-        if len(category.keypoint_labels) > 0:
+        if len(category.get('keypoint_labels', [])) > 0:
             category['keypoints'] = category.pop('keypoint_labels')
             category['skeleton'] = category.pop('keypoint_edges')
         else:
