@@ -10,7 +10,6 @@ from google_images_download import google_images_download as gid
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util
 from ..models import *
-from ..util.coco_importer import CocoImporter
 
 import datetime
 import json

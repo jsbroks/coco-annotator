@@ -1,7 +1,5 @@
 from ..models import ImageModel, CategoryModel, AnnotationModel
 
-import imantics as im
-import time
 import os
 
 
@@ -77,7 +75,9 @@ def import_coco_func(task, socket, dataset, coco_json):
             task.warning(f"{category_name} category not found (creating a new one)")
 
             new_category = CategoryModel(
-                name=category_name
+                name=category_name,
+                keypoint_edges=category.get('skeleton', []),
+                keypoint_labels=category.get('keypoints', [])
             )
             new_category.save()
 
@@ -126,7 +126,7 @@ def import_coco_func(task, socket, dataset, coco_json):
 
         image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
-        segmentation = annotation.get('segmentation')
+        segmentation = annotation.get('segmentation', [])
         is_crowd = annotation.get('iscrowed', False)
 
         progress += 1
@@ -147,7 +147,7 @@ def import_coco_func(task, socket, dataset, coco_json):
             image_id=image_model.id,
             category_id=category_model_id,
             segmentation=segmentation,
-            delete=False
+            keypoints= annotation.get('keypoints', [])
         ).first()
 
         if annotation_model is None:

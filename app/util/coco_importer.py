@@ -1,11 +1,10 @@
 import threading
 import json
 import imantics as im
-from collections import OrderedDict
 from ..models import (
     ImageModel, AnnotationModel, CategoryModel,
     DatasetModel, CocoImportModel)
-from concurrent.futures import ThreadPoolExecutor, TimeoutError, wait
+from concurrent.futures import wait
 from ..config import Config
 from .coco_util import get_segmentation_area_and_bbox
 from .concurrency_util import ExceptionLoggingThreadPoolExecutor
