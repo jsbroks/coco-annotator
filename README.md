@@ -31,6 +31,7 @@ Several annotation tools are currently available, with most applications as a de
 
  - Directly export to COCO format
  - Segmentation of objects
+ - Ability to add key points
  - Useful API endpoints to analyze data
  - Import datasets already annotated in COCO format
  - Annotated disconnected objects as a single instance
