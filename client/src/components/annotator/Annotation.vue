@@ -316,9 +316,9 @@ export default {
             y = keypoints[i + 1] - height / 2,
             v = keypoints[i + 2];
 
-          if (x !== 0 || y !== 0 || v !== 0) {
-            this.addKeypoint(new paper.Point(x, y), v, i / 3 + 1);
-          }
+          if (keypoints[i] === 0 && keypoints[i + 1] === 0 && v === 0) continue;
+          
+          this.addKeypoint(new paper.Point(x, y), v, i / 3 + 1);
         }
       }
 
@@ -452,6 +452,7 @@ export default {
         visibility: visibility || 0,
         indexLabel: label || -1,
         onClick: event => {
+          if (!this.$parent.isCurrent) return;
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           let keypoint = event.target.keypoint;
 
@@ -481,6 +482,7 @@ export default {
           this.currentKeypoint = event.target.keypoint;
         },
         onDoubleClick: event => {
+          if (!this.$parent.isCurrent) return;
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           this.currentKeypoint = event.target.keypoint;
           let id = `#keypointSettings${this.annotation.id}`;
@@ -503,6 +505,9 @@ export default {
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
 
       this.tagRecomputeCounter++;
+    },
+    deleteKeypoint(keypoint) {
+      this.keypoints.delete(keypoint);
     },
     /**
      * Unites current annotation path with anyother path.
@@ -687,7 +692,7 @@ export default {
     notUsedKeypointLabels() {
       this.tagRecomputeCounter;
       let tags = {};
-
+      console.log("Computing unsed " + this.tagRecomputeCounter)
       for (let i = 0; i < this.keypointLabels.length; i++) {
         // Include it tags if it is the current keypoint or not in use.
         if (this.keypoints && !this.keypoints._labelled[i + 1]) {

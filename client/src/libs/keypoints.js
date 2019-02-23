@@ -62,6 +62,19 @@ export class Keypoints extends paper.Group {
     keypoint.path.bringToFront();
   }
 
+  deleteKeypoint(keypoint) {
+    let indexLabel = keypoint.indexLabel;
+    if (this._labelled.hasOwnProperty(indexLabel)) {
+      delete this._labelled[indexLabel];
+    }
+    if (this._edges.hasOwnProperty(indexLabel)) {
+      this._edges[indexLabel].forEach(e => this.removeLine([e, indexLabel]));
+    }
+    let index = this._keypoints.findIndex(k => k == keypoint);
+    if (index > -1) this._keypoints.splice(index, 1);
+    keypoint.path.remove();
+  }
+
   moveKeypoint(point, keypoint) {
     let indexLabel = keypoint.indexLabel;
     let edges = this._edges[indexLabel];
