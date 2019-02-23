@@ -317,7 +317,7 @@ export default {
             v = keypoints[i + 2];
 
           if (keypoints[i] === 0 && keypoints[i + 1] === 0 && v === 0) continue;
-          
+
           this.addKeypoint(new paper.Point(x, y), v, i / 3 + 1);
         }
       }
@@ -692,7 +692,7 @@ export default {
     notUsedKeypointLabels() {
       this.tagRecomputeCounter;
       let tags = {};
-      console.log("Computing unsed " + this.tagRecomputeCounter)
+
       for (let i = 0; i < this.keypointLabels.length; i++) {
         // Include it tags if it is the current keypoint or not in use.
         if (this.keypoints && !this.keypoints._labelled[i + 1]) {

@@ -43,6 +43,11 @@ export class Keypoints extends paper.Group {
     }
   }
 
+  bringToFront() {
+    super.bringToFront();
+    this._keypoints.forEach(k => k.path.bringToFront());
+  }
+
   addKeypoint(keypoint) {
     keypoint.keypoints = this;
     keypoint.path.keypoints = this;
