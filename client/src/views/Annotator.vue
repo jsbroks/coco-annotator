@@ -121,6 +121,7 @@
             :index="index"
             @click="onCategoryClick"
             :current="current"
+            :activeTool="activeTool"
             ref="category"
           />
         </div>

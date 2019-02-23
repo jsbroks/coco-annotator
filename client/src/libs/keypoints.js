@@ -59,6 +59,7 @@ export class Keypoints extends paper.Group {
     this._keypoints.push(keypoint);
     this.addChild(keypoint.path);
     this._drawLines(keypoint);
+    keypoint.path.bringToFront();
   }
 
   moveKeypoint(point, keypoint) {
@@ -81,6 +82,7 @@ export class Keypoints extends paper.Group {
       });
     }
     keypoint.move(point);
+    keypoint.path.bringToFront();
   }
 
   set visible(val) {
@@ -128,7 +130,7 @@ export class Keypoints extends paper.Group {
       let j = i * 3;
       array[j] = 0;
       array[j + 1] = 0;
-      array[j + 2] = 3;
+      array[j + 2] = 0;
     }
 
     this._keypoints.forEach(k => {
@@ -147,6 +149,10 @@ export class Keypoints extends paper.Group {
     });
 
     return array;
+  }
+
+  contains(point) {
+    return this._keypoints.findIndex(k => k.path.contains(point)) > -1;
   }
 
   edges() {
@@ -301,6 +307,7 @@ export class Keypoint extends paper.Point {
 
     this.onClick = args.onClick;
     this.onDoubleClick = args.onDoubleClick;
+    this.onMouseDrag = args.onMouseDrag;
 
     this._draw();
     this.color = args.color || "red";
@@ -353,17 +360,6 @@ export class Keypoint extends paper.Point {
     this.setFillColor();
   }
 
-  onMouseDrag(event) {
-    let keypoint = event.target.keypoint;
-    let keypoints = event.target.keypoints;
-
-    if (keypoints) {
-      keypoints.moveKeypoint(event.point, keypoint);
-    } else {
-      keypoint.move(event.point);
-    }
-  }
-
   set visible(val) {
     this._visible = val;
     this.path.visible = val;
@@ -393,7 +389,7 @@ export class Keypoint extends paper.Point {
 
   set color(val) {
     this._color = val;
-    this.path.strokeColor = val;
+    this.path.strokeColor = this.selected ? "white" : val;
     this.setFillColor();
   }
 
@@ -411,8 +407,8 @@ export class Keypoint extends paper.Point {
 
   set selected(val) {
     this._selected = val;
-    if (val) this.radius *= 1.3;
-    else this.radius *= 0.7;
+    this.path.strokeColor = val ? "white" : this.color;
+    this.path.bringToFront();
   }
 
   get selected() {

@@ -114,24 +114,40 @@ def get_image_coco(image):
     annotations = []
 
     for category in bulk_categories:
-
+        category = category[1]
         category_annotations = AnnotationModel.objects(
-            deleted=False, category_id=category[1].id, image_id=image.get('id')
+            deleted=False, category_id=category.id, image_id=image.get('id')
         ).exclude('paper_object', 'deleted_date').all()
-
+        
         if len(category_annotations) == 0:
             continue
+        
+        has_keypoints = len(category.keypoint_labels) > 0
 
         for annotation in category_annotations:
             annotation = fix_ids(annotation)
 
-            if len(annotation.get('segmentation')) != 0:
+            if len(annotation.get('segmentation', [])) != 0 or \
+                len(annotation.get('keypoints', [])) != 0:
                 del annotation['deleted']
-                del annotation['paper_object']
+
+                if not has_keypoints:
+                    del annotation['keypoints']
+                else:
+                    arr = np.array(annotation.get('keypoints', []))
+                    arr = arr[2::3]
+                    annotation['num_keypoints'] = len(arr[arr > 0])
+
                 annotations.append(annotation)
 
-        category = fix_ids(category[1])
+        category = fix_ids(category)
         del category['deleted']
+        if has_keypoints:
+            category['keypoints'] = category.pop('keypoint_labels')
+            category['skeleton'] = category.pop('keypoint_edges')
+        else:
+            del category['keypoint_edges']
+            del category['keypoint_labels']
         categories.append(category)
 
     del image['deleted']
@@ -169,7 +185,15 @@ def get_dataset_coco(dataset):
 
     for category in categories:
         category = fix_ids(category[1])
+        
         del category['deleted']
+        if len(category.keypoint_labels) > 0:
+            category['keypoints'] = category.pop('keypoint_labels')
+            category['skeleton'] = category.pop('keypoint_edges')
+        else:
+            del category['keypoint_edges']
+            del category['keypoint_labels']
+
         coco.get('categories').append(category)
 
     for image in images:
@@ -180,8 +204,19 @@ def get_dataset_coco(dataset):
         annotations = fix_ids(annotations.all())
 
         for annotation in annotations:
-            if len(annotation.get('segmentation', [])) != 0:
+
+            has_keypoints = len(annotation.get('keypoints', [])) > 0
+            has_segmentation = len(annotation.get('segmentation', [])) > 0
+
+            if has_keypoints or has_keypoints:
                 del annotation['deleted']
+
+                if not has_keypoints:
+                    del annotation['keypoints']
+                else:
+                    arr = np.array(annotation.get('keypoints', []))
+                    arr = arr[2::3]
+                    annotation['num_keypoints'] = len(arr[arr > 0])
                 coco.get('annotations').append(annotation)
 
         image = fix_ids(image)

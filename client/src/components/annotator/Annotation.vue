@@ -1,10 +1,10 @@
 <template>
   <div
-    v-show="showSideMenu"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
     <li
+      v-show="showSideMenu"
       class="list-group-item btn btn-link btn-sm text-left"
       :style="{ 'background-color': backgroundColor, color: 'white' }"
     >
@@ -51,6 +51,7 @@
         style="float:right"
       />
     </li>
+
     <div
       class="modal fade"
       tabindex="-1"
@@ -231,6 +232,10 @@ export default {
     keypointLabels: {
       type: Array,
       required: true
+    },
+    activeTool: {
+      type: String,
+      required: true
     }
   },
   data() {
@@ -303,7 +308,7 @@ export default {
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
       this.keypoints = new Keypoints(this.keypointEdges);
-
+      
       let keypoints = this.annotation.keypoints;
       if (keypoints) {
         for (let i = 0; i < keypoints.length; i += 3) {
@@ -311,7 +316,7 @@ export default {
             y = keypoints[i + 1] - height / 2,
             v = keypoints[i + 2];
 
-          if (v !== 3) {
+          if (x !== 0 || y !== 0 || v !== 0) {
             this.addKeypoint(new paper.Point(x, y), v, i / 3 + 1);
           }
         }
@@ -360,6 +365,7 @@ export default {
     delete() {
       this.$parent.category.annotations.splice(this.index, 1);
       if (this.compoundPath != null) this.compoundPath.remove();
+      if (this.keypoints != null) this.keypoints.remove();
     },
     onAnnotationClick() {
       if (this.isVisible) {
@@ -437,6 +443,9 @@ export default {
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point, visibility, label) {
+      if (label == null && this.keypoints.contains(point))
+        return;
+
       visibility = visibility || parseInt(this.keypoint.next.visibility);
       label = label || parseInt(this.keypoint.next.label);
 
@@ -444,19 +453,27 @@ export default {
         visibility: visibility || 0,
         indexLabel: label || -1,
         onClick: event => {
-          if (this.$parent.isCurrent) return;
+          if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           let keypoint = event.target.keypoint;
-          if (this.currentKeypoint && this.currentKeypoint != keypoint) {
+
+          // Remove if already selected
+          if (keypoint == this.currentKeypoint) {
+            this.currentKeypoint = null;
+            return;
+          }
+          
+          if (this.currentKeypoint) {
             let i1 = this.currentKeypoint.indexLabel;
             let i2 = keypoint.indexLabel;
             if (this.keypoints && i1 > 0 && i2 > 0) {
               let edge = [i1, i2];
+              
               if (!this.keypoints.getLine(edge)) {
                 this.$parent.addKeypointEdge(edge);
               } else {
                 this.$parent.removeKeypointEdge(edge);
               }
-              
+
               this.currentKeypoint = null;
               return;
             }
@@ -465,9 +482,7 @@ export default {
           this.currentKeypoint = event.target.keypoint;  
         },
         onDoubleClick: event => {
-
-          if (!this.$parent.isCurrent) return;
-          
+          if (!["Select", "Keypoints"].includes(this.activeTool)) return;          
           this.currentKeypoint = event.target.keypoint;
           let id = `#keypointSettings${this.annotation.id}`;
           let indexLabel = this.currentKeypoint.indexLabel;
@@ -476,6 +491,12 @@ export default {
           this.keypoint.visibility = this.currentKeypoint.visibility;
 
           $(id).modal("show");
+        },
+        onMouseDrag: event => {
+          let keypoint = event.target.keypoint;
+          if (!["Select", "Keypoints"].includes(this.activeTool)) return;
+
+          this.keypoints.moveKeypoint(event.point, keypoint);
         }
       });
 
@@ -498,6 +519,7 @@ export default {
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
+      this.keypoints.bringToFront();
 
       if (simplify) this.simplifyPath();
     },
@@ -515,6 +537,7 @@ export default {
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
+      this.keypoints.bringToFront();
 
       if (simplify) this.simplifyPath();
     },
@@ -525,6 +548,7 @@ export default {
         this.$parent.setColor();
         return;
       }
+      
 
       this.compoundPath.fillColor = this.color;
       let h = Math.round(this.compoundPath.fillColor.hue);
@@ -592,6 +616,7 @@ export default {
 
       this.compoundPath.visible = newVisible;
       this.keypoints.visible = newVisible;
+      
     },
     compoundPath() {
       if (this.compoundPath == null) return;
@@ -633,6 +658,7 @@ export default {
     isCurrent() {
       if (this.index === this.current && this.$parent.isCurrent) {
         if (this.compoundPath != null) this.compoundPath.bringToFront();
+        if (this.keypoints != null) this.keypoints.bringToFront();
         return true;
       }
       return false;

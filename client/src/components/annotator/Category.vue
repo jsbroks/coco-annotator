@@ -73,8 +73,10 @@
         :keypoint-labels="keypoint.labels"
         ref="annotation"
         :hover="hover.annotation"
+        :activeTool="activeTool"
         @deleted="annotationDeleted"
       />
+      
     </ul>
 
     <div
@@ -128,6 +130,7 @@
         </div>
       </div>
     </div>
+    
   </div>
 </template>
 
@@ -173,6 +176,10 @@ export default {
     simplify: {
       type: Number,
       default: 1
+    },
+    activeTool: {
+      type: String,
+      required: true
     }
   },
   data: function() {
@@ -377,7 +384,12 @@ export default {
           let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
           this.group.strokeColor = hsl;
 
-          if (annotations) annotations.forEach(a => (a.keypoints.color = hsl));
+          if (annotations) {
+            annotations.forEach(a => {
+              a.keypoints.color = hsl;
+              a.keypoints.bringToFront();
+            });
+          }
         }
       }
     },
