@@ -45,9 +45,9 @@ def import_coco_func(task, socket, dataset, coco_json):
     images = ImageModel.objects(dataset_id=dataset.id)
     categories = CategoryModel.objects
 
-    coco_images = coco_json.get('images')
-    coco_annotations = coco_json.get('annotations')
-    coco_categories = coco_json.get('categories')
+    coco_images = coco_json.get('images', [])
+    coco_annotations = coco_json.get('annotations', [])
+    coco_categories = coco_json.get('categories', [])
 
     task.info(f"Importing {len(coco_categories)} categories, "
               f"{len(coco_images)} images, and "
@@ -67,7 +67,7 @@ def import_coco_func(task, socket, dataset, coco_json):
     # Create any missing categories
     for category in coco_categories:
 
-        category_name = categor123y.get('name')
+        category_name = category.get('name')
         category_id = category.get('id')
         category_model = categories.filter(name__iexact=category_name).first()
 
