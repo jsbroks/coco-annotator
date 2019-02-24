@@ -69,7 +69,7 @@ export default {
 
         string += "Keypoint \n";
         string += "Visibility: " + visibility + " \n";
-        string += "Label: " + this.keypoint.keypoints.labels[index-1] + " \n";
+        string += index == -1 ? "No Label \n" : "Label: " + this.keypoint.keypoints.labels[index-1] + " \n";
         return string.replace(/\n/g, " \n ").slice(0, -2);        
       }
 
@@ -131,7 +131,6 @@ export default {
           this.hover.textId = this.hover.annotation.annotation.id;
         }
         
-
         this.hover.text = new paper.PointText(position);
         this.hover.text.justification = "left";
         this.hover.text.fillColor = "black";
@@ -281,6 +280,7 @@ export default {
           }
         }
       } else if (event.item && event.item.hasOwnProperty("keypoint")) {
+        this.hover.position = event.point;
         this.keypoint = item;
       } else {
         this.clear();

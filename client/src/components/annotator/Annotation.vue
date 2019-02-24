@@ -455,6 +455,7 @@ export default {
       let keypoint = new Keypoint(point.x, point.y, {
         visibility: visibility || 0,
         indexLabel: label || -1,
+        radius: this.scale * 6,
         onClick: event => {
           if (!this.$parent.isCurrent) return;
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
