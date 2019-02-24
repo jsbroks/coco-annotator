@@ -307,6 +307,10 @@ export default {
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
+      this.compoundPath.onDoubleClick = event => {
+        if (this.activeTool !== "Select") return;
+        $(`#annotationSettings${this.annotation.id}`).modal("show");
+      } 
       this.keypoints = new Keypoints(this.keypointEdges);
 
       let keypoints = this.annotation.keypoints;
@@ -519,6 +523,7 @@ export default {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.unite(compound);
+      newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
@@ -537,6 +542,7 @@ export default {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.subtract(compound);
+      newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       if (undoable) this.createUndoAction("Subtract");
 
       this.compoundPath.remove();
