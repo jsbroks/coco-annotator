@@ -311,7 +311,7 @@ export default {
         if (this.activeTool !== "Select") return;
         $(`#annotationSettings${this.annotation.id}`).modal("show");
       };
-      this.keypoints = new Keypoints(this.keypointEdges);
+      this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels);
 
       let keypoints = this.annotation.keypoints;
       if (keypoints) {

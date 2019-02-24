@@ -1,7 +1,7 @@
 import paper from "paper";
 
 export class Keypoints extends paper.Group {
-  constructor(edges, args) {
+  constructor(edges, labels, args) {
     super();
     args = args || {};
 
@@ -10,6 +10,7 @@ export class Keypoints extends paper.Group {
     this._lines = {};
     this._labelled = {};
     this._keypoints = [];
+    this.labels = labels;
 
     this.strokeColor = args.strokeColor || "red";
     this.lineWidth = args.strokeWidth || 4;
