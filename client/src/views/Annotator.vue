@@ -122,6 +122,7 @@
             @click="onCategoryClick"
             :current="current"
             :active-tool="activeTool"
+            :scale="image.scale"
             ref="category"
           />
         </div>

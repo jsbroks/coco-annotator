@@ -74,6 +74,7 @@
         ref="annotation"
         :hover="hover.annotation"
         :active-tool="activeTool"
+        :scale="scale"
         @deleted="annotationDeleted"
       />
       

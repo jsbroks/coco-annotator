@@ -307,10 +307,10 @@ export default {
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
-      this.compoundPath.onDoubleClick = event => {
+      this.compoundPath.onDoubleClick = () => {
         if (this.activeTool !== "Select") return;
         $(`#annotationSettings${this.annotation.id}`).modal("show");
-      } 
+      };
       this.keypoints = new Keypoints(this.keypointEdges);
 
       let keypoints = this.annotation.keypoints;
@@ -659,6 +659,14 @@ export default {
     },
     keypointEdges(newEdges) {
       newEdges.forEach(e => this.keypoints.addEdge(e));
+    },
+    scale: {
+      immediate: true,
+      handler(scale) {
+        if (!this.keypoints) return;
+        this.keypoints.radius = scale * 6;
+        this.keypoints.lineWidth = scale * 2;
+      }
     }
   },
   computed: {
