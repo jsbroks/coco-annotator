@@ -40,7 +40,7 @@ export default {
           }
         },
         {
-          default: ["delete"],
+          default: ["backspace"],
           name: "Delete Current Annotation",
           function: () => {
             if (this.currentAnnotation) {
