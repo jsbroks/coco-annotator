@@ -67,13 +67,13 @@ def import_coco_func(task, socket, dataset, coco_json):
     # Create any missing categories
     for category in coco_categories:
 
-        category_name = category.get('name')
+        category_name = categor123y.get('name')
         category_id = category.get('id')
         category_model = categories.filter(name__iexact=category_name).first()
 
         if category_model is None:
             task.warning(f"{category_name} category not found (creating a new one)")
-
+            
             new_category = CategoryModel(
                 name=category_name,
                 keypoint_edges=category.get('skeleton', []),
@@ -127,13 +127,14 @@ def import_coco_func(task, socket, dataset, coco_json):
         image_id = annotation.get('image_id')
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation', [])
+        keypoints = annotation.get('keypoints', [])
         is_crowd = annotation.get('iscrowed', False)
 
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)
 
-        if len(segmentation) == 0:
-            task.warning(f"Annotation {annotation.get('id')} has no segmentation")
+        if len(segmentation) == 0 and len(keypoints) == 0:
+            task.warning(f"Annotation {annotation.get('id')} has no segmentation or keypoints")
             continue
 
         try:
@@ -147,7 +148,7 @@ def import_coco_func(task, socket, dataset, coco_json):
             image_id=image_model.id,
             category_id=category_model_id,
             segmentation=segmentation,
-            keypoints= annotation.get('keypoints', [])
+            keypoints=keypoints
         ).first()
 
         if annotation_model is None:
@@ -159,6 +160,7 @@ def import_coco_func(task, socket, dataset, coco_json):
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
             annotation_model.segmentation = segmentation
+            annotation_model.keypoints = keypoints
             annotation_model.save()
 
             image_model.update(set__annotated=True)
