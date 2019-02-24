@@ -26,7 +26,7 @@ export default {
   },
   data() {
     return {
-      visibility: 0,
+      visibility: 2,
       label: -1,
       visibilityOptions: {
         0: "NOT LABELLED",
@@ -39,15 +39,18 @@ export default {
     notUsedLabels(notUsedLabels) {
       if (!notUsedLabels) return;
       let values = Object.keys(notUsedLabels);
+
       if (values.length !== 0) {
         this.label = values[0];
       }
     },
     label(label) {
-      this.$parent.currentAnnotation.keypoint.next.label = label;
+      if (!this.currentAnnotation) return;
+      this.currentAnnotation.keypoint.next.label = label;
     },
     visibility(visibility) {
-      this.$parent.currentAnnotation.keypoint.next.visibility = visibility;
+      if (!this.currentAnnotation) return;
+      this.currentAnnotation.keypoint.next.visibility = visibility;
     }
   },
   computed: {

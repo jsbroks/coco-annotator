@@ -256,7 +256,7 @@ export default {
         visibility: 0,
         next: {
           label: -1,
-          visibility: 0
+          visibility: 2
         }
       },
       tagRecomputeCounter: 0
