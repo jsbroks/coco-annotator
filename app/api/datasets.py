@@ -166,7 +166,7 @@ class DatasetIdShare(Resource):
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
-        if dataset.is_owner(current_user):
+        if not dataset.is_owner(current_user):
             return {"message": "You do not have permission to share this dataset"}, 403
 
         dataset.update(users=args.get('users'))
