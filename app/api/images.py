@@ -145,6 +145,9 @@ class ImageId(Resource):
         if image is None:
             return {"message": "Invalid image id"}, 400
 
+        if not current_user.can_delete(image):
+            return {"message": "You do not have permission to download the image"}, 403
+
         image.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {"success": True}
 
@@ -195,10 +198,10 @@ class ImageThumbnail(Resource):
         height = args['height']
 
         image = current_user.images.filter(id=image_id, deleted=False).first()
-
+        
         if image is None:
             return {'success': False}, 400
-
+        
         if width < 1:
             width = image.width
 
@@ -223,9 +226,12 @@ class ImageCoco(Resource):
     def get(self, image_id):
         """ Returns coco of image and annotations """
         image = current_user.images.filter(id=image_id).exclude('deleted_date').first()
-
+        
         if image is None:
             return {"message": "Invalid image ID"}, 400
+
+        if not current_user.can_download(image):
+            return {"message": "You do not have permission to download the images's annotations"}, 403
 
         return coco_util.get_image_coco(image)
 

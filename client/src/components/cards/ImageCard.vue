@@ -44,13 +44,21 @@
             class="dropdown-menu"
             :aria-labelledby="'dropdownImage' + image.id"
           >
-            <button class="btn dropdown-item" @click="onDeleteClick">
+            <button
+              class="btn dropdown-item"
+              @click="onDeleteClick"
+              v-show="image.permissions.delete"
+            >
               Delete
             </button>
             <button class="btn dropdown-item" @click="openAnnotator">
               Annotate
             </button>
-            <button class="btn dropdown-item" @click="onDownloadClick">
+            <button
+              class="btn dropdown-item"
+              @click="onDownloadClick"
+              v-show="image.permissions.download"
+            >
               Download Image & COCO
             </button>
           </div>

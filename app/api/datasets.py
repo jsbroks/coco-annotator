@@ -104,6 +104,9 @@ class DatasetGenerate(Resource):
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
+        if not dataset.is_owner(current_user):
+            return {"message": "You do not have permission to download the dataset's annotations"}, 403
+
         thread = Thread(target=download_images, args=(dataset.directory, args))
         thread.start()
 
@@ -114,16 +117,15 @@ class DatasetGenerate(Resource):
 class DatasetId(Resource):
     @login_required
     def delete(self, dataset_id):
-        """ Deletes dataset by ID (only owners of datasets can delete them)"""
+        """ Deletes dataset by ID (only owners)"""
 
-        datasets = DatasetModel.objects(id=dataset_id, deleted=False)
-        if not current_user.is_admin:
-            datasets = datasets.filter(owner=current_user.username)
-
-        dataset = datasets.first()
+        datasets = DatasetModel.objects(id=dataset_id, deleted=False).first()
 
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
+        
+        if not current_user.can_delete(dataset):
+            return {"message": "You do not have permission to delete the dataset"}, 403
 
         dataset.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {"success": True}
@@ -164,6 +166,9 @@ class DatasetIdShare(Resource):
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
+        if dataset.is_owner(current_user):
+            return {"message": "You do not have permission to share this dataset"}, 403
+
         dataset.update(users=args.get('users'))
 
         return {"success": True}
@@ -183,22 +188,26 @@ class DatasetData(Resource):
 
         datasets = current_user.datasets.filter(deleted=False)
         pagination = Pagination(datasets.count(), limit, page)
-        datasets = query_util.fix_ids(datasets[pagination.start:pagination.end])
+        datasets = datasets[pagination.start:pagination.end]
 
+        datasets_json = []
         for dataset in datasets:
-            images = ImageModel.objects(dataset_id=dataset.get('id'), deleted=False)
+            dataset_json = query_util.fix_ids(dataset)
+            images = ImageModel.objects(dataset_id=dataset.id, deleted=False)
 
-            dataset['numberImages'] = images.count()
-            dataset['numberAnnotated'] = images.filter(annotated=True).count()
-
+            dataset_json['numberImages'] = images.count()
+            dataset_json['numberAnnotated'] = images.filter(annotated=True).count()
+            dataset_json['permissions'] = dataset.permissions(current_user)
+            
             first = images.first()
             if first is not None:
-                dataset['first_image_id'] = images.first().id
+                dataset_json['first_image_id'] = images.first().id
+            datasets_json.append(dataset_json)
 
         return {
             "pagination": pagination.export(),
             "folder": folder,
-            "datasets": datasets,
+            "datasets": datasets_json,
             "categories": query_util.fix_ids(current_user.categories.filter(deleted=False).all())
         }
 
@@ -256,14 +265,20 @@ class DatasetDataId(Resource):
             .order_by('file_name').only('id', 'file_name', 'annotating')
         
         pagination = Pagination(images.count(), limit, page)
-        images = query_util.fix_ids(images[pagination.start:pagination.end])
+        images = images[pagination.start:pagination.end]
 
+        images_json = []
         for image in images:
-            image_id = image.get('id')
-            query = AnnotationModel.objects(image_id=image_id, deleted=False)
-            image['annotations'] = query.count()
+            image_json = query_util.fix_ids(image)
+
+            query = AnnotationModel.objects(image_id=image.id, deleted=False)
             category_ids = query.distinct('category_id')
-            image['categories'] = query_util.fix_ids(CategoryModel.objects(id__in=category_ids).only('name', 'color'))
+
+            image_json['annotations'] = query.count()
+            image_json['categories'] = query_util.fix_ids(CategoryModel.objects(id__in=category_ids).only('name', 'color'))
+            image_json['permissions'] = image.permissions(current_user)
+
+            images_json.append(image_json)
 
 
         subdirectories = [f for f in sorted(os.listdir(directory))
@@ -273,7 +288,7 @@ class DatasetDataId(Resource):
         return {
             "time_ms": int(delta.total_seconds() * 1000),
             "pagination": pagination.export(),
-            "images": images,
+            "images": images_json,
             "folder": folder,
             "directory": directory,
             "dataset": query_util.fix_ids(dataset),
@@ -286,11 +301,14 @@ class DatasetCoco(Resource):
 
     @login_required
     def get(self, dataset_id):
-        """ Returns coco of images and annotations in the dataset """
+        """ Returns coco of images and annotations in the dataset (only owners) """
         dataset = current_user.datasets.filter(id=dataset_id).first()
 
         if dataset is None:
             return {"message": "Invalid dataset ID"}, 400
+        
+        if not current_user.can_download(dataset):
+            return {"message": "You do not have permission to download the dataset's annotations"}, 403
 
         return coco_util.get_dataset_coco(dataset)
 

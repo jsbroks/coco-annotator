@@ -67,20 +67,24 @@
             Edit
           </button>
           <button
-            v-if="isOwner"
+            v-if="dataset.permissions.owner"
             class="dropdown-item"
             data-toggle="modal"
             :data-target="'#datasetShare' + dataset.id"
           >
             Share
           </button>
-          <button class="dropdown-item" @click="onCocoDownloadClick">
+          <button
+            class="dropdown-item"
+            @click="onCocoDownloadClick"
+            v-show="dataset.permissions.download"
+          >
             Download COCO
           </button>
-          <hr />
+          <hr v-show="dataset.permissions.delete" />
           <button
             class="dropdown-item delete"
-            v-show="isOwner"
+            v-show="dataset.permissions.delete"
             @click="onDeleteClick"
           >
             Delete
@@ -341,10 +345,6 @@ export default {
     },
     user() {
       return this.$store.state.user.user;
-    },
-    isOwner() {
-      if (this.user == null) return false;
-      return this.user.username === this.dataset.owner || this.user.is_admin;
     }
   },
   mounted() {

@@ -24,13 +24,13 @@ class AnnotatorData(Resource):
 
         image_model = ImageModel.objects(id=image_id).first()
 
-        # Check if current user can access dataset
-        if current_user.datasets.filter(id=image_model.dataset_id).first() is None:
-            return {'success': False, 'message': 'Could not find associated dataset'}
-
         if image_model is None:
             return {'success': False, 'message': 'Image does not exist'}, 400
 
+        # Check if current user can access dataset
+        if current_user.datasets.filter(id=image_model.dataset_id).first() is None:
+            return {'success': False, 'message': 'Could not find associated dataset'}
+        
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
 
@@ -135,7 +135,11 @@ class AnnotatorId(Resource):
             'image': query_util.fix_ids(image),
             'categories': [],
             'dataset': query_util.fix_ids(dataset),
-            'preferences': preferences
+            'preferences': preferences,
+            'permissions': {
+                'dataset': dataset.permissions(current_user),
+                'image': image.permissions(current_user)
+            }
         }
 
         data['image']['previous'] = image_previous
