@@ -119,7 +119,7 @@ class DatasetId(Resource):
     def delete(self, dataset_id):
         """ Deletes dataset by ID (only owners)"""
 
-        datasets = DatasetModel.objects(id=dataset_id, deleted=False).first()
+        dataset = DatasetModel.objects(id=dataset_id, deleted=False).first()
 
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
