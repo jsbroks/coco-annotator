@@ -148,7 +148,7 @@
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary" @click="createUser">
-              Create Category
+              Create User
             </button>
             <button
               type="button"
