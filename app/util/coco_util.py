@@ -122,13 +122,13 @@ def get_image_coco(image):
         if len(category_annotations) == 0:
             continue
         
-        has_keypoints = len(category.keypoint_labels) > 0
-
         for annotation in category_annotations:
             annotation = fix_ids(annotation)
 
-            if len(annotation.get('segmentation', [])) != 0 or \
-                len(annotation.get('keypoints', [])) != 0:
+            has_segmentation = len(annotation.get('segmentation', [])) > 0
+            has_keypoints = len(annotation.get('keypoints', [])) > 0
+
+            if has_segmentation or has_keypoints:
                 del annotation['deleted']
 
                 if not has_keypoints:
@@ -142,12 +142,14 @@ def get_image_coco(image):
 
         category = fix_ids(category)
         del category['deleted']
-        if has_keypoints:
+
+        if len(category.get('keypoint_labels')) > 0:
             category['keypoints'] = category.pop('keypoint_labels')
             category['skeleton'] = category.pop('keypoint_edges')
         else:
             del category['keypoint_edges']
             del category['keypoint_labels']
+        
         categories.append(category)
 
     del image['deleted']
