@@ -208,7 +208,7 @@ def get_dataset_coco(dataset):
             has_keypoints = len(annotation.get('keypoints', [])) > 0
             has_segmentation = len(annotation.get('segmentation', [])) > 0
 
-            if has_keypoints or has_keypoints:
+            if has_keypoints or has_segmentation:
                 del annotation['deleted']
 
                 if not has_keypoints:
@@ -217,6 +217,7 @@ def get_dataset_coco(dataset):
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
+                
                 coco.get('annotations').append(annotation)
 
         image = fix_ids(image)
