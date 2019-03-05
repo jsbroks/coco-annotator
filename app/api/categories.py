@@ -72,6 +72,9 @@ class Category(Resource):
         category = current_user.categories.filter(id=category_id).first()
         if category is None:
             return {"message": "Invalid image id"}, 400
+        
+        if not current_user.can_delete(category):
+            return {"message": "You do not have permission to download the dataset's annotations"}, 403
 
         category.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {'success': True}

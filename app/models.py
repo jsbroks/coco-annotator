@@ -419,6 +419,9 @@ class CategoryModel(db.DynamicDocument):
     
     def can_edit(self, user):
         return self.is_owner(user)
+    
+    def can_delete(self, user):
+        return self.is_owner(user)
 
 
 
