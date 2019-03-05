@@ -46,11 +46,12 @@ class AnnotatorData(Resource):
             if db_category is None:
                 continue
 
-            db_category.update(
-                set__color=category.get('color'),
-                set__keypoint_edges=category.get('keypoint_edges', []),
-                set__keypoint_labels=category.get('keypoint_labels', [])
-            )
+            category_update = {'color': category.get('color')}
+            if current_user.can_edit(db_category):
+                category_update['keypoint_edges'] = category.get('keypoint_edges', [])
+                category_update['keypoint_labels'] = category.get('keypoint_labels', [])
+            
+            db_category.update(**category_update)
 
             # Iterate every annotation from the data annotations
             for annotation in category.get('annotations', []):
