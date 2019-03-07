@@ -46,16 +46,16 @@ class AnonymousUser(AnonymousUserMixin):
             "anonymous": True
         }
     
-    def can_edit(self):
+    def can_edit(self, model):
         return True
     
-    def can_view(self):
+    def can_view(self, model):
         return True
     
-    def can_download(self):
+    def can_download(self, model):
         return True
     
-    def can_delete(self):
+    def can_delete(self, model):
         return True
 
 
