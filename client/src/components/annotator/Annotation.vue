@@ -266,6 +266,7 @@ export default {
     ...mapMutations(["addUndo"]),
     initAnnotation() {
       let metaName = this.annotation.metadata.name;
+      
       if (metaName) {
         this.name = metaName;
         delete this.annotation.metadata["name"];

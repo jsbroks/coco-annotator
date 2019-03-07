@@ -13,6 +13,7 @@ create_annotation = reqparse.RequestParser()
 create_annotation.add_argument('image_id', type=int, required=True, location='json')
 create_annotation.add_argument('category_id', type=int, location='json')
 create_annotation.add_argument('metadata', type=dict, location='json')
+create_annotation.add_argument('segmentation', type=list, location='json')
 create_annotation.add_argument('color', location='json')
 
 
@@ -32,10 +33,16 @@ class Annotation(Resource):
         image_id = args.get('image_id')
         category_id = args.get('category_id')
         metadata = args.get('metadata', {})
+        segmentation = args.get('segmentation', [])
         color = args.get('color')
 
         try:
-            annotation = AnnotationModel(image_id=image_id, category_id=category_id, metadata=metadata)
+            annotation = AnnotationModel(
+                image_id=image_id,
+                category_id=category_id,
+                metadata=metadata,
+                segmentation=segmentation
+            )
             annotation.save()
         except (ValueError, TypeError) as e:
             return {'message': str(e)}, 400

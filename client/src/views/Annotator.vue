@@ -48,6 +48,8 @@
       </div>
       <hr />
 
+      <AnnotateButton />
+
       <div v-show="mode == 'segment'">
         <CopyAnnotationsButton
           :categories="categories"
@@ -58,7 +60,7 @@
         <ShowAllButton />
         <HideAllButton />
       </div>
-
+      <hr>
       <CenterButton />
       <UndoButton />
 
@@ -195,6 +197,7 @@ import shortcuts from "@/mixins/shortcuts";
 import FileTitle from "@/components/annotator/FileTitle";
 import Category from "@/components/annotator/Category";
 import Label from "@/components/annotator/Label";
+import Annotations from "@/models/annotations";
 
 import PolygonTool from "@/components/annotator/tools/PolygonTool";
 import SelectTool from "@/components/annotator/tools/SelectTool";
@@ -213,6 +216,7 @@ import DeleteButton from "@/components/annotator/tools/DeleteButton";
 import UndoButton from "@/components/annotator/tools/UndoButton";
 import ShowAllButton from "@/components/annotator/tools/ShowAllButton";
 import HideAllButton from "@/components/annotator/tools/HideAllButton";
+import AnnotateButton from "@/components/annotator/tools/AnnotateButton";
 
 import PolygonPanel from "@/components/annotator/panels/PolygonPanel";
 import SelectPanel from "@/components/annotator/panels/SelectPanel";
@@ -250,7 +254,8 @@ export default {
     UndoButton,
     HideAllButton,
     ShowAllButton,
-    KeypointPanel
+    KeypointPanel,
+    AnnotateButton
   },
   mixins: [toastrs, shortcuts],
   props: {
@@ -474,6 +479,8 @@ export default {
         this.text.topRight.fontSize = fontSize;
         this.text.topRight.fillColor = "white";
         this.text.topRight.content = width + "x" + height;
+
+        this.getData();
       };
     },
     setPreferences(preferences) {
@@ -691,6 +698,24 @@ export default {
         category.isVisible = false;
         category.showAnnotations = false;
       });
+    },
+
+    addAnnotation(category, segments) {
+      category = this.$refs.category.find(c => c.category.name == category);
+      if (category == null) return;
+
+      category = category.category;
+
+      Annotations
+        .create({
+          image_id: this.image.id,
+          category_id: category.id,
+          segmentation: segments
+        })
+        .then(response => {
+          let annotation = response.data;
+          category.annotations.push(annotation);
+        })
     }
   },
   watch: {
@@ -772,7 +797,6 @@ export default {
     });
 
     this.initCanvas();
-    this.getData();
     this.$socket.emit("annotating", { image_id: this.image.id, active: true });
   },
   created() {

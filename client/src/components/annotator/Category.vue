@@ -139,6 +139,7 @@
 import paper from "paper";
 import axios from "axios";
 
+import Annotations from "@/models/annotations";
 import Annotation from "@/components/annotator/Annotation";
 import TagsInput from "@/components/TagsInput";
 
@@ -209,8 +210,8 @@ export default {
       let parent = this.$parent;
       let annotationId = this.category.annotations.length;
 
-      axios
-        .post("/api/annotation/", {
+      Annotations
+        .create({
           image_id: parent.image.id,
           category_id: this.category.id
         })
