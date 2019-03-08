@@ -170,7 +170,6 @@ def import_coco_func(task, socket, dataset, coco_json):
             annotation_model.keypoints = keypoints
             annotation_model.save()
 
-            # image_model.update(set__annotated=True)
             image_categories.append(category_id)
         else:
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
