@@ -335,6 +335,7 @@ export default {
           select: this.$refs.select.export(),
           settings: this.$refs.settings.export()
         },
+        dataset: this.dataset,
         image: {
           id: this.image.id,
           metadata: this.$refs.settings.exportMetadata(),
