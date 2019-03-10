@@ -1,5 +1,5 @@
 from ..models import ImageModel, CategoryModel, AnnotationModel
-
+from .coco_util import get_segmentation_area_and_bbox
 import os
 
 
@@ -97,6 +97,7 @@ def import_coco_func(task, socket, dataset, coco_json):
     task.info("===== Loading Images =====")
     # image id mapping ( file: database )
     images_id = {}
+    categories_by_image = {}
 
     # Find all images
     for image in coco_images:
@@ -120,6 +121,7 @@ def import_coco_func(task, socket, dataset, coco_json):
         task.info(f"Image {image_filename} found")
         image_model = image_model[0]
         images_id[image_id] = image_model
+        categories_by_image[image_id] = list()
 
     task.info("===== Import Annotations =====")
     for annotation in coco_annotations:
@@ -140,6 +142,7 @@ def import_coco_func(task, socket, dataset, coco_json):
         try:
             image_model = images_id[image_id]
             category_model_id = categories_id[category_id]
+            image_categories = categories_by_image[image_id]
         except KeyError:
             task.warning(f"Could not find image assoicated with annotation {annotation.get('id')}")
             continue
@@ -160,11 +163,24 @@ def import_coco_func(task, socket, dataset, coco_json):
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
             annotation_model.segmentation = segmentation
+            area, bbox = get_segmentation_area_and_bbox(
+                segmentation, image_model.height, image_model.width)
+            annotation_model.area = area
+            annotation_model.bbox = list(bbox)
             annotation_model.keypoints = keypoints
             annotation_model.save()
 
-            image_model.update(set__annotated=True)
+            image_categories.append(category_id)
         else:
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
+
+    for image_id in images_id:
+        image_model = images_id[image_id]
+        category_ids = categories_by_image[image_id]
+        all_category_ids = list(image_model.category_ids)
+        all_category_ids += category_ids
+        image_model.update(
+            set__annotated=True,
+            set__category_ids=list(set(all_category_ids)))
 
     task.set_progress(100, socket=socket)
