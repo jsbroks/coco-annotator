@@ -24,24 +24,32 @@ export default {
       if (!this.validUrl) return;
 
       return axios.get(this.annotateUrl).then(response => {
-        console.log(response.data);
+
         let coco = response.data.coco || {};
 
-        let images = coco.images;
-        let categories = coco.categories;
-        let annotations = coco.annotations;
+        let images = coco.images || [];
+        let categories = coco.categories || [];
+        let annotations = coco.annotations || [];
 
-        if (images || categories || annotations) {
+        if (images.length == 0
+            || categories.length == 0
+            || annotations.length == 0) {
           // Error
           return;
         }
+        // Index categoires
+        let indexedCategories = {}
+        categories.forEach(category => {
+          indexedCategories[category.id] = category;
+        });
 
-        // Index image
-        
-        // Index categories
-
-        // Add images
-
+        annotations.forEach(annotation => {
+          let keypoints = annotation.keypoints || [];
+          let segmentation = annotation.segmentation || [];
+          let category = indexedCategories[annotation.category_id];
+          
+          this.$parent.addAnnotation(category.name, segmentation, keypoints);
+        });
       });
     }
   },
@@ -51,7 +59,7 @@ export default {
       return "Annotate Image";
     },
     validUrl() {
-      if (typeof this.annotateUrl === 'number') return false;
+      if (typeof this.annotateUrl === "number") return false;
       return this.annotateUrl.length > 2;
     }
   },

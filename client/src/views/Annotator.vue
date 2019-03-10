@@ -702,8 +702,15 @@ export default {
       });
     },
 
-    addAnnotation(category, segments) {
-      category = this.$refs.category.find(c => c.category.name == category);
+    addAnnotation(category, segments, keypoints) {
+      segments = segments || [];
+      keypoints = keypoints || [];
+
+      if (keypoints.length == 0 && segments.length == 0) return;
+
+      category = this.$refs.category.find(
+        c => c.category.name.toLowerCase() === category.toLowerCase()
+      );
       if (category == null) return;
 
       category = category.category;
@@ -711,9 +718,11 @@ export default {
       Annotations.create({
         image_id: this.image.id,
         category_id: category.id,
-        segmentation: segments
+        segmentation: segments,
+        keypoints: keypoints
       }).then(response => {
         let annotation = response.data;
+        console.log(category);
         category.annotations.push(annotation);
       });
     }
