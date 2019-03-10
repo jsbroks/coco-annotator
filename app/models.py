@@ -30,6 +30,8 @@ class DatasetModel(db.DynamicDocument):
     owner = db.StringField(required=True)
     users = db.ListField(default=[])
 
+    annotate_url = db.StringField(default="")
+
     default_annotation_metadata = db.DictField(default={})
 
     deleted = db.BooleanField(default=False)

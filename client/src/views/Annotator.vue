@@ -48,7 +48,7 @@
       </div>
       <hr />
 
-      <AnnotateButton />
+      <AnnotateButton :annotate-url="dataset.annotate_url" />
 
       <div v-show="mode == 'segment'">
         <CopyAnnotationsButton
@@ -307,7 +307,9 @@ export default {
         topRight: null
       },
       categories: [],
-      dataset: {},
+      dataset: {
+        annotate_url: ""
+      },
       loading: {
         image: true,
         data: true,
@@ -706,16 +708,14 @@ export default {
 
       category = category.category;
 
-      Annotations
-        .create({
-          image_id: this.image.id,
-          category_id: category.id,
-          segmentation: segments
-        })
-        .then(response => {
-          let annotation = response.data;
-          category.annotations.push(annotation);
-        })
+      Annotations.create({
+        image_id: this.image.id,
+        category_id: category.id,
+        segmentation: segments
+      }).then(response => {
+        let annotation = response.data;
+        category.annotations.push(annotation);
+      });
     }
   },
   watch: {

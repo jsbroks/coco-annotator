@@ -33,11 +33,22 @@
           </div>
           <div class="modal-body">
             <div class="form-group row">
-              <label class="col-sm-2 col-form-label">simplify</label>
+              <label class="col-sm-2 col-form-label">Simplify</label>
               <div class="col-sm-9">
                 <input
                   v-model.number="$parent.simplify"
                   type="number"
+                  class="form-control"
+                />
+              </div>
+            </div>
+
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">Annotate API</label>
+              <div class="col-sm-9">
+                <input
+                  type="string"
+                  v-model.number="$parent.dataset.annotate_url"
                   class="form-control"
                 />
               </div>
