@@ -34,7 +34,7 @@ Several annotation tools are currently available, with most applications as a de
  - Ability to add key points
  - Useful API endpoints to analyze data
  - Import datasets already annotated in COCO format
- - Annotate disconnected objects as a single instance
+ - Annotate disconnect objects as a single instance
  - Labeling image segments with any number of labels simultaneously
  - Allow custom metadata for each instance or object
  - Magic wand/select tool
