@@ -23,33 +23,51 @@ export default {
     execute() {
       if (!this.validUrl) return;
 
-      return axios.get(this.annotateUrl).then(response => {
+      let canvas = this.$parent.image.raster.canvas;
 
-        let coco = response.data.coco || {};
+      let data = new FormData();
+      canvas.toBlob(blob => {
+        data.append("image", blob);
 
-        let images = coco.images || [];
-        let categories = coco.categories || [];
-        let annotations = coco.annotations || [];
+        axios
+          .post(this.annotateUrl, data, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          })
+          .then(response => {
+            let coco = response.data.coco || {};
 
-        if (images.length == 0
-            || categories.length == 0
-            || annotations.length == 0) {
-          // Error
-          return;
-        }
-        // Index categoires
-        let indexedCategories = {}
-        categories.forEach(category => {
-          indexedCategories[category.id] = category;
-        });
+            let images = coco.images || [];
+            let categories = coco.categories || [];
+            let annotations = coco.annotations || [];
 
-        annotations.forEach(annotation => {
-          let keypoints = annotation.keypoints || [];
-          let segmentation = annotation.segmentation || [];
-          let category = indexedCategories[annotation.category_id];
-          
-          this.$parent.addAnnotation(category.name, segmentation, keypoints);
-        });
+            if (
+              images.length == 0 ||
+              categories.length == 0 ||
+              annotations.length == 0
+            ) {
+              // Error
+              return;
+            }
+            // Index categoires
+            let indexedCategories = {};
+            categories.forEach(category => {
+              indexedCategories[category.id] = category;
+            });
+
+            annotations.forEach(annotation => {
+              let keypoints = annotation.keypoints || [];
+              let segmentation = annotation.segmentation || [];
+              let category = indexedCategories[annotation.category_id];
+
+              this.$parent.addAnnotation(
+                category.name,
+                segmentation,
+                keypoints
+              );
+            });
+          });
       });
     }
   },
