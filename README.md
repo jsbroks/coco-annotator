@@ -63,7 +63,7 @@ Thanks to the backers for making this project possible!
 </p>
 
 <p align="center">
-  <a href="https://intvo.com/"><img src="https://intvo.com/wp-content/uploads/2019/02/INTVO-6.png" width=200></a>
+  <a href="https://intvo.com/"><img src="https://i.ibb.co/LrcMVzC/Intvo-resolution-dark.png" width=150></a>
 </p>
 <p  align="center">
   <a href="https://intvo.com/">INTVO</a> (<a href="https://github.com/intvo">GitHub</a>)
