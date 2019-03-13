@@ -31,7 +31,7 @@ COPY --from=build-stage /workspace/client/dist /workspace/dist
 # Setup flask
 COPY requirements.txt requirements.txt
 
-RUN pip install gunicorn==19.9.0
+RUN pip install gunicorn[gevent]==19.9.0
 RUN pip install -r requirements.txt
 RUN pip install pycocotools
 
