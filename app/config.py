@@ -35,3 +35,6 @@ class Config:
     # User Options
     LOGIN_DISABLED = os.getenv("LOGIN_DISABLED", False)
     ALLOW_REGISTRATION = True
+
+    # Mask RCNN MOdel
+    ENABLE_MASK_RCNN = True

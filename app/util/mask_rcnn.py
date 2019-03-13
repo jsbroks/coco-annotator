@@ -1,4 +1,5 @@
 from mrcnn.config import Config
+from ..config import Config as AnnotatorConfig
 from keras.preprocessing.image import img_to_array
 
 import mrcnn.utils as utils
@@ -26,7 +27,11 @@ class CocoConfig(Config):
 class MaskRCNN():
 
     def __init__(self):
-    
+        
+        if not AnnotatorConfig.ENABLE_MASK_RCNN:
+            self.model = None
+            return
+        
         self.config = CocoConfig()
 
         self.model = modellib.MaskRCNN(
@@ -51,7 +56,7 @@ class MaskRCNN():
         image.thumbnail((1024, 1024))
         image = img_to_array(image)
         result = self.model.detect([image], verbose=1)[0]
-        
+
         coco = {}
         return coco
 
