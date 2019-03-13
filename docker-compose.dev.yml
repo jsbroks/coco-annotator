@@ -39,6 +39,7 @@ services:
       - cocoannotator
     depends_on:
       - database
+    tty: true
   database:
     image: mongo:4
     container_name: annotator_mongodb
