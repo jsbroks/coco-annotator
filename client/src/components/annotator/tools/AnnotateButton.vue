@@ -16,7 +16,8 @@ export default {
       icon: "fa-cloud-download",
       cursor: "copy",
       iconColor: "white",
-      disabled: true
+      disabled: true,
+      loading: false
     };
   },
   methods: {
@@ -28,6 +29,7 @@ export default {
       let data = new FormData();
       canvas.toBlob(blob => {
         data.append("image", blob);
+        this.loading = true;
 
         axios
           .post(this.annotateUrl, data, {
@@ -67,7 +69,8 @@ export default {
                 keypoints
               );
             });
-          });
+          })
+          .finally(() => this.loading = false);
       });
     }
   },
@@ -82,6 +85,9 @@ export default {
     }
   },
   watch: {
+    loading() {
+      this.icon = this.loading ? "fa-spinner fa-spin" : "fa-cloud-download";
+    },
     validUrl() {
       this.disabled = !this.validUrl;
     },

@@ -13,5 +13,5 @@ google_images_download==2.5.0
 watchdog==0.8.3
 pytest==3.9.3
 pytest-ordering==0.6
-imantics==0.1.4
+imantics==0.1.9
 flask-socketio==3.2.1
