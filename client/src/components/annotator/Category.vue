@@ -139,6 +139,7 @@
 import paper from "paper";
 import axios from "axios";
 
+import Annotations from "@/models/annotations";
 import Annotation from "@/components/annotator/Annotation";
 import TagsInput from "@/components/TagsInput";
 
@@ -209,42 +210,40 @@ export default {
       let parent = this.$parent;
       let annotationId = this.category.annotations.length;
 
-      axios
-        .post("/api/annotation/", {
-          image_id: parent.image.id,
-          category_id: this.category.id
-        })
-        .then(response => {
-          this.$socket.emit("annotation", {
-            action: "create",
-            category_id: this.category.id,
-            annotation: response.data
-          });
-
-          this.category.annotations.push(response.data);
-
-          this.selectedAnnotation = annotationId;
-          this.$nextTick(() => {
-            this.$parent.selectLastEditorTool();
-            this.$emit("click", {
-              annotation: annotationId,
-              category: this.index
-            });
-          });
-
-          this.isVisible = true;
-          this.showAnnotations = true;
-
-          let annotations = this.$refs.annotation;
-          if (annotations == null) return;
-
-          let annotation = annotations[annotationId - 1];
-          if (annotation == null) {
-            this.$parent.scrollElement(this.$el);
-          } else {
-            this.$parent.scrollElement(annotation.$el);
-          }
+      Annotations.create({
+        image_id: parent.image.id,
+        category_id: this.category.id
+      }).then(response => {
+        this.$socket.emit("annotation", {
+          action: "create",
+          category_id: this.category.id,
+          annotation: response.data
         });
+
+        this.category.annotations.push(response.data);
+
+        this.selectedAnnotation = annotationId;
+        this.$nextTick(() => {
+          this.$parent.selectLastEditorTool();
+          this.$emit("click", {
+            annotation: annotationId,
+            category: this.index
+          });
+        });
+
+        this.isVisible = true;
+        this.showAnnotations = true;
+
+        let annotations = this.$refs.annotation;
+        if (annotations == null) return;
+
+        let annotation = annotations[annotationId - 1];
+        if (annotation == null) {
+          this.$parent.scrollElement(this.$el);
+        } else {
+          this.$parent.scrollElement(annotation.$el);
+        }
+      });
     },
     /**
      * Exports data for send to backend

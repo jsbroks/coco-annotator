@@ -69,8 +69,11 @@ export default {
 
         string += "Keypoint \n";
         string += "Visibility: " + visibility + " \n";
-        string += index == -1 ? "No Label \n" : "Label: " + this.keypoint.keypoints.labels[index-1] + " \n";
-        return string.replace(/\n/g, " \n ").slice(0, -2);        
+        string +=
+          index == -1
+            ? "No Label \n"
+            : "Label: " + this.keypoint.keypoints.labels[index - 1] + " \n";
+        return string.replace(/\n/g, " \n ").slice(0, -2);
       }
 
       if (this.hover.category && this.hover.annotation) {
@@ -125,12 +128,11 @@ export default {
           this.hover.text.remove();
           this.hover.box.remove();
         }
-        let content =
-          this.generateTitle() + this.generateStringFromMetadata();
+        let content = this.generateTitle() + this.generateStringFromMetadata();
         if (this.hover.annotation) {
           this.hover.textId = this.hover.annotation.annotation.id;
         }
-        
+
         this.hover.text = new paper.PointText(position);
         this.hover.text.justification = "left";
         this.hover.text.fillColor = "black";

@@ -28,12 +28,16 @@ WORKDIR /workspace
 
 COPY --from=build-stage /workspace/client/dist /workspace/dist
 
-# Setup flask
 COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt && \
+        pip install gunicorn[eventlet]==19.9.0 && \
+        pip install pycocotools
 
-RUN pip install gunicorn[gevent]==19.9.0
-RUN pip install -r requirements.txt
-RUN pip install pycocotools
+# Install maskrcnn
+RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git $TEMP_MRCNN_DIR /tmp/maskrcnn && \
+        cd /tmp/maskrcnn && \
+        pip install -r requirements.txt && \
+        python3 setup.py install
 
 COPY ./.git /workspace/.git
 COPY ./app /workspace/app

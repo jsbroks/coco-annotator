@@ -13,6 +13,7 @@ services:
       - FILE_WATCHER=true
     volumes:
       - "./datasets:/datasets"
+      - "./models:/models"
     depends_on:
       - database
   database:

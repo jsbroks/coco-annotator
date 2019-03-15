@@ -20,16 +20,20 @@ class AnnotatorData(Resource):
         """
         data = request.get_json(force=True)
         image = data.get('image')
+        dataset = data.get('dataset')
         image_id = image.get('id')
-
+        
         image_model = ImageModel.objects(id=image_id).first()
 
         if image_model is None:
             return {'success': False, 'message': 'Image does not exist'}, 400
 
         # Check if current user can access dataset
-        if current_user.datasets.filter(id=image_model.dataset_id).first() is None:
+        db_dataset = current_user.datasets.filter(id=image_model.dataset_id).first()
+        if dataset is None:
             return {'success': False, 'message': 'Could not find associated dataset'}
+        
+        db_dataset.update(annotate_url=dataset.get('annotate_url', ''))
         
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
