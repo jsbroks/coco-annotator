@@ -26,8 +26,6 @@ RUN apt-get update && \
 
 WORKDIR /workspace
 
-COPY --from=build-stage /workspace/client/dist /workspace/dist
-
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt && \
         pip install gunicorn[eventlet]==19.9.0 && \
@@ -41,6 +39,8 @@ RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.
 
 COPY ./.git /workspace/.git
 COPY ./app /workspace/app
+
+COPY --from=build-stage /workspace/client/dist /workspace/dist
 
 EXPOSE 5000
 CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level debug --no-sendfile
