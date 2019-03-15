@@ -1,10 +1,11 @@
 <script>
+import toastrs from "@/mixins/toastrs";
 import button from "@/mixins/toolBar/button";
 import axios from "axios";
 
 export default {
   name: "AnnotateButton",
-  mixins: [button],
+  mixins: [button, toastrs],
   props: {
     annotateUrl: {
       required: true,
@@ -70,7 +71,10 @@ export default {
               );
             });
           })
-          .finally(() => this.loading = false);
+          .catch(() => {
+            this.axiosReqestError("Annotator", "Could not read data from URL");
+          })
+          .finally(() => (this.loading = false));
       });
     }
   },

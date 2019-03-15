@@ -10,3 +10,4 @@ dist/*
 !dist/.gitkeep
 
 docs/.vuepress/dist/*
+models/*.h5

@@ -2,9 +2,11 @@ from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 from imantics import Image as ImanticsImage
 from flask_login import login_required
+from ..config import Config
 from PIL import Image
 
-from ..util.mask_rcnn import model as maskrcnn
+if len(Config.MASK_RCNN_FILE) != 0:
+    from ..util.mask_rcnn import model as maskrcnn
 
 api = Namespace('model', description='Model related operations')
 
@@ -19,12 +21,10 @@ class MaskRCNN(Resource):
     @api.expect(image_upload)
     def post(self):
         """ COCO data test """
-        
+        if len(Config.MASK_RCNN_FILE) == 0:
+            return {"coco": {}}
+
         args = image_upload.parse_args()
         im = Image.open(args.get('image'))
-
         coco = maskrcnn.detect(im)
-
-        return {
-            "coco": coco
-        }
+        return {"coco": coco}

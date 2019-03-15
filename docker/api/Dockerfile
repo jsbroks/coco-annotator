@@ -1,17 +1,12 @@
 FROM python:3.6
 
-RUN apt-get update && \
-        apt-get install -y \
-        gunicorn \
-        wget
-
 WORKDIR /workspace/
 
-# Setup flask
+# Install python package dependices
 COPY requirements.txt requirements.txt
-
-RUN pip install -r requirements.txt
-RUN pip install pycocotools
+RUN pip install -r requirements.txt && \
+        pip install gunicorn[eventlet]==19.9.0 && \
+        pip install pycocotools
 
 # Install maskrcnn
 RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git $TEMP_MRCNN_DIR /tmp/maskrcnn && \
@@ -19,11 +14,10 @@ RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.
         pip install -r requirements.txt && \
         python3 setup.py install
 
-WORKDIR /models/
-# Download coco model
-RUN wget https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5
+COPY ./.git /workspace/.git
 
 # Create server
 WORKDIR /workspace/
+
 EXPOSE 5000
-CMD python run.py
+CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level debug --no-sendfile --reload

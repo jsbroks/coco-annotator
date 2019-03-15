@@ -723,7 +723,6 @@ export default {
         keypoints: keypoints
       }).then(response => {
         let annotation = response.data;
-        console.log(category);
         category.annotations.push(annotation);
       });
     }
