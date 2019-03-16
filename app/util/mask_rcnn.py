@@ -1,9 +1,9 @@
-from keras.preprocessing.image import img_to_array
 from ..config import Config as AnnotatorConfig
 from skimage.transform import resize
 import imantics as im
 import cv2
 
+from keras.preprocessing.image import img_to_array
 from mrcnn.config import Config
 import mrcnn.utils as utils
 import mrcnn.model as modellib

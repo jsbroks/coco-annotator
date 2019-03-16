@@ -5,8 +5,14 @@ from flask_login import login_required
 from ..config import Config
 from PIL import Image
 
-if len(Config.MASK_RCNN_FILE) != 0:
+import os
+
+MODEL_LOADED = len(Config.MASK_RCNN_FILE) != 0 and os.path.isfile(Config.MASK_RCNN_FILE)
+
+if MODEL_LOADED:
     from ..util.mask_rcnn import model as maskrcnn
+else:
+    print("MaskRCNN model is disabled.", flush=True)
 
 api = Namespace('model', description='Model related operations')
 
@@ -21,8 +27,8 @@ class MaskRCNN(Resource):
     @api.expect(image_upload)
     def post(self):
         """ COCO data test """
-        if len(Config.MASK_RCNN_FILE) == 0:
-            return {"coco": {}}
+        if not MODEL_LOADED:
+            return {"disabled": True, "coco": {}}
 
         args = image_upload.parse_args()
         im = Image.open(args.get('image'))
