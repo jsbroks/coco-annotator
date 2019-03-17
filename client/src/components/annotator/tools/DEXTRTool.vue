@@ -46,6 +46,7 @@ export default {
         let points = this.points;
         this.points = [];
 
+        let currentAnnotation = this.$parent.currentAnnotation;
         let pointsList = [];
         let width = this.$parent.image.raster.width / 2;
         let height = this.$parent.image.raster.height / 2;
@@ -81,7 +82,7 @@ export default {
               compoundPath.addChild(path);
             }
 
-            this.$parent.uniteCurrentAnnotation(compoundPath);
+            currentAnnotation.unite(compoundPath);
           })
           .finally(() => points.forEach(point => point.remove()));
       }
