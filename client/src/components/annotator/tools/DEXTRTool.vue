@@ -41,16 +41,8 @@ export default {
     }
   },
   watch: {
-    /**
-     * Change width of stroke based on zoom of image
-     */
-    scale(newScale) {
-
-    },
     points(newPoints) {
       if (newPoints.length == 4) {
-        console.log("Sending...");
-
         let points = this.points;
         this.points = [];
 
@@ -60,7 +52,7 @@ export default {
 
         points.forEach(point => {
           let pt = point.position;
-          console.log(pt);
+
           pointsList.push([
             Math.round(width + pt.x),
             Math.round(height + pt.y)

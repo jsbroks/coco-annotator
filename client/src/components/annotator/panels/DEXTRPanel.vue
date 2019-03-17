@@ -18,14 +18,11 @@
 </template>
 
 <script>
-import PanelButton from "@/components/PanelButton";
-import PanelToggle from "@/components/PanelToggle";
-import PanelInputString from "@/components/PanelInputString";
 import PanelInputNumber from "@/components/PanelInputNumber";
 
 export default {
   name: "DEXTRPanel",
-  components: { PanelButton, PanelToggle, PanelInputString, PanelInputNumber },
+  components: { PanelInputNumber },
   props: {
     dextr: {
       type: Object,
