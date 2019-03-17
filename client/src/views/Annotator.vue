@@ -48,6 +48,7 @@
         <DEXTRTool
           v-model="activeTool"
           :scale="image.scale"
+          @setcursor="setCursor"
           ref="dextr"
         />
       </div>

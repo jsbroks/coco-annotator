@@ -27,7 +27,7 @@ export default {
   methods: {
     createPoint(point) {
       let paperPoint = new paper.Path.Circle(point, 5);
-      paperPoint.fillColor = "black";
+      paperPoint.fillColor = this.$parent.currentAnnotation.color;
       paperPoint.data.point = point;
       this.points.push(paperPoint);
     },
@@ -44,7 +44,9 @@ export default {
     /**
      * Change width of stroke based on zoom of image
      */
-    scale(newScale) {},
+    scale(newScale) {
+
+    },
     points(newPoints) {
       if (newPoints.length == 4) {
         console.log("Sending...");
@@ -92,7 +94,6 @@ export default {
           .finally(() => points.forEach(point => point.remove()));
       }
     }
-  },
-  mounted() {}
+  }
 };
 </script>
