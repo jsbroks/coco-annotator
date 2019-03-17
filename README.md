@@ -8,12 +8,10 @@
   <a href="#license">License</a>
 </p>
 
-
 ---
 
-
 [![GitHub Stars](https://img.shields.io/github/stars/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/issues) 
+[![GitHub Issues](https://img.shields.io/github/issues/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/issues)
 ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
 [![Code Quality](https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality)](https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript)
 [![Demo](https://img.shields.io/badge/demo-online-green.svg)](https://annotator.justinbrooks.ca/)
@@ -29,30 +27,32 @@ COCO Annotator is a web-based image annotation tool designed for versatility and
 
 Several annotation tools are currently available, with most applications as a desktop installation. Once installed, users can manually define regions in an image and creating a textual description. Generally, objects can be marked by a bounding box, either directly, through a masking tool, or by marking points to define the containing area. _COCO Annotator_ allows users to annotate images using free-form curves or polygons and provides many additional features were other annotations tool fall short.
 
- - Directly export to COCO format
- - Segmentation of objects
- - Ability to add key points
- - Useful API endpoints to analyze data
- - Import datasets already annotated in COCO format
- - Annotate disconnect objects as a single instance
- - Labeling image segments with any number of labels simultaneously
- - Allow custom metadata for each instance or object
- - Magic wand/select tool
- - Generate datasets using google images
- - User authentication system
+- Directly export to COCO format
+- Segmentation of objects
+- Ability to add key points
+- Useful API endpoints to analyze data
+- Import datasets already annotated in COCO format
+- Annotate disconnect objects as a single instance
+- Labeling image segments with any number of labels simultaneously
+- Allow custom metadata for each instance or object
+- Advanced selection tools such as, [DEXTR](https://github.com/jsbroks/dextr-keras), [MaskRCNN](https://github.com/matterport/Mask_RCNN) and Magic Wand
+- Annotate images with semi-trained models
+- Generate datasets using google images
+- User authentication system
 
 For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
 
 # Demo
 
-| Login Information |
-| ----------------- |
-| __Username:__ admin   |
-| __Password:__ password |
+| Login Information      |
+| ---------------------- |
+| **Username:** admin    |
+| **Password:** password |
 
 https://annotator.justinbrooks.ca/
 
 # Backers
+
 Thanks to the backers for making this project possible!
 
 <p align="center">
@@ -72,11 +72,13 @@ Thanks to the backers for making this project possible!
 # Built With
 
 Thanks to all these wonderful libaries/frameworks:
- - [Flask](http://flask.pocoo.org/) - Python web microframework
- - [Vue](https://vuejs.org/) - Frontend javascript framework
- - [Axios](https://github.com/axios/axios) - Promise based HTTP client
- - [PaperJS](http://paperjs.org/) - Canvas editor library
- - [Bootstrap](https://getbootstrap.com/) - Frontend component library
+
+- [Flask](http://flask.pocoo.org/) - Python web microframework
+- [Vue](https://vuejs.org/) - Frontend javascript framework
+- [Axios](https://github.com/axios/axios) - Promise based HTTP client
+- [PaperJS](http://paperjs.org/) - Canvas editor library
+- [Bootstrap](https://getbootstrap.com/) - Frontend component library
 
 # License
+
 [MIT](https://tldrlegal.com/license/mit-license)
