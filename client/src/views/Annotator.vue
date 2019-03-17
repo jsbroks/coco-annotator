@@ -45,6 +45,11 @@
           @setcursor="setCursor"
           ref="keypoint"
         />
+        <DEXTRTool
+          v-model="activeTool"
+          :scale="image.scale"
+          ref="dextr"
+        />
       </div>
       <hr />
 
@@ -205,6 +210,7 @@ import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 import KeypointTool from "@/components/annotator/tools/KeypointTool";
+import DEXTRTool from "@/components/annotator/tools/DEXTRTool"
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -255,7 +261,8 @@ export default {
     HideAllButton,
     ShowAllButton,
     KeypointPanel,
-    AnnotateButton
+    AnnotateButton,
+    DEXTRTool
   },
   mixins: [toastrs, shortcuts],
   props: {
