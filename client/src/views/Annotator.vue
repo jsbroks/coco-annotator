@@ -176,6 +176,11 @@
               :current-annotation="currentAnnotation"
             />
           </div>
+          <div v-if="$refs.dextr != null">
+            <DEXTRPanel
+              :dextr="$refs.dextr"
+            />
+          </div>
         </div>
       </div>
     </aside>
@@ -210,7 +215,7 @@ import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
 import BrushTool from "@/components/annotator/tools/BrushTool";
 import KeypointTool from "@/components/annotator/tools/KeypointTool";
-import DEXTRTool from "@/components/annotator/tools/DEXTRTool"
+import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
 
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
@@ -230,6 +235,7 @@ import MagicWandPanel from "@/components/annotator/panels/MagicWandPanel";
 import BrushPanel from "@/components/annotator/panels/BrushPanel";
 import EraserPanel from "@/components/annotator/panels/EraserPanel";
 import KeypointPanel from "@/components/annotator/panels/KeypointPanel";
+import DEXTRPanel from "@/components/annotator/panels/DEXTRPanel";
 
 import { mapMutations } from "vuex";
 
@@ -262,7 +268,8 @@ export default {
     ShowAllButton,
     KeypointPanel,
     AnnotateButton,
-    DEXTRTool
+    DEXTRTool,
+    DEXTRPanel
   },
   mixins: [toastrs, shortcuts],
   props: {

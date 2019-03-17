@@ -27,7 +27,9 @@ image_upload = reqparse.RequestParser()
 image_upload.add_argument('image', location='files', type=FileStorage, required=True, help='Image')
 
 dextr_args = reqparse.RequestParser()
-dextr_args.add_argument('points', type=list, required=True)
+dextr_args.add_argument('points', location='json', type=list, required=True)
+dextr_args.add_argument('padding', location='json', type=int, default=50)
+dextr_args.add_argument('threshold', location='json', type=int, default=80)
 
 
 @api.route('/dextr/<int:image_id>')
@@ -35,7 +37,7 @@ class MaskRCNN(Resource):
 
     @login_required
     @api.expect(dextr_args)
-    def get(self, image_id):
+    def post(self, image_id):
         """ COCO data test """
 
         if not DEXTR_LOADED:
@@ -43,7 +45,9 @@ class MaskRCNN(Resource):
 
         args = dextr_args.parse_args()
         points = args.get('points')
-        
+        padding = args.get('padding')
+        threshold = args.get('threshold')
+
         if len(points) != 4:
             return {"message": "Invalid points entered"}, 400
         
@@ -52,7 +56,6 @@ class MaskRCNN(Resource):
             return {"message": "Invalid image ID"}, 400
         
         image = Image.open(image_model.path)
-
         result = dextr.predict_mask(image, points)
 
         return { "segmentaiton": Mask(result).polygons().segmentation }
