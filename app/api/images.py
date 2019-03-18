@@ -198,21 +198,33 @@ class ImageThumbnail(Resource):
         height = args['height']
 
         image = current_user.images.filter(id=image_id, deleted=False).first()
-        
+
         if image is None:
             return {'success': False}, 400
-        
-        if width < 1:
-            width = image.width
 
-        if height < 1:
-            height = image.height
+        image_path = image.thumbnail_path()
 
-        pil_image = image.thumbnail()
-        pil_image.thumbnail((width, height), Image.ANTIALIAS)
+        if not os.path.isfile(image_path) or image.is_modified:
+
+            print('CREATING THUMBNAIL')
+            
+            if width < 1:
+                width = image.width
+
+            if height < 1:
+                height = image.height
+
+            pil_image = image.thumbnail()
+            pil_image.thumbnail((width, height), Image.ANTIALIAS)
+
+            pil_image = pil_image.convert("RGB")
+            pil_image.save(image_path)
+            image.update(set__is_modified=False)
+        else:
+            pil_image = Image.open(image_path)
+            print('LOAD THUMBNAIL')
 
         image_io = io.BytesIO()
-        pil_image = pil_image.convert("RGB")
         pil_image.save(image_io, "JPEG", quality=90)
         image_io.seek(0)
 

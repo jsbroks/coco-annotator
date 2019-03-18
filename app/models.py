@@ -6,7 +6,6 @@ import numpy as np
 import imantics as im
 
 from time import sleep
-from PIL import Image
 
 from flask_socketio import emit
 from flask_mongoengine import MongoEngine
@@ -25,6 +24,7 @@ class DatasetModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique=True)
     directory = db.StringField()
+    thumbnails = db.StringField()
     categories = db.ListField(default=[])
 
     owner = db.StringField(required=True)
@@ -40,11 +40,16 @@ class DatasetModel(db.DynamicDocument):
     def save(self, *args, **kwargs):
 
         directory = os.path.join(Config.DATASET_DIRECTORY, self.name + '/')
+        thumbnails = os.path.join(Config.DATASET_THUMBNAILS, self.name + '/')
 
         if not os.path.exists(directory):
             os.makedirs(directory)
 
+        if not os.path.exists(thumbnails):
+            os.makedirs(thumbnails)
+
         self.directory = directory
+        self.thumbnails = thumbnails
         if current_user:
             self.owner = current_user.username
         else:
@@ -168,6 +173,8 @@ class ImageModel(db.DynamicDocument):
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
+    is_modified = db.BooleanField(default=False)
+
     @classmethod
     def create_from_path(cls, path, dataset_id=None):
 
@@ -195,20 +202,18 @@ class ImageModel(db.DynamicDocument):
 
         return image
 
-    def thumbnail_path(self):
-        folders = self.path.split('/')
-        i = folders.index("datasets")
-        folders.insert(i+1, "_thumbnails")
-
-        directory = '/'.join(folders[:-1])
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        return '/'.join(folders)
-    
     def thumbnail(self):
         image = self().draw(color_by_category=True, bbox=False)
         return Image.fromarray(image)
+
+    def thumbnail_path(self):
+        root = DatasetModel.objects(id=self.dataset_id).first().thumbnails
+        return os.path.join(root, str(self.id) + '.jpg')
+    
+    def thumbnail_delete(self):
+        path = self.thumbnail_path()
+        if os.path.isfile(path):
+            os.remove(path)
 
     def copy_annotations(self, annotations):
         """

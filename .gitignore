@@ -3,6 +3,8 @@
 .idea/*
 datasets/*
 !datasets/.gitkeep
+thumbnails/*
+!thumbnails/.gitkeep
 .history/*
 .vscode/*
 __pycache__

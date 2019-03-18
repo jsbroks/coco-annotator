@@ -14,6 +14,7 @@ services:
     volumes:
       - "./datasets:/datasets"
       - "./app:/workspace/app"
+      - "./thumbnails:/thumbnails"
     environment:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true

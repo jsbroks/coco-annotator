@@ -22,6 +22,7 @@ class Config:
 
     # Dataset Options
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
+    DATASET_THUMBNAILS = os.getenv("DATASET_THUMBNAILS", "/thumbnails/")
     INITIALIZE_FROM_FILE = os.getenv("INITIALIZE_FROM_FILE")
 
     # User Options
