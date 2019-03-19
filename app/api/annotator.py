@@ -102,7 +102,8 @@ class AnnotatorData(Resource):
         image_model.update(
             set__metadata=image.get('metadata', {}),
             set__annotated=annotated,
-            set__category_ids=image.get('category_ids', [])
+            set__category_ids=image.get('category_ids', []),
+            set__regenerate_thumbnail=annotated
         )
 
         return data

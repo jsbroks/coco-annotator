@@ -2,6 +2,7 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 
 import os
+import shutil
 import datetime
 from ..models import *
 
@@ -102,7 +103,12 @@ class Undo(Resource):
             return {"message": "Invalid id"}, 400
 
         if isinstance(model_object, ImageModel):
-            os.remove(model_object.path)
+            if os.path.isfile(model_object.path):
+                os.remove(model_object.path)
+
+        if isinstance(model_object, DatasetModel):
+            if os.path.isdir(model_object.directory):
+                shutil.rmtree(model_object.directory)
 
         model_object.delete()
 

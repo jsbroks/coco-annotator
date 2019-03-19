@@ -6,7 +6,6 @@ import numpy as np
 import imantics as im
 
 from time import sleep
-from PIL import Image
 
 from flask_socketio import emit
 from flask_mongoengine import MongoEngine
@@ -25,6 +24,7 @@ class DatasetModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, unique=True)
     directory = db.StringField()
+    thumbnails = db.StringField()
     categories = db.ListField(default=[])
 
     owner = db.StringField(required=True)
@@ -45,6 +45,7 @@ class DatasetModel(db.DynamicDocument):
             os.makedirs(directory)
 
         self.directory = directory
+
         if current_user:
             self.owner = current_user.username
         else:
@@ -140,6 +141,8 @@ class DatasetModel(db.DynamicDocument):
 
 class ImageModel(db.DynamicDocument):
     
+    THUMBNAIL_DIRECTORY = '.thumbnail'
+
     PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp")
     _dataset = None
 
@@ -168,6 +171,8 @@ class ImageModel(db.DynamicDocument):
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
+    regenerate_thumbnail = db.BooleanField(default=False)
+
     @classmethod
     def create_from_path(cls, path, dataset_id=None):
 
@@ -195,20 +200,56 @@ class ImageModel(db.DynamicDocument):
 
         return image
 
+    def delete(self, *args, **kwargs):
+        self.thumbnail_delete()
+        AnnotationModel.objects(image_id=self.id).delete()
+        return super(ImageModel, self).delete(*args, **kwargs)
+
+    def thumbnail(self):
+        """
+        Generates (if required) and returns thumbnail
+        """
+        if not self.annotated:
+            self.delete_thumbnail()
+            return Image.open(self.path)
+        
+        thumbnail_path = self.thumbnail_path()
+
+        if self.regenerate_thumbnail or \
+            not os.path.isfile(thumbnail_path):
+            pil_image = self.generate_thumbnail()
+            pil_image = pil_image.convert("RGB")
+            pil_image.save(thumbnail_path)
+
+            self.update(is_modified=False)
+            return pil_image
+        else:
+            return Image.open(thumbnail_path)
+    
     def thumbnail_path(self):
         folders = self.path.split('/')
-        i = folders.index("datasets")
-        folders.insert(i+1, "_thumbnails")
-
-        directory = '/'.join(folders[:-1])
+        folders.insert(len(folders)-1, self.THUMBNAIL_DIRECTORY)
+        path = '/' + os.path.join(*folders)
+        directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
-
-        return '/'.join(folders)
+        return path
     
-    def thumbnail(self):
+    def thumbnail_delete(self):
+        path = self.thumbnail_path()
+        if os.path.isfile(path):
+            os.remove(path)
+
+    def generate_thumbnail(self):
         image = self().draw(color_by_category=True, bbox=False)
         return Image.fromarray(image)
+
+    def flag_thumbnail(self, flag=True):
+        """
+        Toggles values to regenerate thumbnail on next thumbnail request
+        """
+        if self.regenerate_thumbnail != flag:
+            self.update(regenerate_thumbnail=flag)
 
     def copy_annotations(self, annotations):
         """
@@ -292,8 +333,6 @@ class AnnotationModel(db.DynamicDocument):
             data['width'] = image.width
             data['height'] = image.height
             data['dataset_id'] = image.dataset_id
-        else:
-            raise ValueError("Invalid image id.")
 
         super(AnnotationModel, self).__init__(**data)
 

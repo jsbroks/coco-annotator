@@ -38,6 +38,9 @@ class Annotation(Resource):
         keypoints = args.get('keypoints', [])
         color = args.get('color')
 
+        image = current_user.images.filter(id=image_id, deleted=False).first()
+        image.flag_thumbnail()
+
         try:
             annotation = AnnotationModel(
                 image_id=image_id,
@@ -64,6 +67,8 @@ class AnnotationId(Resource):
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
 
+        image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
+
         return query_util.fix_ids(annotation)
 
     @login_required
@@ -73,6 +78,9 @@ class AnnotationId(Resource):
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
+
+        image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
+        image.flag_thumbnail()
 
         annotation.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {'success': True}

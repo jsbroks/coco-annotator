@@ -27,9 +27,10 @@ image_upload.add_argument('folder', required=False, default='',
                           help='Folder to insert photo into')
 
 image_download = reqparse.RequestParser()
-image_download.add_argument('asAttachment', type=bool, required=False, default=False)
-image_download.add_argument('width', type=int, required=False, default=0)
-image_download.add_argument('height', type=int, required=False, default=0)
+image_download.add_argument('asAttachment', type=bool, default=False)
+image_download.add_argument('thumbnail', type=bool, default=False)
+image_download.add_argument('width', type=int)
+image_download.add_argument('height', type=int)
 
 copy_annotations = reqparse.RequestParser()
 copy_annotations.add_argument('category_ids', location='json', type=list,
@@ -110,26 +111,28 @@ class ImageId(Resource):
     def get(self, image_id):
         """ Returns category by ID """
         args = image_download.parse_args()
-        as_attachment = args['asAttachment']
-        width = args['width']
-        height = args['height']
+        as_attachment = args.get('asAttachment')
+        thumbnail = args.get('thumbnail')
 
         image = current_user.images.filter(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
 
-        if width < 1:
+        width = args.get('width')
+        height = args.get('height')
+        
+        if not width:
             width = image.width
-
-        if height < 1:
+        if not height:
             height = image.height
-
+        
         try:
-            pil_image = Image.open(image.path)
+            pil_image = image.thumbnail() if thumbnail else Image.open(image.path)
+            image.flag_thumbnail(flag=False)
         except Exception as e:
             return {'message': str(e)}, 400
-
+        
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
         image_io = io.BytesIO()
         pil_image = pil_image.convert("RGB")
@@ -183,40 +186,6 @@ class ImageCopyAnnotations(Resource):
         )
 
         return {'annotations_created': image_to.copy_annotations(query)}
-
-
-@api.route('/<int:image_id>/thumbnail')
-class ImageThumbnail(Resource):
-
-    @api.expect(image_download)
-    @login_required
-    def get(self, image_id):
-        """ Returns coco of image and annotations """
-        args = image_download.parse_args()
-        as_attachment = args['asAttachment']
-        width = args['width']
-        height = args['height']
-
-        image = current_user.images.filter(id=image_id, deleted=False).first()
-        
-        if image is None:
-            return {'success': False}, 400
-        
-        if width < 1:
-            width = image.width
-
-        if height < 1:
-            height = image.height
-
-        pil_image = image.thumbnail()
-        pil_image.thumbnail((width, height), Image.ANTIALIAS)
-
-        image_io = io.BytesIO()
-        pil_image = pil_image.convert("RGB")
-        pil_image.save(image_io, "JPEG", quality=90)
-        image_io.seek(0)
-
-        return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
 
 
 @api.route('/<int:image_id>/coco')

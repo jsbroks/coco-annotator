@@ -51,7 +51,6 @@ class TestCategory:
         response = client.post("/api/category/", json=data)
 
         r = json.loads(response.data)
-        print(data)
         assert response.status_code == 200
         assert r.get("name") == data.get("name")
         assert r.get("color") == data.get("color")
