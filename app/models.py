@@ -40,16 +40,12 @@ class DatasetModel(db.DynamicDocument):
     def save(self, *args, **kwargs):
 
         directory = os.path.join(Config.DATASET_DIRECTORY, self.name + '/')
-        thumbnails = os.path.join(Config.DATASET_THUMBNAILS, self.name + '/')
 
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        if not os.path.exists(thumbnails):
-            os.makedirs(thumbnails)
-
         self.directory = directory
-        self.thumbnails = thumbnails
+
         if current_user:
             self.owner = current_user.username
         else:
