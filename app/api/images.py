@@ -128,7 +128,6 @@ class ImageId(Resource):
             height = image.height
         
         try:
-            print('THUMBNAIL FLAG: ', thumbnail)
             pil_image = image.thumbnail() if thumbnail else Image.open(image.path)
             image.flag_thumbnail(flag=False)
         except Exception as e:
