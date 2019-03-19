@@ -200,6 +200,11 @@ class ImageModel(db.DynamicDocument):
 
         return image
 
+    def delete(self, *args, **kwargs):
+        self.thumbnail_delete()
+        AnnotationModel.objects(image_id=self.id).delete()
+        return super(ImageModel, self).delete(*args, **kwargs)
+
     def thumbnail(self):
         """
         Generates (if required) and returns thumbnail
@@ -212,7 +217,6 @@ class ImageModel(db.DynamicDocument):
 
         if self.regenerate_thumbnail or \
             not os.path.isfile(thumbnail_path):
-            
             pil_image = self.generate_thumbnail()
             pil_image = pil_image.convert("RGB")
             pil_image.save(thumbnail_path)
@@ -329,8 +333,6 @@ class AnnotationModel(db.DynamicDocument):
             data['width'] = image.width
             data['height'] = image.height
             data['dataset_id'] = image.dataset_id
-        else:
-            raise ValueError("Invalid image id.")
 
         super(AnnotationModel, self).__init__(**data)
 

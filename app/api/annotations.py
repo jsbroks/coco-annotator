@@ -81,7 +81,6 @@ class AnnotationId(Resource):
 
         image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
         image.flag_thumbnail()
-        image.thumbnail_delete()
 
         annotation.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {'success': True}

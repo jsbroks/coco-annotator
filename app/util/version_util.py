@@ -46,7 +46,6 @@ class VersionControl:
         r = requests.get(COMMITS.format(self.branch))
 
         if r.status_code != requests.codes.ok:
-            print(r.json(), flush=True)
             self.valid = False
             return ""
 
@@ -60,7 +59,6 @@ class VersionControl:
         r = requests.get(COMPARE.format(self.latest_version, self.current_version))
 
         if r.status_code != requests.codes.ok:
-            print(r.json(), flush=True)
             self.valid = False
             return 0
 

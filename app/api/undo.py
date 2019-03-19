@@ -105,8 +105,6 @@ class Undo(Resource):
         if isinstance(model_object, ImageModel):
             if os.path.isfile(model_object.path):
                 os.remove(model_object.path)
-            
-            model_object.thumbnail_delete()
 
         if isinstance(model_object, DatasetModel):
             if os.path.isdir(model_object.directory):
