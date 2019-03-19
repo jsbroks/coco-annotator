@@ -14,7 +14,6 @@ services:
     volumes:
       - "./datasets:/datasets"
       - "./models:/models"
-      - "./thumbnails:/thumbnails"
     depends_on:
       - database
   database:

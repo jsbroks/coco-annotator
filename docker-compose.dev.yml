@@ -31,7 +31,6 @@ services:
       - "./datasets:/datasets"
       - "./:/workspace/"
       - "./models:/models"
-      - "./thumbnails:/thumbnails"
     environment:
       - FILE_WATCHER=true
       - FLASK_APP=app
