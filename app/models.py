@@ -218,15 +218,11 @@ class ImageModel(db.DynamicDocument):
             pil_image.save(thumbnail_path)
 
             self.update(is_modified=False)
-
+            print('THUMBNAIL GENERATED...')
             return pil_image
         else:
+            print('THUMBNAIL LOADED...')
             return Image.open(thumbnail_path)
-    
-    def delete_thumbnail(self):
-        thumbnail_path = self.thumbnail_path()
-        if os.path.isfile(thumbnail_path):
-            os.remove(thumbnail_path)
     
     def thumbnail_path(self):
         folders = self.path.split('/')
@@ -246,12 +242,11 @@ class ImageModel(db.DynamicDocument):
         image = self().draw(color_by_category=True, bbox=False)
         return Image.fromarray(image)
 
-    def flag_thumbnail(self):
+    def flag_thumbnail(self, flag):
         """
         Toggles values to regenerate thumbnail on next thumbnail request
         """
-        if not self.regenerate_thumbnail:
-            self.update(regenerate_thumbnail=True)
+        self.update(regenerate_thumbnail=flag)
 
     def copy_annotations(self, annotations):
         """
