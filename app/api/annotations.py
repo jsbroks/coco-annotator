@@ -39,7 +39,7 @@ class Annotation(Resource):
         color = args.get('color')
 
         image = current_user.images.filter(id=image_id, deleted=False).first()
-        image.update(set__is_modified=True)
+        image.flag_thumbnail()
 
         try:
             annotation = AnnotationModel(
@@ -68,7 +68,6 @@ class AnnotationId(Resource):
             return {"message": "Invalid annotation id"}, 400
 
         image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
-        image.update(set__is_modified=False)
 
         return query_util.fix_ids(annotation)
 
@@ -81,7 +80,7 @@ class AnnotationId(Resource):
             return {"message": "Invalid annotation id"}, 400
 
         image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
-        image.update(set__is_modified=True)
+        image.flag_thumbnail()
         image.thumbnail_delete()
 
         annotation.update(set__deleted=True, set__deleted_date=datetime.datetime.now())

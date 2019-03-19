@@ -145,6 +145,8 @@ class DatasetModel(db.DynamicDocument):
 
 class ImageModel(db.DynamicDocument):
     
+    THUMBNAIL_DIRECTORY = '.thumbnail'
+
     PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp")
     _dataset = None
 
@@ -173,7 +175,7 @@ class ImageModel(db.DynamicDocument):
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
 
-    is_modified = db.BooleanField(default=False)
+    regenerate_thumbnail = db.BooleanField(default=False)
 
     @classmethod
     def create_from_path(cls, path, dataset_id=None):
@@ -203,17 +205,57 @@ class ImageModel(db.DynamicDocument):
         return image
 
     def thumbnail(self):
-        image = self().draw(color_by_category=True, bbox=False)
-        return Image.fromarray(image)
+        """
+        Generates (if required) and returns thumbnail
+        """
+        if not self.annotated:
+            self.delete_thumbnail()
+            return Image.open(self.path)
+        
+        thumbnail_path = self.thumbnail_path()
 
+        if self.regenerate_thumbnail or \
+            not os.path.isfile(thumbnail_path):
+            
+            pil_image = self.generate_thumbnail()
+            pil_image = pil_image.convert("RGB")
+            pil_image.save(thumbnail_path)
+
+            self.update(is_modified=False)
+
+            return pil_image
+        else:
+            return Image.open(thumbnail_path)
+    
+    def delete_thumbnail(self):
+        thumbnail_path = self.thumbnail_path()
+        if os.path.isfile(thumbnail_path):
+            os.remove(thumbnail_path)
+    
     def thumbnail_path(self):
-        root = DatasetModel.objects(id=self.dataset_id).first().thumbnails
-        return os.path.join(root, str(self.id) + '.jpg')
+        folders = self.path.split('/')
+        folders.insert(len(folders)-1, self.THUMBNAIL_DIRECTORY)
+        path = '/' + os.path.join(*folders)
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        return path
     
     def thumbnail_delete(self):
         path = self.thumbnail_path()
         if os.path.isfile(path):
             os.remove(path)
+
+    def generate_thumbnail(self):
+        image = self().draw(color_by_category=True, bbox=False)
+        return Image.fromarray(image)
+
+    def flag_thumbnail(self):
+        """
+        Toggles values to regenerate thumbnail on next thumbnail request
+        """
+        if not self.regenerate_thumbnail:
+            self.update(regenerate_thumbnail=True)
 
     def copy_annotations(self, annotations):
         """
