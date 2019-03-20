@@ -210,7 +210,7 @@ class ImageModel(db.DynamicDocument):
         Generates (if required) and returns thumbnail
         """
         if not self.annotated:
-            self.delete_thumbnail()
+            self.thumbnail_delete()
             return Image.open(self.path)
         
         thumbnail_path = self.thumbnail_path()
@@ -229,10 +229,13 @@ class ImageModel(db.DynamicDocument):
     def thumbnail_path(self):
         folders = self.path.split('/')
         folders.insert(len(folders)-1, self.THUMBNAIL_DIRECTORY)
+
         path = '/' + os.path.join(*folders)
         directory = os.path.dirname(path)
+
         if not os.path.exists(directory):
             os.makedirs(directory)
+        
         return path
     
     def thumbnail_delete(self):
