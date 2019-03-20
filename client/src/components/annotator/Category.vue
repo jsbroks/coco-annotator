@@ -382,7 +382,7 @@ export default {
           let l = Math.round(this.group.fillColor.lightness * 50);
           let s = Math.round(this.group.fillColor.saturation * 100);
           let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
-          this.group.strokeColor = hsl;
+          // this.group.strokeColor = hsl;
 
           if (annotations) {
             annotations.forEach(a => {
