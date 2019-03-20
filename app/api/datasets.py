@@ -282,7 +282,8 @@ class DatasetDataId(Resource):
 
 
         subdirectories = [f for f in sorted(os.listdir(directory))
-                          if os.path.isdir(directory + f)]
+                          if os.path.isdir(directory + f) and not f.startswith('.')]
+
 
         delta = datetime.datetime.now() - exec_start
         return {
