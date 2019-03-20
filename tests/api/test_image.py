@@ -37,9 +37,4 @@ class TestImageCoco:
         assert response.status_code == 400
 
 
-class TestImageThumbnail:
-    def test_invalid_id(self, client):
-        response = client.get("/api/image/1000/thumbnail")
-        assert response.status_code == 400
-
 
