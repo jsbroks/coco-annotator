@@ -111,7 +111,7 @@
           v-if="categories.length == 0"
           style="color: lightgray; font-size: 12px"
         >
-          No categories have been added to this image.
+          No categories have been enabled for this image.
         </p>
 
         <div
@@ -660,7 +660,7 @@ export default {
             this.current.annotation += 1;
           }
         } else {
-          // If at a category which has annotations showing, go though annotations
+          // If at a category which has annotations showing, go through annotations
           this.current.category += 1;
           if (
             this.currentCategory != null &&
