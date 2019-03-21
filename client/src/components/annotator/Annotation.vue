@@ -349,6 +349,8 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.fullySelected = this.isCurrent;
+      this.compoundPath.strokeColor = null;
+      this.compoundPath.strokeWidth = 0;
 
       this.setColor();
 

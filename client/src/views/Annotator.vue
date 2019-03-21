@@ -190,10 +190,6 @@
       <div id="frame" class="frame" @wheel="onwheel">
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
-
-      <!-- <div v-show="!doneLoading">
-        <i class="fa fa-spinner fa-pulse fa-x fa-fw status-icon"></i>
-      </div> -->
     </div>
   </div>
 </template>
@@ -283,7 +279,7 @@ export default {
     return {
       activeTool: "Select",
       paper: null,
-      shapeOpacity: 0.5,
+      shapeOpacity: 0.7,
       zoom: 0.2,
       cursor: "move",
       mode: "segment",
@@ -393,6 +389,10 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     onwheel(e) {
+
+      e.preventDefault();
+      if (!this.doneLoading) return;
+
       let view = this.paper.view;
 
       if (e.ctrlKey) {
@@ -417,10 +417,9 @@ export default {
         }
       }
 
-      e.preventDefault();
       return false;
     },
-    fit: function() {
+    fit() {
       let canvas = document.getElementById("editor");
 
       let parentX = this.image.raster.width;
@@ -469,8 +468,7 @@ export default {
         this.fit();
         this.image.ratio = (width * height) / 1000000;
         this.removeProcess(process);
-        this.loading.image = false;
-
+        
         let tempCtx = document.createElement("canvas").getContext("2d");
         tempCtx.canvas.width = width;
         tempCtx.canvas.height = height;
@@ -498,7 +496,7 @@ export default {
         this.text.topRight.fillColor = "white";
         this.text.topRight.content = width + "x" + height;
 
-        this.getData();
+        this.loading.image = false;
       };
     },
     setPreferences(preferences) {
@@ -518,6 +516,8 @@ export default {
         .get("/api/annotator/data/" + this.image.id)
         .then(response => {
           let data = response.data;
+
+          this.loading.data = false;
           // Set image data
           this.image.metadata = data.image.metadata || {};
           this.image.filename = data.image.file_name;
@@ -530,7 +530,6 @@ export default {
           this.categories = data.categories;
 
           // Update status
-          this.loading.data = false;
 
           this.setDataset(this.dataset);
 
@@ -743,9 +742,11 @@ export default {
     }
   },
   watch: {
-    doneLoading() {
-      if (this.loading.loader) {
-        this.loading.loader.hide();
+    doneLoading(done) {
+      if (done) {
+        if (this.loading.loader) {
+          this.loading.loader.hide();
+        }
       }
     },
     currentCategory() {
@@ -812,15 +813,17 @@ export default {
   mounted() {
     this.setDataset(null);
 
-    this.loading.loader = this.$loading.show({
-      color: "white",
-      backgroundColor: "#4b5162",
-      height: 150,
-      opacity: 0.7,
-      width: 150
-    });
+    // this.loading.loader = this.$loading.show({
+    //   color: "white",
+    //   // backgroundColor: "#4b5162",
+    //   height: 150,
+    //   opacity: 0.8,
+    //   width: 150
+    // });
 
     this.initCanvas();
+    this.getData();
+
     this.$socket.emit("annotating", { image_id: this.image.id, active: true });
   },
   created() {
