@@ -13,7 +13,7 @@ export default {
         {
           default: ["arrowup"],
           function: this.moveUp,
-          name: "Move Up Annotaitons"
+          name: "Move Up Annotations"
         },
         {
           default: ["arrowdown"],
