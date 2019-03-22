@@ -6,6 +6,9 @@ from ..models import UserModel
 from ..config import Config
 from ..util.query_util import fix_ids
 
+import logging
+logger = logging.getLogger('gunicorn.error')
+
 api = Namespace('user', description='User related operations')
 
 register = reqparse.RequestParser()
@@ -104,6 +107,8 @@ class UserLogin(Resource):
 
             user_json = fix_ids(current_user)
             del user_json['password']
+            
+            logger.info(f'User {current_user.username} has LOGIN')
 
             return {'success': True, 'user': user_json}
 
@@ -115,6 +120,7 @@ class UserLogout(Resource):
     @login_required
     def get(self):
         """ Logs user out """
+        logger.info(f'User {current_user.username} has LOGOUT')
         logout_user()
         return {'success': True}
 

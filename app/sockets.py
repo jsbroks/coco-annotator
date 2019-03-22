@@ -9,6 +9,9 @@ from flask_login import current_user
 from .models import ImageModel
 from .config import Config
 
+import logging
+logger = logging.getLogger('gunicorn.error')
+
 
 socketio = SocketIO()
 
@@ -26,9 +29,9 @@ def authenticated_only(f):
 @socketio.on('annotation')
 @authenticated_only
 def annotation(data):
-
     image_id = data.get('image_id')
     emit('annotation', data, broadcast=True)
+
 
 @socketio.on('annotating')
 @authenticated_only
@@ -52,6 +55,7 @@ def annotating(data):
     }, broadcast=True, include_self=False)
 
     if active:
+        logger.info(f'{current_user.username} has started annotating image {image_id}')
         # Remove user from pervious room
         previous = session.get('annotating')
         if previous is not None:
@@ -91,9 +95,15 @@ def annotating(data):
         )
 
 
+@socketio.on('connect')
+def connect():
+    logger.info(f'Socket connection created with {current_user.username}')
+
+
 @socketio.on('disconnect')
 def disconnect():
     if current_user.is_authenticated:
+        logger.info(f'Socket connection has been disconnected with {current_user.username}')
         image_id = session.get('annotating')
 
         # Remove user from room

@@ -6,6 +6,8 @@ from ..models import AnnotationModel
 from ..util import query_util
 
 import datetime
+import logging
+logger = logging.getLogger('gunicorn.error')
 
 api = Namespace('annotation', description='Annotation related operations')
 
@@ -38,8 +40,7 @@ class Annotation(Resource):
         keypoints = args.get('keypoints', [])
         color = args.get('color')
 
-        image = current_user.images.filter(id=image_id, deleted=False).first()
-        image.flag_thumbnail()
+        logger.info(f'{current_user.username} has created an annotation for image {image_id}')
 
         try:
             annotation = AnnotationModel(

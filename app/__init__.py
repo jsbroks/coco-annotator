@@ -15,6 +15,7 @@ from .authentication import login_manager
 
 import threading
 import requests
+import logging
 import time
 import os
 
@@ -48,6 +49,10 @@ def create_app():
 
 app = create_app()
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
+app.logger.handlers = gunicorn_logger.handlers
+app.logger.setLevel(gunicorn_logger.level)
+    
 
 if Config.INITIALIZE_FROM_FILE:
     create_from_json(Config.INITIALIZE_FROM_FILE)
