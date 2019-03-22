@@ -1,5 +1,6 @@
 import functools
 import json
+import time
 
 from flask import session
 from flask_socketio import SocketIO, disconnect, join_room, leave_room, emit
@@ -33,7 +34,7 @@ def annotation(data):
 @authenticated_only
 def annotating(data):
     """
-    Socket for handling image locking
+    Socket for handling image locking and time logging
     """
 
     image_id = data.get('image_id')
@@ -58,7 +59,14 @@ def annotating(data):
             previous_image = ImageModel.objects(id=previous).first()
 
             if previous_image is not None:
-                previous_image.update(pull__annotating=current_user.username)
+
+                start = session.get('annotating_time', time.time())
+                end = time.time()
+
+                previous_image.update(
+                    inc__annotating_time=end-start,
+                    pull__annotating=current_user.username
+                )
                 emit('annotating', {
                     'image_id': previous,
                     'active': False,
@@ -67,11 +75,20 @@ def annotating(data):
 
         join_room(image_id)
         session['annotating'] = image_id
+        session['annotating_time'] = time.time()
         image.update(add_to_set__annotating=current_user.username)
     else:
         leave_room(image_id)
+
+        start = session.get('annotating_time', time.time())
+        end = time.time()
+
         session['annotating'] = None
-        image.update(pull__annotating=current_user.username)
+        session['time'] = None
+        image.update(
+            inc__annotating_time=end-start,
+            pull__annotating=current_user.username
+        )
 
 
 @socketio.on('disconnect')
@@ -82,6 +99,11 @@ def disconnect():
         # Remove user from room
         if image_id is not None:
             image = ImageModel.objects(id=image_id).first()
+            start = session.get('annotating_time', time.time())
+            end = time.time()
             if image is not None:
-                image.update(pull__annotating=current_user.username)
+                image.update(
+                    inc__annotating_time=end-start,
+                    pull__annotating=current_user.username
+                )
                

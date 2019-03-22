@@ -2,8 +2,7 @@ from flask_restplus import Namespace, Resource
 from flask_login import login_required, current_user
 from flask import request
 
-from ..util import query_util
-from ..util import coco_util
+from ..util import query_util, coco_util, profile
 from ..models import *
 
 
@@ -13,6 +12,7 @@ api = Namespace('annotator', description='Annotator related operations')
 @api.route('/data')
 class AnnotatorData(Resource):
 
+    @profile
     @login_required
     def post(self):
         """
@@ -106,12 +106,13 @@ class AnnotatorData(Resource):
             set__regenerate_thumbnail=annotated
         )
 
-        return data
+        return {"success": True}
 
 
 @api.route('/data/<int:image_id>')
 class AnnotatorId(Resource):
 
+    @profile
     @login_required
     def get(self, image_id):
         """ Called when loading from the annotator client """

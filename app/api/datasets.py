@@ -8,7 +8,7 @@ from threading import Thread
 from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
-from ..util import query_util, coco_util
+from ..util import query_util, coco_util, profile
 from ..models import *
 
 import datetime
@@ -215,12 +215,12 @@ class DatasetData(Resource):
 @api.route('/<int:dataset_id>/data')
 class DatasetDataId(Resource):
 
+    @profile
     @api.expect(page_data)
     @login_required
     def get(self, dataset_id):
         """ Endpoint called by image viewer client """
 
-        exec_start = datetime.datetime.now()
         args = page_data.parse_args()
         limit = args['limit']
         page = args['page']
@@ -284,10 +284,7 @@ class DatasetDataId(Resource):
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f) and not f.startswith('.')]
 
-
-        delta = datetime.datetime.now() - exec_start
         return {
-            "time_ms": int(delta.total_seconds() * 1000),
             "pagination": pagination.export(),
             "images": images_json,
             "folder": folder,

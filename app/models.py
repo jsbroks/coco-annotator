@@ -141,32 +141,41 @@ class DatasetModel(db.DynamicDocument):
 
 class ImageModel(db.DynamicDocument):
     
+    # -- Contants
     THUMBNAIL_DIRECTORY = '.thumbnail'
-
     PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp")
+
+    # -- Private
     _dataset = None
 
+    # -- Database
     id = db.SequenceField(primary_key=True)
+    # Absolute path to image file
     path = db.StringField(required=True, unique=True)
-
     dataset_id = db.IntField()
 
     width = db.IntField(required=True)
     height = db.IntField(required=True)
     file_name = db.StringField()
-
-    annotating = db.ListField(default=[])
+    
+    # True if the image is annotated
     annotated = db.BooleanField(default=False)
+    # Poeple currently annotation the image
+    annotating = db.ListField(default=[])
+    # Users who have annotated this image
+    annotators = db.ListField(default=[])
+    # Amount of time spent in the annotator viewing this image
+    annotating_time = db.LongField(default=0, min_value=0)
 
-    image_url = db.StringField()
     thumbnail_url = db.StringField()
+    image_url = db.StringField()
+    coco_url = db.StringField()
 
     category_ids = db.ListField(default=[])
 
     metadata = db.DictField()
 
     license = db.IntField()
-    coco_url = db.StringField()
 
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
