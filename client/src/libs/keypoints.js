@@ -118,6 +118,7 @@ export class Keypoints extends paper.Group {
     this._color = val;
     this.strokeColor = val;
     this._keypoints.forEach(k => (k.color = val));
+    Object.values(this._lines).forEach(l => (l.strokeColor = val));
   }
 
   get color() {
@@ -128,6 +129,7 @@ export class Keypoints extends paper.Group {
     this._lineWidth = val;
     this.strokeWidth = val;
     this._keypoints.forEach(k => (k.path.storkeWidth = val));
+    Object.values(this._lines).forEach(l => (l.storkeWidth = val));
   }
 
   get lineWidth() {

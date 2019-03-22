@@ -574,7 +574,6 @@ export default {
       let s = Math.round(this.compoundPath.fillColor.saturation * 100);
 
       let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
-      // this.compoundPath.strokeColor = hsl;
       this.keypoints.color = hsl;
     },
     export() {

@@ -363,7 +363,7 @@ export default {
       let annotations = this.$refs.annotation;
       if (annotations == null) return;
       if (!this.isVisible) return;
-      
+
       if (this.showAnnotations) {
         annotations.forEach(a => a.setColor());
       } else {
