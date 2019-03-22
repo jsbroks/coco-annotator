@@ -159,6 +159,8 @@ export default {
         2;
       this.hover.box.position = position.add(this.hover.shift, 0);
       this.hover.text.position = position.add(this.hover.shift, 0);
+
+      this.hover.box.bringToFront();
       this.hover.text.bringToFront();
     },
     onMouseDown(event) {

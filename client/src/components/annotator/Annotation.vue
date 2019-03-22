@@ -533,6 +533,8 @@ export default {
       newCompound.strokeColor = null;
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
+      newCompound.onClick = this.compoundPath.onClick;
+      
       if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
@@ -568,6 +570,7 @@ export default {
         return;
       }
 
+      this.compoundPath.opacity = this.opacity;
       this.compoundPath.fillColor = this.color;
       let h = Math.round(this.compoundPath.fillColor.hue);
       let l = Math.round(this.compoundPath.fillColor.lightness * 50);
@@ -625,6 +628,9 @@ export default {
     }
   },
   watch: {
+    opacity(opacity) {
+      this.compoundPath.opacity = opacity;
+    },
     color() {
       this.setColor();
     },

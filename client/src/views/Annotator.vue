@@ -279,7 +279,7 @@ export default {
     return {
       activeTool: "Select",
       paper: null,
-      shapeOpacity: 0.7,
+      shapeOpacity: 0.6,
       zoom: 0.2,
       cursor: "move",
       mode: "segment",
