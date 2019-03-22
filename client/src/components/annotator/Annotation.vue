@@ -348,9 +348,10 @@ export default {
       }
 
       this.compoundPath.data.annotationId = this.index;
+      this.compoundPath.data.categoryId = this.categoryIndex;
+
       this.compoundPath.fullySelected = this.isCurrent;
-      this.compoundPath.strokeColor = null;
-      this.compoundPath.strokeWidth = 0;
+      this.compoundPath.opacity = this.opacity;
 
       this.setColor();
 
@@ -419,6 +420,7 @@ export default {
       if (this.compoundPath instanceof paper.Path) {
         this.compoundPath = new paper.CompoundPath(this.compoundPath);
         this.compoundPath.data.annotationId = this.index;
+        this.compoundPath.data.categoryId = this.categoryIndex;
       }
 
       let newChildren = [];
@@ -637,7 +639,6 @@ export default {
       if (this.compoundPath == null) return;
 
       this.compoundPath.visible = this.isVisible;
-      this.$parent.group.addChild(this.compoundPath);
       this.setColor();
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
     },
@@ -677,6 +678,9 @@ export default {
     }
   },
   computed: {
+    categoryIndex() {
+      return this.$parent.index;
+    },
     isCurrent() {
       if (this.index === this.current && this.$parent.isCurrent) {
         if (this.compoundPath != null) this.compoundPath.bringToFront();

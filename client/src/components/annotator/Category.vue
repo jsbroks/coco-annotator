@@ -344,16 +344,6 @@ export default {
      * Creates paperjs group
      */
     initCategory() {
-      if (this.group !== null) {
-        this.group.remove();
-        this.group == null;
-      }
-      this.group = new paper.Group();
-      this.group.opacity = this.opacity;
-      this.group.visible = this.isVisible;
-      this.group.data.categoryId = this.index;
-      this.group.clipMask = false;
-
       this.setColor();
     },
     /**
@@ -370,27 +360,18 @@ export default {
      * Show as group color if showAnnotations is false
      */
     setColor() {
-      if (!this.isVisible) return;
-
       let annotations = this.$refs.annotation;
+      if (annotations == null) return;
+      if (!this.isVisible) return;
+      
       if (this.showAnnotations) {
-        if (annotations) annotations.forEach(a => a.setColor());
+        annotations.forEach(a => a.setColor());
       } else {
-        if (this.group != null) {
-          this.group.fillColor = this.color;
-          let h = Math.round(this.group.fillColor.hue);
-          let l = Math.round(this.group.fillColor.lightness * 50);
-          let s = Math.round(this.group.fillColor.saturation * 100);
-          let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
-          // this.group.strokeColor = hsl;
-
-          if (annotations) {
-            annotations.forEach(a => {
-              a.keypoints.color = hsl;
-              a.keypoints.bringToFront();
-            });
-          }
-        }
+        annotations.forEach(a => {
+          a.compoundPath.fillColor = this.color;
+          a.keypoints.color = this.darkHSL;
+          a.keypoints.bringToFront();
+        })
       }
     },
     annotationDeleted(index) {
@@ -426,10 +407,16 @@ export default {
       return "inherit";
     },
     borderColor() {
-      if (this.isCurrent) {
+      if (this.isCurrent)
         return "rgba(255, 255, 255, 0.25)";
-      }
       return "#404552";
+    },
+    darkHSL() {
+      let color = new paper.Color(this.color);
+      let h = Math.round(color.hue);
+      let l = Math.round(color.lightness * 50);
+      let s = Math.round(color.saturation * 100);
+      return "hsl(" + h + "," + s + "%," + l + "%)";
     }
   },
   watch: {
@@ -437,15 +424,19 @@ export default {
       this.setColor();
     },
     opacity() {
-      if (this.group == null) return;
-      this.group.opacity = this.opacity;
+      let annotations = this.$refs.annotation;
+      if (annotations == null) return;
+
+      annotations.forEach(a => a.compoundPath.opacity = this.opacity)
     },
     isVisible(newVisible) {
-      if (this.group == null) return;
-      this.group.visible = newVisible;
       let annotations = this.$refs.annotation;
-      if (annotations)
-        annotations.forEach(a => (a.keypoints.visible = newVisible));
+      if (annotations == null) return;
+
+      annotations.forEach(a => {
+        a.keypoints.visible = newVisible;
+        a.isVisible = newVisible;
+      });
       this.setColor();
     },
     showAnnotations(showing) {
