@@ -49,5 +49,5 @@ COPY ./app /workspace/app
 COPY --from=build-stage /workspace/client/dist /workspace/dist
 
 EXPOSE 5000
-CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level debug --no-sendfile --timeout 180
+CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level info --no-sendfile --timeout 180
 

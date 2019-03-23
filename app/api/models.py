@@ -7,18 +7,22 @@ from PIL import Image
 from ..models import ImageModel
 
 import os
+import logging
+
+logger = logging.getLogger('gunicorn.error')
+
 
 MASKRCNN_LOADED = os.path.isfile(Config.MASK_RCNN_FILE)
 if MASKRCNN_LOADED:
     from ..util.mask_rcnn import model as maskrcnn
 else:
-    print("MaskRCNN model is disabled.", flush=True)
+    logger.warning("MaskRCNN model is disabled.")
 
 DEXTR_LOADED = os.path.isfile(Config.DEXTR_FILE)
 if DEXTR_LOADED:
     from ..util.dextr import model as dextr
 else:
-    print("DEXTR model is disabled.", flush=True)
+    logger.warning("DEXTR model is disabled.")
 
 api = Namespace('model', description='Model related operations')
 

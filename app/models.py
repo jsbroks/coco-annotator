@@ -15,6 +15,9 @@ from flask_login import UserMixin, current_user
 from .config import Config
 from PIL import Image
 
+import logging
+logger = logging.getLogger('gunicorn.error')
+
 
 db = MongoEngine()
 
@@ -96,6 +99,9 @@ class DatasetModel(db.DynamicDocument):
         return task.api_json()
 
     def scan(self):
+
+        logger.info(f"{current_user.username} has created a new scan task for {self.name}")
+
         from .util.task_util import scan_func
         task = TaskModel(
             name="Scanning {} for new images".format(self.name),
@@ -226,6 +232,9 @@ class ImageModel(db.DynamicDocument):
 
         if self.regenerate_thumbnail or \
             not os.path.isfile(thumbnail_path):
+            
+            logger.debug(f'Generating thumbnail for {self.id}')
+
             pil_image = self.generate_thumbnail()
             pil_image = pil_image.convert("RGB")
             pil_image.save(thumbnail_path)
