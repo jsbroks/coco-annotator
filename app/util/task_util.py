@@ -23,6 +23,9 @@ def scan_func(task, socket, dataset):
         except:
             pass
 
+        if root.split('/')[-1].startswith('.'):
+            continue
+        
         for file in files:
             path = os.path.join(root, file)
 
@@ -112,7 +115,7 @@ def export_coco_func(task, socket, dataset):
         image = fix_ids(image)
         del image['deleted']
         coco.get('images').append(image)
-        
+
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)  
     
