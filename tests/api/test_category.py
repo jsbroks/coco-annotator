@@ -103,6 +103,54 @@ class TestCategoryId:
         response = client.delete("/api/category/{}".format(category3_id))
         assert response.status_code == 200
 
+    @pytest.mark.run(after='test_post_categories')
+    def test_put_equal(self, client):
+        """ Test response when the name to update is the same as already stored """
+        data = {
+            "name": "test1"
+        }
+        response = client.put("/api/category/{}".format(category1_id), json=data)
+        assert response.status_code == 200
+
+    def test_put_invalid_id(self, client):
+        """ Test response when id does not exit """
+        response = client.put("/api/category/1000")
+        assert response.status_code == 400
+
+    def test_put_not_unique(self, client):
+        """ Test response when the name already exits """
+        data = {
+            "name": "test2"
+        }
+        response = client.put("/api/category/{}".format(category1_id), json=data)
+        assert response.status_code == 400
+
+    def test_put_empty(self, client):
+        """ Test response when category name is empty"""
+        data = {
+            "name": ""
+        }
+        response = client.put("/api/category/{}".format(category1_id), json=data)
+        assert response.status_code == 400
+
+    @pytest.mark.run(after='test_put_not_unique')
+    def test_put(self, client):
+        """ Test response when update is correct"""
+        data = {
+            "name": "test1_updated"
+        }
+        response = client.put("/api/category/{}".format(category1_id), json=data)
+        assert response.status_code == 200
+
+    @pytest.mark.run(after='test_put')
+    def test_put_reset(self, client):
+        """ Reset test after a correct update """
+        data = {
+            "name": "test1"
+        }
+        response = client.put("/api/category/{}".format(category1_id), json=data)
+        assert response.status_code == 200
+
 
 class TestCategoryData:
 

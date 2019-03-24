@@ -42,6 +42,13 @@
           <!--<a class="dropdown-item" @click="onDownloadClick"
             >Download COCO & Images</a
           >-->
+          <button
+            class="dropdown-item"
+            data-toggle="modal"
+            :data-target="'#categoryEdit' + category.id"
+          >
+            Edit
+          </button>
         </div>
       </div>
 
@@ -52,14 +59,68 @@
         Created by {{ category.creator }}
       </div>
     </div>
+
+    <div class="modal fade" role="dialog" :id="'categoryEdit' + category.id">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Current Name: {{ category.name }}</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label>Edit name: </label>
+                <input type="text" 
+                v-bind:value="category.name"
+                v-on:input="updatedCategoryName = $event.target.value">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-success"
+              @click="onUpdateClick"
+              data-dismiss="modal"
+            >
+              Update
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import toastrs from "@/mixins/toastrs";
 
 export default {
   name: "CategoryCard",
+  mixins: [toastrs],
+  data () {
+    return {
+      updatedCategoryName: ''
+    }
+  },
   props: {
     category: {
       type: Object,
@@ -72,6 +133,27 @@ export default {
     onDownloadClick() {},
     onDeleteClick() {
       axios.delete("/api/category/" + this.category.id).then(() => {
+        this.$parent.updatePage();
+      });
+    },
+    onUpdateClick() {
+      axios
+      .put("/api/category/" + this.category.id, {
+        name: this.updatedCategoryName
+      })
+      .then(response => {
+        this.axiosReqestSuccess(
+          "Updating Category",
+          "Category name has been updated"
+        );
+        this.category.name = this.updatedCategoryName;
+        this.$parent.updatePage();
+      })
+      .catch(error => {
+        this.axiosReqestError(
+          "Updating Category",
+          error.response.data.message
+          );
         this.$parent.updatePage();
       });
     }
