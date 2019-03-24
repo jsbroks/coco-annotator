@@ -38,7 +38,7 @@ class MaskRCNN():
             self.model.load_weights(COCO_MODEL_PATH, by_name=True)
             self.model.keras_model._make_predict_function()
         except:
-            logger.error(f'Could not load MaskRCNN model (place 'mask_rcnn_coco.h5' in the models directory)')
+            logger.error(f"Could not load MaskRCNN model (place 'mask_rcnn_coco.h5' in the models directory)")
             self.model = None
                 
 
