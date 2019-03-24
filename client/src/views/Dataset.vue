@@ -71,21 +71,7 @@
           </div>
           <div v-else>Generate</div>
         </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-block"
-          @click="importModal"
-        >
-          <div v-if="importing.id != null" class="progress">
-            <div
-              class="progress-bar bg-primary"
-              :style="{ 'width': `${importing.progress}%` }"
-            >
-              Importing
-            </div>
-          </div>
-          <div v-else>Importing COCO</div>
-        </button>
+
         <button
           type="button"
           class="btn btn-secondary btn-block"
@@ -102,9 +88,37 @@
           <div v-else>Scan</div>
         </button>
 
-        <!-- <button type="button" class="btn btn-info">
-          Download COCO
-        </button> -->
+        <button
+          type="button"
+          class="btn btn-primary btn-block"
+          @click="importModal"
+        >
+          <div v-if="importing.id != null" class="progress">
+            <div
+              class="progress-bar bg-primary"
+              :style="{ 'width': `${importing.progress}%` }"
+            >
+              Importing
+            </div>
+          </div>
+          <div v-else>Import COCO</div>
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-dark btn-block"
+          @click="exportCOCO"
+        >
+          <div v-if="exporting.id != null" class="progress">
+            <div
+              class="progress-bar bg-dark"
+              :style="{ 'width': `${exporting.progress}%` }"
+            >
+              Exporting
+            </div>
+          </div>
+          <div v-else>Export COCO</div>
+        </button>
       </div>
       <hr>
       <h6 class="sidebar-title text-center">Subdirectories</h6>
@@ -365,6 +379,25 @@ export default {
         })
         .finally(() => this.removeProcess(process));
     },
+    exportCOCO() {
+      if (this.exporting.id != null) {
+        this.$router.push({ path: "/tasks", query: { id: this.exporting.id } });
+        return;
+      }
+
+      Dataset.exportingCOCO(this.dataset.id)
+        .then(response => {
+          let id = response.data.id;
+          this.exporting.id = id;
+        })
+        .catch(error => {
+          this.axiosReqestError(
+            "Exporting COCO",
+            error.response.data.message
+          );
+        })
+        .finally(() => this.removeProcess(process));
+    },
     removeFolder(folder) {
       let index = this.folders.indexOf(folder);
       this.folders.splice(index + 1, this.folders.length);
@@ -437,6 +470,10 @@ export default {
       if (data.id === this.importing.id) {
         this.importing.progress = data.progress;
       }
+
+      if (data.id === this.exporting.id) {
+        this.exporting.progress = data.progress;
+      }
     },
     annotating(data) {
       let image = this.images.find(i => i.id == data.image_id);
@@ -482,6 +519,14 @@ export default {
         setTimeout(() => {
           this.importing.progress = 0;
           this.importing.id = null;
+        }, 1000);
+      }
+    },
+    "exporting.progress"(progress) {
+      if (progress >= 100) {
+        setTimeout(() => {
+          this.exporting.progress = 0;
+          this.exporting.id = null;
         }, 1000);
       }
     }

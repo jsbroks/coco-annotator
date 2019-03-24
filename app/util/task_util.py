@@ -1,5 +1,9 @@
 from ..models import ImageModel, CategoryModel, AnnotationModel
 from .coco_util import get_segmentation_area_and_bbox
+from .query_util import fix_ids
+
+import numpy as np
+import json
 import os
 
 
@@ -36,6 +40,87 @@ def scan_func(task, socket, dataset):
                     task.warning(f"Could not read {path}")
 
     task.info(f"Created {count} new image(s)")
+    task.set_progress(100, socket=socket)
+
+
+def export_coco_func(task, socket, dataset):
+
+    task.info("Beginning Export (COCO Format)")
+
+    categories = CategoryModel.objects(deleted=False) \
+        .exclude('deleted_date').in_bulk(dataset.categories).items()
+    
+    total_items = len(dataset.categories)
+    dataset = fix_ids(dataset)
+
+    images = ImageModel.objects(deleted=False, annotated=True, dataset_id=dataset.get('id')).exclude('deleted_date')
+    all_annotations = AnnotationModel.objects(deleted=False).exclude('deleted_date', 'paper_object')
+
+    coco = {
+        'images': [],
+        'categories': [],
+        'annotations': []
+    }
+
+    total_items += images.count()
+    progress = 0
+    for category in categories:
+        category = fix_ids(category[1])
+
+        del category['deleted']
+        if len(category.get('keypoint_labels', [])) > 0:
+            category['keypoints'] = category.pop('keypoint_labels')
+            category['skeleton'] = category.pop('keypoint_edges')
+        else:
+            del category['keypoint_edges']
+            del category['keypoint_labels']
+
+        task.info(f"Adding category: {category.get('name')}")
+        coco.get('categories').append(category)
+        
+        progress += 1
+        task.set_progress((progress/total_items)*100, socket=socket)
+
+    for image in images:
+        annotations = all_annotations.filter(image_id=image.id)
+        if annotations.count() == 0:
+            continue
+
+        annotations = fix_ids(annotations.all())
+        num_annotations = 0
+        for annotation in annotations:
+
+            has_keypoints = len(annotation.get('keypoints', [])) > 0
+            has_segmentation = len(annotation.get('segmentation', [])) > 0
+
+            if has_keypoints or has_segmentation:
+                del annotation['deleted']
+
+                if not has_keypoints:
+                    pass
+                    # del annotation['keypoints']
+                else:
+                    arr = np.array(annotation.get('keypoints', []))
+                    arr = arr[2::3]
+                    annotation['num_keypoints'] = len(arr[arr > 0])
+                
+                num_annotations += 1
+                coco.get('annotations').append(annotation)
+        
+        task.info(f'Exporting {num_annotations} annotations for image {image.id}')
+
+        image = fix_ids(image)
+        del image['deleted']
+        coco.get('images').append(image)
+        
+        progress += 1
+        task.set_progress((progress/total_items)*100, socket=socket)  
+    
+    file_path = dataset.get('directory') + '/coco.json'
+    with open(file_path, 'w') as fp:
+        json.dump(coco, fp)
+
+    task.info(f"Done export {dataset.get('name')}")
     task.set_progress(100, socket=socket)
 
 

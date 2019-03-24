@@ -89,7 +89,7 @@ class DatasetModel(db.DynamicDocument):
     def import_coco(self, coco):
         from .util.task_util import import_coco_func
         task = TaskModel(
-            name="Scanning {} for new images".format(self.name),
+            name="Import COCO ({})".format(self.name),
             dataset_id=self.id,
             group="Annotation Import"
         )
@@ -98,13 +98,25 @@ class DatasetModel(db.DynamicDocument):
 
         return task.api_json()
 
-    def scan(self):
 
-        logger.info(f"{current_user.username} has created a new scan task for {self.name}")
+    def export_coco(self):
+
+        from .util.task_util import export_coco_func
+        task = TaskModel(
+            name="Export COCO ({})".format(self.name),
+            dataset_id=self.id,
+            group="Annotation Export"
+        )
+        task.save()
+        task.start(export_coco_func, dataset=self)
+
+        return task.api_json()
+
+    def scan(self):
 
         from .util.task_util import scan_func
         task = TaskModel(
-            name="Scanning {} for new images".format(self.name),
+            name=f"Scanning {self.name} for new images",
             dataset_id=self.id,
             group="Directory Image Scan"
         )
@@ -486,7 +498,6 @@ class CategoryModel(db.DynamicDocument):
         return self.is_owner(user)
 
 
-
 class LicenseModel(db.DynamicDocument):
     id = db.SequenceField(primary_key=True)
     name = db.StringField()
@@ -509,6 +520,7 @@ class TaskModel(db.DynamicDocument):
     end_date = db.DateTimeField()
     completed = db.BooleanField(default=False)
     failed = db.BooleanField(default=False)
+    has_download = db.BooleanField(default=False)
     
     # If any of the information is relevant to the task
     # it should be added
@@ -560,13 +572,15 @@ class TaskModel(db.DynamicDocument):
         self.update(**statment)
 
     def set_progress(self, percent, socket=None):
-        
+
         self.update(progress=int(percent), completed=(percent >= 100))
 
         # Send socket update every 10%
         if self._progress_update < percent or percent >= 100:
             
             if socket is not None:
+                logger.debug(f"Emitting {percent} progress update for task {self.id}")
+
                 socket.emit('taskProgress', {
                     'id': self.id,
                     'progress': percent,
@@ -594,13 +608,6 @@ class TaskModel(db.DynamicDocument):
             "id": self.id,
             "name": self.name
         }
-
-
-class CocoImportModel(db.DynamicDocument):
-    id = db.SequenceField(primary_key=True)
-    creator = db.StringField(required=True)
-    progress = db.FloatField(default=0.0, min_value=0.0, max_value=1.0)
-    errors = db.ListField(default=[])
 
 
 class UserModel(db.DynamicDocument, UserMixin):

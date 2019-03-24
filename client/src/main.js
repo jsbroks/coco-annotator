@@ -28,7 +28,7 @@ Vue.use(Loading);
 Vue.use(VLazyImagePlugin);
 Vue.use(
   new VueSocketIO({
-    debug: false,
+    debug: true,
     connection: window.location.origin
   })
 );

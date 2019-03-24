@@ -46,7 +46,7 @@ def annotating(data):
     image = ImageModel.objects(id=image_id).first()
     if image is None:
         # invalid image ID
-        return True
+        return
     
     emit('annotating', {
         'image_id': image_id,
