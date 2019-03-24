@@ -16,6 +16,9 @@ create_category.add_argument('supercategory', location='json')
 create_category.add_argument('color',  location='json')
 create_category.add_argument('metadata', type=dict, location='json')
 
+update_category = reqparse.RequestParser()
+update_category.add_argument('name', required=True, location='json')
+
 page_data = reqparse.RequestParser()
 page_data.add_argument('page', default=1, type=int)
 page_data.add_argument('limit', default=20, type=int)
@@ -78,6 +81,42 @@ class Category(Resource):
 
         category.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
         return {'success': True}
+
+    @api.expect(update_category)
+    @login_required
+    def put(self, category_id):
+        """ Updates a category name by ID """
+
+        category = current_user.categories.filter(id=category_id).first()
+
+        # check if the id exits
+        if category is None:
+            return {"message": "Invalid category id"}, 400
+
+        args = update_category.parse_args()
+        name_to_update = args.get('name')
+
+        # check if the name to update is the same as already stored
+        if category.name == name_to_update:
+            return {"message": "Nothing to update"}, 200
+
+        # check if the name is empty
+        if not name_to_update:
+            return {"message": "Invalid category name to update"}, 400
+
+        # update name of the category
+        # check if the name to update exits already in db
+        # @ToDo: Is it necessary to allow equal category names among different creators?
+        category.name = name_to_update
+        try:
+            category.update(
+                name=category.name
+            )
+        except NotUniqueError:
+            # it is only triggered when the name already exists and the creator is the same
+            return {"message": "Category '" + name_to_update + "' already exits"}, 400
+
+        return {"success": True}
 
 
 @api.route('/data')
