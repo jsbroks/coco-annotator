@@ -1,5 +1,6 @@
 <template>
   <div style="display: block; height: inherit;">
+    
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
       <div v-show="mode == 'segment'">
         <hr />
@@ -191,6 +192,17 @@
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
     </div>
+
+    <div v-show="annotating.length > 0" class="fixed-bottom alert alert-warning alert-dismissible fade show">
+      <span>
+      This image is being annotated by <b>{{ annotating.join(', ') }}</b>.
+      </span>
+      
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
   </div>
 </template>
 
@@ -326,7 +338,8 @@ export default {
         data: true,
         loader: null
       },
-      search: ""
+      search: "",
+      annotating: []
     };
   },
   methods: {
@@ -523,6 +536,8 @@ export default {
           this.image.next = data.image.next;
           this.image.previous = data.image.previous;
           this.image.categoryIds = data.image.category_ids || [];
+
+          this.annotating = data.image.annotating || [];
 
           // Set other data
           this.dataset = data.dataset;
@@ -738,6 +753,16 @@ export default {
         let annotation = response.data;
         category.annotations.push(annotation);
       });
+    },
+
+    removeFromAnnotatingList() {
+      if (this.user == null) return;
+
+      var index = this.annotating.indexOf(this.user.username);
+      //Remove self from list
+      if (index > -1) {
+        this.annotating.splice(index, 1);
+      }
     }
   },
   watch: {
@@ -782,6 +807,12 @@ export default {
           this.current.annotations = -1;
         }
       }
+    },
+    annotating() {
+      this.removeFromAnnotatingList();
+    },
+    user() {
+      this.removeFromAnnotatingList();
     }
   },
   computed: {
@@ -802,7 +833,21 @@ export default {
       return this.currentCategory.getAnnotation(this.current.annotation);
     },
     user() {
-      return this.$store.user.user;
+      return this.$store.getters["user/user"];
+    }
+  },
+  sockets: {
+    annotating(data) {
+      if (data.image_id !== this.image.id) return;
+      
+      if (data.active) {
+        let found = this.annotating.indexOf(data.username);
+        if (found < 0) {
+          this.annotating.push(data.username);
+        }
+      } else {
+        this.annotating.splice(this.annotating.indexOf(data.username), 1);
+      }
     }
   },
   beforeRouteLeave(to, from, next) {
@@ -835,6 +880,15 @@ export default {
 </script>
 
 <style scoped>
+
+.alert {
+  bottom: 0;
+  width: 50%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* width */
 ::-webkit-scrollbar {
   width: 7px;
