@@ -253,11 +253,11 @@ export default {
       let item = event.item;
 
       this.keypoint = null;
-      
+
       if (
-        event.item
-        && event.item.data.hasOwnProperty("annotationId")
-        && event.item.data.hasOwnProperty("categoryId")
+        event.item &&
+        event.item.data.hasOwnProperty("annotationId") &&
+        event.item.data.hasOwnProperty("categoryId")
       ) {
         this.hover.position = event.point;
 
@@ -267,9 +267,7 @@ export default {
         this.$parent.hover.annotation = annotationId;
 
         this.hover.category = this.$parent.getCategory(categoryId);
-        this.hover.annotation = this.hover.category.getAnnotation(
-            annotationId
-        );
+        this.hover.annotation = this.hover.category.getAnnotation(annotationId);
         event.item.selected = true;
 
         this.hoverText();

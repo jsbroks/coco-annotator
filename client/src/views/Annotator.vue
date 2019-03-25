@@ -389,7 +389,6 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     onwheel(e) {
-
       e.preventDefault();
       if (!this.doneLoading) return;
 
@@ -468,7 +467,7 @@ export default {
         this.fit();
         this.image.ratio = (width * height) / 1000000;
         this.removeProcess(process);
-        
+
         let tempCtx = document.createElement("canvas").getContext("2d");
         tempCtx.canvas.width = width;
         tempCtx.canvas.height = height;

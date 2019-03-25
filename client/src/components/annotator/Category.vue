@@ -137,7 +137,6 @@
 
 <script>
 import paper from "paper";
-import axios from "axios";
 
 import Annotations from "@/models/annotations";
 import Annotation from "@/components/annotator/Annotation";
@@ -371,7 +370,7 @@ export default {
           a.compoundPath.fillColor = this.color;
           a.keypoints.color = this.darkHSL;
           a.keypoints.bringToFront();
-        })
+        });
       }
     },
     annotationDeleted(index) {
@@ -407,8 +406,7 @@ export default {
       return "inherit";
     },
     borderColor() {
-      if (this.isCurrent)
-        return "rgba(255, 255, 255, 0.25)";
+      if (this.isCurrent) return "rgba(255, 255, 255, 0.25)";
       return "#404552";
     },
     darkHSL() {
@@ -427,7 +425,7 @@ export default {
       let annotations = this.$refs.annotation;
       if (annotations == null) return;
 
-      annotations.forEach(a => a.compoundPath.opacity = this.opacity)
+      annotations.forEach(a => (a.compoundPath.opacity = this.opacity));
     },
     isVisible(newVisible) {
       let annotations = this.$refs.annotation;

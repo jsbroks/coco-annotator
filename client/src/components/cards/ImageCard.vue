@@ -148,9 +148,9 @@ export default {
     imageUrl() {
       let d = new Date();
       if (this.image.annotations > 0 && this.showAnnotations) {
-        return (
-          `/api/image/${this.image.id}?width=250&thumbnail=true&dummy=${d.getTime()}`
-        );
+        return `/api/image/${
+          this.image.id
+        }?width=250&thumbnail=true&dummy=${d.getTime()}`;
       } else {
         return "/api/image/" + this.image.id + "?width=250";
       }

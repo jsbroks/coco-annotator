@@ -528,13 +528,12 @@ export default {
     unite(compound, simplify = true, undoable = true) {
       if (this.compoundPath == null) this.createCompoundPath();
 
-      
       let newCompound = this.compoundPath.unite(compound);
       newCompound.strokeColor = null;
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
-      
+
       if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();

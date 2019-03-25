@@ -79,8 +79,8 @@
               <div class="form-group">
                 <label>Edit name: </label>
                 <input type="text" 
-                v-bind:value="category.name"
-                v-on:input="updatedCategoryName = $event.target.value">
+                :value="category.name"
+                @input="updatedCategoryName = $event.target.value">
               </div>
             </form>
           </div>
@@ -116,10 +116,10 @@ import toastrs from "@/mixins/toastrs";
 export default {
   name: "CategoryCard",
   mixins: [toastrs],
-  data () {
+  data() {
     return {
-      updatedCategoryName: ''
-    }
+      updatedCategoryName: ""
+    };
   },
   props: {
     category: {
@@ -138,24 +138,24 @@ export default {
     },
     onUpdateClick() {
       axios
-      .put("/api/category/" + this.category.id, {
-        name: this.updatedCategoryName
-      })
-      .then(response => {
-        this.axiosReqestSuccess(
-          "Updating Category",
-          "Category name has been updated"
-        );
-        this.category.name = this.updatedCategoryName;
-        this.$parent.updatePage();
-      })
-      .catch(error => {
-        this.axiosReqestError(
-          "Updating Category",
-          error.response.data.message
+        .put("/api/category/" + this.category.id, {
+          name: this.updatedCategoryName
+        })
+        .then(() => {
+          this.axiosReqestSuccess(
+            "Updating Category",
+            "Category name has been updated"
           );
-        this.$parent.updatePage();
-      });
+          this.category.name = this.updatedCategoryName;
+          this.$parent.updatePage();
+        })
+        .catch(error => {
+          this.axiosReqestError(
+            "Updating Category",
+            error.response.data.message
+          );
+          this.$parent.updatePage();
+        });
     }
   }
 };
