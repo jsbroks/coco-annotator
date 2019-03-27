@@ -117,7 +117,7 @@ def disconnect():
                     pull__annotating=current_user.username
                 )
                 emit('annotating', {
-                    'image_id': previous,
+                    'image_id': image_id,
                     'active': False,
                     'username': current_user.username
                 }, broadcast=True, include_self=False)
