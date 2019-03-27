@@ -340,7 +340,7 @@ class AnnotationModel(db.DynamicDocument):
 
     segmentation = db.ListField(default=[])
     area = db.IntField(default=0)
-    bbox = db.ListField()
+    bbox = db.ListField(default=[0, 0, 0, 0])
     iscrowd = db.BooleanField(default=False)
 
     creator = db.StringField(required=True)
@@ -693,6 +693,21 @@ class UserModel(db.DynamicDocument, UserMixin):
 
     def _update_last_seen(self):
         self.update(last_seen=datetime.datetime.now())
+
+
+class EventModel:
+
+    EDIT_ANNOTATION = "edit-annotation"
+    
+    action = db.StringField()
+    user_id = db.IntField()
+    annotation_id = db.IntField()
+    dataset_id = db.IntField()
+    image_id = db.IntField()
+    milliseconds = db.IntField(min_value=0)
+    
+    
+
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171

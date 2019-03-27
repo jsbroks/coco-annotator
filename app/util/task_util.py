@@ -72,18 +72,22 @@ def export_coco_func(task, socket, dataset):
 
         del category['deleted']
         if len(category.get('keypoint_labels', [])) > 0:
-            category['keypoints'] = category.pop('keypoint_labels')
-            category['skeleton'] = category.pop('keypoint_edges')
+            category['keypoints'] = category.pop('keypoint_labels', [])
+            category['skeleton'] = category.pop('keypoint_edges', [])
         else:
-            del category['keypoint_edges']
-            del category['keypoint_labels']
+            if 'keypoint_edges' in category:
+                del category['keypoint_edges']
+            if 'keypoint_labels' in categories:
+                del category['keypoint_labels']
 
         task.info(f"Adding category: {category.get('name')}")
         coco.get('categories').append(category)
         
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)
-
+    
+    total_annotations = 0
+    total_images = 0
     for image in images:
         annotations = all_annotations.filter(image_id=image.id)
         if annotations.count() == 0:
@@ -100,8 +104,8 @@ def export_coco_func(task, socket, dataset):
                 del annotation['deleted']
 
                 if not has_keypoints:
-                    pass
-                    # del annotation['keypoints']
+                    if 'keypoints' in annotation:
+                        del annotation['keypoints']
                 else:
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
@@ -109,13 +113,15 @@ def export_coco_func(task, socket, dataset):
                 
                 num_annotations += 1
                 coco.get('annotations').append(annotation)
-        
+                
         task.info(f'Exporting {num_annotations} annotations for image {image.id}')
+        total_annotations += num_annotations
 
         image = fix_ids(image)
         del image['deleted']
         coco.get('images').append(image)
-
+        total_images += 1
+        
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)  
     
@@ -123,7 +129,7 @@ def export_coco_func(task, socket, dataset):
     with open(file_path, 'w') as fp:
         json.dump(coco, fp)
 
-    task.info(f"Done export {dataset.get('name')}")
+    task.info(f"Done export {total_annotations} annotations and {total_images} images from {dataset.get('name')}")
     task.set_progress(100, socket=socket)
 
 
@@ -223,7 +229,9 @@ def import_coco_func(task, socket, dataset, coco_json):
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)
 
-        if len(segmentation) == 0 and len(keypoints) == 0:
+        has_segmentation = len(segmentation) > 0
+        has_keypoints = len(keypoints) > 0
+        if not has_segmentation and not has_keypoints:
             task.warning(f"Annotation {annotation.get('id')} has no segmentation or keypoints")
             continue
 
@@ -250,12 +258,17 @@ def import_coco_func(task, socket, dataset, coco_json):
 
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
-            annotation_model.segmentation = segmentation
-            area, bbox = get_segmentation_area_and_bbox(
-                segmentation, image_model.height, image_model.width)
-            annotation_model.area = area
-            annotation_model.bbox = list(bbox)
-            annotation_model.keypoints = keypoints
+
+            if has_segmentation:
+                annotation_model.segmentation = segmentation
+                area, bbox = get_segmentation_area_and_bbox(
+                    segmentation, image_model.height, image_model.width)
+                annotation_model.area = area
+                annotation_model.bbox = list(bbox)
+            
+            if has_keypoints:
+                annotation_model.keypoints = keypoints
+
             annotation_model.save()
 
             image_categories.append(category_id)
@@ -263,10 +276,12 @@ def import_coco_func(task, socket, dataset, coco_json):
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
 
     for image_id in images_id:
+        
         image_model = images_id[image_id]
         category_ids = categories_by_image[image_id]
         all_category_ids = list(image_model.category_ids)
         all_category_ids += category_ids
+
         image_model.update(
             set__annotated=True,
             set__category_ids=list(set(all_category_ids)))
