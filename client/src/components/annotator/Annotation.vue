@@ -313,6 +313,8 @@ export default {
         $(`#annotationSettings${this.annotation.id}`).modal("show");
       };
       this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels);
+      this.keypoints.radius = this.scale * 6;
+      this.keypoints.lineWidth = this.scale * 2;
 
       let keypoints = this.annotation.keypoints;
       if (keypoints) {
