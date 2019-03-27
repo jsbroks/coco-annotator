@@ -46,6 +46,7 @@ export class Keypoints extends paper.Group {
 
   bringToFront() {
     super.bringToFront();
+    Object.values(this._lines).forEach(l => l.bringToFront());
     this._keypoints.forEach(k => k.path.bringToFront());
   }
 
@@ -129,7 +130,7 @@ export class Keypoints extends paper.Group {
     this._lineWidth = val;
     this.strokeWidth = val;
     this._keypoints.forEach(k => (k.path.storkeWidth = val));
-    Object.values(this._lines).forEach(l => (l.storkeWidth = val));
+    Object.values(this._lines).forEach(l => (l.strokeWidth = val));
   }
 
   get lineWidth() {
@@ -258,14 +259,10 @@ export class Keypoints extends paper.Group {
 
     let line = new paper.Path.Line(firstKeypoint, secondKeypoint);
     line.strokeColor = this.strokeColor;
-    line.strokeWidth = this.strokeWidth;
+    line.strokeWidth = this.lineWidth;
     line.indicator = true;
 
-    if (firstKeypoint.path.isBelow(secondKeypoint.path)) {
-      line.insertBelow(firstKeypoint.path);
-    } else {
-      line.insertBelow(secondKeypoint.path);
-    }
+    line.insertAbove(secondKeypoint.path);
 
     this._lines[h] = line;
   }

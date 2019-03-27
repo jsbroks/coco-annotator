@@ -464,7 +464,8 @@ export default {
         indexLabel: label || -1,
         radius: this.scale * 6,
         onClick: event => {
-          if (!this.$parent.isCurrent) return;
+          this.onAnnotationClick();
+          
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           let keypoint = event.target.keypoint;
 
@@ -573,12 +574,7 @@ export default {
 
       this.compoundPath.opacity = this.opacity;
       this.compoundPath.fillColor = this.color;
-      let h = Math.round(this.compoundPath.fillColor.hue);
-      let l = Math.round(this.compoundPath.fillColor.lightness * 50);
-      let s = Math.round(this.compoundPath.fillColor.saturation * 100);
-
-      let hsl = "hsl(" + h + "," + s + "%," + l + "%)";
-      this.keypoints.color = hsl;
+      this.keypoints.color = this.darkHSL;
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
@@ -672,12 +668,14 @@ export default {
       this.currentKeypoint.visibility = newVal;
     },
     keypointEdges(newEdges) {
+      this.keypoints.color = this.darkHSL
       newEdges.forEach(e => this.keypoints.addEdge(e));
     },
     scale: {
       immediate: true,
       handler(scale) {
         if (!this.keypoints) return;
+        
         this.keypoints.radius = scale * 6;
         this.keypoints.lineWidth = scale * 2;
       }
@@ -712,13 +710,12 @@ export default {
       if (search === String(this.index + 1)) return true;
       return this.name.toLowerCase().includes(this.search);
     },
-    hsl() {
-      if (this.compoundPath == null) return [0, 0, 0];
-      let h = Math.round(this.compoundPath.fillColor.hue);
-      let l = Math.round(this.compoundPath.fillColor.lightness * 50);
-      let s = Math.round(this.compoundPath.fillColor.saturation * 100);
-
-      return [h, s, l];
+    darkHSL() {
+      let color = new paper.Color(this.color);
+      let h = Math.round(color.hue);
+      let l = Math.round(color.lightness * 50);
+      let s = Math.round(color.saturation * 100);
+      return "hsl(" + h + "," + s + "%," + l + "%)";
     },
     notUsedKeypointLabels() {
       this.tagRecomputeCounter;
