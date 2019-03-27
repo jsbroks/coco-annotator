@@ -127,11 +127,11 @@ class AnnotatorId(Resource):
 
         categories = CategoryModel.objects(deleted=False).in_bulk(dataset.categories).items()
 
+
         # Get next and previous image
-        images = list(ImageModel.objects(dataset_id=dataset.id, deleted=False).order_by('file_name').all())
-        image_index = images.index(image)
-        image_previous = None if image_index - 1 < 0 else images[image_index - 1].id
-        image_next = None if image_index + 1 == len(images) else images[image_index + 1].id
+        images = ImageModel.objects(dataset_id=dataset.id, deleted=False)
+        pre = images.filter(file_name__lt=image.file_name).order_by('-file_name').first()
+        nex = images.filter(file_name__gt=image.file_name).order_by('file_name').first()
 
         preferences = {}
         if not Config.LOGIN_DISABLED:
@@ -149,8 +149,8 @@ class AnnotatorId(Resource):
             }
         }
 
-        data['image']['previous'] = image_previous
-        data['image']['next'] = image_next
+        data['image']['previous'] = pre.id if pre else None
+        data['image']['next'] = nex.id if nex else None
 
         for category in categories:
             category = query_util.fix_ids(category[1])
