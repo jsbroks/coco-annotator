@@ -1,11 +1,10 @@
 import os
 import cv2
 import json
+import time
 import datetime
 import numpy as np
 import imantics as im
-
-from time import sleep
 
 from flask_socketio import emit
 from flask_mongoengine import MongoEngine
@@ -20,6 +19,18 @@ logger = logging.getLogger('gunicorn.error')
 
 
 db = MongoEngine()
+
+
+class Event(db.EmbeddedDocument):
+    
+    name = db.StringField()
+    created_at = db.DateTimeField()
+    data = db.GenericEmbeddedDocumentField()
+
+    def set_data(self, event):
+        self.name = event.NAME
+        self.data = event
+        self.created_at = datetime.datetime.now()
 
 
 class DatasetModel(db.DynamicDocument):
@@ -157,6 +168,7 @@ class DatasetModel(db.DynamicDocument):
             'download': self.can_download(user)
         }
 
+
 class ImageModel(db.DynamicDocument):
     
     # -- Contants
@@ -168,10 +180,11 @@ class ImageModel(db.DynamicDocument):
 
     # -- Database
     id = db.SequenceField(primary_key=True)
+    dataset_id = db.IntField()
+    category_ids = db.ListField(default=[])
+
     # Absolute path to image file
     path = db.StringField(required=True, unique=True)
-    dataset_id = db.IntField()
-
     width = db.IntField(required=True)
     height = db.IntField(required=True)
     file_name = db.StringField()
@@ -180,23 +193,18 @@ class ImageModel(db.DynamicDocument):
     annotated = db.BooleanField(default=False)
     # Poeple currently annotation the image
     annotating = db.ListField(default=[])
-    # Users who have annotated this image
-    annotators = db.ListField(default=[])
-    # Amount of time spent in the annotator viewing this image
-    annotating_time = db.LongField(default=0, min_value=0)
 
     thumbnail_url = db.StringField()
     image_url = db.StringField()
     coco_url = db.StringField()
 
-    category_ids = db.ListField(default=[])
-
     metadata = db.DictField()
-
     license = db.IntField()
 
     deleted = db.BooleanField(default=False)
     deleted_date = db.DateTimeField()
+
+    events = db.EmbeddedDocumentListField(Event)
 
     regenerate_thumbnail = db.BooleanField(default=False)
 
@@ -329,6 +337,11 @@ class ImageModel(db.DynamicDocument):
             'delete': True,
             'download': True
         }
+    
+    def add_event(self, e):
+        event = Event()
+        event.set_data(e)
+        self.update(push__events=event)
 
 
 class AnnotationModel(db.DynamicDocument):
@@ -695,19 +708,26 @@ class UserModel(db.DynamicDocument, UserMixin):
         self.update(last_seen=datetime.datetime.now())
 
 
-class EventModel:
+class SessionEvent(db.EmbeddedDocument):
+    NAME = "SESSION"
 
-    EDIT_ANNOTATION = "edit-annotation"
-    
-    action = db.StringField()
-    user_id = db.IntField()
-    annotation_id = db.IntField()
-    dataset_id = db.IntField()
-    image_id = db.IntField()
-    milliseconds = db.IntField(min_value=0)
-    
-    
+    user = db.StringField(required=True)
+    milliseconds = db.IntField(default=0, min_value=0)
+    tools_used = db.ListField(default=[])
 
+    @classmethod
+    def create(self, start, user=None, end=None, tools=[]):
+        
+        if user is None:
+            user = current_user.username
+
+        if end is None:
+            end = time.time()
+
+        return SessionEvent(
+            user=user,
+            milliseconds=int((end-start)*1000)
+        )
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171

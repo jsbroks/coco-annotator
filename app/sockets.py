@@ -6,7 +6,7 @@ from flask import session
 from flask_socketio import SocketIO, disconnect, join_room, leave_room, emit
 from flask_login import current_user
 
-from .models import ImageModel
+from .models import ImageModel, SessionEvent
 from .config import Config
 
 import logging
@@ -65,12 +65,13 @@ def annotating(data):
             if previous_image is not None:
 
                 start = session.get('annotating_time', time.time())
-                end = time.time()
+                event = SessionEvent.create(start)
 
+                previous_image.add_event(event)
                 previous_image.update(
-                    inc__annotating_time=end-start,
                     pull__annotating=current_user.username
                 )
+
                 emit('annotating', {
                     'image_id': previous,
                     'active': False,
@@ -85,14 +86,15 @@ def annotating(data):
         leave_room(image_id)
 
         start = session.get('annotating_time', time.time())
-        end = time.time()
+        event = SessionEvent.create(start)
+
+        image.add_event(event)
+        image.update(
+            pull__annotating=current_user.username
+        )
 
         session['annotating'] = None
         session['time'] = None
-        image.update(
-            inc__annotating_time=end-start,
-            pull__annotating=current_user.username
-        )
 
 
 @socketio.on('connect')
@@ -109,11 +111,12 @@ def disconnect():
         # Remove user from room
         if image_id is not None:
             image = ImageModel.objects(id=image_id).first()
-            start = session.get('annotating_time', time.time())
-            end = time.time()
             if image is not None:
+                start = session.get('annotating_time', time.time())
+                event = SessionEvent.create(start)
+        
+                image.add_event(event)
                 image.update(
-                    inc__annotating_time=end-start,
                     pull__annotating=current_user.username
                 )
                 emit('annotating', {
