@@ -73,12 +73,30 @@ Thanks to the backers for making this project possible!
 
 Thanks to all these wonderful libaries/frameworks:
 
+### Backend
+
 - [Flask](http://flask.pocoo.org/) - Python web microframework
-- [Vue](https://vuejs.org/) - Frontend javascript framework
+- [MongoDB](https://www.mongodb.com/) - Cross-platform document-oriented database
+- [MongoEngine](http://mongoengine.org/) - Python object data mapper for MongoDB
+
+### Frontend
+
+- [Vue](https://vuejs.org/) - JavaScript framework for building user interfaces
 - [Axios](https://github.com/axios/axios) - Promise based HTTP client
-- [PaperJS](http://paperjs.org/) - Canvas editor library
+- [PaperJS](http://paperjs.org/) - HTML canvas vector graphics library
 - [Bootstrap](https://getbootstrap.com/) - Frontend component library
 
 # License
 
 [MIT](https://tldrlegal.com/license/mit-license)
+
+# Citation
+
+```
+  @MISC{cocoannotator
+    author = {Justin Brooks},
+    title = {{COCO Annotator}},
+    howpublished = "\url{https://github.com/jsbroks/coco-annotator/}",
+    year = {2019},
+  }
+```
