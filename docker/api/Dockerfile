@@ -26,4 +26,4 @@ COPY ./.git /workspace/.git
 WORKDIR /workspace/
 
 EXPOSE 5000
-CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level debug --no-sendfile --reload
+CMD gunicorn -c webserver/gunicorn_config.py webserver:app

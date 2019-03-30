@@ -1,7 +1,12 @@
 import pycocotools.mask as mask
 
 from .query_util import fix_ids
-from ..models import *
+from database import (
+    ImageModel,
+    DatasetModel,
+    CategoryModel,
+    AnnotationModel
+)
 
 
 def paperjs_to_coco(image_width, image_height, paperjs):

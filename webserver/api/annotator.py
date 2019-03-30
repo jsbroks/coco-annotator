@@ -3,8 +3,14 @@ from flask_login import login_required, current_user
 from flask import request
 
 from ..util import query_util, coco_util, profile
-from ..models import *
 
+from config import Config
+from database import (
+    ImageModel,
+    DatasetModel,
+    CategoryModel,
+    AnnotationModel
+)
 
 api = Namespace('annotator', description='Annotator related operations')
 

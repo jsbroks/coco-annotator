@@ -2,9 +2,9 @@ from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.datastructures import FileStorage
 from imantics import Mask
 from flask_login import login_required
-from ..config import Config
+from config import Config
 from PIL import Image
-from ..models import ImageModel
+from database import ImageModel
 
 import os
 import logging

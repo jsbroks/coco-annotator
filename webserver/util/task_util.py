@@ -1,4 +1,4 @@
-from ..models import ImageModel, CategoryModel, AnnotationModel
+from database import ImageModel, CategoryModel, AnnotationModel
 from .coco_util import get_segmentation_area_and_bbox
 from .query_util import fix_ids
 

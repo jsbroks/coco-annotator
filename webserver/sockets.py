@@ -3,11 +3,17 @@ import json
 import time
 
 from flask import session
-from flask_socketio import SocketIO, disconnect, join_room, leave_room, emit
+from flask_socketio import (
+    SocketIO,
+    disconnect,
+    join_room,
+    leave_room,
+    emit
+)
 from flask_login import current_user
 
-from .models import ImageModel, SessionEvent
-from .config import Config
+from database import ImageModel, SessionEvent
+from config import Config
 
 import logging
 logger = logging.getLogger('gunicorn.error')
@@ -65,7 +71,7 @@ def annotating(data):
             if previous_image is not None:
 
                 start = session.get('annotating_time', time.time())
-                event = SessionEvent.create(start)
+                event = SessionEvent.create(start, current_user)
 
                 previous_image.add_event(event)
                 previous_image.update(
@@ -86,7 +92,7 @@ def annotating(data):
         leave_room(image_id)
 
         start = session.get('annotating_time', time.time())
-        event = SessionEvent.create(start)
+        event = SessionEvent.create(start, current_user)
 
         image.add_event(event)
         image.update(
@@ -113,7 +119,7 @@ def disconnect():
             image = ImageModel.objects(id=image_id).first()
             if image is not None:
                 start = session.get('annotating_time', time.time())
-                event = SessionEvent.create(start)
+                event = SessionEvent.create(start, current_user)
         
                 image.add_event(event)
                 image.update(

@@ -13,7 +13,7 @@ from .tasks import api as ns_tasks
 from .undo import api as ns_undo
 from .info import api as ns_info
 
-from ..config import Config
+from config import Config
 
 # Create /api/ space
 blueprint = Blueprint('api', __name__, url_prefix='/api')

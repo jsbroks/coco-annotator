@@ -13,11 +13,11 @@ services:
       - "5000:5000"
     volumes:
       - "./datasets:/datasets"
-      - "./app:/workspace/app"
+      - "./webserver:/workspace/webserver"
     environment:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
-      - FLASK_APP=app
+      - FLASK_APP=webserver
       - FLASK_ENV=production
     depends_on:
       - database

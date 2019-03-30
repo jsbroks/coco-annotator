@@ -9,7 +9,12 @@ from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util, profile
-from ..models import *
+from database import (
+    ImageModel,
+    DatasetModel,
+    CategoryModel,
+    AnnotationModel
+)
 
 import datetime
 import json

@@ -1,8 +1,8 @@
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from .config import Config
-from .models import ImageModel
+from config import Config
+from database import ImageModel
 
 import re
 import time

@@ -2,8 +2,8 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 
 from ..util import query_util
-from ..config import Config
-from ..models import TaskModel
+from config import Config
+from database import TaskModel
 
 
 api = Namespace('tasks', description='Task related operations')

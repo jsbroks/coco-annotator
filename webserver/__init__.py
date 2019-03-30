@@ -1,12 +1,21 @@
 import eventlet
 eventlet.monkey_patch(thread=False)
 
+import sys
+
+sys.path.insert(0, '/workspace/libs')
+
+from config import Config
+from database import (
+    connect_mongo,
+    ImageModel,
+    create_from_json
+)
+
 from flask import Flask
 from flask_cors import CORS
 from werkzeug.contrib.fixers import ProxyFix
 
-from .models import *
-from .config import Config
 from .sockets import socketio
 from .watcher import run_watcher
 from .api import blueprint as api
@@ -18,6 +27,9 @@ import requests
 import logging
 import time
 import os
+
+
+connect_mongo('webserver')
 
 
 def create_app():
@@ -36,7 +48,6 @@ def create_app():
     flask.wsgi_app = ProxyFix(flask.wsgi_app)
     flask.register_blueprint(api)
 
-    db.init_app(flask)
     login_manager.init_app(flask)
     socketio.init_app(flask)
 
@@ -49,9 +60,9 @@ def create_app():
 
 app = create_app()
 
-gunicorn_logger = logging.getLogger('gunicorn.error')
-app.logger.handlers = gunicorn_logger.handlers
-app.logger.setLevel(gunicorn_logger.level)
+logger = logging.getLogger('gunicorn.error')
+app.logger.handlers = logger.handlers
+app.logger.setLevel(logger.level)
     
 
 if Config.INITIALIZE_FROM_FILE:

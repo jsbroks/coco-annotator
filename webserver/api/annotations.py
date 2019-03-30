@@ -2,7 +2,7 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 from imantics import Color
 
-from ..models import AnnotationModel
+from database import AnnotationModel
 from ..util import query_util
 
 import datetime

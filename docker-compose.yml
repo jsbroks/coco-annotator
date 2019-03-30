@@ -3,7 +3,7 @@ volumes:
   mongodb_data:
     external: false
 services:
-  flask:
+  webserver:
     image: jsbroks/coco-annotator:stable
     restart: always
     ports:

@@ -2,7 +2,7 @@ from flask_login import login_required, current_user
 from flask_restplus import Namespace, Resource, reqparse
 from werkzeug.security import generate_password_hash
 
-from ..models import UserModel
+from database import UserModel
 from ..util.query_util import fix_ids
 
 api = Namespace('admin', description='Admin related operations')
@@ -67,7 +67,7 @@ class User(Resource):
         args = register.parse_args()
         username = args.get('username')
 
-        if UserModel.objects(username__iexact=username).first():
+        if User.objects(username__iexact=username).first():
             return {'success': False, 'message': 'Username already exists.'}, 400
 
         user = UserModel()

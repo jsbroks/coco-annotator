@@ -1,4 +1,4 @@
-from ..config import Config as AnnotatorConfig
+from config import Config as AnnotatorConfig
 from skimage.transform import resize
 import imantics as im
 import cv2

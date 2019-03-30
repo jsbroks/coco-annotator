@@ -4,7 +4,7 @@ from mongoengine.errors import NotUniqueError
 
 from ..util.pagination_util import Pagination
 from ..util import query_util
-from ..models import CategoryModel, AnnotationModel
+from database import CategoryModel, AnnotationModel
 
 import datetime
 

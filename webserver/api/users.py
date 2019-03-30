@@ -2,8 +2,8 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_restplus import Namespace, Resource, reqparse
 
-from ..models import UserModel
-from ..config import Config
+from database import UserModel
+from config import Config
 from ..util.query_util import fix_ids
 
 import logging

@@ -4,7 +4,12 @@ from flask_login import login_required, current_user
 import os
 import shutil
 import datetime
-from ..models import *
+from database import (
+    ImageModel,
+    DatasetModel,
+    CategoryModel,
+    AnnotationModel
+)
 
 api = Namespace('undo', description='Undo related operations')
 
