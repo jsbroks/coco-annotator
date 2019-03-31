@@ -14,7 +14,6 @@ from .tasks import *
 def connect_mongo(name, host=None):
     if host is None:
         host = Config.MONGODB_HOST
-    print(host, flush=True)
     connect(name, host=host)
 
 

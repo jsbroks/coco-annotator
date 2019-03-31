@@ -44,6 +44,10 @@ class Config:
     
     TESTING = os.getenv("TESTING", False)
 
+    ### Workers
+    CELERY_BROKER_URL = ""
+    CELERY_RESULT_BACKEND = ""
+
     ### Dataset Options
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
     INITIALIZE_FROM_FILE = os.getenv("INITIALIZE_FROM_FILE")

@@ -11,7 +11,7 @@ services:
     container_name: annotator_client
     build:
       context: .
-      dockerfile: ./docker/client/Dockerfile
+      dockerfile: ./client/Dockerfile
     ports:
       - "8080:8080"
     volumes:
@@ -19,16 +19,19 @@ services:
     networks:
       - cocoannotator
     depends_on:
-      - flask
-  flask:
-    container_name: annotator_flask
+      - webserver
+  webserver:
+    container_name: annotator_webserver
     build:
       context: .
-      dockerfile: ./docker/api/Dockerfile
+      dockerfile: ./backend/webserver/Dockerfile
     ports:
-      - "5000:5000"
+      - 5000:5000
     volumes:
-      - "./:/workspace/"
+      - "./backend/config:/workspace/config"
+      - "./backend/webserver:/workspace/webserver"
+      - "./backend/workers:/workspace/workers"
+      - "./backend/database:/workspace/database"
       - "./datasets:/datasets"
       - "./models:/models"
     environment:
@@ -72,3 +75,15 @@ services:
     command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator
+  # workers:
+  #   container_name: annotator_workers
+  #   build:
+  #     context: .
+  #     dockerfile: ./backend/workers/Dockerfile
+  #   ports:
+  #     - 5555:5555
+  # messageq:
+  #   image: rabbitmq:3
+  #   container_name: annotator_message_queue
+  #   networks:
+  #     - cocoannotator

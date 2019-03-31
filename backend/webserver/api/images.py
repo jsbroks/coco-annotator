@@ -133,11 +133,8 @@ class ImageId(Resource):
         if not height:
             height = image.height
         
-        try:
-            pil_image = image.thumbnail() if thumbnail else Image.open(image.path)
-            image.flag_thumbnail(flag=False)
-        except Exception as e:
-            return {'message': str(e)}, 400
+        pil_image = image.thumbnail() if thumbnail else Image.open(image.path)
+        image.flag_thumbnail(flag=False)
         
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
         image_io = io.BytesIO()

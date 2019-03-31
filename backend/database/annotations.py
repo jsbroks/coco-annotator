@@ -1,6 +1,7 @@
+import imantics as im
+
 from mongoengine import *
 
-from .images import ImageModel
 from .datasets import DatasetModel
 from .categories import CategoryModel
 
@@ -32,7 +33,8 @@ class AnnotationModel(DynamicDocument):
     deleted_date = DateTimeField()
 
     def __init__(self, image_id=None, **data):
-
+        
+        from .images import ImageModel
         image = ImageModel.objects(id=image_id).first()
 
         if image is not None:

@@ -3,7 +3,7 @@ FROM python:3.6
 WORKDIR /workspace/
 
 # Install python package dependices
-COPY requirements.txt requirements.txt
+COPY ./backend/ /workspace/
 RUN pip install -r requirements.txt && \
     pip install gunicorn[eventlet]==19.9.0 && \
     pip install pycocotools
@@ -24,6 +24,7 @@ COPY ./.git /workspace/.git
 
 # Create server
 WORKDIR /workspace/
+RUN python set_path.py
 
 EXPOSE 5000
 CMD gunicorn -c webserver/gunicorn_config.py webserver:app

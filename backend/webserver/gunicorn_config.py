@@ -1,7 +1,3 @@
-import sys
-sys.path.insert(0, '/workspace/libs')
-
-import os
 
 from config import Config
 

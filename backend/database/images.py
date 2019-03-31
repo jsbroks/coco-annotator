@@ -6,6 +6,7 @@ from PIL import Image
 from mongoengine import *
 
 from .events import Event
+from .annotations import AnnotationModel
 
 
 class ImageModel(DynamicDocument):
@@ -76,7 +77,7 @@ class ImageModel(DynamicDocument):
 
     def delete(self, *args, **kwargs):
         self.thumbnail_delete()
-        # AnnotationModel.objects(image_id=self.id).delete()
+        AnnotationModel.objects(image_id=self.id).delete()
         return super(ImageModel, self).delete(*args, **kwargs)
 
     def thumbnail(self):

@@ -2,8 +2,9 @@ import eventlet
 eventlet.monkey_patch(thread=False)
 
 import sys
+import workers
 
-sys.path.insert(0, '/workspace/libs')
+print(sys.path)
 
 from config import Config
 from database import (
@@ -15,6 +16,8 @@ from database import (
 from flask import Flask
 from flask_cors import CORS
 from werkzeug.contrib.fixers import ProxyFix
+
+from celery import Celery
 
 from .sockets import socketio
 from .watcher import run_watcher
@@ -59,6 +62,20 @@ def create_app():
 
 
 app = create_app()
+
+# celery = Celery(app.name, broker='amqp://guest@localhost//')
+
+# @celery.task
+# def long_task(n):
+
+#     print(f"this task will take {n} seconds")
+#     import time
+
+#     for i in range(n):
+#         print(i)
+#         time.sleep(n)
+    
+#     return n
 
 logger = logging.getLogger('gunicorn.error')
 app.logger.handlers = logger.handlers
