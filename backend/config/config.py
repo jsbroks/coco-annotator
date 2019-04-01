@@ -46,7 +46,7 @@ class Config:
 
     ### Workers
     CELERY_BROKER_URL = "amqp://user:password@messageq:5672//"
-    CELERY_RESULT_BACKEND = ""
+    CELERY_RESULT_BACKEND = "mongodb://database/flask"
 
     ### Dataset Options
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")

@@ -75,6 +75,7 @@ services:
       - "./datasets:/datasets"
     depends_on:
       - messageq
+      - database
     ports:
       - 5555:5555
     networks:

@@ -1,5 +1,6 @@
 from flask_restplus import Namespace, Resource, reqparse
 
+from workers.tasks import long_task
 from config import Config
 from ..util.version_util import get_tag
 from database import UserModel
@@ -26,3 +27,10 @@ class Info(Resource):
             "allow_registration": Config.ALLOW_REGISTRATION
         }
 
+
+@api.route('/long_task')
+class TaskTest(Resource):
+    def get(self):
+        """ Returns information about current version """
+        long_task.delay(20)
+        return True

@@ -9,5 +9,6 @@ celery = Celery(
 )
 celery.autodiscover_tasks(['workers.tasks'])
 
+
 if __name__ == '__main__':
     celery.start()

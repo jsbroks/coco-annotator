@@ -27,4 +27,4 @@ WORKDIR /workspace/
 RUN python set_path.py
 
 EXPOSE 5000
-CMD gunicorn -c webserver/gunicorn_config.py webserver:app
+CMD gunicorn -c webserver/gunicorn_config.py webserver:app --no-sendfile
