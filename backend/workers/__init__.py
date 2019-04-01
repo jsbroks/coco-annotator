@@ -1,6 +1,8 @@
 from celery import Celery
 from config import Config
+from database import connect_mongo
 
+connect_mongo('Celery Worker')
 
 celery = Celery(
     Config.NAME,

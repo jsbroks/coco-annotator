@@ -1,9 +1,13 @@
 
 from celery import shared_task
+from database import TaskModel
 
 
 @shared_task
-def long_task(n):
+def long_task(n, task_id):
+
+    task = TaskModel.objects.get(id=task_id)
+    task.update(status="PROGRESS")
 
     print(f"This task will take {n} seconds")
     import time
@@ -11,5 +15,6 @@ def long_task(n):
     for i in range(n):
         print(i)
         time.sleep(1)
+        # task.info(i)
     
     return n

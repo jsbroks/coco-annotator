@@ -10,7 +10,7 @@ class TaskModel(DynamicDocument):
     group = StringField(required=True)
     name = StringField(required=True) 
     desciption = StringField()
-
+    status = StringField(default="PENDING")
     creator = StringField()
 
     #: Start date of the executor 
