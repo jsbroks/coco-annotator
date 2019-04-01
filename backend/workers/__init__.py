@@ -2,16 +2,12 @@ from celery import Celery
 from config import Config
 
 
-def make_celery():
-    celery = Celery(
-        Config.NAME,
-        backend=Config.CELERY_RESULT_BACKEND,
-        broker=Config.CELERY_BROKER_URL
-    )
+celery = Celery(
+    Config.NAME,
+    backend=Config.CELERY_RESULT_BACKEND,
+    broker=Config.CELERY_BROKER_URL
+)
+celery.autodiscover_tasks(['workers.tasks'])
 
-    return celery
-
-
-celery = make_celery()
-celery.autodiscover_tasks(['tasks', 'mantiance'])
-
+if __name__ == '__main__':
+    celery.start()

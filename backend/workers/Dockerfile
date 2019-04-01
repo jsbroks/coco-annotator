@@ -8,6 +8,5 @@ COPY ./.git /workspace/.git
 
 RUN pip install -r requirements.txt
 
-
-EXPOSE 5000
-CMD celery -A workers -l info
+EXPOSE 5555
+CMD celery -A workers worker -l info

@@ -45,7 +45,7 @@ class Config:
     TESTING = os.getenv("TESTING", False)
 
     ### Workers
-    CELERY_BROKER_URL = ""
+    CELERY_BROKER_URL = "amqp://user:password@messageq:5672//"
     CELERY_RESULT_BACKEND = ""
 
     ### Dataset Options
