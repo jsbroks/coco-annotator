@@ -93,7 +93,7 @@ Thanks to all these wonderful libaries/frameworks:
 # Citation
 
 ```
-  @MISC{cocoannotator
+  @MISC{cocoannotator,
     author = {Justin Brooks},
     title = {{COCO Annotator}},
     howpublished = "\url{https://github.com/jsbroks/coco-annotator/}",
