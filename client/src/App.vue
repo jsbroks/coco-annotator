@@ -91,6 +91,9 @@ export default {
     },
     disconnect() {
       this.socket(false);
+    },
+    test(data) {
+      console.log(data)
     }
   },
   mounted() {

@@ -1,6 +1,8 @@
 from mongoengine import *
 from config import Config
 
+from .tasks import TaskModel
+
 
 class DatasetModel(DynamicDocument):
     
@@ -91,18 +93,24 @@ class DatasetModel(DynamicDocument):
 
     #     return task.api_json()
 
-    # def scan(self):
+    def scan(self):
 
-    #     from .util.task_util import scan_func
-    #     task = TaskModel(
-    #         name=f"Scanning {self.name} for new images",
-    #         dataset_id=self.id,
-    #         group="Directory Image Scan"
-    #     )
-    #     task.save()
-    #     task.start(scan_func, dataset=self)
+        from workers.tasks import scan_dataset
+        
+        task = TaskModel(
+            name=f"Scanning {self.name} for new images",
+            dataset_id=self.id,
+            group="Directory Image Scan"
+        )
+        task.save()
+        
+        cel_task = scan_dataset.delay(task.id, self.id)
 
-    #     return task.api_json()
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
 
     def is_owner(self, user):
 

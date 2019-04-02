@@ -15,11 +15,11 @@ from database import (
 
 from flask import Flask
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from werkzeug.contrib.fixers import ProxyFix
 
 from celery import Celery
 
-from .sockets import socketio
 from .watcher import run_watcher
 from .api import blueprint as api
 from .util import query_util, color_util
@@ -52,7 +52,6 @@ def create_app():
     flask.register_blueprint(api)
 
     login_manager.init_app(flask)
-    socketio.init_app(flask)
 
     # Remove all poeple who were annotating when
     # the server shutdown
@@ -62,6 +61,7 @@ def create_app():
 
 
 app = create_app()
+socketio = SocketIO(app, message_queue=Config.CELERY_BROKER_URL)
 
 # celery = Celery(app.name, broker='amqp://guest@localhost//')
 

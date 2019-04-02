@@ -4,7 +4,6 @@ import time
 
 from flask import session
 from flask_socketio import (
-    SocketIO,
     disconnect,
     join_room,
     leave_room,
@@ -16,10 +15,10 @@ from database import ImageModel, SessionEvent
 from config import Config
 
 import logging
+
+from . import socketio
+
 logger = logging.getLogger('gunicorn.error')
-
-
-socketio = SocketIO()
 
 
 def authenticated_only(f):
