@@ -3,6 +3,8 @@ from config import Config
 
 from .tasks import TaskModel
 
+from flask_login import current_user
+
 
 class DatasetModel(DynamicDocument):
     
@@ -31,10 +33,10 @@ class DatasetModel(DynamicDocument):
 
         self.directory = directory
 
-        # if current_user:
-        #     self.owner = current_user.username
-        # else:
-        #     self.owner = 'system'
+        if current_user:
+            self.owner = current_user.username
+        else:
+            self.owner = 'system'
 
         return super(DatasetModel, self).save(*args, **kwargs)
     

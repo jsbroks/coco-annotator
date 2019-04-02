@@ -5,6 +5,8 @@ from mongoengine import *
 from .datasets import DatasetModel
 from .categories import CategoryModel
 
+from flask_login import current_user
+
 
 class AnnotationModel(DynamicDocument):
 

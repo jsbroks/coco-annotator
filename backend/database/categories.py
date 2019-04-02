@@ -1,3 +1,5 @@
+
+from flask_login import current_user
 from mongoengine import *
 
 import imantics as im
@@ -43,10 +45,10 @@ class CategoryModel(DynamicDocument):
         if not self.color:
             self.color = im.Color.random().hex
 
-        # if current_user:
-        #     self.creator = current_user.username
-        # else:
-        #     self.creator = 'system'
+        if current_user:
+            self.creator = current_user.username
+        else:
+            self.creator = 'system'
       
         return super(CategoryModel, self).save(*args, **kwargs)
 
