@@ -4,8 +4,6 @@ eventlet.monkey_patch(thread=False)
 import sys
 import workers
 
-print(sys.path)
-
 from config import Config
 from database import (
     connect_mongo,
@@ -22,7 +20,7 @@ from celery import Celery
 
 from .watcher import run_watcher
 from .api import blueprint as api
-from .util import query_util, color_util
+from .util import query_util
 from .authentication import login_manager
 
 import threading

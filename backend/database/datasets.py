@@ -68,30 +68,43 @@ class DatasetModel(DynamicDocument):
 
     #     return task
 
-    # def import_coco(self, coco):
-    #     from .util.task_util import import_coco_func
-    #     task = TaskModel(
-    #         name="Import COCO ({})".format(self.name),
-    #         dataset_id=self.id,
-    #         group="Annotation Import"
-    #     )
-    #     task.save()
-    #     task.start(import_coco_func, dataset=self, coco_json=coco)
+    def import_coco(self, coco_json):
 
-    #     return task.api_json()
+        from workers.tasks import import_annotations
 
-    # def export_coco(self):
+        task = TaskModel(
+            name="Import COCO format into {}".format(self.name),
+            dataset_id=self.id,
+            group="Annotation Import"
+        )
+        task.save()
 
-    #     from .util.task_util import export_coco_func
-    #     task = TaskModel(
-    #         name="Export COCO ({})".format(self.name),
-    #         dataset_id=self.id,
-    #         group="Annotation Export"
-    #     )
-    #     task.save()
-    #     task.start(export_coco_func, dataset=self)
+        cel_task = import_annotations.delay(task.id, self.id, coco_json)
 
-    #     return task.api_json()
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
+
+    def export_coco(self, style="COCO"):
+
+        from workers.tasks import export_annotations
+
+        task = TaskModel(
+            name=f"Exporting {self.name} into {style} format",
+            dataset_id=self.id,
+            group="Annotation Export"
+        )
+        task.save()
+
+        cel_task = export_annotations.delay(task.id, self.id)
+
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
 
     def scan(self):
 

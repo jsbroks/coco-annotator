@@ -10,6 +10,8 @@ from .events import *
 from .users import *
 from .tasks import *
 
+import json
+
 
 def connect_mongo(name, host=None):
     if host is None:
@@ -36,6 +38,11 @@ def upsert(model, query=None, update=None):
     new_model.save()
 
     return new_model
+
+
+def fix_ids(objs):
+    objects_list = json.loads(objs.to_json().replace('\"_id\"', '\"id\"'))
+    return objects_list
 
 
 def create_from_json(json_file):

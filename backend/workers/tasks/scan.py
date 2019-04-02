@@ -1,4 +1,3 @@
-
 from database import (
     ImageModel,
     TaskModel,
