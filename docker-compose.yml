@@ -4,7 +4,8 @@ volumes:
     external: false
 services:
   webserver:
-    image: jsbroks/coco-annotator:stable
+    image: jsbroks/coco-annotator:webserver-stable
+    container_name: annotator_webclient
     restart: always
     ports:
       - "5000:5000"
@@ -16,6 +17,31 @@ services:
       - "./models:/models"
     depends_on:
       - database
+      - workers
+    networks:
+      - cocoannotator
+  workers:
+    container_name: annotator_workers
+    image: jsbroks/coco-annotator:workers-stable
+    volumes:
+      - "./datasets:/datasets"
+    depends_on:
+      - messageq
+      - database
+    ports:
+      - 5555:5555
+    networks:
+      - cocoannotator
+  messageq:
+    image: rabbitmq:3
+    container_name: annotator_message_q
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - 5672:5672
+    networks:
+      - cocoannotator
   database:
     image: mongo:4
     container_name: annotator_mongodb
@@ -28,3 +54,5 @@ services:
     ports:
       - "27017:27017"
     command: "mongod --smallfiles --logpath=/dev/null"
+    networks:
+      - cocoannotator

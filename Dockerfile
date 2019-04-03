@@ -17,22 +17,18 @@ RUN npm run build
 
 # Setup flask
 
-FROM python:3.6 as production-stage
+FROM python:3.6
 
-RUN apt-get update && \
-        apt-get install -y \
-        wget \
-        nano
+WORKDIR /workspace/
 
-WORKDIR /workspace
-
-COPY requirements.txt requirements.txt
+# Install python package dependices
+COPY ./backend/ /workspace/
 RUN pip install -r requirements.txt && \
         pip install gunicorn[eventlet]==19.9.0 && \
         pip install pycocotools
 
 # Install maskrcnn
-RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git $TEMP_MRCNN_DIR /tmp/maskrcnn && \
+RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git /tmp/maskrcnn && \
         cd /tmp/maskrcnn && \
         pip install -r requirements.txt && \
         python3 setup.py install
@@ -44,10 +40,16 @@ RUN git clone --single --depth 1 https://github.com/jsbroks/dextr-keras.git /tmp
         python setup.py install
 
 COPY ./.git /workspace/.git
-COPY ./app /workspace/app
+
+# Create server
+WORKDIR /workspace/
+RUN python set_path.py
 
 COPY --from=build-stage /workspace/client/dist /workspace/dist
 
+ENV FLASK_ENV=production
+ENV DEBUG=false
+
 EXPOSE 5000
-CMD gunicorn -w 1 -b 0.0.0.0:5000 app:app --worker-class eventlet --log-level info --no-sendfile --timeout 180
+CMD gunicorn -c webserver/gunicorn_config.py webserver:app --no-sendfile --timeout 180
 

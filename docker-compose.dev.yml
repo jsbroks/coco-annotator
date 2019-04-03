@@ -38,6 +38,7 @@ services:
       - FILE_WATCHER=true
       - FLASK_APP=webserver
       - FLASK_ENV=development
+      - DEBUG=true
       # - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
       # # Default coco classes (order matters)
       # - |

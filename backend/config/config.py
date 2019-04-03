@@ -32,7 +32,7 @@ class Config:
     #       spawned to replace it.
     #
     SWAGGER_UI_JSONEDITOR = True
-    DEBUG = True
+    DEBUG = os.getenv("DEBUG", False)
     PRELOAD = False
 
     MAX_CONTENT_LENGTH = os.getenv("MAX_CONTENT_LENGTH", 1 * 1024 * 1024 * 1024)  # 1GB
