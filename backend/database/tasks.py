@@ -88,17 +88,6 @@ class TaskModel(DynamicDocument):
                 }, broadcast=True)
             
             self._progress_update += self._update_every
-
-    def start(self, target, socketio, *args, **kwargs):
-        
-        thread = socketio.start_background_task(
-            target,
-            task=self,
-            socket=socketio,
-            *args,
-            **kwargs
-        )
-        return thread
     
     def api_json(self):
         return {

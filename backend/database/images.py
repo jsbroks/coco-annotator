@@ -179,9 +179,7 @@ class ImageModel(DynamicDocument):
         }
     
     def add_event(self, e):
-        event = Event()
-        event.set_data(e)
-        self.update(push__events=event)
+        self.update(push__events=e)
 
 
 __all__ = ["ImageModel"]

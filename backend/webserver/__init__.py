@@ -22,6 +22,7 @@ from .watcher import run_watcher
 from .api import blueprint as api
 from .util import query_util
 from .authentication import login_manager
+from .sockets import socketio
 
 import threading
 import requests
@@ -50,7 +51,7 @@ def create_app():
     flask.register_blueprint(api)
 
     login_manager.init_app(flask)
-
+    socketio.init_app(flask, message_queue=Config.CELERY_BROKER_URL)
     # Remove all poeple who were annotating when
     # the server shutdown
     ImageModel.objects.update(annotating=[])
@@ -59,21 +60,6 @@ def create_app():
 
 
 app = create_app()
-socketio = SocketIO(app, message_queue=Config.CELERY_BROKER_URL)
-
-# celery = Celery(app.name, broker='amqp://guest@localhost//')
-
-# @celery.task
-# def long_task(n):
-
-#     print(f"this task will take {n} seconds")
-#     import time
-
-#     for i in range(n):
-#         print(i)
-#         time.sleep(n)
-    
-#     return n
 
 logger = logging.getLogger('gunicorn.error')
 app.logger.handlers = logger.handlers

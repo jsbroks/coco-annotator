@@ -4,6 +4,7 @@ import time
 
 from flask import session
 from flask_socketio import (
+    SocketIO,
     disconnect,
     join_room,
     leave_room,
@@ -15,10 +16,10 @@ from database import ImageModel, SessionEvent
 from config import Config
 
 import logging
-
-from . import socketio
-
 logger = logging.getLogger('gunicorn.error')
+
+
+socketio = SocketIO()
 
 
 def authenticated_only(f):
@@ -58,7 +59,7 @@ def annotating(data):
         'active': active,
         'username': current_user.username
     }, broadcast=True, include_self=False)
-
+    print(active, flush=True)
     if active:
         logger.info(f'{current_user.username} has started annotating image {image_id}')
         # Remove user from pervious room

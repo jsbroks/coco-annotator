@@ -8,16 +8,14 @@ class Event(EmbeddedDocument):
     
     name = StringField()
     created_at = DateTimeField()
-    data = GenericEmbeddedDocumentField()
 
-    def set_data(self, event):
-        self.name = event.NAME
-        self.data = event
+    meta = {'allow_inheritance': True}
+
+    def save(self, event):
         self.created_at = datetime.datetime.now()
 
 
-class SessionEvent(EmbeddedDocument):
-    NAME = "SESSION"
+class SessionEvent(Event):
 
     user = StringField(required=True)
     milliseconds = IntField(default=0, min_value=0)
