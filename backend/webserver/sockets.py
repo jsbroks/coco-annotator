@@ -59,7 +59,7 @@ def annotating(data):
         'active': active,
         'username': current_user.username
     }, broadcast=True, include_self=False)
-    print(active, flush=True)
+
     if active:
         logger.info(f'{current_user.username} has started annotating image {image_id}')
         # Remove user from pervious room

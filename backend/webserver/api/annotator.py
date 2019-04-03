@@ -1,3 +1,5 @@
+import datetime
+
 from flask_restplus import Namespace, Resource
 from flask_login import login_required, current_user
 from flask import request
@@ -9,7 +11,8 @@ from database import (
     ImageModel,
     DatasetModel,
     CategoryModel,
-    AnnotationModel
+    AnnotationModel,
+    SessionEvent
 )
 
 api = Namespace('annotator', description='Annotator related operations')
@@ -77,7 +80,19 @@ class AnnotatorData(Resource):
                 # the annotation twice, checking if the paperjs exists.
 
                 # Update annotation in database
+                sessions = []
+                for session in annotation.get('sessions', []):
+                    date = datetime.datetime.fromtimestamp(int(session.get('start')) / 1e3)
+                    print(date, flush=True)
+                    model = SessionEvent(
+                        created_at=date,
+                        milliseconds=session.get('milliseconds'),
+                        tools_used=session.get('tools')
+                    )
+                    sessions.append(model)
+
                 db_annotation.update(
+                    add_to_set__events=sessions,
                     set__keypoints=annotation.get('keypoints', []),
                     set__metadata=annotation.get('metadata'),
                     set__color=annotation.get('color')

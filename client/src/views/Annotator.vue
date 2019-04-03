@@ -839,7 +839,7 @@ export default {
   sockets: {
     annotating(data) {
       if (data.image_id !== this.image.id) return;
-      
+
       if (data.active) {
         let found = this.annotating.indexOf(data.username);
         if (found < 0) {
@@ -851,8 +851,15 @@ export default {
     }
   },
   beforeRouteLeave(to, from, next) {
-    this.$socket.emit("annotating", { image_id: this.image.id, active: false });
-    this.save(next);
+    this.current.annotation = -1;
+
+    this.$nextTick(() => {
+      this.$socket.emit("annotating", {
+        image_id: this.image.id,
+        active: false
+      });
+      this.save(next);
+    });
   },
   mounted() {
     this.setDataset(null);
@@ -880,7 +887,6 @@ export default {
 </script>
 
 <style scoped>
-
 .alert {
   bottom: 0;
   width: 50%;

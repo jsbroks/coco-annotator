@@ -259,6 +259,12 @@ export default {
           visibility: 2
         }
       },
+      sessions: [],
+      session: {
+        start: Date.now(),
+        tools: [],
+        milliseconds: 0
+      },
       tagRecomputeCounter: 0
     };
   },
@@ -465,7 +471,7 @@ export default {
         radius: this.scale * 6,
         onClick: event => {
           this.onAnnotationClick();
-          
+
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           let keypoint = event.target.keypoint;
 
@@ -607,6 +613,10 @@ export default {
         annotationData.compoundPath = json;
       }
 
+      // Export sessions and reset
+      annotationData.sessions = this.sessions;
+      this.sessions = [];
+
       return annotationData;
     },
     emitModify() {
@@ -625,6 +635,11 @@ export default {
     }
   },
   watch: {
+    activeTool(tool) {
+      if (this.isCurrent) {
+        this.session.tools.push(tool);
+      }
+    },
     opacity(opacity) {
       this.compoundPath.opacity = opacity;
     },
@@ -650,7 +665,18 @@ export default {
     annotation() {
       this.initAnnotation();
     },
-    isCurrent() {
+    isCurrent(current, wasCurrent) {
+      if (current) {
+        // Start new session
+        this.session.start = Date.now();
+        this.session.tools = [this.activeTool];
+      }
+      if (wasCurrent) {
+        // Close session
+        this.session.milliseconds = Date.now() - this.session.start;
+        this.sessions.push(this.session);
+      }
+
       if (this.compoundPath == null) return;
       this.compoundPath.fullySelected = this.isCurrent;
     },
@@ -668,14 +694,14 @@ export default {
       this.currentKeypoint.visibility = newVal;
     },
     keypointEdges(newEdges) {
-      this.keypoints.color = this.darkHSL
+      this.keypoints.color = this.darkHSL;
       newEdges.forEach(e => this.keypoints.addEdge(e));
     },
     scale: {
       immediate: true,
       handler(scale) {
         if (!this.keypoints) return;
-        
+
         this.keypoints.radius = scale * 6;
         this.keypoints.lineWidth = scale * 2;
       }

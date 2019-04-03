@@ -102,6 +102,9 @@ class AnnotationModel(DynamicDocument):
         }
 
         return im.Annotation(**data)
+    
+    def add_event(self, e):
+        self.update(push__events=e)
 
 
 __all__ = ["AnnotationModel"]

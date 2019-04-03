@@ -11,7 +11,7 @@ class Event(EmbeddedDocument):
 
     meta = {'allow_inheritance': True}
 
-    def save(self, event):
+    def now(self, event):
         self.created_at = datetime.datetime.now()
 
 
