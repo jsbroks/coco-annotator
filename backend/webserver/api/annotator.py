@@ -83,8 +83,8 @@ class AnnotatorData(Resource):
                 sessions = []
                 for session in annotation.get('sessions', []):
                     date = datetime.datetime.fromtimestamp(int(session.get('start')) / 1e3)
-                    print(date, flush=True)
                     model = SessionEvent(
+                        user=current_user.username,
                         created_at=date,
                         milliseconds=session.get('milliseconds'),
                         tools_used=session.get('tools')
