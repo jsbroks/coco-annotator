@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from app.models import CategoryModel
+from database import CategoryModel
 
 category1_id = 0
 category2_id = 0

@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from app.models import UserModel
+from database import UserModel
 
 
 @pytest.mark.second
