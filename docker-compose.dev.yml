@@ -11,7 +11,7 @@ services:
     container_name: annotator_client
     build:
       context: .
-      dockerfile: ./docker/client/Dockerfile
+      dockerfile: ./client/Dockerfile
     ports:
       - "8080:8080"
     volumes:
@@ -19,22 +19,26 @@ services:
     networks:
       - cocoannotator
     depends_on:
-      - flask
-  flask:
-    container_name: annotator_flask
+      - webserver
+  webserver:
+    container_name: annotator_webserver
     build:
       context: .
-      dockerfile: ./docker/api/Dockerfile
+      dockerfile: ./backend/webserver/Dockerfile
     ports:
-      - "5000:5000"
+      - 5000:5000
     volumes:
+      - "./backend/config:/workspace/config"
+      - "./backend/webserver:/workspace/webserver"
+      - "./backend/workers:/workspace/workers"
+      - "./backend/database:/workspace/database"
       - "./datasets:/datasets"
-      - "./:/workspace/"
       - "./models:/models"
     environment:
       - FILE_WATCHER=true
-      - FLASK_APP=app
+      - FLASK_APP=webserver
       - FLASK_ENV=development
+      - DEBUG=true
       # - MASK_RCNN_FILE=/models/mask_rcnn_coco.h5
       # # Default coco classes (order matters)
       # - |
@@ -58,7 +62,25 @@ services:
       - cocoannotator
     depends_on:
       - database
-    tty: true
+      - workers
+  workers:
+    container_name: annotator_workers
+    build:
+      context: .
+      dockerfile: ./backend/workers/Dockerfile
+    volumes:
+      - "./backend/config:/workspace/config"
+      - "./backend/webserver:/workspace/webserver"
+      - "./backend/workers:/workspace/workers"
+      - "./backend/database:/workspace/database"
+      - "./datasets:/datasets"
+    depends_on:
+      - messageq
+      - database
+    ports:
+      - 5555:5555
+    networks:
+      - cocoannotator
   database:
     image: mongo:4
     container_name: annotator_mongodb
@@ -70,5 +92,15 @@ services:
     ports:
       - "27017:27017"
     command: "mongod --smallfiles --logpath=/dev/null"
+    networks:
+      - cocoannotator
+  messageq:
+    image: rabbitmq:3
+    container_name: annotator_message_q
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - 5672:5672
     networks:
       - cocoannotator

@@ -391,10 +391,7 @@ export default {
           this.exporting.id = id;
         })
         .catch(error => {
-          this.axiosReqestError(
-            "Exporting COCO",
-            error.response.data.message
-          );
+          this.axiosReqestError("Exporting COCO", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
     },
