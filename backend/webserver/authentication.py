@@ -1,5 +1,11 @@
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, AnonymousUserMixin
-from database import UserModel
+from database import (
+    UserModel,
+    DatasetModel,
+    CategoryModel,
+    AnnotationModel,
+    ImageModel
+)
 from config import Config
 
 login_manager = LoginManager()

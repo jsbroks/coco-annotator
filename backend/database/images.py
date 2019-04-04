@@ -6,7 +6,7 @@ from PIL import Image
 from mongoengine import *
 
 from .events import Event
-from .annotations import AnnotationModel
+from .annotations import AnnotationModel, DatasetModel
 
 
 class ImageModel(DynamicDocument):
