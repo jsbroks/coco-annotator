@@ -1,4 +1,4 @@
-from backend.database import CategoryModel, upsert
+from database import CategoryModel, upsert
 
 category1 = {
     "name": "Upsert Category",
