@@ -163,7 +163,7 @@
             <hr />
             <h6>How do I add images?</h6>
             Once you have created a dataset you can add images by placing them
-            in the create folder (well the server is running).
+            in the create folder (while the server is running).
           </div>
 
           <div class="modal-footer">
