@@ -5,6 +5,7 @@ from .tasks import TaskModel
 
 from flask_login import current_user
 
+import os
 
 class DatasetModel(DynamicDocument):
     
