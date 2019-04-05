@@ -94,3 +94,6 @@ class TaskModel(DynamicDocument):
             "id": self.id,
             "name": self.name
         }
+
+
+__all__ = ["TaskModel"]

@@ -11,7 +11,6 @@ from database import (
 # import pycocotools.mask as mask
 import numpy as np
 import json
-import os
 
 from celery import shared_task
 from ..socket import create_socket
@@ -210,7 +209,7 @@ def import_annotations(task_id, dataset_id, coco_json):
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation', [])
         keypoints = annotation.get('keypoints', [])
-        is_crowd = annotation.get('iscrowed', False)
+        # is_crowd = annotation.get('iscrowed', False)
         area = annotation.get('area', 0)
         bbox = annotation.get('bbox', [0, 0, 0, 0])
 
@@ -274,3 +273,6 @@ def import_annotations(task_id, dataset_id, coco_json):
             set__category_ids=list(set(all_category_ids)))
 
     task.set_progress(100, socket=socket)
+
+
+__all__ = ["export_annotations", "import_annotations"]

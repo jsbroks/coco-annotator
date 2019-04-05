@@ -1,8 +1,7 @@
-from flask_restplus import Namespace, Resource, reqparse
+from flask_restplus import Namespace, Resource
 
 from workers.tasks import long_task
 from config import Config
-from ..util.version_util import get_tag
 from database import UserModel, TaskModel
 
 

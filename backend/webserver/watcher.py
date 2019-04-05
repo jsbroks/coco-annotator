@@ -30,7 +30,6 @@ class ImageFolderHandler(FileSystemEventHandler):
         
         self._log(f'File {path} for {event.event_type}')
         
-        folders = path.split('/')
         image = ImageModel.objects(path=event.src_path).first()
 
         if image is None and event.event_type != 'deleted':

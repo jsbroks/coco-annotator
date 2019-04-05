@@ -49,8 +49,8 @@ class MaskRCNN(Resource):
 
         args = dextr_args.parse_args()
         points = args.get('points')
-        padding = args.get('padding')
-        threshold = args.get('threshold')
+        # padding = args.get('padding')
+        # threshold = args.get('threshold')
 
         if len(points) != 4:
             return {"message": "Invalid points entered"}, 400

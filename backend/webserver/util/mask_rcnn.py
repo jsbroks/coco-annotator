@@ -1,13 +1,10 @@
 from config import Config as AnnotatorConfig
 from skimage.transform import resize
 import imantics as im
-import cv2
 
 from keras.preprocessing.image import img_to_array
 from mrcnn.config import Config
-import mrcnn.utils as utils
 import mrcnn.model as modellib
-import numpy as np
 
 
 MODEL_DIR = "/workspace/models"
@@ -44,7 +41,7 @@ class MaskRCNN():
 
     def detect(self, image):
 
-        if self.model == None:
+        if self.model is None:
             return {}
         
         image = image.convert('RGB')
@@ -56,7 +53,6 @@ class MaskRCNN():
         
         masks = result.get('masks')
         class_ids = result.get('class_ids')
-        scores = result.get('scores')
         
         coco_image = im.Image(width=width, height=height)
 

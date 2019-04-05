@@ -54,3 +54,6 @@ def scan_dataset(task_id, dataset_id):
 
     task.info(f"Created {count} new image(s)")
     task.set_progress(100, socket=socket)
+
+
+__all__ = ["scan_dataset"]

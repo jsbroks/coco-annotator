@@ -1,5 +1,4 @@
 import functools
-import json
 import time
 
 from flask import session

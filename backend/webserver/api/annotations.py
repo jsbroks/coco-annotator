@@ -1,6 +1,5 @@
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
-from imantics import Color
 
 from database import AnnotationModel
 from ..util import query_util
@@ -67,9 +66,7 @@ class AnnotationId(Resource):
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
-
-        image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
-
+        
         return query_util.fix_ids(annotation)
 
     @login_required

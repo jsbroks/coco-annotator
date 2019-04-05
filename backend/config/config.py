@@ -61,3 +61,6 @@ class Config:
     MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "BG")
 
     DEXTR_FILE = os.getenv("DEXTR_FILE", "/models/dextr_pascal-sbd.h5")
+
+
+__all__ = ["Config"]

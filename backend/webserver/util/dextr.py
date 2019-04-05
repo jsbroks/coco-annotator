@@ -1,6 +1,5 @@
 from dextr import DEXTR
 from ..config import Config
-import os
 
 
 model = DEXTR(nb_classes=1, resnet_layers=101, input_shape=(512, 512), weights_path=Config.DEXTR_FILE,

@@ -22,3 +22,6 @@ def long_task(n, task_id):
         socketio.emit('test', i)
     
     return n
+
+
+__all__ = ["long_task"]
