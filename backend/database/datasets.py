@@ -3,8 +3,6 @@ from flask_login import current_user
 from mongoengine import *
 from config import Config
 
-import os
-
 from .tasks import TaskModel
 
 import os
