@@ -73,7 +73,7 @@ if Config.INITIALIZE_FROM_FILE:
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def index(path):
-
+    
     if app.debug:
         return requests.get('http://frontend:8080/{}'.format(path)).text
 
