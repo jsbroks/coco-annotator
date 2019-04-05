@@ -2,6 +2,11 @@ version: "3"
 volumes:
   mongodb_data:
     external: false
+
+networks:
+  cocoannotator:
+    external: false
+
 services:
   webserver:
     image: jsbroks/coco-annotator:webserver-stable
