@@ -7,6 +7,7 @@ from .tasks import TaskModel
 
 import os
 
+
 class DatasetModel(DynamicDocument):
     
     id = SequenceField(primary_key=True)
@@ -40,36 +41,14 @@ class DatasetModel(DynamicDocument):
             self.owner = 'system'
 
         return super(DatasetModel, self).save(*args, **kwargs)
+
+    def get_users(self):
+        from .users import UserModel
     
-    # def download_images(self, keywords, limit=100):
+        members = self.users
+        members.append(self.owner)
 
-    #     task = TaskModel(
-    #         name="Downloading {} images to {} with keywords {}".format(limit, self.name, keywords),
-    #         dataset_id=self.id,
-    #         group="Downloading Images"
-    #     )
-
-    #     def download_images(task, dataset, keywords, limit):
-    #         def custom_print(string):
-    #             __builtins__.print("%f -- %s" % (time.time(), string))
-
-    #             print = dprint
-    #             task.log()
-    #         for keyword in args['keywords']:
-    #             response = gid.googleimagesdownload()
-    #             response.download({
-    #                 "keywords": keyword,
-    #                 "limit": args['limit'],
-    #                 "output_directory": output_dir,
-    #                 "no_numbering": True,
-    #                 "format": "jpg",
-    #                 "type": "photo",
-    #                 "print_urls": False,
-    #                 "print_paths": False,
-    #                 "print_size": False
-    #             })
-
-    #     return task
+        return UserModel.objects(username__in=members).exclude('password', 'id', 'preferences')
 
     def import_coco(self, coco_json):
 

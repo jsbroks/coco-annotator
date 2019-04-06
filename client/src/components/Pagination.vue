@@ -1,5 +1,5 @@
 <template>
-  <div class="row justify-content-md-center bg-light">
+  <div class="row align-items-center justify-content-center bg-light">
     <ul class="pagination text-center">
       <li class="page-item" @click="previousPage">
         <a class="page-link" aria-label="Previous">
@@ -92,3 +92,10 @@ export default {
   }
 };
 </script>
+
+<style>
+.page {
+    display:block;
+    margin:0 auto;
+}
+</style>

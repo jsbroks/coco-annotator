@@ -118,6 +118,22 @@ class DatasetGenerate(Resource):
         return {"success": True}
 
 
+@api.route('/<int:dataset_id>/users')
+class DatasetMembers(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        """ All users in the dataset """
+        args = dataset_generate.parse_args()
+
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        users = dataset.get_users()
+        return query_util.fix_ids(users)
+
+
 @api.route('/<int:dataset_id>')
 class DatasetId(Resource):
     @login_required

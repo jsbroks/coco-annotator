@@ -7,7 +7,6 @@ from ..util import query_util, coco_util
 from database import (
     ImageModel,
     DatasetModel,
-    CategoryModel,
     AnnotationModel
 )
 

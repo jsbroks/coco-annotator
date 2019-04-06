@@ -5,8 +5,6 @@ from config import Config
 from database import ImageModel
 
 import re
-import time
-import threading
 
 
 class ImageFolderHandler(FileSystemEventHandler):

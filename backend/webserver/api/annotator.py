@@ -9,7 +9,6 @@ from ..util import query_util, coco_util, profile
 from config import Config
 from database import (
     ImageModel,
-    DatasetModel,
     CategoryModel,
     AnnotationModel,
     SessionEvent

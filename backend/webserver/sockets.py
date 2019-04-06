@@ -34,7 +34,6 @@ def authenticated_only(f):
 @socketio.on('annotation')
 @authenticated_only
 def annotation(data):
-    image_id = data.get('image_id')
     emit('annotation', data, broadcast=True)
 
 

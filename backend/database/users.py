@@ -89,7 +89,8 @@ class UserModel(DynamicDocument, UserMixin):
         return model.can_edit(self)
 
     def _update_last_seen(self):
-        self.update(last_seen=datetime.datetime.now())
+        self.update(last_seen=datetime.datetime.utcnow())
+    
 
 
 __all__ = ["UserModel"]

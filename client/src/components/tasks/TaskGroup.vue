@@ -2,7 +2,7 @@
   <div style="margin: 10px">
     <div class="card">
 
-     <div class="card-header text-left" @click="showTasks = !showTasks">
+      <div class="card-header text-left" @click="showTasks = !showTasks">
         {{ name }}
 
         <span style="float: right; color: light-gray">

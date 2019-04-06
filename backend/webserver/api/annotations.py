@@ -37,7 +37,6 @@ class Annotation(Resource):
         metadata = args.get('metadata', {})
         segmentation = args.get('segmentation', [])
         keypoints = args.get('keypoints', [])
-        color = args.get('color')
 
         logger.info(f'{current_user.username} has created an annotation for image {image_id}')
 

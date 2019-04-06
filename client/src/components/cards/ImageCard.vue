@@ -1,7 +1,7 @@
 <template>
   <div class="col-md-3">
     <div
-      class="card mb-4 box-shadow"
+      class="card mb-4 shadow-sm"
       :class="{'border': annotated, 'border-danger': annotated}"
       @mouseover="hover = true"
       @mouseleave="hover = false"

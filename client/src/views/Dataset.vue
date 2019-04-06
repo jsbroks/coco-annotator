@@ -1,44 +1,95 @@
 <template>
   <div @mousemove="mouseMove">
     <div style="padding-top: 55px" />
+    
     <div
-      class="album py-5 bg-light"
-      style="overflow: auto; height: calc(100vh - 55px)"
+      class="bg-light"
       :style="{ 'margin-left': sidebar.width + 'px' }"
     >
-      <div class="container">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"></li>
-          <li class="breadcrumb-item active">
-            <button class="btn btn-sm btn-link" @click="folders = []">
-              {{ dataset.name }}
-            </button>
-          </li>
-          <li
-            v-for="(folder, folderId) in folders"
-            :key="folderId"
-            class="breadcrumb-item"
-          >
-            <button
-              class="btn btn-sm btn-link"
-              :disabled="folders[folders.length - 1] === folder"
-              @click="removeFolder(folder)"
+      <nav class="nav border-bottom shadow-sm" style="background-color: #4b5162">
+        <a class="btn tab" @click="tab = 'images'" :style="{'color': tab == 'images' ? 'white' : 'darkgray'}">
+          <i class="fa fa-picture-o" aria-hidden="true"></i> Images
+        </a>
+        <a class="btn tab" @click="tab = 'exports'" :style="{'color': tab == 'exports' ? 'white' : 'darkgray'}">
+          <i class="fa fa-share" aria-hidden="true"></i> Exports
+        </a>
+        <a class="btn tab" @click="tab = 'members'" :style="{'color': tab == 'members' ? 'white' : 'darkgray'}">
+          <i class="fa fa-users" aria-hidden="true"></i> Members
+        </a>
+        <a class="btn tab" @click="tab = 'statistics'" :style="{'color': tab == 'statistics' ? 'white' : 'darkgray'}">
+          <i class="fa fa-bar-chart" aria-hidden="true"></i> Statistics
+        </a>
+        <a class="btn tab" @click="tab = 'settings'" :style="{'color': tab == 'settings' ? 'white' : 'darkgray'}">
+          <i class="fa fa-cog" aria-hidden="true"></i> Settings
+        </a>
+      </nav>
+    
+      <div class="bg-light text-left" style="overflow: auto; height: calc(100vh - 100px); margin: 10px">
+        <div class="container" v-show="tab == 'images'">
+          
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"></li>
+            <li class="breadcrumb-item active">
+              <button class="btn btn-sm btn-link" @click="folders = []">
+                {{ dataset.name }}
+              </button>
+            </li>
+            <li
+              v-for="(folder, folderId) in folders"
+              :key="folderId"
+              class="breadcrumb-item"
             >
-              {{ folder }}
-            </button>
-          </li>
-        </ol>
+              <button
+                class="btn btn-sm btn-link"
+                :disabled="folders[folders.length - 1] === folder"
+                @click="removeFolder(folder)"
+              >
+                {{ folder }}
+              </button>
+            </li>
+          </ol>
 
-        <p class="text-center" v-if="images.length < 1">
-          No images found in directory.
-        </p>
-        <div v-else>
-          <Pagination :pages="pages" @pagechange="updatePage" />
-          <div class="row">
-            <ImageCard v-for="image in images" :key="image.id" :image="image" />
+          <p class="text-center" v-if="images.length < 1">
+            No images found in directory.
+          </p>
+          <div v-else>
+            <Pagination :pages="pages" @pagechange="updatePage" />
+            <div class="row">
+              <ImageCard v-for="image in images" :key="image.id" :image="image" />
+            </div>
+            <Pagination :pages="pages" @pagechange="updatePage" />
           </div>
-          <hr />
+
         </div>
+        <div class="container" v-show="tab == 'exports'">Empty</div>
+        <div class="container" v-show="tab == 'members'">
+
+          <div class="my-3 p-3 bg-white rounded shadow-sm">
+            <h6 class="border-bottom border-gray pb-2"><b>Invite Members</b></h6>
+            
+          </div>
+          
+          <div class="my-3 p-3 bg-white rounded shadow-sm">
+            <h6 class="border-bottom border-gray pb-2"><b>Exisiting Memebers</b></h6>
+            
+            <div class="media text-muted pt-3" v-for="user in users">
+              <img src="https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/256x256/plain/user.png" class="mr-2 rounded" style="width: 32px; height: 32px;">
+              <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                  <div class="text-gray-dark">
+                    <strong>{{ user.name }}</strong> @{{user.username}}
+                  </div>
+                  <a href="#">{{ user.group }}</a>
+                </div>
+                <span class="d-block">Last seen: {{ new Date(user.last_seen['$date']).toISOString().slice(0, 19).replace('T', ' ') }} UTC</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="container" v-show="tab == 'statistics'">Stats</div>
+        <div class="container" v-show="tab == 'settings'">settings</div>
+
       </div>
     </div>
 
@@ -282,6 +333,7 @@ export default {
       dataset: {
         id: 0
       },
+      users: [],
       subdirectories: [],
       status: {
         data: { state: true, message: "Loading data" }
@@ -309,6 +361,7 @@ export default {
         progress: 0,
         id: null
       },
+      tab: "images",
       query: {
         file_name__icontains: "",
         ...this.$route.query
@@ -359,6 +412,12 @@ export default {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
+    },
+    getUsers() {
+      Dataset.getUsers(this.dataset.id)
+        .then(response => {
+          this.users = response.data
+        });
     },
     createScanTask() {
       if (this.scan.id != null) {
@@ -487,6 +546,10 @@ export default {
     }
   },
   watch: {
+    tab(tab) {
+      localStorage.setItem('dataset/tab', tab);
+      if (tab == 'members') this.getUsers();
+    },
     queryAnnotated() {
       this.updatePage();
     },
@@ -542,6 +605,10 @@ export default {
   mounted() {
     window.addEventListener("mouseup", this.stopDrag);
     window.addEventListener("mousedown", this.startDrag);
+
+    let tab = localStorage.getItem('dataset/tab');
+    if (tab !== null)
+      this.tab = tab;
   },
   destroyed() {
     window.removeEventListener("mouseup", this.stopDrag);
@@ -604,4 +671,10 @@ export default {
   padding: 0 5px 2px 5px;
   overflow: auto;
 }
+
+.card-header {
+  padding: 5px 10px;
+}
+
+
 </style>
