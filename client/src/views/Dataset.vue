@@ -64,12 +64,12 @@
         <div class="container" v-show="tab == 'exports'">Empty</div>
         <div class="container" v-show="tab == 'members'">
 
-          <div class="my-3 p-3 bg-white rounded shadow-sm">
+          <div class="card my-3 p-3 shadow-sm mr-2">
             <h6 class="border-bottom border-gray pb-2"><b>Invite Members</b></h6>
             
           </div>
           
-          <div class="my-3 p-3 bg-white rounded shadow-sm">
+          <div class="card my-3 p-3 shadow-sm mr-2">
             <h6 class="border-bottom border-gray pb-2"><b>Exisiting Memebers</b></h6>
             
             <div class="media text-muted pt-3" v-for="user in users">
@@ -87,7 +87,34 @@
           </div>
 
         </div>
-        <div class="container" v-show="tab == 'statistics'">Stats</div>
+        <div class="container" v-show="tab == 'statistics'">
+          <div v-if="stats == null">
+            Crunching numbers...
+          </div>
+
+          <div v-else>
+            <div class="row">
+              
+              <div v-if="stats.total" class="card my-3 p-3 shadow-sm col-3 mr-2">
+                <h6 class="border-bottom border-gray pb-2"><b>Total</b></h6>
+                <div class="row" v-for="stat in Object.keys(stats.total)">
+                  <strong class="col-8">{{stat}}:</strong>
+                  <span class="col-4">{{stats.total[stat]}}</span>
+                </div>
+              </div>
+
+              <div v-if="stats.average" class="card my-3 p-3 shadow-sm col-4 mr-2">
+                <h6 class="border-bottom border-gray pb-2"><b>Average</b></h6>
+                <div class="row" v-for="stat in Object.keys(stats.average)">
+                  <strong class="col-8">{{stat}}:</strong>
+                  <span class="col-4">{{stats.average[stat].toFixed(2)}}</span>
+                </div>
+              </div>
+
+            </div>
+            
+          </div>
+        </div>
         <div class="container" v-show="tab == 'settings'">settings</div>
 
       </div>
@@ -369,7 +396,8 @@ export default {
       panel: {
         showAnnotated: true,
         showNotAnnotated: true
-      }
+      },
+      stats: null
     };
   },
   methods: {
@@ -417,6 +445,12 @@ export default {
       Dataset.getUsers(this.dataset.id)
         .then(response => {
           this.users = response.data
+        });
+    },
+    getStats() {
+      Dataset.getStats(this.dataset.id)
+        .then(response => {
+          this.stats = response.data;
         });
     },
     createScanTask() {
@@ -549,6 +583,7 @@ export default {
     tab(tab) {
       localStorage.setItem('dataset/tab', tab);
       if (tab == 'members') this.getUsers();
+      if (tab == 'statistics') this.getStats();
     },
     queryAnnotated() {
       this.updatePage();
@@ -671,10 +706,4 @@ export default {
   padding: 0 5px 2px 5px;
   overflow: auto;
 }
-
-.card-header {
-  padding: 5px 10px;
-}
-
-
 </style>

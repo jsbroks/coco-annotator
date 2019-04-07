@@ -134,6 +134,39 @@ class DatasetMembers(Resource):
         return query_util.fix_ids(users)
 
 
+@api.route('/<int:dataset_id>/stats')
+class DatasetStats(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        """ All users in the dataset """
+        args = dataset_generate.parse_args()
+
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        images = ImageModel.objects(dataset_id=dataset.id, deleted=False)
+        annotations = AnnotationModel.objects(dataset_id=dataset_id, deleted=False)
+        stats = {
+            'total': {
+                'Users': dataset.get_users().count(),
+                'Images': images.count(),
+                'Annotated Images': images.filter(annotated=True).count(),
+                'Annotations': annotations.count(),
+                'Categories': len(dataset.categories)
+            },
+            'average': {
+                'Image Width (px)': images.average('width'),
+                'Image Height (px)': images.average('height'),
+                'Annotation Area (px)': annotations.average('area'),
+                'Time (ms) per Image': images.average('milliseconds') or 0,
+                'Time (ms) per Annotation': annotations.average('milliseconds') or 0
+            }
+        }
+        return stats
+
+
 @api.route('/<int:dataset_id>')
 class DatasetId(Resource):
     @login_required
