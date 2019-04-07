@@ -204,5 +204,5 @@ class ImageCoco(Resource):
         if not current_user.can_download(image):
             return {"message": "You do not have permission to download the images's annotations"}, 403
 
-        return coco_util.get_image_coco(image)
+        return coco_util.get_image_coco(image_id)
 

@@ -1,7 +1,7 @@
 import pycocotools.mask as mask
 
-from .query_util import fix_ids
 from database import (
+    fix_ids,
     ImageModel,
     DatasetModel,
     CategoryModel,
@@ -102,51 +102,51 @@ def get_annotations_iou(annotation_a, annotation_b):
     return ious[0][0]
 
 
-def get_image_coco(image):
+def get_image_coco(image_id):
     """
     Generates coco for an image
 
     :param image: ImageModel
     :return: Coco in dictionary format
     """
-    dataset = DatasetModel.objects(id=image.dataset_id).first()
-    image = fix_ids(image)
+    image = ImageModel.objects(id=image_id)\
+        .only(*ImageModel.COCO_PROPERTIES)
+    
+    image = fix_ids(image)[0]
+    dataset = DatasetModel.objects(id=image.get('dataset_id')).first()
 
-    bulk_categories = CategoryModel.objects(deleted=False) \
-        .exclude('deleted_date').in_bulk(dataset.categories).items()
+    bulk_categories = CategoryModel.objects(id__in=dataset.categories, deleted=False) \
+        .only(*CategoryModel.COCO_PROPERTIES)
 
+    print(bulk_categories)
+
+    db_annotations = AnnotationModel.objects(deleted=False, image_id=image_id)
     categories = []
     annotations = []
 
-    for category in bulk_categories:
-        category = category[1]
-        category_annotations = AnnotationModel.objects(
-            deleted=False, category_id=category.id, image_id=image.get('id')
-        ).exclude('paper_object', 'deleted_date').all()
+    for category in fix_ids(bulk_categories):
+
+        category_annotations = db_annotations\
+            .filter(category_id=category.get('id'))\
+            .only(*AnnotationModel.COCO_PROPERTIES)
         
-        if len(category_annotations) == 0:
+        if category_annotations.count() == 0:
             continue
         
+        category_annotations = fix_ids(category_annotations)
         for annotation in category_annotations:
-            annotation = fix_ids(annotation)
 
             has_segmentation = len(annotation.get('segmentation', [])) > 0
             has_keypoints = len(annotation.get('keypoints', [])) > 0
 
             if has_segmentation or has_keypoints:
-                del annotation['deleted']
 
-                if not has_keypoints:
-                    del annotation['keypoints']
-                else:
+                if has_keypoints:
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
-
+                
                 annotations.append(annotation)
-
-        category = fix_ids(category)
-        del category['deleted']
 
         if len(category.get('keypoint_labels')) > 0:
             category['keypoints'] = category.pop('keypoint_labels')
@@ -156,8 +156,6 @@ def get_image_coco(image):
             del category['keypoint_labels']
         
         categories.append(category)
-
-    del image['deleted']
 
     coco = {
         "images": [image],

@@ -40,9 +40,9 @@ def upsert(model, query=None, update=None):
     return new_model
 
 
-def fix_ids(objs):
-    objects_list = json.loads(objs.to_json().replace('\"_id\"', '\"id\"'))
-    return objects_list
+def fix_ids(q):
+    json_obj = json.loads(q.to_json().replace('\"_id\"', '\"id\"'))
+    return json_obj
 
 
 def create_from_json(json_file):

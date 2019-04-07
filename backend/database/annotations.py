@@ -10,6 +10,10 @@ from flask_login import current_user
 
 class AnnotationModel(DynamicDocument):
 
+    COCO_PROPERTIES = ["id", "image_id", "category_id", "segmentation", \
+                       "iscrowd", "color", "area", "bbox", "metadata", \
+                       "keypoints"]
+
     id = SequenceField(primary_key=True)
     image_id = IntField(required=True)
     category_id = IntField(required=True)
@@ -41,13 +45,15 @@ class AnnotationModel(DynamicDocument):
     def __init__(self, image_id=None, **data):
         
         from .images import ImageModel
-        image = ImageModel.objects(id=image_id).first()
 
-        if image is not None:
-            data['image_id'] = image_id
-            data['width'] = image.width
-            data['height'] = image.height
-            data['dataset_id'] = image.dataset_id
+        if image_id is not None:
+            image = ImageModel.objects(id=image_id).first()
+
+            if image is not None:
+                data['image_id'] = image_id
+                data['width'] = image.width
+                data['height'] = image.height
+                data['dataset_id'] = image.dataset_id
 
         super(AnnotationModel, self).__init__(**data)
 
