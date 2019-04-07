@@ -4,7 +4,7 @@ from mongoengine import *
 
 from .datasets import DatasetModel
 from .categories import CategoryModel
-
+from .events import Event
 from flask_login import current_user
 
 
@@ -33,6 +33,10 @@ class AnnotationModel(DynamicDocument):
 
     deleted = BooleanField(default=False)
     deleted_date = DateTimeField()
+
+    milliseconds = IntField(default=0)
+    events = EmbeddedDocumentListField(Event)
+
 
     def __init__(self, image_id=None, **data):
         

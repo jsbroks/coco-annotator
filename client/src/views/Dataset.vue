@@ -99,7 +99,7 @@
                 <h6 class="border-bottom border-gray pb-2"><b>Total</b></h6>
                 <div class="row" v-for="stat in Object.keys(stats.total)">
                   <strong class="col-8">{{stat}}:</strong>
-                  <span class="col-4">{{stats.total[stat]}}</span>
+                  <span class="col-4">{{stats.total[stat].toFixed(0)}}</span>
                 </div>
               </div>
 
@@ -107,7 +107,7 @@
                 <h6 class="border-bottom border-gray pb-2"><b>Average</b></h6>
                 <div class="row" v-for="stat in Object.keys(stats.average)">
                   <strong class="col-8">{{stat}}:</strong>
-                  <span class="col-4">{{stats.average[stat].toFixed(2)}}</span>
+                  <span class="col-4">{{stats.average[stat].toFixed(0)}}</span>
                 </div>
               </div>
 

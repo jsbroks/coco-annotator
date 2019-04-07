@@ -80,6 +80,7 @@ class AnnotatorData(Resource):
 
                 # Update annotation in database
                 sessions = []
+                total_time = 0
                 for session in annotation.get('sessions', []):
                     date = datetime.datetime.fromtimestamp(int(session.get('start')) / 1e3)
                     model = SessionEvent(
@@ -88,10 +89,12 @@ class AnnotatorData(Resource):
                         milliseconds=session.get('milliseconds'),
                         tools_used=session.get('tools')
                     )
+                    total_time += session.get('milliseconds')
                     sessions.append(model)
 
                 db_annotation.update(
                     add_to_set__events=sessions,
+                    inc__milliseconds=total_time,
                     set__keypoints=annotation.get('keypoints', []),
                     set__metadata=annotation.get('metadata'),
                     set__color=annotation.get('color')

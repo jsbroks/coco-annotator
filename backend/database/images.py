@@ -5,9 +5,9 @@ import imantics as im
 from PIL import Image
 from mongoengine import *
 
-from .events import Event
-from .annotations import AnnotationModel, DatasetModel
-
+from .events import Event, SessionEvent
+from .datasets import DatasetModel
+from .annotations import AnnotationModel
 
 class ImageModel(DynamicDocument):
     
@@ -44,8 +44,8 @@ class ImageModel(DynamicDocument):
     deleted = BooleanField(default=False)
     deleted_date = DateTimeField()
 
+    milliseconds = IntField(default=0)
     events = EmbeddedDocumentListField(Event)
-
     regenerate_thumbnail = BooleanField(default=False)
 
     @classmethod
@@ -179,7 +179,13 @@ class ImageModel(DynamicDocument):
         }
     
     def add_event(self, e):
-        self.update(push__events=e)
+        u = {
+            'push__events': e,
+        }
+        if isinstance(e, SessionEvent):
+            u['inc__milliseconds'] = e.milliseconds
+
+        self.update(**u)
 
 
 __all__ = ["ImageModel"]
