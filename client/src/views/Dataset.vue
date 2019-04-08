@@ -61,7 +61,22 @@
           </div>
 
         </div>
-        <div class="container" v-show="tab == 'exports'">Empty</div>
+        <div class="container" v-show="tab == 'exports'">
+          <div class="card my-3 p-3 shadow-sm mr-2">
+            <h6 class="border-bottom border-gray pb-2"><b>Exports</b></h6>
+            
+            <div class="media text-muted pt-3" v-for="exp in datasetExports">
+              <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                  <div class="text-gray-dark">
+                    <strong>Exported {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="container" v-show="tab == 'members'">
 
           <div class="card my-3 p-3 shadow-sm mr-2">
@@ -388,6 +403,7 @@ export default {
         progress: 0,
         id: null
       },
+      datasetExports: [],
       tab: "images",
       query: {
         file_name__icontains: "",
@@ -445,6 +461,12 @@ export default {
       Dataset.getUsers(this.dataset.id)
         .then(response => {
           this.users = response.data
+        });
+    },
+    getExports() {
+      Dataset.getExports(this.dataset.id)
+        .then(response => {
+          this.datasetExports = response.data
         });
     },
     getStats() {
@@ -584,6 +606,7 @@ export default {
       localStorage.setItem('dataset/tab', tab);
       if (tab == 'members') this.getUsers();
       if (tab == 'statistics') this.getStats();
+      if (tab == 'exports') this.getExports();
     },
     queryAnnotated() {
       this.updatePage();

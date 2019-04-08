@@ -54,5 +54,8 @@ export default {
   },
   getStats(id) {
     return axios.get(`${baseURL}/${id}/stats`);
+  },
+  getExports(id) {
+    return axios.get(`${baseURL}/${id}/exports`);
   }
 };

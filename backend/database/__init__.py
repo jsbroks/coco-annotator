@@ -5,6 +5,7 @@ from .annotations import *
 from .categories import *
 from .datasets import *
 from .lisence import *
+from .exports import *
 from .images import *
 from .events import *
 from .users import *
@@ -68,4 +69,5 @@ def create_from_json(json_file):
 
                 dataset_json['categories'] = category_ids
                 upsert(DatasetModel, query={ "name": name}, update=dataset_json)
+
 

@@ -2,7 +2,7 @@
   <div>
     <div style="padding-top: 55px" />
     <div
-      class="album py-5 bg-light "
+      class="album py-5 bg-light shadow-sm"
       style="overflow: auto; height: calc(100vh - 55px)"
     >
       <div class="container">

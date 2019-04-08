@@ -9,11 +9,13 @@ from google_images_download import google_images_download as gid
 
 from ..util.pagination_util import Pagination
 from ..util import query_util, coco_util, profile
+
 from database import (
     ImageModel,
     DatasetModel,
     CategoryModel,
-    AnnotationModel
+    AnnotationModel,
+    ExportModel
 )
 
 import datetime
@@ -348,6 +350,51 @@ class DatasetDataId(Resource):
             "dataset": query_util.fix_ids(dataset),
             "subdirectories": subdirectories
         }
+
+
+@api.route('/<int:dataset_id>/exports')
+class DatasetExports(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        """ Returns exports of images and annotations in the dataset (only owners) """
+        dataset = current_user.datasets.filter(id=dataset_id).first()
+
+        if dataset is None:
+            return {"message": "Invalid dataset ID"}, 400
+        
+        if not current_user.can_download(dataset):
+            return {"message": "You do not have permission to download the dataset's annotations"}, 403
+        
+        exports = ExportModel.objects(dataset_id=dataset.id).order_by('-created_at').limit(50)
+
+        dict_export = []
+        for export in exports:
+
+            time_delta = datetime.datetime.utcnow() - export.created_at
+            dict_export.append({
+                'ago': query_util.td_format(time_delta),
+                'tags': export.tags
+            })
+
+        return dict_export
+
+
+@api.route('/<int:dataset_id>/export')
+class DatasetExport(Resource):
+
+    @api.expect(coco_upload)
+    @login_required
+    def post(self, dataset_id):
+        """ Adds coco formatted annotations to the dataset """
+        args = coco_upload.parse_args()
+        coco = args['coco']
+
+        dataset = current_user.datasets.filter(id=dataset_id).first()
+        if dataset is None:
+            return {'message': 'Invalid dataset ID'}, 400
+
+        return dataset.import_coco(json.load(coco))
 
 
 @api.route('/<int:dataset_id>/coco')

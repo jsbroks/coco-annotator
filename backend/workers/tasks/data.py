@@ -5,12 +5,15 @@ from database import (
     CategoryModel,
     AnnotationModel,
     DatasetModel,
-    TaskModel
+    TaskModel,
+    ExportModel
 )
 
 # import pycocotools.mask as mask
 import numpy as np
+import time
 import json
+import os
 
 from celery import shared_task
 from ..socket import create_socket
@@ -34,7 +37,6 @@ def export_annotations(task_id, dataset_id):
     db_annotations = AnnotationModel.objects(deleted=False)
     
     total_items = db_categories.count()
-    dataset = fix_ids(dataset)
 
     coco = {
         'images': [],
@@ -95,11 +97,23 @@ def export_annotations(task_id, dataset_id):
         task.info(f"Exporting {num_annotations} annotations for image {image.get('id')}")
         coco.get('images').append(image)
     
-    file_path = dataset.get('directory') + '/coco.json'
+    task.info(f"Done export {total_annotations} annotations and {total_images} images from {dataset.name}")
+
+    timestamp = time.time()
+    directory = f"{dataset.directory}.exports/"
+    file_path = f"{directory}coco-{timestamp}.json"
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    task.info(f"Writing export to file {file_path}")
     with open(file_path, 'w') as fp:
         json.dump(coco, fp)
 
-    task.info(f"Done export {total_annotations} annotations and {total_images} images from {dataset.get('name')}")
+    task.info("Creating export object")
+    export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["COCO"])
+    export.save()
+
     task.set_progress(100, socket=socket)
 
 
