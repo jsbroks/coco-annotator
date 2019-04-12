@@ -67,7 +67,7 @@ class User(Resource):
         args = register.parse_args()
         username = args.get('username')
 
-        if User.objects(username__iexact=username).first():
+        if UserModel.objects(username__iexact=username).first():
             return {'success': False, 'message': 'Username already exists.'}, 400
 
         user = UserModel()
