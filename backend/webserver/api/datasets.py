@@ -48,7 +48,7 @@ export.add_argument('categories', type=str, default=None, required=False, help='
 update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
-                            help="Default annotation metadata")
+                            help="Default annotation metadata")                            
 
 dataset_generate = reqparse.RequestParser()
 dataset_generate.add_argument('keywords', location='json', type=list, default=[],
@@ -193,7 +193,9 @@ class DatasetId(Resource):
 
     @api.expect(update_dataset)
     def post(self, dataset_id):
+
         """ Updates dataset by ID """
+
         dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
@@ -201,12 +203,21 @@ class DatasetId(Resource):
         args = update_dataset.parse_args()
         categories = args.get('categories')
         default_annotation_metadata = args.get('default_annotation_metadata')
+        set_default_annotation_metadata = args.get('set_default_annotation_metadata')
 
         if categories is not None:
             dataset.categories = CategoryModel.bulk_create(categories)
 
         if default_annotation_metadata is not None:
+
+            update = {}
+            for key, value in default_annotation_metadata.items():
+                if key not in dataset.default_annotation_metadata:
+                    update[f'set__metadata__{key}'] = value
+
             dataset.default_annotation_metadata = default_annotation_metadata
+            AnnotationModel.objects(dataset_id=dataset.id, deleted=False)\
+                .update(**update)
 
         dataset.update(
             categories=dataset.categories,
