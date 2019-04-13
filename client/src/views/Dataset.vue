@@ -66,12 +66,15 @@
             <h6 class="border-bottom border-gray pb-2"><b>Exports</b></h6>
             
             <div class="media text-muted pt-3" v-for="exp in datasetExports">
-              <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                  <div class="text-gray-dark">
-                    <strong>Exported {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago</strong>
-                  </div>
-                </div>
+              <div class="media-body lh-125 border-bottom border-gray">
+                  Exported {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago
+                  <button 
+                    class="btn btn-sm btn-success"
+                    style="float: right; margin: 2px; padding: 2px"
+                    @click="downloadExport(exp.id)"
+                  >
+                    Download
+                  </button>
               </div>
             </div>
           </div>
@@ -340,6 +343,7 @@
 <script>
 import toastrs from "@/mixins/toastrs";
 import Dataset from "@/models/datasets";
+import Export from "@/models/exports";
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 import PanelString from "@/components/PanelInputString";
@@ -462,6 +466,9 @@ export default {
         .then(response => {
           this.users = response.data
         });
+    },
+    downloadExport(id) {
+      Export.download(id, this.dataset.name);
     },
     getExports() {
       Dataset.getExports(this.dataset.id)

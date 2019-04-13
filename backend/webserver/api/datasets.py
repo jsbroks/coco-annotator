@@ -373,6 +373,7 @@ class DatasetExports(Resource):
 
             time_delta = datetime.datetime.utcnow() - export.created_at
             dict_export.append({
+                'id': export.id,
                 'ago': query_util.td_format(time_delta),
                 'tags': export.tags
             })
