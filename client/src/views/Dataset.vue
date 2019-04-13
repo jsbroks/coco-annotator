@@ -67,7 +67,16 @@
             
             <div class="media text-muted pt-3" v-for="exp in datasetExports">
               <div class="media-body lh-125 border-bottom border-gray">
-                  Exported {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago
+                  {{exp.id}}. Exported {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago
+                  <div style="display: inline">
+                    <span
+                      v-for="tag in exp.tags"
+                      class="badge badge-secondary"
+                      style="margin: 1px"
+                    >
+                      {{tag}}
+                    </span>
+                  </div>
                   <button 
                     class="btn btn-sm btn-success"
                     style="float: right; margin: 2px; padding: 2px"
@@ -203,7 +212,7 @@
         <button
           type="button"
           class="btn btn-dark btn-block"
-          @click="exportCOCO"
+          @click="exportModal"
         >
           <div v-if="exporting.id != null" class="progress">
             <div
@@ -295,6 +304,7 @@
         </div>
       </div>
     </div>
+
     <div class="modal fade" tabindex="-1" role="dialog" id="cocoUpload">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -337,6 +347,54 @@
         </div>
       </div>
     </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="exportDataset">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Export {{dataset.name}}</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label>Categories (Empty export all)</label>
+                <TagsInput
+                  v-model="exporting.categories"
+                  element-id="exportCategories"
+                  :existing-tags="categoryTags"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                ></TagsInput>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="exportCOCO"
+            >
+              Export
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -349,6 +407,8 @@ import Pagination from "@/components/Pagination";
 import PanelString from "@/components/PanelInputString";
 import PanelToggle from "@/components/PanelToggle";
 import JQuery from "jquery";
+import TagsInput from "@/components/TagsInput";
+
 import { mapMutations } from "vuex";
 
 let $ = JQuery;
@@ -359,7 +419,8 @@ export default {
     ImageCard,
     Pagination,
     PanelString,
-    PanelToggle
+    PanelToggle,
+    TagsInput
   },
   mixins: [toastrs],
   props: {
@@ -374,6 +435,7 @@ export default {
       generateLimit: 100,
       limit: 52,
       imageCount: 0,
+      categories: [],
       images: [],
       folders: [],
       dataset: {
@@ -404,6 +466,7 @@ export default {
         id: null
       },
       exporting: {
+        categories: [],
         progress: 0,
         id: null
       },
@@ -446,6 +509,7 @@ export default {
 
           this.images = data.images;
           this.dataset = data.dataset;
+          this.categories = data.categories;
 
           this.imageCount = data.pagination.total;
           this.pages = data.pagination.pages;
@@ -462,25 +526,22 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     getUsers() {
-      Dataset.getUsers(this.dataset.id)
-        .then(response => {
-          this.users = response.data
-        });
+      Dataset.getUsers(this.dataset.id).then(response => {
+        this.users = response.data;
+      });
     },
     downloadExport(id) {
       Export.download(id, this.dataset.name);
     },
     getExports() {
-      Dataset.getExports(this.dataset.id)
-        .then(response => {
-          this.datasetExports = response.data
-        });
+      Dataset.getExports(this.dataset.id).then(response => {
+        this.datasetExports = response.data;
+      });
     },
     getStats() {
-      Dataset.getStats(this.dataset.id)
-        .then(response => {
-          this.stats = response.data;
-        });
+      Dataset.getStats(this.dataset.id).then(response => {
+        this.stats = response.data;
+      });
     },
     createScanTask() {
       if (this.scan.id != null) {
@@ -501,13 +562,16 @@ export default {
         })
         .finally(() => this.removeProcess(process));
     },
-    exportCOCO() {
+    exportModal() {
       if (this.exporting.id != null) {
         this.$router.push({ path: "/tasks", query: { id: this.exporting.id } });
         return;
       }
-
-      Dataset.exportingCOCO(this.dataset.id)
+      $("#exportDataset").modal("show");
+    },
+    exportCOCO() {
+      $("#exportDataset").modal("hide");
+      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories)
         .then(response => {
           let id = response.data.id;
           this.exporting.id = id;
@@ -574,6 +638,11 @@ export default {
       if (!showAnnotated && !showNotAnnotated) return " ";
 
       return showAnnotated;
+    },
+    categoryTags() {
+      let tags = {};
+      this.categories.forEach(c => tags[c.id] = c.name);
+      return tags;
     }
   },
   sockets: {
@@ -610,10 +679,10 @@ export default {
   },
   watch: {
     tab(tab) {
-      localStorage.setItem('dataset/tab', tab);
-      if (tab == 'members') this.getUsers();
-      if (tab == 'statistics') this.getStats();
-      if (tab == 'exports') this.getExports();
+      localStorage.setItem("dataset/tab", tab);
+      if (tab == "members") this.getUsers();
+      if (tab == "statistics") this.getStats();
+      if (tab == "exports") this.getExports();
     },
     queryAnnotated() {
       this.updatePage();
@@ -652,6 +721,8 @@ export default {
         setTimeout(() => {
           this.exporting.progress = 0;
           this.exporting.id = null;
+
+          this.getExports();
         }, 1000);
       }
     }
@@ -671,9 +742,8 @@ export default {
     window.addEventListener("mouseup", this.stopDrag);
     window.addEventListener("mousedown", this.startDrag);
 
-    let tab = localStorage.getItem('dataset/tab');
-    if (tab !== null)
-      this.tab = tab;
+    let tab = localStorage.getItem("dataset/tab");
+    if (tab !== null) this.tab = tab;
   },
   destroyed() {
     window.removeEventListener("mouseup", this.stopDrag);

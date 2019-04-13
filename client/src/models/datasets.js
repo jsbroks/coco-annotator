@@ -30,8 +30,8 @@ export default {
   scan(id) {
     return axios.get(`${baseURL}/${id}/scan`);
   },
-  exportingCOCO(id) {
-    return axios.get(`${baseURL}/${id}/export`);
+  exportingCOCO(id, categories) {
+    return axios.get(`${baseURL}/${id}/export?categories=${categories}`);
   },
   getCoco(id) {
     return axios.get(`${baseURL}/${id}/coco`);

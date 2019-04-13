@@ -95,7 +95,7 @@ export default {
 
 <style>
 .page {
-    display:block;
-    margin:0 auto;
+  display: block;
+  margin: 0 auto;
 }
 </style>

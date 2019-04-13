@@ -20,7 +20,7 @@ from ..socket import create_socket
 
 
 @shared_task
-def export_annotations(task_id, dataset_id):
+def export_annotations(task_id, dataset_id, categories):
     
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
@@ -30,11 +30,11 @@ def export_annotations(task_id, dataset_id):
 
     task.info("Beginning Export (COCO Format)")
 
-    db_categories = CategoryModel.objects(id__in=dataset.categories, deleted=False) \
+    db_categories = CategoryModel.objects(id__in=categories, deleted=False) \
         .only(*CategoryModel.COCO_PROPERTIES)
     db_images = ImageModel.objects(deleted=False, annotated=True, dataset_id=dataset.id)\
         .only(*ImageModel.COCO_PROPERTIES)
-    db_annotations = AnnotationModel.objects(deleted=False)
+    db_annotations = AnnotationModel.objects(deleted=False, category_id__in=categories)
     
     total_items = db_categories.count()
 
@@ -48,6 +48,7 @@ def export_annotations(task_id, dataset_id):
     progress = 0
 
     # iterate though all categoires and upsert
+    category_names = []
     for category in fix_ids(db_categories):
 
         if len(category.get('keypoint_labels', [])) > 0:
@@ -61,6 +62,7 @@ def export_annotations(task_id, dataset_id):
 
         task.info(f"Adding category: {category.get('name')}")
         coco.get('categories').append(category)
+        category_names.append(category.get('name'))
         
         progress += 1
         task.set_progress((progress/total_items)*100, socket=socket)
@@ -111,7 +113,7 @@ def export_annotations(task_id, dataset_id):
         json.dump(coco, fp)
 
     task.info("Creating export object")
-    export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["COCO"])
+    export = ExportModel(dataset_id=dataset.id, path=file_path, tags=["COCO", *category_names])
     export.save()
 
     task.set_progress(100, socket=socket)

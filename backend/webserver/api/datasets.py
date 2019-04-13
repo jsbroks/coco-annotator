@@ -42,6 +42,8 @@ delete_data.add_argument('fully', default=False, type=bool,
 coco_upload = reqparse.RequestParser()
 coco_upload.add_argument('coco', location='files', type=FileStorage, required=True, help='Json coco')
 
+export = reqparse.RequestParser()
+export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
 
 update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
@@ -173,6 +175,7 @@ class DatasetStats(Resource):
 
 @api.route('/<int:dataset_id>')
 class DatasetId(Resource):
+
     @login_required
     def delete(self, dataset_id):
         """ Deletes dataset by ID (only owners)"""
@@ -341,6 +344,8 @@ class DatasetDataId(Resource):
 
         subdirectories = [f for f in sorted(os.listdir(directory))
                           if os.path.isdir(directory + f) and not f.startswith('.')]
+        
+        categories = CategoryModel.objects(id__in=dataset.categories).only('id', 'name')
 
         return {
             "pagination": pagination.export(),
@@ -348,6 +353,7 @@ class DatasetDataId(Resource):
             "folder": folder,
             "directory": directory,
             "dataset": query_util.fix_ids(dataset),
+            "categories": query_util.fix_ids(categories),
             "subdirectories": subdirectories
         }
 
@@ -384,6 +390,26 @@ class DatasetExports(Resource):
 @api.route('/<int:dataset_id>/export')
 class DatasetExport(Resource):
 
+    @api.expect(export)
+    @login_required
+    def get(self, dataset_id):
+
+        args = export.parse_args()
+        categories = args.get('categories')
+        
+        if len(categories) == 0:
+            categories = []
+
+        if len(categories) > 0 or isinstance(categories, str):
+            categories = [int(c) for c in categories.split(',')]
+
+        dataset = DatasetModel.objects(id=dataset_id).first()
+        
+        if not dataset:
+            return {'message': 'Invalid dataset ID'}, 400
+        
+        return dataset.export_coco(categories=categories)
+    
     @api.expect(coco_upload)
     @login_required
     def post(self, dataset_id):
@@ -412,7 +438,7 @@ class DatasetCoco(Resource):
         if not current_user.can_download(dataset):
             return {"message": "You do not have permission to download the dataset's annotations"}, 403
 
-        return coco_util.get_dataset_coco(dataset)
+        return coco_util.get_dataseext_coco(dataset)
 
     @api.expect(coco_upload)
     @login_required
@@ -459,16 +485,3 @@ class DatasetScan(Resource):
         
         return dataset.scan()
 
-
-@api.route('/<int:dataset_id>/export')
-class DatasetScan(Resource):
-    
-    @login_required
-    def get(self, dataset_id):
-
-        dataset = DatasetModel.objects(id=dataset_id).first()
-        
-        if not dataset:
-            return {'message': 'Invalid dataset ID'}, 400
-        
-        return dataset.export_coco()

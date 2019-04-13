@@ -10,6 +10,7 @@ class ExportModel(DynamicDocument):
     dataset_id = IntField(required=True)
     path = StringField(required=True)
     tags = ListField(default=[])
+    categories = ListField(default=[])
     created_at = DateTimeField(default=datetime.datetime.utcnow)
     
     def get_file(self):
