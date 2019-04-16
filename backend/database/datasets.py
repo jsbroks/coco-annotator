@@ -32,6 +32,8 @@ class DatasetModel(DynamicDocument):
 
         if not os.path.exists(directory):
             os.makedirs(directory)
+            #changing permission of folder to upload images with out sudo permissions (anyone can upload images)
+            os.chmod(directory,0o777)
 
         self.directory = directory
 
