@@ -449,7 +449,7 @@ class DatasetCoco(Resource):
         if not current_user.can_download(dataset):
             return {"message": "You do not have permission to download the dataset's annotations"}, 403
 
-        return coco_util.get_dataseext_coco(dataset)
+        return coco_util.get_dataset_coco(dataset)
 
     @api.expect(coco_upload)
     @login_required
