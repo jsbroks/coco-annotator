@@ -216,8 +216,10 @@ class DatasetId(Resource):
                     update[f'set__metadata__{key}'] = value
 
             dataset.default_annotation_metadata = default_annotation_metadata
-            AnnotationModel.objects(dataset_id=dataset.id, deleted=False)\
-                .update(**update)
+            
+            if len(update.keys()) > 0:
+                AnnotationModel.objects(dataset_id=dataset.id, deleted=False)\
+                    .update(**update)
 
         dataset.update(
             categories=dataset.categories,
