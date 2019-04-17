@@ -9,7 +9,7 @@ def get_tag():
 
 class Config:
 
-    NAME = "COCO Annotator"
+    NAME = os.getenv("NAME", "COCO Annotator")
     VERSION = get_tag()
 
     ### File Watcher

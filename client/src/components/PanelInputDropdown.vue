@@ -11,7 +11,7 @@
 
 <script>
 export default {
-  name: "PanelInputString",
+  name: "PanelInputDropdown",
   model: {
     prop: "value",
     event: "update"

@@ -252,6 +252,7 @@
         <PanelString name="Contains" v-model="query.file_name__icontains" @submit="updatePage" />
         <PanelToggle name="Show Annotated" v-model="panel.showAnnotated" />
         <PanelToggle name="Show Not Annotated" v-model="panel.showNotAnnotated" />
+        <PanelDropdown name="Order" v-model="order" :values="orderTypes" />
       </div>
     </div>
 
@@ -406,6 +407,7 @@ import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 import PanelString from "@/components/PanelInputString";
 import PanelToggle from "@/components/PanelToggle";
+import PanelDropdown from "@/components/PanelInputDropdown"
 import JQuery from "jquery";
 import TagsInput from "@/components/TagsInput";
 
@@ -420,6 +422,7 @@ export default {
     Pagination,
     PanelString,
     PanelToggle,
+    PanelDropdown,
     TagsInput
   },
   mixins: [toastrs],
@@ -450,7 +453,7 @@ export default {
       mouseDown: false,
       sidebar: {
         drag: false,
-        width: 300,
+        width: window.innerWidth * 0.2,
         canResize: false
       },
       scan: {
@@ -472,6 +475,12 @@ export default {
       },
       datasetExports: [],
       tab: "images",
+      order: "file_name",
+      orderTypes: {
+        file_name: "File Name",
+        id: "Id",
+        path: "File Path"
+      },
       query: {
         file_name__icontains: "",
         ...this.$route.query
@@ -502,7 +511,8 @@ export default {
         limit: this.limit,
         folder: this.folders.join("/"),
         ...this.query,
-        annotated: this.queryAnnotated
+        annotated: this.queryAnnotated,
+        order: this.order
       })
         .then(response => {
           let data = response.data;
@@ -511,8 +521,8 @@ export default {
           this.dataset = data.dataset;
           this.categories = data.categories;
 
-          this.imageCount = data.pagination.total;
-          this.pages = data.pagination.pages;
+          this.imageCount = data.total;
+          this.pages = data.pages;
 
           this.subdirectories = data.subdirectories;
           // this.scan.id = data.scanId;
@@ -617,7 +627,8 @@ export default {
       if (this.sidebar.canResize) {
         event.preventDefault();
         let max = window.innerWidth * 0.5;
-        this.sidebar.width = Math.min(Math.max(event.x, 200), max);
+        this.sidebar.width = Math.min(Math.max(event.x, 150), max);
+        localStorage.setItem("dataset/sideWidth", this.sidebar.width)
       }
     },
     startDrag() {
@@ -684,6 +695,10 @@ export default {
       if (tab == "statistics") this.getStats();
       if (tab == "exports") this.getExports();
     },
+    order(order) {
+      localStorage.setItem("dataset/order", order);
+      this.updatePage();
+    },
     queryAnnotated() {
       this.updatePage();
     },
@@ -732,8 +747,13 @@ export default {
     this.updatePage();
   },
   created() {
-    this.sidebar.width = window.innerWidth * 0.2;
-    if (this.sidebar.width < 90) this.sidebar.width = 0;
+    let tab = localStorage.getItem("dataset/tab");
+    let order = localStorage.getItem("dataset/order");
+    let sideWidth = localStorage.getItem("dataset/sideWidth");
+    
+    if (sideWidth !== null) this.sidebar.width = parseInt(sideWidth);
+    if (tab !== null) this.tab = tab;
+    if (order !== null) this.order = order;
 
     this.dataset.id = parseInt(this.identifier);
     this.updatePage();
@@ -741,9 +761,6 @@ export default {
   mounted() {
     window.addEventListener("mouseup", this.stopDrag);
     window.addEventListener("mousedown", this.startDrag);
-
-    let tab = localStorage.getItem("dataset/tab");
-    if (tab !== null) this.tab = tab;
   },
   destroyed() {
     window.removeEventListener("mouseup", this.stopDrag);

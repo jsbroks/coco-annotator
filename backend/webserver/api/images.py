@@ -22,7 +22,7 @@ api = Namespace('image', description='Image related operations')
 image_all = reqparse.RequestParser()
 image_all.add_argument('fields', required=False, type=str)
 image_all.add_argument('page', default=1, type=int)
-image_all.add_argument('perPage', default=50, type=int, required=False)
+image_all.add_argument('per_page', default=50, type=int, required=False)
 
 image_upload = reqparse.RequestParser()
 image_upload.add_argument('image', location='files',

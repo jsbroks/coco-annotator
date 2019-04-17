@@ -20,6 +20,7 @@ services:
     environment:
       - SECRET_KEY=RandomSecretKeyHere
       - FILE_WATCHER=true
+      - NAME=Test Annotator
     volumes:
       - "./datasets:/datasets"
       - "./models:/models"
