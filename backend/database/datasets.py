@@ -29,18 +29,10 @@ class DatasetModel(DynamicDocument):
     def save(self, *args, **kwargs):
 
         directory = os.path.join(Config.DATASET_DIRECTORY, self.name + '/')
-
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-            #changing permission of folder to upload images with out sudo permissions (anyone can upload images)
-            os.chmod(directory,0o777)
+        os.makedirs(directory, mode=0o777, exist_ok=True)
 
         self.directory = directory
-
-        if current_user:
-            self.owner = current_user.username
-        else:
-            self.owner = 'system'
+        self.owner = current_user.username if current_user else 'system'
 
         return super(DatasetModel, self).save(*args, **kwargs)
 
@@ -50,7 +42,8 @@ class DatasetModel(DynamicDocument):
         members = self.users
         members.append(self.owner)
 
-        return UserModel.objects(username__in=members).exclude('password', 'id', 'preferences')
+        return UserModel.objects(username__in=members)\
+            .exclude('password', 'id', 'preferences')
 
     def import_coco(self, coco_json):
 
