@@ -6,7 +6,7 @@
     <PanelToggle name="Auto Select Color" v-model="polygon.color.auto" />
     <PanelToggle
       v-show="polygon.color.auto"
-      name="Only Back or White"
+      name="Only Black or White"
       v-model="polygon.color.blackOrWhite"
     />
     <PanelInputString
