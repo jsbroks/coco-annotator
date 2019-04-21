@@ -142,7 +142,18 @@
             
           </div>
         </div>
-        <div class="container" v-show="tab == 'settings'">settings</div>
+        <div class="container" v-show="tab == 'settings'">
+          <div class="card my-3 p-3 shadow-sm mr-2">
+            <h6 class="border-bottom border-gray pb-2"><b>Metadata</b></h6>
+            
+            <button 
+              class="btn btn-sm btn-block btn-danger"
+              @click="resetMetadata"
+            >
+              Rest All Metadata
+            </button>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -547,6 +558,15 @@ export default {
       Dataset.getExports(this.dataset.id).then(response => {
         this.datasetExports = response.data;
       });
+    },
+    resetMetadata() {
+      let r = confirm("You can not undo reseting of all metadata in"
+        + "this dataset. This includes metadata of images"
+        + "and annotations.");
+      
+      if (r) {
+        Dataset.resetMetadata(this.dataset.id);
+      }
     },
     getStats() {
       Dataset.getStats(this.dataset.id).then(response => {
