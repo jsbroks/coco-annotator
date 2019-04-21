@@ -50,7 +50,7 @@ class Images(Resource):
     def get(self):
         """ Returns all images """
         args = image_all.parse_args()
-        per_page = args['perPage']
+        per_page = args['per_page']
         page = args['page']-1
         fields = args.get('fields', '')
 
