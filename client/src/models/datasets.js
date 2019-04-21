@@ -57,5 +57,8 @@ export default {
   },
   getExports(id) {
     return axios.get(`${baseURL}/${id}/exports`);
+  },
+  resetMetadata(id) {
+    return axios.get(`${baseURL}/${id}/reset/metadata`);
   }
 };

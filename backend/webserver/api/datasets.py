@@ -139,7 +139,7 @@ class DatasetMembers(Resource):
         return query_util.fix_ids(users)
 
 
-@api.route('/<int:dataset_id>/rest/meta')
+@api.route('/<int:dataset_id>/reset/metadata')
 class DatasetCleanMeta(Resource):
 
     @login_required

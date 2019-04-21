@@ -267,10 +267,11 @@ export default {
         this.$parent.hover.annotation = annotationId;
 
         this.hover.category = this.$parent.getCategory(categoryId);
-        this.hover.annotation = this.hover.category.getAnnotation(annotationId);
-        event.item.selected = true;
-
-        this.hoverText();
+        if (this.hover.category != null) {
+          this.hover.annotation = this.hover.category.getAnnotation(annotationId);
+          event.item.selected = true;
+          this.hoverText();
+        }
       } else if (event.item && event.item.hasOwnProperty("keypoint")) {
         this.hover.position = event.point;
         this.keypoint = item;
