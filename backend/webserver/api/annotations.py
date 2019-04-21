@@ -38,6 +38,10 @@ class Annotation(Resource):
         segmentation = args.get('segmentation', [])
         keypoints = args.get('keypoints', [])
 
+        image = current_user.images.filter(id=image_id, deleted=False).first()
+        if image is None:
+            return {"message": "Invalid image id"}, 400
+        
         logger.info(f'{current_user.username} has created an annotation for image {image_id}')
 
         try:

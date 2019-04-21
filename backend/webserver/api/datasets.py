@@ -139,6 +139,26 @@ class DatasetMembers(Resource):
         return query_util.fix_ids(users)
 
 
+@api.route('/<int:dataset_id>/rest/meta')
+class DatasetCleanMeta(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        """ All users in the dataset """
+        args = dataset_generate.parse_args()
+
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {"message": "Invalid dataset id"}, 400
+
+        AnnotationModel.objects(dataset_id=dataset.id)\
+            .update(metadata=dataset.default_annotation_metadata)
+        ImageModel.objects(dataset_id=dataset.id)\
+            .update(metadata={})
+
+        return {'success': True}
+
+
 @api.route('/<int:dataset_id>/stats')
 class DatasetStats(Resource):
 
@@ -335,26 +355,24 @@ class DatasetDataId(Resource):
         
         images = current_user.images \
             .filter(dataset_id=dataset_id, path__startswith=directory, deleted=False, **query) \
-            .order_by(order).only('id', 'file_name', 'annotating')
+            .order_by(order).only('id', 'file_name', 'annotating', 'annotated', 'num_annotations')
         
         total = images.count()
         pages = int(total/per_page) + 1
         
         images = images.skip(page*per_page).limit(per_page)
+        images_json = query_util.fix_ids(images)
+        # for image in images:
+        #     image_json = query_util.fix_ids(image)
 
-        images_json = []
-        for image in images:
-            image_json = query_util.fix_ids(image)
+        #     query = AnnotationModel.objects(image_id=image.id, deleted=False)
+        #     category_ids = query.distinct('category_id')
+        #     categories = CategoryModel.objects(id__in=category_ids).only('name', 'color')
 
-            query = AnnotationModel.objects(image_id=image.id, deleted=False)
-            category_ids = query.distinct('category_id')
-            categories = CategoryModel.objects(id__in=category_ids).only('name', 'color')
+        #     image_json['annotations'] = query.count()
+        #     image_json['categories'] = query_util.fix_ids(categories)
 
-            image_json['annotations'] = query.count()
-            image_json['categories'] = query_util.fix_ids(categories)
-            image_json['permissions'] = image.permissions(current_user)
-
-            images_json.append(image_json)
+        #     images_json.append(image_json)
 
 
         subdirectories = [f for f in sorted(os.listdir(directory))

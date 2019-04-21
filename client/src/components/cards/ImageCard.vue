@@ -47,7 +47,6 @@
             <button
               class="btn dropdown-item"
               @click="onDeleteClick"
-              v-show="image.permissions.delete"
             >
               Delete
             </button>
@@ -57,7 +56,6 @@
             <button
               class="btn dropdown-item"
               @click="onDownloadClick"
-              v-show="image.permissions.download"
             >
               Download Image & COCO
             </button>
@@ -65,24 +63,25 @@
         </div>
 
         <div class="row">
-          <p v-if="image.annotations > 0">
-            {{ image.annotations }} annotation<span
-              v-show="image.annotations > 1"
+          <p v-show="image.num_annotations > 0">
+            {{ image.num_annotations }} annotation<span
+              v-show="image.num_annotations > 1"
               >s</span
             >
           </p>
-          <p v-else>Image has no annotations</p>
+          <p v-show="image.annotated == true && image.num_annotations < 0">Annotated</p>
+          <p v-show="image.annotated == false">No annotations</p>
         </div>
 
         <div class="row">
-          <span
+          <!--<span
             v-for="(category, index) in image.categories"
             :key="index"
             class="badge badge-pill badge-primary category-badge"
             :style="{ 'background-color': category.color }"
           >
             {{ category.name }}
-          </span>
+          </span>-->
         </div>
       </div>
     </div>
@@ -147,7 +146,7 @@ export default {
   computed: {
     imageUrl() {
       let d = new Date();
-      if (this.image.annotations > 0 && this.showAnnotations) {
+      if (this.image.annotated && this.showAnnotations) {
         return `/api/image/${
           this.image.id
         }?width=250&thumbnail=true&dummy=${d.getTime()}`;

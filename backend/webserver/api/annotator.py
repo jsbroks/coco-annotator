@@ -126,7 +126,9 @@ class AnnotatorData(Resource):
             set__metadata=image.get('metadata', {}),
             set__annotated=annotated,
             set__category_ids=image.get('category_ids', []),
-            set__regenerate_thumbnail=annotated
+            set__regenerate_thumbnail=annotated,
+            set__num_annotations=annotations\
+                .filter(deleted=False, area__gt=0).count()
         )
 
         return {"success": True}

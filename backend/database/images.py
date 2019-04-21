@@ -23,7 +23,7 @@ class ImageModel(DynamicDocument):
 
     # -- Database
     id = SequenceField(primary_key=True)
-    dataset_id = IntField()
+    dataset_id = IntField(required=True)
     category_ids = ListField(default=[])
 
     # Absolute path to image file
@@ -36,7 +36,8 @@ class ImageModel(DynamicDocument):
     annotated = BooleanField(default=False)
     # Poeple currently annotation the image
     annotating = ListField(default=[])
-
+    num_annotations = IntField(default=0)
+    
     thumbnail_url = StringField()
     image_url = StringField()
     coco_url = StringField()
