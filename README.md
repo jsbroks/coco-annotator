@@ -10,18 +10,43 @@
 
 ---
 
-[![GitHub Stars](https://img.shields.io/github/stars/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/jsbroks/coco-annotator.svg)](https://github.com/jsbroks/coco-annotator/issues)
-![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)
-[![Code Quality](https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality)](https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript)
-[![Demo](https://img.shields.io/badge/demo-online-green.svg)](https://annotator.justinbrooks.ca/)
-[![Build Status](https://travis-ci.org/jsbroks/coco-annotator.svg?branch=master)](https://travis-ci.org/jsbroks/coco-annotator)
-[![Docker Pulls](https://img.shields.io/docker/pulls/jsbroks/coco-annotator.svg)](https://hub.docker.com/r/jsbroks/coco-annotator)
+<p align="center">
+  <a href="/jsbroks/coco-annotator/stargazers">
+    <img src="https://img.shields.io/github/stars/jsbroks/coco-annotator.svg">
+  </a>
+  <a href="/jsbroks/coco-annotator/issues">
+    <img src="https://img.shields.io/github/issues/jsbroks/coco-annotator.svg">
+  </a>
+  <a href="https://tldrlegal.com/license/mit-license">
+    <img src="https://img.shields.io/github/license/mashape/apistatus.svg">
+  </a>
+  <a href="https://lgtm.com/projects/g/jsbroks/coco-annotator/context:javascript">
+    <img src="https://img.shields.io/lgtm/grade/javascript/g/jsbroks/coco-annotator.svg?label=code%20quality">
+  </a>
+  <a href="https://annotator.justinbrooks.ca/">
+    <img src="https://img.shields.io/badge/demo-online-green.svg">
+  </a>
+  <a href="https://travis-ci.org/jsbroks/coco-annotator">
+    <img src="https://travis-ci.org/jsbroks/coco-annotator.svg?branch=master">
+  </a>
+  <a href="https://hub.docker.com/r/jsbroks/coco-annotator">
+    <img src="https://img.shields.io/docker/pulls/jsbroks/coco-annotator.svg">
+  </a>
+</p>
 
 COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-known [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered through an intuitive and customizable interface and provides many tools for creating accurate datasets.
 
 <p align="center"><img width="600" src="https://i.imgur.com/m4RmjCp.gif"></p>
 <p align="center"><i>Note: This video is from v0.1.0 and many new features have been added.</i></p>
+
+<br>
+<p align="center">If you enjoy my work please consider supporting me</p>
+<p align="center">
+  <a href="https://www.patreon.com/jsbroks">
+    <img src="https://c5.patreon.com/external/logo/become_a_patron_button@2x.png" width="120">
+  </a>
+</p>
+<br>
 
 # Features
 
