@@ -11,7 +11,8 @@ logger = logging.getLogger('gunicorn.error')
 api = Namespace('annotation', description='Annotation related operations')
 
 create_annotation = reqparse.RequestParser()
-create_annotation.add_argument('image_id', type=int, required=True, location='json')
+create_annotation.add_argument(
+    'image_id', type=int, required=True, location='json')
 create_annotation.add_argument('category_id', type=int, location='json')
 create_annotation.add_argument('metadata', type=dict, location='json')
 create_annotation.add_argument('segmentation', type=list, location='json')
@@ -41,8 +42,9 @@ class Annotation(Resource):
         image = current_user.images.filter(id=image_id, deleted=False).first()
         if image is None:
             return {"message": "Invalid image id"}, 400
-        
-        logger.info(f'{current_user.username} has created an annotation for image {image_id}')
+
+        logger.info(
+            f'{current_user.username} has created an annotation for image {image_id}')
 
         try:
             annotation = AnnotationModel(
@@ -69,7 +71,7 @@ class AnnotationId(Resource):
 
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
-        
+
         return query_util.fix_ids(annotation)
 
     @login_required
@@ -80,10 +82,12 @@ class AnnotationId(Resource):
         if annotation is None:
             return {"message": "Invalid annotation id"}, 400
 
-        image = current_user.images.filter(id=annotation.image_id, deleted=False).first()
+        image = current_user.images.filter(
+            id=annotation.image_id, deleted=False).first()
         image.flag_thumbnail()
 
-        annotation.update(set__deleted=True, set__deleted_date=datetime.datetime.now())
+        annotation.update(set__deleted=True,
+                          set__deleted_date=datetime.datetime.now())
         return {'success': True}
 
 
@@ -92,5 +96,3 @@ class AnnotationId(Resource):
 #     def get(self, annotation_id):
 #         """ Returns the binary mask of an annotation """
 #         return query_util.fix_ids(AnnotationModel.objects(id=annotation_id).first())
-
-
