@@ -33,8 +33,6 @@ services:
     depends_on:
       - messageq
       - database
-    ports:
-      - 5555:5555
     networks:
       - cocoannotator
   messageq:
@@ -43,8 +41,6 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
-    ports:
-      - 5672:5672
     networks:
       - cocoannotator
   database:
@@ -56,8 +52,6 @@ services:
       - MONGO_LOG_DIR=/dev/null
     volumes:
       - "mongodb_data:/data/db"
-    ports:
-      - "27017:27017"
     command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator
