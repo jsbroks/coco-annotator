@@ -143,7 +143,8 @@ class ImageModel(DynamicDocument):
         :param annotations: QuerySet of annotation models
         :return: number of annotations
         """
-        annotations = annotations.filter(width=self.width, height=self.height, area__gt=0)
+        annotations = annotations.filter(
+            width=self.width, height=self.height, area__gt=0).exclude('events')
 
         for annotation in annotations:
             clone = annotation.clone()
