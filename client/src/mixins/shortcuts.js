@@ -70,12 +70,19 @@ export default {
           }
         },
         {
-          default: ["p"],
-          name: "Polygon Tool",
+          default: ["r"],
+          name: "BBox Tool",
           function: () => {
-            if (!this.$refs.polygon.isDisabled) this.activeTool = "Polygon";
+            if (!this.$refs.polygon.isDisabled) this.activeTool = "BBox";
           }
         },
+        // {
+        //   default: ["p"],
+        //   name: "Polygon Tool",
+        //   function: () => {
+        //     if (!this.$refs.polygon.isDisabled) this.activeTool = "Polygon";
+        //   }
+        // },
         {
           default: ["w"],
           name: "Magic Wand Tool",

@@ -13,12 +13,20 @@
         />
         <hr />
 
-        <PolygonTool
+        <!-- <PolygonTool
+          v-model="activeTool"
+          :scale="image.scale"
+          @setcursor="setCursor"
+          ref="polygon"
+        /> -->
+
+        <BBoxTool
           v-model="activeTool"
           :scale="image.scale"
           @setcursor="setCursor"
           ref="polygon"
         />
+
         <MagicWandTool
           v-model="activeTool"
           :width="image.raster.width"
@@ -218,7 +226,8 @@ import Category from "@/components/annotator/Category";
 import Label from "@/components/annotator/Label";
 import Annotations from "@/models/annotations";
 
-import PolygonTool from "@/components/annotator/tools/PolygonTool";
+// import PolygonTool from "@/components/annotator/tools/PolygonTool";
+import BBoxTool from "@/components/annotator/tools/BBoxTool";
 import SelectTool from "@/components/annotator/tools/SelectTool";
 import MagicWandTool from "@/components/annotator/tools/MagicWandTool";
 import EraserTool from "@/components/annotator/tools/EraserTool";
@@ -255,7 +264,8 @@ export default {
     CopyAnnotationsButton,
     Category,
     CLabel: Label,
-    PolygonTool,
+    // PolygonTool,
+    BBoxTool,
     PolygonPanel,
     SelectTool,
     MagicWandTool,
