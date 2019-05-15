@@ -180,6 +180,7 @@
                 <TagsInput
                   v-model="sharedUsers"
                   element-id="usersList"
+                  :existing-tags="users"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
                   placeholder="Add usernames"
@@ -238,7 +239,7 @@ export default {
       defaultMetadata: this.dataset.default_annotation_metadata,
       noImageUrl: require("@/assets/no-image.png"),
       notFoundImageUrl: require("@/assets/404-image.png"),
-      sharedUsers: this.dataset.users
+      sharedUsers: []
     };
   },
   methods: {
@@ -248,6 +249,7 @@ export default {
       this.$router.push({ name: "dataset", params: { identifier } });
     },
     onShare() {
+      this.dataset.users = this.sharedUsers;
       axios
         .post("/api/dataset/" + this.dataset.id + "/share", {
           users: this.sharedUsers
@@ -343,8 +345,13 @@ export default {
 
       return tags;
     },
-    user() {
-      return this.$store.state.user.user;
+    users() {
+      let users = {};
+      this.$parent.users.forEach(user => {
+        users[user.username] = user.username;
+      });
+
+      return users;
     }
   },
   mounted() {
