@@ -83,6 +83,25 @@ export default {
       }
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
     },
+    createBBox(event) {
+      console.log(event)
+      if (this.color.auto) {
+        this.color.circle = new paper.Path.Rectangle({
+          x: 50,
+          y: 50,
+          width: 100, 
+          height:100
+        });
+      }
+      this.polygon.path = new paper.Path(this.polygon.pathOptions);
+      this.polygon.path.add({x:300, y:50});
+      this.polygon.path.add({x:300, y:300});
+      this.polygon.path.add({x:50, y:300});
+      this.polygon.path.add({x:50, y:50});
+      this.polygon.path.add({x:50, y:50});
+
+      this.complete();
+    },
     /**
      * Frees current polygon
      */
@@ -122,17 +141,18 @@ export default {
       let wasNull = false;
       if (this.polygon.path == null) {
         wasNull = true;
-        this.createPolygon();
+        this.createBBox(event);
       }
       console.log(`mouse point ${event.point}`)
       this.actionPoints = 1;
-      this.polygon.path.add(event.point);
+      // this.polygon.path.add(event.point);
 
-      if (this.autoComplete(3)) return;
+      // if (this.autoComplete(3)) return;
 
-      if (this.polygon.guidance && wasNull) this.polygon.path.add(event.point);
+      // if (this.polygon.guidance && wasNull) this.polygon.path.add(event.point);
     },
-    onMouseUp() {
+    onMouseUp(event) {
+      // this.createBBox(event);
       if (this.polygon.path == null) return;
       let action = new UndoAction({
         name: this.name,
@@ -255,9 +275,9 @@ export default {
     },
     "color.auto"(value) {
       if (value && this.polygon.path) {
-        this.color.circle = new paper.Path.Circle(
+        this.color.circle = new paper.Path.Rectangle(
           new paper.Point(0, 0),
-          this.color.radius
+          new paper.Size(10, 10)
         );
       }
       if (!value && this.color.circle) {
