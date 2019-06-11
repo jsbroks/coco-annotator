@@ -121,7 +121,9 @@
           </div>
           <div class="modal-body">
             More information can be found in the
-            <a href="/help">help section</a>.
+            <a href="https://github.com/jsbroks/coco-annotator/wiki/Usage#creating-categories">
+              getting started section
+            </a>.
             <hr />
             <h6>What is a category?</h6>
 
