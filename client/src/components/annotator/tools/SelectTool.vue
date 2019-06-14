@@ -196,6 +196,7 @@ export default {
     clear() {
       this.hover.category = null;
       this.hover.annotation = null;
+      this.segment = null;
 
       if (this.hover.text != null) {
         this.hover.text.remove();
@@ -210,16 +211,31 @@ export default {
       }
 
       this.point = new paper.Path.Circle(point, this.edit.indicatorSize);
-      this.point.strokeColor = "white";
+      this.point.strokeColor = "black";
       this.point.strokeWidth = this.edit.indicatorWidth;
       this.point.indicator = true;
     },
     onMouseDrag(event) {
+      this.bbox = true;
       if (this.segment && this.edit.canMove) {
         this.createPoint(event.point);
+        if(this.bbox){
+          //counter clockwise prev and next.
+          let isCounterClock = this.segment.previous.point.x == this.segment.point.x;
+          let prev = isCounterClock ? this.segment.previous : this.segment.next;
+          let next = !isCounterClock ? this.segment.previous : this.segment.next;
+          
+          prev.point = new paper.Point(event.point.x, prev.point.y);
+          next.point = new paper.Point(next.point.x, event.point.y); 
+        }//getbbox here somehow
         this.segment.point = event.point;
+        
       }
     },
+
+    // .---.
+    // |   |
+    // .___.
     onMouseMove(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,

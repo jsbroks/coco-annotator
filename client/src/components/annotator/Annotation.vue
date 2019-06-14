@@ -288,7 +288,7 @@ export default {
         this.annotation.segmentation
       );
     },
-    createCompoundPath(json, segments) {
+    createCompoundPath(json, segments, isBbox = false) {
       json = json || null;
       segments = segments || null;
 
@@ -357,6 +357,7 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.data.categoryId = this.categoryIndex;
+      this.compoundPath.data.isBbox = isBbox;
 
       this.compoundPath.fullySelected = this.isCurrent;
       this.compoundPath.opacity = this.opacity;
@@ -532,10 +533,11 @@ export default {
      * Unites current annotation path with anyother path.
      * @param {paper.CompoundPath} compound compound to unite current annotation path with
      * @param {boolean} simplify simplify compound after unite
-     * @param {undoable} undoable add an undo action
+     * @param {undoable} undoable add an undo action.
+     * @param {isBbox} isBbox mark annotation as bbox.
      */
-    unite(compound, simplify = true, undoable = true) {
-      if (this.compoundPath == null) this.createCompoundPath();
+    unite(compound, simplify = true, undoable = true, isBbox = false) {
+      if (this.compoundPath == null) this.createCompoundPath(undefined, undefined, isBbox);
 
       let newCompound = this.compoundPath.unite(compound);
       newCompound.strokeColor = null;
