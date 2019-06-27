@@ -76,13 +76,24 @@ export default {
             if (!this.$refs.polygon.isDisabled) this.activeTool = "BBox";
           }
         },
-        // {
-        //   default: ["p"],
-        //   name: "Polygon Tool",
-        //   function: () => {
-        //     if (!this.$refs.polygon.isDisabled) this.activeTool = "Polygon";
-        //   }
-        // },
+        {
+          default: ["n"],
+          name: "Next Image",
+          function: this.nextImage
+        },
+        {
+          default: ["p"],
+          name: "Previous Image",
+          function: this.previousImage
+        },
+        {
+          default: ["v"],
+          name: "Polygon Tool",
+          function: () => {
+            if (!this.$refs.polygon.isDisabled) this.activeTool = "Polygon";
+          }
+        },
+        
         {
           default: ["w"],
           name: "Magic Wand Tool",
