@@ -45,7 +45,7 @@ export default {
         segments: true,
         stroke: true,
         fill: false,
-        tolerance: 5,
+        tolerance: 10,
         match: hit => {
           return !hit.item.hasOwnProperty("indicator");
         }
@@ -179,12 +179,15 @@ export default {
       }
 
       let path = hitResult.item;
-
       if (hitResult.type === "segment") {
         this.segment = hitResult.segment;
       } else if (hitResult.type === "stroke") {
         let location = hitResult.location;
         this.segment = path.insert(location.index + 1, event.point);
+      } else if (event.item.className == "CompoundPath"){
+        this.initPoint = event.point;
+        this.moveObject = event.item;
+        console.log("we're moving objects bitch");
       }
 
       if (this.point != null) {
@@ -197,7 +200,7 @@ export default {
       this.hover.category = null;
       this.hover.annotation = null;
       this.segment = null;
-
+      this.moveObject = null;
       if (this.hover.text != null) {
         this.hover.text.remove();
         this.hover.box.remove();
@@ -216,6 +219,17 @@ export default {
       this.point.indicator = true;
     },
     onMouseDrag(event) {
+      if(this.moveObject){
+        let delta_x = this.initPoint.x - event.point.x;
+        let delta_y = this.initPoint.y - event.point.y;
+        let segment = this.moveObject.firstSegment;
+        for(let i = 0; i<4;i++){
+          let p = segment.point;
+          segment.point = new paper.Point(p.x - delta_x, p.y - delta_y);
+          segment = segment.next;
+        }
+        this.initPoint = event.point;
+      }
       this.bbox = true;
       if (this.segment && this.edit.canMove) {
         this.createPoint(event.point);

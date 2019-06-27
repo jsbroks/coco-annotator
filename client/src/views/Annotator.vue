@@ -165,7 +165,7 @@
             <BBoxPanel :bbox="$refs.bbox" />
           </div>
           <div v-if="$refs.polygon != null">
-            <PolygonPanel :polygon="$refs.polybboxgon" />
+            <PolygonPanel :polygon="$refs.polygon" />
           </div>
 
           <div v-if="$refs.select != null">
@@ -368,6 +368,7 @@ export default {
       let data = {
         mode: this.mode,
         user: {
+          bbox: this.$refs.bbox.export(),
           polygon: this.$refs.polygon.export(),
           eraser: this.$refs.eraser.export(),
           brush: this.$refs.brush.export(),
@@ -530,6 +531,7 @@ export default {
     setPreferences(preferences) {
       let refs = this.$refs;
 
+      refs.bbox.setPreferences(preferences.bbox || {});
       refs.polygon.setPreferences(preferences.polygon || {});
       refs.select.setPreferences(preferences.select || {});
       refs.magicwand.setPreferences(preferences.magicwand || {});

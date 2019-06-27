@@ -126,12 +126,6 @@ export default {
         );
       }
     },
-    onMouseDrag(event) {
-      if (this.polygon.path == null) return;
-      this.actionPoints++;
-      this.autoStrokeColor(event.point);
-      this.polygon.path.add(event.point);
-    },
     onMouseDown(event) {
       if(this.polygon.path == null) {
         this.createBBox(event);
