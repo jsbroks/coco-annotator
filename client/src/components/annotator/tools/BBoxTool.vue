@@ -223,16 +223,6 @@ export default {
       if (this.polygon.path != null)
         this.polygon.path.strokeWidth = newScale * this.scaleFactor;
     },
-    // /**
-    //  * Remove last point (point were mouse was) if enable guidane
-    //  */
-    // "polygon.guidance"(guidance) {
-    //   if (this.polygon.path == null) return;
-
-    //   if (!guidance && this.polygon.path.length > 1) {
-    //     this.removeLastPoint();
-    //   }
-    // },
     "polygon.minDistance"(newDistance) {
       this.tool.minDistance = newDistance;
     },
