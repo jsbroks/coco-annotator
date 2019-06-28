@@ -603,9 +603,9 @@ export default {
       return this.$refs.category[index];
     },
     // Current Annotation Operations
-    uniteCurrentAnnotation(compound, simplify = true, undoable = true) {
+    uniteCurrentAnnotation(compound, simplify = true, undoable = true, isBBox = false) {
       if (this.currentAnnotation == null) return;
-      this.currentAnnotation.unite(compound, simplify, undoable);
+      this.currentAnnotation.unite(compound, simplify, undoable, isBBox);
     },
     subtractCurrentAnnotation(compound, simplify = true, undoable = true) {
       if (this.currentCategory == null) return;

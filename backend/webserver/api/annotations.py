@@ -14,6 +14,7 @@ create_annotation = reqparse.RequestParser()
 create_annotation.add_argument(
     'image_id', type=int, required=True, location='json')
 create_annotation.add_argument('category_id', type=int, location='json')
+create_annotation.add_argument('isbbox', type=bool, location='json')
 create_annotation.add_argument('metadata', type=dict, location='json')
 create_annotation.add_argument('segmentation', type=list, location='json')
 create_annotation.add_argument('keypoints', type=list, location='json')
@@ -35,6 +36,7 @@ class Annotation(Resource):
         args = create_annotation.parse_args()
         image_id = args.get('image_id')
         category_id = args.get('category_id')
+        isbbox = args.get('isbbox')
         metadata = args.get('metadata', {})
         segmentation = args.get('segmentation', [])
         keypoints = args.get('keypoints', [])
@@ -42,7 +44,9 @@ class Annotation(Resource):
         image = current_user.images.filter(id=image_id, deleted=False).first()
         if image is None:
             return {"message": "Invalid image id"}, 400
-
+        
+        logger.info(
+            f'{current_user.username} has created an annotation for image {image_id} with {isbbox}')
         logger.info(
             f'{current_user.username} has created an annotation for image {image_id}')
 
@@ -52,7 +56,8 @@ class Annotation(Resource):
                 category_id=category_id,
                 metadata=metadata,
                 segmentation=segmentation,
-                keypoints=keypoints
+                keypoints=keypoints,
+                isbbox=isbbox
             )
             annotation.save()
         except (ValueError, TypeError) as e:

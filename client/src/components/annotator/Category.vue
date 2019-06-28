@@ -208,10 +208,10 @@ export default {
     createAnnotation() {
       let parent = this.$parent;
       let annotationId = this.category.annotations.length;
-
       Annotations.create({
         image_id: parent.image.id,
-        category_id: this.category.id
+        category_id: this.category.id,
+        isbbox: localStorage.getItem("editorTool") == "BBox"
       }).then(response => {
         this.$socket.emit("annotation", {
           action: "create",

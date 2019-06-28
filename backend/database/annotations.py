@@ -13,7 +13,7 @@ class AnnotationModel(DynamicDocument):
 
     COCO_PROPERTIES = ["id", "image_id", "category_id", "segmentation",
                        "iscrowd", "color", "area", "bbox", "metadata",
-                       "keypoints"]
+                       "keypoints", "isbbox"]
 
     id = SequenceField(primary_key=True)
     image_id = IntField(required=True)
@@ -24,6 +24,7 @@ class AnnotationModel(DynamicDocument):
     area = IntField(default=0)
     bbox = ListField(default=[0, 0, 0, 0])
     iscrowd = BooleanField(default=False)
+    isbbox = BooleanField(default=False)
 
     creator = StringField(required=True)
     width = IntField()

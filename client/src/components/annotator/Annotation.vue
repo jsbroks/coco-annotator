@@ -288,7 +288,7 @@ export default {
         this.annotation.segmentation
       );
     },
-    createCompoundPath(json, segments, isBbox = false) {
+    createCompoundPath(json, segments) {
       json = json || null;
       segments = segments || null;
 
@@ -357,7 +357,6 @@ export default {
 
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.data.categoryId = this.categoryIndex;
-      this.compoundPath.data.isBbox = isBbox;
 
       this.compoundPath.fullySelected = this.isCurrent;
       this.compoundPath.opacity = this.opacity;
@@ -534,16 +533,18 @@ export default {
      * @param {paper.CompoundPath} compound compound to unite current annotation path with
      * @param {boolean} simplify simplify compound after unite
      * @param {undoable} undoable add an undo action.
-     * @param {isBbox} isBbox mark annotation as bbox.
+     * @param {isBBox} isBBox mark annotation as bbox.
      */
-    unite(compound, simplify = true, undoable = true, isBbox = false) {
-      if (this.compoundPath == null) this.createCompoundPath(undefined, undefined, isBbox);
-
+    unite(compound, simplify = true, undoable = true, isBBox = false) {
+      if (this.compoundPath == null) this.createCompoundPath();
+      this.compoundPath.data.isBBox = isBBox;
       let newCompound = this.compoundPath.unite(compound);
       newCompound.strokeColor = null;
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
+      newCompound.data.isBBox = isBBox
+      console.log(newCompound);
 
       if (undoable) this.createUndoAction("Unite");
 
@@ -586,7 +587,6 @@ export default {
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
-
       let metadata = this.$refs.metadata.export();
       if (this.name.length > 0) metadata.name = this.name;
       let annotationData = {

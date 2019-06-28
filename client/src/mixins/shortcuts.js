@@ -134,10 +134,10 @@ export default {
           function: this.save
         },
         {
-          title: "Polygon Tool Shortcuts",
+          title: "BBox Tool Shortcuts",
           default: ["escape"],
-          name: "Remove Current Polygon",
-          function: this.$refs.polygon.deletePolygon
+          name: "Remove Current BBox",
+          function: this.$refs.bbox.deletePolygon
         },
         {
           title: "Eraser Tool Shortcuts",
