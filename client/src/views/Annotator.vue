@@ -531,7 +531,7 @@ export default {
     setPreferences(preferences) {
       let refs = this.$refs;
 
-      refs.bbox.setPreferences(preferences.bbox || {});
+      refs.bbox.setPreferences(preferences.bbox || preferences.polygon || {});
       refs.polygon.setPreferences(preferences.polygon || {});
       refs.select.setPreferences(preferences.select || {});
       refs.magicwand.setPreferences(preferences.magicwand || {});
