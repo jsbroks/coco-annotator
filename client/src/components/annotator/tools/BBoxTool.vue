@@ -28,11 +28,8 @@ export default {
       cursor: "copy",
       bbox: null,
       polygon: {
-        completeDistance: 5,
-        minDistance: 2,
         path: null,
         guidance: false,
-        simplify: 1,
         pathOptions: {
           strokeColor: "black",
           strokeWidth: 1
@@ -72,18 +69,6 @@ export default {
       this.color.blackOrWhite = pref.blackOrWhite || this.color.blackOrWhite;
       this.color.auto = pref.auto || this.color.auto;
       this.color.radius = pref.radius || this.color.radius;
-    },
-    /**
-     * Creates a new selection polygon path
-     */
-    createPolygon() {
-      if (this.color.auto) {
-        this.color.circle = new paper.Path.Circle(
-          new paper.Point(0, 0),
-          this.color.radius
-        );
-      }
-      this.polygon.path = new paper.Path(this.polygon.pathOptions);
     },
     createBBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
@@ -186,8 +171,10 @@ export default {
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
-      this.$parent.uniteCurrentAnnotation(this.polygon.path, true, true, true);
+      this.$parent.uniteCurrentAnnotation(this.polygon.path);
 
+      this.$parent.currentCategory.createAnnotation();
+      
       this.polygon.path.remove();
       this.polygon.path = null;
       if (this.color.circle) {
@@ -223,9 +210,6 @@ export default {
       if (this.polygon.path != null)
         this.polygon.path.strokeWidth = newScale * this.scaleFactor;
     },
-    "polygon.minDistance"(newDistance) {
-      this.tool.minDistance = newDistance;
-    },
     "polygon.pathOptions.strokeColor"(newColor) {
       if (this.polygon.path == null) return;
 
@@ -245,8 +229,6 @@ export default {
     }
   },
   created() {},
-  mounted() {
-    this.tool.minDistance = this.minDistance;
-  }
+  mounted() {}
 };
 </script>
