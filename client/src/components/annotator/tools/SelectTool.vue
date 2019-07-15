@@ -163,6 +163,14 @@ export default {
       this.hover.box.bringToFront();
       this.hover.text.bringToFront();
     },
+    checkBbox(paperObject) {
+      if(!paperObject) return false;
+      let annotationId = paperObject.data.annotationId;
+      let categoryId = paperObject.data.categoryId;
+      let category = this.$parent.getCategory(categoryId);
+      let annotation = category.getAnnotation(annotationId);
+      return annotation.annotation.isbbox;
+    },
     onMouseDown(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,
@@ -177,19 +185,20 @@ export default {
         }
         return;
       }
-
       let path = hitResult.item;
+      let paperObject = null;
       if (hitResult.type === "segment") {
         this.segment = hitResult.segment;
+        paperObject = path.parent;
       } else if (hitResult.type === "stroke") {
         let location = hitResult.location;
         this.segment = path.insert(location.index + 1, event.point);
       } else if (event.item.className == "CompoundPath"){
         this.initPoint = event.point;
         this.moveObject = event.item;
-        console.log("we're moving objects bitch");
+        paperObject = event.item;
       }
-
+      this.isBbox = this.checkBbox(paperObject);
       if (this.point != null) {
         this.edit.canMove = this.point.contains(event.point);
       } else {
@@ -199,6 +208,7 @@ export default {
     clear() {
       this.hover.category = null;
       this.hover.annotation = null;
+      this.isBbox = false;
       this.segment = null;
       this.moveObject = null;
       if (this.hover.text != null) {
@@ -219,7 +229,7 @@ export default {
       this.point.indicator = true;
     },
     onMouseDrag(event) {
-      if(this.moveObject){
+      if(this.isBbox && this.moveObject){
         let delta_x = this.initPoint.x - event.point.x;
         let delta_y = this.initPoint.y - event.point.y;
         let segment = this.moveObject.firstSegment;
@@ -230,10 +240,9 @@ export default {
         }
         this.initPoint = event.point;
       }
-      this.bbox = true;
       if (this.segment && this.edit.canMove) {
         this.createPoint(event.point);
-        if(this.bbox){
+        if(this.isBbox){
           //counter clockwise prev and next.
           let isCounterClock = this.segment.previous.point.x == this.segment.point.x;
           let prev = isCounterClock ? this.segment.previous : this.segment.next;
@@ -247,9 +256,10 @@ export default {
       }
     },
 
-    // .---.
-    // |   |
-    // .___.
+    onMouseUp(event){
+      this.clear();
+    },
+    
     onMouseMove(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,

@@ -537,15 +537,14 @@ export default {
      */
     unite(compound, simplify = true, undoable = true, isBBox = false) {
       if (this.compoundPath == null) this.createCompoundPath();
-      this.compoundPath.data.isBBox = isBBox;
+
       let newCompound = this.compoundPath.unite(compound);
       newCompound.strokeColor = null;
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
-      newCompound.data.isBBox = isBBox
-      console.log(newCompound);
-
+      this.annotation.isbbox = isBBox;
+      
       if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
@@ -591,6 +590,7 @@ export default {
       if (this.name.length > 0) metadata.name = this.name;
       let annotationData = {
         id: this.annotation.id,
+        isbbox: this.annotation.isbbox,
         color: this.color,
         metadata: metadata
       };

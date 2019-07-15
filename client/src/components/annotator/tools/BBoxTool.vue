@@ -29,7 +29,6 @@ export default {
       bbox: null,
       polygon: {
         path: null,
-        guidance: false,
         pathOptions: {
           strokeColor: "black",
           strokeWidth: 1
@@ -53,7 +52,6 @@ export default {
     ...mapMutations(["addUndo", "removeUndos"]),
     export() {
       return {
-        guidance: this.polygon.guidance,
         completeDistance: this.polygon.completeDistance,
         minDistance: this.polygon.minDistance,
         blackOrWhite: this.color.blackOrWhite,
@@ -62,10 +60,6 @@ export default {
       };
     },
     setPreferences(pref) {
-      this.polygon.guidance = pref.guidance || this.polygon.guidance;
-      this.polygon.completeDistance =
-        pref.completeDistance || this.polygon.completeDistance;
-      this.polygon.minDistance = pref.minDistance || this.polygon.minDistance;
       this.color.blackOrWhite = pref.blackOrWhite || this.color.blackOrWhite;
       this.color.auto = pref.auto || this.color.auto;
       this.color.radius = pref.radius || this.color.radius;
@@ -73,20 +67,18 @@ export default {
     createBBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
       this.bbox = new BBox(event.point);
-      this.bbox.getPoints().forEach((point) => this.polygon.path.add(point))
-      
+      this.bbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
 
     modifyBBox(event) {
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
-      this.bbox.modifyPoint(event.point)
-      this.bbox.getPoints().forEach((point) => this.polygon.path.add(point));
-      
+      this.bbox.modifyPoint(event.point);
+      this.bbox.getPoints().forEach(point => this.polygon.path.add(point));
     },
     /**
-     * Frees current polygon
+     * Frees current bbox
      */
-    deletePolygon() {
+    deleteBbox() {
       if (this.polygon.path == null) return;
 
       this.polygon.path.remove();
@@ -111,37 +103,30 @@ export default {
         );
       }
     },
+    checkAnnotationExist() {
+      return (
+        !!this.$parent.currentAnnotation &&
+        !!this.$parent.currentAnnotation.annotation.paper_object.length
+      );
+    },
     onMouseDown(event) {
-      if(this.polygon.path == null) {
+      if (this.polygon.path == null && this.checkAnnotationExist()) {
+        this.$parent.currentCategory.createAnnotation();
+      }
+      if (this.polygon.path == null) {
         this.createBBox(event);
         return;
       }
       this.removeLastBBox();
       this.modifyBBox(event);
-      
+
       if (this.completeBBox()) return;
-
-    },
-    onMouseUp(event) {
-      // this.createBBox(event);
-      if (this.polygon.path == null) return;
-      let action = new UndoAction({
-        name: this.name,
-        action: this.actionTypes.ADD_POINTS,
-        func: this.undoPoints,
-        args: {
-          points: this.actionPoints
-        }
-      });
-
-      this.addUndo(action);
     },
     onMouseMove(event) {
       if (this.polygon.path == null) return;
       if (this.polygon.path.segments.length === 0) return;
       this.autoStrokeColor(event.point);
 
-      if (!this.polygon.guidance) return;
       this.removeLastBBox();
       this.modifyBBox(event);
     },
@@ -154,10 +139,6 @@ export default {
       let points = args.points;
       let length = this.polygon.path.segments.length;
 
-      if  (this.polygon.guidance) {
-        length -= 1;
-      }
-
       this.polygon.path.removeSegments(length - points, length);
     },
     /**
@@ -167,14 +148,11 @@ export default {
     completeBBox() {
       if (this.polygon.path == null) return false;
 
-      
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
-      this.$parent.uniteCurrentAnnotation(this.polygon.path);
+      this.$parent.uniteCurrentAnnotation(this.polygon.path, true, true, true);
 
-      this.$parent.currentCategory.createAnnotation();
-      
       this.polygon.path.remove();
       this.polygon.path = null;
       if (this.color.circle) {
@@ -183,7 +161,7 @@ export default {
       }
 
       this.removeUndos(this.actionTypes.ADD_POINTS);
-      
+
       return true;
     },
     removeLastBBox() {

@@ -1,7 +1,6 @@
 <template>
   <div v-show="bbox.isActive">
-    <PanelButton name="Delete BBox" @click="bbox.deletePolygon" />
-    <PanelToggle name="Guidance" v-model="bbox.polygon.guidance" />
+    <PanelButton name="Delete BBox" @click="bbox.deleteBbox" />
     <PanelToggle name="Auto Select Color" v-model="bbox.color.auto" />
     <PanelToggle
       v-show="bbox.color.auto"
