@@ -110,7 +110,7 @@ class AnnotationId(Resource):
             )
             annotation.update(category_id=new_category_id)
 
-        return { success: True }
+        return query_util.fix_ids(annotation)
 
 
 # @api.route('/<int:annotation_id>/mask')
