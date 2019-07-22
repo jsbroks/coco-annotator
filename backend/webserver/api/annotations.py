@@ -19,6 +19,8 @@ create_annotation.add_argument('segmentation', type=list, location='json')
 create_annotation.add_argument('keypoints', type=list, location='json')
 create_annotation.add_argument('color', location='json')
 
+update_annotation = reqparse.RequestParser()
+update_annotation.add_argument('category_id', type=int, location='json')
 
 @api.route('/')
 class Annotation(Resource):
@@ -89,6 +91,26 @@ class AnnotationId(Resource):
         annotation.update(set__deleted=True,
                           set__deleted_date=datetime.datetime.now())
         return {'success': True}
+
+    @api.expect(update_annotation)
+    @login_required
+    def put(self, annotation_id):
+        """ Updates an annotation by ID """
+        annotation = current_user.annotations.filter(id=annotation_id).first()
+
+        if annotation is None:
+            return { "message": "Invalid annotation id" }, 400
+
+        args = update_annotation.parse_args()
+
+        new_category_id = args.get('category_id')
+        if new_category_id is not None:
+            logger.info(
+                f'{current_user.username} is trying to update a category for annotation id {annotation.id} ({annotation.metadata.get("name")}) from {annotation.category_id} to {new_category_id}'
+            )
+            annotation.update(category_id=new_category_id)
+
+        return { success: True }
 
 
 # @api.route('/<int:annotation_id>/mask')
