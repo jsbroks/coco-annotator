@@ -110,8 +110,8 @@ class AnnotationId(Resource):
             )
             annotation.update(category_id=new_category_id)
 
-        return query_util.fix_ids(annotation)
-
+        newAnnotation = current_user.annotations.filter(id=annotation_id).first()
+        return query_util.fix_ids(newAnnotation)
 
 # @api.route('/<int:annotation_id>/mask')
 # class AnnotationMask(Resource):

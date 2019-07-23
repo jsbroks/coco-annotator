@@ -764,7 +764,12 @@ export default {
 
       Annotations.update(annotation.id, { category_id: newCategory.id }).then(
         response => {
-          let newAnnotation = response.data;
+          let newAnnotation = {
+            ...response.data,
+            ...annotation,
+            metadata: response.data.metadata,
+            category_id: newCategory.id
+          };
 
           if (newAnnotation) {
             oldCategory.annotations = oldCategory.annotations.filter(
