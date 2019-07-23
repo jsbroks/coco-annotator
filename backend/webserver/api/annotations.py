@@ -104,12 +104,10 @@ class AnnotationId(Resource):
         args = update_annotation.parse_args()
 
         new_category_id = args.get('category_id')
-        if new_category_id is not None:
-            logger.info(
-                f'{current_user.username} is trying to update a category for annotation id {annotation.id} ({annotation.metadata.get("name")}) from {annotation.category_id} to {new_category_id}'
-            )
-            annotation.update(category_id=new_category_id)
-
+        annotation.update(category_id=new_category_id)
+        logger.info(
+            f'{current_user.username} has updated category for annotation (id: {annotation.id})'
+        )
         newAnnotation = current_user.annotations.filter(id=annotation_id).first()
         return query_util.fix_ids(newAnnotation)
 
