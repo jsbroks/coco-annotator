@@ -76,8 +76,8 @@
         :active-tool="activeTool"
         :scale="scale"
         @deleted="annotationDeleted"
+        :all-categories="getCategoriesList"
       />
-      
     </ul>
 
     <div
@@ -131,7 +131,6 @@
         </div>
       </div>
     </div>
-    
   </div>
 </template>
 
@@ -180,6 +179,10 @@ export default {
     },
     activeTool: {
       type: String,
+      required: true
+    },
+    allCategories: {
+      type: Array,
       required: true
     }
   },
@@ -392,6 +395,12 @@ export default {
       let search = this.categorysearch.toLowerCase();
       if (search.length === 0) return true;
       return this.category.name.toLowerCase().includes(search);
+    },
+    getCategoriesList() {
+      return this.allCategories.map(category => ({
+        value: category.id,
+        text: category.name
+      }));
     },
     isCurrent() {
       return this.current.category === this.index;

@@ -125,6 +125,7 @@
             :simplify="simplify"
             :categorysearch="search"
             :category="category"
+            :all-categories="categories"
             :opacity="shapeOpacity"
             :hover="hover"
             :index="index"
@@ -202,7 +203,6 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-
   </div>
 </template>
 
@@ -730,19 +730,22 @@ export default {
         category.showAnnotations = false;
       });
     },
-
-    addAnnotation(category, segments, keypoints) {
+    findCategoryByName(categoryName) {
+      let categoryComponent = this.$refs.category.find(
+        category =>
+          category.category.name.toLowerCase() === categoryName.toLowerCase()
+      );
+      if (!categoryComponent) return null;
+      return categoryComponent.category;
+    },
+    addAnnotation(categoryName, segments, keypoints) {
       segments = segments || [];
       keypoints = keypoints || [];
 
       if (keypoints.length == 0 && segments.length == 0) return;
 
-      category = this.$refs.category.find(
-        c => c.category.name.toLowerCase() === category.toLowerCase()
-      );
+      let category = this.findCategoryByName(categoryName);
       if (category == null) return;
-
-      category = category.category;
 
       Annotations.create({
         image_id: this.image.id,
@@ -753,6 +756,29 @@ export default {
         let annotation = response.data;
         category.annotations.push(annotation);
       });
+    },
+
+    updateAnnotationCategory(annotation, oldCategory, newCategoryName) {
+      const newCategory = this.findCategoryByName(newCategoryName);
+      if (!newCategory || !annotation) return;
+
+      Annotations.update(annotation.id, { category_id: newCategory.id }).then(
+        response => {
+          let newAnnotation = {
+            ...response.data,
+            ...annotation,
+            metadata: response.data.metadata,
+            category_id: newCategory.id
+          };
+
+          if (newAnnotation) {
+            oldCategory.annotations = oldCategory.annotations.filter(
+              a => a.id !== annotation.id
+            );
+            newCategory.annotations.push(newAnnotation);
+          }
+        }
+      );
     },
 
     removeFromAnnotatingList() {
