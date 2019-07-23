@@ -125,6 +125,7 @@
             :simplify="simplify"
             :categorysearch="search"
             :category="category"
+            :all-categories="categories"
             :opacity="shapeOpacity"
             :hover="hover"
             :index="index"
@@ -202,7 +203,6 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-
   </div>
 </template>
 
