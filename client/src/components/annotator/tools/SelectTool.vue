@@ -198,6 +198,7 @@ export default {
         this.moveObject = event.item;
         paperObject = event.item;
       }
+      console.log(paperObject, path);
       this.isBbox = this.checkBbox(paperObject);
       if (this.point != null) {
         this.edit.canMove = this.point.contains(event.point);
@@ -232,12 +233,11 @@ export default {
       if(this.isBbox && this.moveObject){
         let delta_x = this.initPoint.x - event.point.x;
         let delta_y = this.initPoint.y - event.point.y;
-        let segment = this.moveObject.firstSegment;
-        for(let i = 0; i<4;i++){
+        let segments = this.moveObject.children[0].segments;
+        segments.forEach( segment => {
           let p = segment.point;
           segment.point = new paper.Point(p.x - delta_x, p.y - delta_y);
-          segment = segment.next;
-        }
+        });
         this.initPoint = event.point;
       }
       if (this.segment && this.edit.canMove) {
