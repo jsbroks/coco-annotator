@@ -29,6 +29,7 @@ export default {
       bbox: null,
       polygon: {
         path: null,
+        guidance: true,
         pathOptions: {
           strokeColor: "black",
           strokeWidth: 1
