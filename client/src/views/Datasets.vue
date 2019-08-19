@@ -184,6 +184,7 @@
 <script>
 import toastrs from "@/mixins/toastrs";
 import Datasets from "@/models/datasets";
+import AdminPanel from "@/models/admin";
 import DatasetCard from "@/components/cards/DatasetCard";
 import Pagination from "@/components/Pagination";
 import TagsInput from "@/components/TagsInput";
@@ -205,7 +206,8 @@ export default {
       },
       datasets: [],
       subdirectories: [],
-      categories: []
+      categories: [],
+      users: []
     };
   },
   methods: {
@@ -220,15 +222,18 @@ export default {
       Datasets.allData({
         limit: this.limit,
         page: page
-      })
-        .then(response => {
-          this.datasets = response.data.datasets;
-          this.categories = response.data.categories;
-          this.subdirectories = response.data.subdirectories;
-          this.pages = response.data.pagination.pages;
-          this.page = response.data.pagination.page;
-        })
-        .finally(() => this.removeProcess(process));
+      }).then(response => {
+        this.datasets = response.data.datasets;
+        this.categories = response.data.categories;
+        this.subdirectories = response.data.subdirectories;
+        this.pages = response.data.pagination.pages;
+        this.page = response.data.pagination.page;
+        AdminPanel.getUsers(this.limit)
+          .then(response => {
+            this.users = response.data.users;
+          })
+          .finally(() => this.removeProcess(process));
+      });
     },
     createDataset() {
       if (this.create.name.length < 1) return;

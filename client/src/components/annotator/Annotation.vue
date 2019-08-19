@@ -548,9 +548,10 @@ export default {
      * Unites current annotation path with anyother path.
      * @param {paper.CompoundPath} compound compound to unite current annotation path with
      * @param {boolean} simplify simplify compound after unite
-     * @param {undoable} undoable add an undo action
+     * @param {undoable} undoable add an undo action.
+     * @param {isBBox} isBBox mark annotation as bbox.
      */
-    unite(compound, simplify = true, undoable = true) {
+    unite(compound, simplify = true, undoable = true, isBBox = false) {
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.unite(compound);
@@ -558,7 +559,8 @@ export default {
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
-
+      this.annotation.isbbox = isBBox;
+      
       if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
@@ -612,11 +614,11 @@ export default {
     },
     export() {
       if (this.compoundPath == null) this.createCompoundPath();
-
       let metadata = this.$refs.metadata.export();
       if (this.name.length > 0) metadata.name = this.name;
       let annotationData = {
         id: this.annotation.id,
+        isbbox: this.annotation.isbbox,
         color: this.color,
         metadata: metadata
       };
