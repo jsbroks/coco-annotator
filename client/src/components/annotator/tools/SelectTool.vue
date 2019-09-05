@@ -45,7 +45,7 @@ export default {
         segments: true,
         stroke: true,
         fill: false,
-        tolerance: 5,
+        tolerance: 10,
         match: hit => {
           return !hit.item.hasOwnProperty("indicator");
         }
@@ -163,6 +163,14 @@ export default {
       this.hover.box.bringToFront();
       this.hover.text.bringToFront();
     },
+    checkBbox(paperObject) {
+      if(!paperObject) return false;
+      let annotationId = paperObject.data.annotationId;
+      let categoryId = paperObject.data.categoryId;
+      let category = this.$parent.getCategory(categoryId);
+      let annotation = category.getAnnotation(annotationId);
+      return annotation.annotation.isbbox;
+    },
     onMouseDown(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,
@@ -177,16 +185,21 @@ export default {
         }
         return;
       }
-
       let path = hitResult.item;
-
+      let paperObject = null;
       if (hitResult.type === "segment") {
         this.segment = hitResult.segment;
+        paperObject = path.parent;
       } else if (hitResult.type === "stroke") {
         let location = hitResult.location;
         this.segment = path.insert(location.index + 1, event.point);
+      } else if (event.item.className == "CompoundPath"){
+        this.initPoint = event.point;
+        this.moveObject = event.item;
+        paperObject = event.item;
       }
-
+      console.log(paperObject, path);
+      this.isBbox = this.checkBbox(paperObject);
       if (this.point != null) {
         this.edit.canMove = this.point.contains(event.point);
       } else {
@@ -196,7 +209,9 @@ export default {
     clear() {
       this.hover.category = null;
       this.hover.annotation = null;
-
+      this.isBbox = false;
+      this.segment = null;
+      this.moveObject = null;
       if (this.hover.text != null) {
         this.hover.text.remove();
         this.hover.box.remove();
@@ -210,16 +225,41 @@ export default {
       }
 
       this.point = new paper.Path.Circle(point, this.edit.indicatorSize);
-      this.point.strokeColor = "white";
+      this.point.strokeColor = "black";
       this.point.strokeWidth = this.edit.indicatorWidth;
       this.point.indicator = true;
     },
     onMouseDrag(event) {
+      if(this.isBbox && this.moveObject){
+        let delta_x = this.initPoint.x - event.point.x;
+        let delta_y = this.initPoint.y - event.point.y;
+        let segments = this.moveObject.children[0].segments;
+        segments.forEach( segment => {
+          let p = segment.point;
+          segment.point = new paper.Point(p.x - delta_x, p.y - delta_y);
+        });
+        this.initPoint = event.point;
+      }
       if (this.segment && this.edit.canMove) {
         this.createPoint(event.point);
+        if(this.isBbox){
+          //counter clockwise prev and next.
+          let isCounterClock = this.segment.previous.point.x == this.segment.point.x;
+          let prev = isCounterClock ? this.segment.previous : this.segment.next;
+          let next = !isCounterClock ? this.segment.previous : this.segment.next;
+          
+          prev.point = new paper.Point(event.point.x, prev.point.y);
+          next.point = new paper.Point(next.point.x, event.point.y); 
+        }//getbbox here somehow
         this.segment.point = event.point;
+        
       }
     },
+
+    onMouseUp(event){
+      this.clear();
+    },
+    
     onMouseMove(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,

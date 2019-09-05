@@ -82,7 +82,7 @@ services:
     networks:
       - cocoannotator
   database:
-    image: mongo:4
+    image: mongo:4.0
     container_name: annotator_mongodb
     environment:
       - MONGO_DATA_DIR=/data/db
