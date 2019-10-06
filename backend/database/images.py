@@ -16,7 +16,7 @@ class ImageModel(DynamicDocument):
 
     # -- Contants
     THUMBNAIL_DIRECTORY = '.thumbnail'
-    PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp")
+    PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp", ".GIF", ".PNG", ".JPG", ".JPEG", ".BMP")
 
     # -- Private
     _dataset = None
