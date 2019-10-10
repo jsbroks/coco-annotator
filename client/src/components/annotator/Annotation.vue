@@ -437,6 +437,10 @@ export default {
       this.addUndo(action);
     },
     simplifyPath() {
+      if (this.compoundPath != null && this.compoundPath.isEmpty()) {
+          this.deleteAnnotation();
+          return;
+      }
       let simplify = this.simplify;
 
       this.compoundPath.flatten(1);
