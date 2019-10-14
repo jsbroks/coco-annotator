@@ -174,6 +174,21 @@ class DatasetStats(Resource):
         images = ImageModel.objects(dataset_id=dataset.id, deleted=False)
         annotated_images = images.filter(annotated=True)
         annotations = AnnotationModel.objects(dataset_id=dataset_id, deleted=False)
+
+        # Calculate annotation counts by category in this dataset
+        category_count = dict()
+        image_category_count = dict()
+        for category in dataset.categories:
+
+            # Calculate the annotation count in the current category in this dataset
+            cat_name = CategoryModel.objects(id=category).first()['name']
+            cat_count = AnnotationModel.objects(dataset_id=dataset_id, category_id=category, deleted=False).count()
+            category_count.update({str(cat_name): cat_count})
+
+            # Calculate the annotated images count in the current category in this dataset
+            image_count = len(AnnotationModel.objects(dataset_id=dataset_id, category_id=category, deleted=False).distinct('image_id'))
+            image_category_count.update({str(cat_name): image_count})
+
         stats = {
             'total': {
                 'Users': dataset.get_users().count(),
@@ -189,7 +204,9 @@ class DatasetStats(Resource):
                 'Annotation Area (px)': annotations.average('area'),
                 'Time (ms) per Image': images.average('milliseconds') or 0,
                 'Time (ms) per Annotation': annotations.average('milliseconds') or 0
-            }
+            },
+            'categories': category_count,
+            'images_per_category': image_category_count
         }
         return stats
 
