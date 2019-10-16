@@ -198,7 +198,6 @@ export default {
         this.moveObject = event.item;
         paperObject = event.item;
       }
-      console.log(paperObject, path);
       this.isBbox = this.checkBbox(paperObject);
       if (this.point != null) {
         this.edit.canMove = this.point.contains(event.point);
