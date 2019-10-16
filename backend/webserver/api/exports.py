@@ -67,5 +67,5 @@ class DatasetExports(Resource):
         if not current_user.can_download(dataset):
             return {"message": "You do not have permission to download the dataset's annotations"}, 403
 
-        return send_file(export.path, attachment_filename=f"{dataset.name}-{'-'.join(export.tags)}.json", as_attachment=True)
+        return send_file(export.path, attachment_filename=f"{dataset.name.encode('utf-8')}-{'-'.join(export.tags).encode('utf-8')}.json", as_attachment=True)
 
