@@ -138,6 +138,22 @@
                 </div>
               </div>
 
+              <div v-if="stats.categories" class="card my-3 p-3 shadow-sm col-4 mr-2">
+                <h6 class="border-bottom border-gray pb-2"><b>Annotations Per Category</b></h6>
+                <div class="row" v-for="stat in Object.keys(stats.categories)">
+                  <strong class="col-8">{{stat}}:</strong>
+                  <span class="col-4">{{stats.categories[stat].toFixed(0)}}</span>
+                </div>
+              </div>
+
+              <div v-if="stats.images_per_category" class="card my-3 p-3 shadow-sm col-4 mr-2">
+                <h6 class="border-bottom border-gray pb-2"><b>Annotated Images Per Category</b></h6>
+                <div class="row" v-for="stat in Object.keys(stats.images_per_category)">
+                  <strong class="col-8">{{stat}}:</strong>
+                  <span class="col-4">{{stats.images_per_category[stat].toFixed(0)}}</span>
+                </div>
+              </div>
+
             </div>
             
           </div>
