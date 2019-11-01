@@ -18,6 +18,9 @@ class ImageModel(DynamicDocument):
     THUMBNAIL_DIRECTORY = '.thumbnail'
     PATTERN = (".gif", ".png", ".jpg", ".jpeg", ".bmp", ".GIF", ".PNG", ".JPG", ".JPEG", ".BMP")
 
+    # Set maximum thumbnail size (h x w) to use on dataset page
+    MAX_THUMBNAIL_DIM = (1024, 1024)
+
     # -- Private
     _dataset = None
 
@@ -89,9 +92,6 @@ class ImageModel(DynamicDocument):
         """
         Generates (if required) and returns thumbnail
         """
-        if not self.annotated:
-            self.thumbnail_delete()
-            return Image.open(self.path)
         
         thumbnail_path = self.thumbnail_path()
 
@@ -102,7 +102,19 @@ class ImageModel(DynamicDocument):
 
             pil_image = self.generate_thumbnail()
             pil_image = pil_image.convert("RGB")
-            pil_image.save(thumbnail_path)
+
+            # Calculate resize ratio:
+            resize_ratio = min(1, self.MAX_THUMBNAIL_DIM[0] / pil_image.height,
+                               self.MAX_THUMBNAIL_DIM[1] / pil_image.width)
+
+            # Resize the image if it is larger than the maximum size specified by MAX_THUMBNAIL_DIM
+            if resize_ratio < 1:
+                pil_image = pil_image.resize((int(resize_ratio * pil_image.width),
+                                              int(resize_ratio * pil_image.height)))
+
+            # Save as a jpeg to improve loading time
+            # (note file extension will not match but allows for backwards compatibility)
+            pil_image.save(thumbnail_path, "JPEG", quality=80, optimize=True, progressive=True)
 
             self.update(is_modified=False)
             return pil_image
