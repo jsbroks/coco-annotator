@@ -104,7 +104,7 @@ class ImageModel(DynamicDocument):
             pil_image = pil_image.convert("RGB")
 
             # Resize image to fit in MAX_THUMBNAIL_DIM envelope as necessary
-            pil_image = pil_image.thumbnail((self.MAX_THUMBNAIL_DIM[1], self.MAX_THUMBNAIL_DIM[0]))
+            pil_image.thumbnail((self.MAX_THUMBNAIL_DIM[1], self.MAX_THUMBNAIL_DIM[0]))
 
             # Save as a jpeg to improve loading time
             # (note file extension will not match but allows for backwards compatibility)
