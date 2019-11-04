@@ -103,14 +103,8 @@ class ImageModel(DynamicDocument):
             pil_image = self.generate_thumbnail()
             pil_image = pil_image.convert("RGB")
 
-            # Calculate resize ratio:
-            resize_ratio = min(1, self.MAX_THUMBNAIL_DIM[0] / pil_image.height,
-                               self.MAX_THUMBNAIL_DIM[1] / pil_image.width)
-
-            # Resize the image if it is larger than the maximum size specified by MAX_THUMBNAIL_DIM
-            if resize_ratio < 1:
-                pil_image = pil_image.resize((int(resize_ratio * pil_image.width),
-                                              int(resize_ratio * pil_image.height)))
+            # Resize image to fit in MAX_THUMBNAIL_DIM envelope as necessary
+            pil_image = pil_image.thumbnail((self.MAX_THUMBNAIL_DIM[1], self.MAX_THUMBNAIL_DIM[0]))
 
             # Save as a jpeg to improve loading time
             # (note file extension will not match but allows for backwards compatibility)
