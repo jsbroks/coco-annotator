@@ -146,7 +146,7 @@ export default {
   computed: {
     imageUrl() {
       let d = new Date();
-      if (this.image.annotated && this.showAnnotations) {
+      if (this.showAnnotations) {
         return `/api/image/${
           this.image.id
         }?width=250&thumbnail=true&dummy=${d.getTime()}`;
