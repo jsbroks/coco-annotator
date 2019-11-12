@@ -50,6 +50,8 @@ class Category(Resource):
         supercategory = args.get('supercategory')
         metadata = args.get('metadata', {})
         color = args.get('color')
+        keypoint_edges = args.get('keypoint_edges')
+        keypoint_labels = args.get('keypoint_labels')
 
         try:
             category = CategoryModel(
@@ -133,7 +135,7 @@ class Category(Resource):
         category.color = color
         category.keypoint_edges = keypoint_edges
         category.keypoint_labels = keypoint_labels
-        
+
         try:
             category.update(
                 name=category.name,
