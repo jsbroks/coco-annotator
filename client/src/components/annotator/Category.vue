@@ -101,6 +101,16 @@
           </div>
           <div class="modal-body">
             <form>
+              <div class="form-group">
+                <label>Supercategory</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  :value="supercategory"
+                  @input="supercategory = $event.target.value"
+                />
+              </div>
+
               <div class="form-group row">
                 <label class="col-sm-2 col-form-label">Color</label>
                 <div class="col-sm-9">
@@ -188,6 +198,7 @@ export default {
   data: function() {
     return {
       group: null,
+      supercategory: this.category.supercategory,
       color: this.category.color,
       keypoint: {
         labels: this.category.keypoint_labels,
@@ -262,6 +273,7 @@ export default {
         color: this.color,
         metadata: [],
         annotations: [],
+        supercategory: this.supercategory,
         keypoint_labels: this.keypoint.labels,
         keypoint_edges: this.keypoint.edges
       };

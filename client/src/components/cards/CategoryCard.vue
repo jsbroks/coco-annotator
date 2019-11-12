@@ -58,7 +58,7 @@
           <div class="modal-body">
             <form>
               <div class="form-group">
-                <label>Name:</label>
+                <label>Name</label>
                 <input
                   type="text"
                   class="form-control"
@@ -68,7 +68,7 @@
               </div>
 
               <div class="form-group">
-                <label>Supercategory:</label>
+                <label>Supercategory</label>
                 <input
                   type="text"
                   class="form-control"
@@ -78,7 +78,7 @@
               </div>
 
               <div class="form-group row">
-                <label class="col-sm-2 col-form-label">Color:</label>
+                <label class="col-sm-2 col-form-label">Color</label>
                 <div class="col-sm-9">
                   <input v-model="color" type="color" class="form-control" />
                 </div>
