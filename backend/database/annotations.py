@@ -77,8 +77,7 @@ class AnnotationModel(DynamicDocument):
         return super(AnnotationModel, self).save(*args, **kwargs)
 
     def is_empty(self):
-        return (len(self.segmentation) == 0 or self.area == 0) \
-                and (len(self.keypoints) == 0)
+        return len(self.segmentation) == 0 or self.area == 0
 
     def mask(self):
         """ Returns binary mask of annotation """
