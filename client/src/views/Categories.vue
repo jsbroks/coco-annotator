@@ -76,12 +76,39 @@
           <div class="modal-body">
             <form>
               <div class="form-group">
-                <label>Category Name</label>
+                <label>Name:</label>
                 <input
-                  v-model="createName"
+                  v-model="newCategoryName"
                   class="form-control"
-                  placeholder="Category name"
+                  placeholder="Name"
                 />
+              </div>
+
+              <div class="form-group">
+                <label>Supercategory:</label>
+                <input
+                  v-model="newCategorySupercategory"
+                  class="form-control"
+                  placeholder="Supercategory"
+                />
+              </div>
+
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Color:</label>
+                <div class="col-sm-9">
+                  <input v-model="newCategoryColor" type="color" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Keypoint Labels</label>
+                <TagsInput
+                  v-model="newCategoryKeypointLabels"
+                  element-id="keypointLabels"
+                  placeholder="Add a keypoint"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                ></TagsInput>
               </div>
             </form>
           </div>
@@ -153,12 +180,13 @@ import toastrs from "@/mixins/toastrs";
 import Category from "@/models/categories";
 import CategoryCard from "@/components/cards/CategoryCard";
 import Pagination from "@/components/Pagination";
+import TagsInput from "@/components/TagsInput";
 
 import { mapMutations } from "vuex";
 
 export default {
   name: "Categories",
-  components: { CategoryCard, Pagination },
+  components: { CategoryCard, Pagination, TagsInput },
   mixins: [toastrs],
   data() {
     return {
@@ -167,7 +195,10 @@ export default {
       page: 1,
       limit: 50,
       range: 11,
-      createName: "",
+      newCategoryName: "",
+      newCategorySupercategory: "",
+      newCategoryColor: null,
+      newCategoryKeypointLabels: [],
       categories: [],
       status: {
         data: { state: true, message: "Loading categories" }
@@ -196,13 +227,19 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     createCategory() {
-      if (this.createName.length < 1) return;
+      if (this.newCategoryName.length < 1) return;
 
       Category.create({
-        name: this.createName
+        name: this.newCategoryName,
+        supercategory: this.newCategorySupercategory,
+        color: this.newCategoryColor,
+        keypoint_labels: this.newCategoryKeypointLabels,
       })
         .then(() => {
-          this.createName = "";
+          this.newCategoryName = "";
+          this.newCategorySupercategory = "";
+          this.newCategoryColor = null;
+          this.newCategoryKeypointLabels = [];
           this.updatePage();
         })
         .catch(error => {
