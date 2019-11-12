@@ -27,13 +27,13 @@
         </div>
 
         <div class="dropdown-menu" :aria-labelledby="'dropdownCategory' + category.id">
-          <!--<a class="dropdown-item" @click="onEditClick">Edit</a>-->
           <a class="dropdown-item" @click="onDeleteClick">Delete</a>
           <!--<a class="dropdown-item" @click="onDownloadClick"
             >Download COCO & Images</a
           >-->
           <button
             class="dropdown-item"
+            @click="onEditClick"
             data-toggle="modal"
             :data-target="'#categoryEdit' + category.id"
           >Edit</button>
@@ -85,14 +85,13 @@
               </div>
 
               <div class="form-group">
-                <label>Keypoint Labels</label>
-                <TagsInput
-                  v-model="keypoint.labels"
-                  element-id="keypointLabels"
+                <Keypoints
+                  v-model="keypoint"
+                  element-id="keypoints"
                   placeholder="Add a keypoint"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
-                ></TagsInput>
+                ></Keypoints>
               </div>
             </form>
           </div>
@@ -114,12 +113,13 @@
 <script>
 import axios from "axios";
 import toastrs from "@/mixins/toastrs";
-import TagsInput from "@/components/TagsInput";
+// import TagsInput from "@/components/TagsInput";
+import Keypoints from "@/components/Keypoints";
 
 export default {
   name: "CategoryCard",
   mixins: [toastrs],
-  components: { TagsInput },
+  components: { Keypoints },
   data() {
     return {
       group: null,
@@ -127,8 +127,8 @@ export default {
       color: this.category.color,
       metadata: [],
       keypoint: {
-        labels: this.category.keypoint_labels,
-        edges: this.category.keypoint_edges
+        labels: [...this.category.keypoint_labels],
+        edges: [...this.category.keypoint_edges]
       },
       name: this.category.name,
     };
@@ -139,8 +139,22 @@ export default {
       required: true
     }
   },
+  created() {
+    this.resetEditorFromProps();
+  },
   methods: {
-    onEditClick() {},
+    resetEditorFromProps() {
+      this.name = this.category.name;
+      this.supercategory = this.category.supercategory;
+      this.color = this.category.color;
+      this.keypoint = {
+        labels: [...this.category.keypoint_labels],
+        edges: [...this.category.keypoint_edges]
+      };
+    },
+    onEditClick() {
+      this.resetEditorFromProps();
+    },
     onCardClick() {},
     onDownloadClick() {},
     onDeleteClick() {
@@ -166,9 +180,9 @@ export default {
           this.category.name = this.name;
           this.category.supercategory = this.supercategory;
           this.category.color = this.color;
-          this.category.metadata = this.metadata;
-          this.category.keypoint_edges = this.keypoint.edges;
-          this.category.keypoint_labels = this.keypoint.labels;
+          this.category.metadata = {...this.metadata};
+          this.category.keypoint_edges = [...this.keypoint.edges];
+          this.category.keypoint_labels = [...this.keypoint.labels];
           this.$parent.updatePage();
         })
         .catch(error => {

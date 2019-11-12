@@ -101,14 +101,13 @@
               </div>
 
               <div class="form-group">
-                <label>Keypoint Labels</label>
-                <TagsInput
-                  v-model="newCategoryKeypointLabels"
-                  element-id="keypointLabels"
+                <Keypoints
+                  v-model="newCategoryKeypoint"
+                  element-id="keypoints"
                   placeholder="Add a keypoint"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
-                ></TagsInput>
+                ></Keypoints>
               </div>
             </form>
           </div>
@@ -180,13 +179,13 @@ import toastrs from "@/mixins/toastrs";
 import Category from "@/models/categories";
 import CategoryCard from "@/components/cards/CategoryCard";
 import Pagination from "@/components/Pagination";
-import TagsInput from "@/components/TagsInput";
+import Keypoints from "@/components/Keypoints";
 
 import { mapMutations } from "vuex";
 
 export default {
   name: "Categories",
-  components: { CategoryCard, Pagination, TagsInput },
+  components: { CategoryCard, Pagination, Keypoints },
   mixins: [toastrs],
   data() {
     return {
@@ -198,7 +197,10 @@ export default {
       newCategoryName: "",
       newCategorySupercategory: "",
       newCategoryColor: null,
-      newCategoryKeypointLabels: [],
+      newCategoryKeypoint: {
+        labels: [],
+        edges: [],
+      },
       categories: [],
       status: {
         data: { state: true, message: "Loading categories" }
