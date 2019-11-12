@@ -2,15 +2,8 @@
   <div class="col-md-3">
     <div class="card mb-4 box-shadow" @click="onCardClick">
       <div class="card-body">
-        <span
-          class="d-inline-block text-truncate"
-          style="max-width: 75%; float: left"
-        >
-          <i
-            class="fa fa-circle color-icon"
-            aria-hidden="true"
-            :style="{ color: category.color }"
-          />
+        <span class="d-inline-block text-truncate" style="max-width: 75%; float: left">
+          <i class="fa fa-circle color-icon" aria-hidden="true" :style="{ color: category.color }" />
           <strong class="card-title">{{ category.name }}</strong>
         </span>
 
@@ -33,10 +26,7 @@
           <p v-else>No annotations use this category</p>
         </div>
 
-        <div
-          class="dropdown-menu"
-          :aria-labelledby="'dropdownCategory' + category.id"
-        >
+        <div class="dropdown-menu" :aria-labelledby="'dropdownCategory' + category.id">
           <!--<a class="dropdown-item" @click="onEditClick">Edit</a>-->
           <a class="dropdown-item" @click="onDeleteClick">Delete</a>
           <!--<a class="dropdown-item" @click="onDownloadClick"
@@ -46,18 +36,14 @@
             class="dropdown-item"
             data-toggle="modal"
             :data-target="'#categoryEdit' + category.id"
-          >
-            Edit
-          </button>
+          >Edit</button>
         </div>
       </div>
 
       <div
         v-show="$store.getters['user/loginEnabled']"
         class="card-footer text-muted"
-      >
-        Created by {{ category.creator }}
-      </div>
+      >Created by {{ category.creator }}</div>
     </div>
 
     <div class="modal fade" role="dialog" :id="'categoryEdit' + category.id">
@@ -65,22 +51,45 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Current Name: {{ category.name }}</h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
             <form>
               <div class="form-group">
-                <label>Edit name: </label>
-                <input type="text" 
-                :value="category.name"
-                @input="updatedCategoryName = $event.target.value">
+                <label>Name:</label>
+                <input
+                  type="text"
+                  :value="category.name"
+                  @input="name = $event.target.value"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Supercategory:</label>
+                <input
+                  type="text"
+                  :value="category.supercategory"
+                  @input="supercategory = $event.target.value"
+                />
+              </div>
+
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Color:</label>
+                <div class="col-sm-9">
+                  <input v-model="color" type="color" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Keypoint Labels</label>
+                <TagsInput
+                  v-model="keypoint.labels"
+                  element-id="keypointLabels"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                ></TagsInput>
               </div>
             </form>
           </div>
@@ -90,35 +99,35 @@
               class="btn btn-success"
               @click="onUpdateClick"
               data-dismiss="modal"
-            >
-              Update
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              Close
-            </button>
+            >Update</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
-
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import toastrs from "@/mixins/toastrs";
+import TagsInput from "@/components/TagsInput";
 
 export default {
   name: "CategoryCard",
   mixins: [toastrs],
+  components: { TagsInput },
   data() {
     return {
-      updatedCategoryName: ""
+      group: null,
+      supercategory: this.category.supercategory,
+      color: this.category.color,
+      metadata: [],
+      keypoint: {
+        labels: this.category.keypoint_labels,
+        edges: this.category.keypoint_edges
+      },
+      name: this.category.name,
     };
   },
   props: {
@@ -139,14 +148,24 @@ export default {
     onUpdateClick() {
       axios
         .put("/api/category/" + this.category.id, {
-          name: this.updatedCategoryName
+          name: this.name,
+          color: this.color,
+          supercategory: this.supercategory,
+          metadata: this.metadata,
+          keypoint_edges: this.keypoint.edges,
+          keypoint_labels: this.keypoint.labels,
         })
         .then(() => {
           this.axiosReqestSuccess(
             "Updating Category",
             "Category name has been updated"
           );
-          this.category.name = this.updatedCategoryName;
+          this.category.name = this.name;
+          this.category.supercategory = this.supercategory;
+          this.category.color = this.color;
+          this.category.metadata = this.metadata;
+          this.category.keypoint_edges = this.keypoint.edges;
+          this.category.keypoint_labels = this.keypoint.labels;
           this.$parent.updatePage();
         })
         .catch(error => {
