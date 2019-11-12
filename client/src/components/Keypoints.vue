@@ -9,10 +9,10 @@
     <p class="title" style="margin: 0">{{ title }}</p>
 
     <div class="row">
-      <div class="col-sm-4">
+      <div class="col-sm-5">
         <p class="subtitle">{{ keyTitle }}:</p>
       </div>
-      <div class="col-sm-8">
+      <div class="col-sm-7">
         <p class="subtitle">{{ valueTitle }}:</p>
       </div>
     </div>
@@ -23,7 +23,7 @@
       </li>
       <li v-for="(object, index) in keypoints" :key="index" class="list-group-item keypoint-item">
         <div class="row" style="cell">
-          <div class="col-sm-4">
+          <div class="col-sm-5" style="padding-right: 5px;">
             <input
               :value="object.label"
               type="text"
@@ -33,7 +33,7 @@
             />
           </div>
 
-          <div class="col-sm-8">
+          <div class="col-sm-7" style="padding-left: 5px;">
             <TagsInput
               :value="object.edges"
               placeholder="Add connected label"
