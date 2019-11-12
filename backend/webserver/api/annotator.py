@@ -66,8 +66,9 @@ class AnnotatorData(Resource):
             db_category.update(**category_update)
 
             # Iterate every annotation from the data annotations
+            num_annotations = 0
             for annotation in category.get('annotations', []):
-
+                counted = False
                 # Find corresponding annotation object in database
                 annotation_id = annotation.get('id')
                 db_annotation = annotations.filter(id=annotation_id).first()
@@ -92,11 +93,15 @@ class AnnotatorData(Resource):
                     total_time += session.get('milliseconds')
                     sessions.append(model)
 
+                keypoints = annotation.get('keypoints', [])
+                if keypoints:
+                    counted = True
+
                 db_annotation.update(
                     add_to_set__events=sessions,
                     inc__milliseconds=total_time,
                     set__isbbox=annotation.get('isbbox', False),
-                    set__keypoints=annotation.get('keypoints', []),
+                    set__keypoints=keypoints,
                     set__metadata=annotation.get('metadata'),
                     set__color=annotation.get('color')
                 )
@@ -122,15 +127,17 @@ class AnnotatorData(Resource):
                     )
 
                     if area > 0:
-                        annotated = True
+                        counted = True
+
+                if counted:
+                    num_annotations += 1
 
         image_model.update(
             set__metadata=image.get('metadata', {}),
-            set__annotated=annotated,
+            set__annotated=(num_annotations > 0),
             set__category_ids=image.get('category_ids', []),
             set__regenerate_thumbnail=True,
-            set__num_annotations=annotations\
-                .filter(deleted=False, area__gt=0).count()
+            set__num_annotations=num_annotations
         )
 
         return {"success": True}

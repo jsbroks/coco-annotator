@@ -437,7 +437,7 @@ export default {
       this.addUndo(action);
     },
     simplifyPath() {
-      if (this.compoundPath != null && this.compoundPath.isEmpty()) {
+      if (this.compoundPath != null && this.compoundPath.isEmpty() && this.keypoints.isEmpty()) {
           this.deleteAnnotation();
           return;
       }
