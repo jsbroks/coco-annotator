@@ -109,13 +109,12 @@
               </div>
 
               <div class="form-group">
-                <label>Keypoint Labels</label>
-                <TagsInput
-                  v-model="keypoint.labels"
+                <Keypoints
+                  v-model="keypoint"
                   element-id="keypointLabels"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
-                ></TagsInput>
+                ></Keypoints>
               </div>
             </form>
           </div>
@@ -139,11 +138,11 @@ import paper from "paper";
 
 import Annotations from "@/models/annotations";
 import Annotation from "@/components/annotator/Annotation";
-import TagsInput from "@/components/TagsInput";
+import Keypoints from "@/components/Keypoints";
 
 export default {
   name: "Category",
-  components: { Annotation, TagsInput },
+  components: { Annotation, Keypoints },
   props: {
     category: {
       type: Object,
