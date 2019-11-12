@@ -61,6 +61,7 @@
                 <label>Name:</label>
                 <input
                   type="text"
+                  class="form-control"
                   :value="category.name"
                   @input="name = $event.target.value"
                 />
@@ -70,6 +71,7 @@
                 <label>Supercategory:</label>
                 <input
                   type="text"
+                  class="form-control"
                   :value="category.supercategory"
                   @input="supercategory = $event.target.value"
                 />
@@ -87,6 +89,7 @@
                 <TagsInput
                   v-model="keypoint.labels"
                   element-id="keypointLabels"
+                  placeholder="Add a keypoint"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
                 ></TagsInput>
