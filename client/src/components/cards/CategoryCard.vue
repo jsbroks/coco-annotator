@@ -92,8 +92,6 @@
                   v-model="keypoint"
                   element-id="keypoints"
                   placeholder="Add a keypoint"
-                  :typeahead="true"
-                  :typeahead-activation-threshold="0"
                 ></Keypoints>
               </div>
             </form>

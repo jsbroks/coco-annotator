@@ -80,6 +80,8 @@
                 <input
                   v-model="newCategoryName"
                   class="form-control"
+                  :class="{'is-invalid': newCategoryName.trim().length === 0}"
+                  required="true"
                   placeholder="Name"
                 />
               </div>
@@ -101,12 +103,10 @@
               </div>
 
               <div class="form-group">
-                <Keypoints
+                <Keypoints ref="keypoints"
                   v-model="newCategoryKeypoint"
                   element-id="keypoints"
                   placeholder="Add a keypoint"
-                  :typeahead="true"
-                  :typeahead-activation-threshold="0"
                 ></Keypoints>
               </div>
             </form>
@@ -115,6 +115,8 @@
             <button
               type="button"
               class="btn btn-primary"
+              :disabled="!isFormValid"
+              :class="{disabled: !isFormValid}"
               @click="createCategory"
             >
               Create Category
@@ -206,6 +208,16 @@ export default {
         data: { state: true, message: "Loading categories" }
       }
     };
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.newCategoryName.length !== 0 &&
+        this.$refs &&
+        this.$refs.keypoints &&
+        this.$refs.keypoints.valid
+      );
+    }
   },
   methods: {
     ...mapMutations(["addProcess", "removeProcess"]),
