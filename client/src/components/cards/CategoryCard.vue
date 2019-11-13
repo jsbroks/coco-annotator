@@ -61,8 +61,10 @@
                 <label>Name</label>
                 <input
                   type="text"
+                  :value="name"
+                  required="true"
                   class="form-control"
-                  :value="category.name"
+                  :class="{'is-invalid': name.length === 0}"
                   @input="name = $event.target.value"
                 />
               </div>
@@ -86,6 +88,7 @@
 
               <div class="form-group">
                 <Keypoints
+                  ref="keypoints"
                   v-model="keypoint"
                   element-id="keypoints"
                   placeholder="Add a keypoint"
@@ -100,6 +103,8 @@
               type="button"
               class="btn btn-success"
               @click="onUpdateClick"
+              :disabled="!isFormValid"
+              :class="{ disabled: !isFormValid }"
               data-dismiss="modal"
             >Update</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -130,13 +135,23 @@ export default {
         labels: [...this.category.keypoint_labels],
         edges: [...this.category.keypoint_edges]
       },
-      name: this.category.name,
+      name: this.category.name
     };
   },
   props: {
     category: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.name.length !== 0 &&
+        this.$refs &&
+        this.$refs.keypoints &&
+        this.$refs.keypoints.valid
+      );
     }
   },
   created() {
@@ -170,7 +185,7 @@ export default {
           supercategory: this.supercategory,
           metadata: this.metadata,
           keypoint_edges: this.keypoint.edges,
-          keypoint_labels: this.keypoint.labels,
+          keypoint_labels: this.keypoint.labels
         })
         .then(() => {
           this.axiosReqestSuccess(
@@ -180,7 +195,7 @@ export default {
           this.category.name = this.name;
           this.category.supercategory = this.supercategory;
           this.category.color = this.color;
-          this.category.metadata = {...this.metadata};
+          this.category.metadata = { ...this.metadata };
           this.category.keypoint_edges = [...this.keypoint.edges];
           this.category.keypoint_labels = [...this.keypoint.labels];
           this.$parent.updatePage();
