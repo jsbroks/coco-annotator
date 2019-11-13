@@ -17,20 +17,26 @@
       </div>
     </div>
 
+    <form>
     <ul class="list-group" style="height: 50%;">
       <li v-if="keypoints.length == 0" class="list-group-item keypoint-item">
         <i class="subtitle">No keypoints.</i>
       </li>
       <li v-for="(object, index) in keypoints" :key="index" class="list-group-item keypoint-item">
-        <div class="row" style="cell">
+        <div class="row form-group" style="cell"
+          :class="{'was-validated': object.label_error.length === 0 }"
+        >
           <div class="col-sm-5" style="padding-right: 5px;">
             <input
               :value="object.label"
               type="text"
-              class="keypoint-input"
+              class="keypoint-input form-control"
+              :class="{'is-invalid': object.label_error.length !== 0}"
+              :required="object.edges.length !== 0"
               :placeholder="keyTitle"
               @input="keypointLabelUpdated(index, $event.target.value)"
             />
+            <div class="invalid-feedback">{{ object.label_error }}</div>
           </div>
 
           <div class="col-sm-7" style="padding-left: 5px;">
@@ -49,6 +55,7 @@
         </div>
       </li>
     </ul>
+    </form>
   </div>
 </template>
 
@@ -80,7 +87,16 @@ export default {
       default: ""
     }
   },
-  computed: {},
+  computed: {
+    valid() {
+      for (let i=0; i < this.keypoints.length; ++i) {
+        if (this.keypoints[i].label_error.length !== 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+  },
   data() {
     return {
       keypoints: [],
@@ -96,7 +112,7 @@ export default {
       let keypoints = [];
 
       this.value.labels.forEach(label => {
-        keypoints.push({ label, edges: [] });
+        keypoints.push({ label, edges: [], label_error: "" });
       });
       this.value.edges.forEach(edge => {
         let label0 = edge[0] - 1;
@@ -108,7 +124,7 @@ export default {
       return keypoints;
     },
     createKeypoints() {
-      this.keypoints.push({ label: "", edges: [] });
+      this.keypoints.push({ label: "", label_error: "", edges: [] });
     },
     keypointsFromProp() {
       let keypoints = [];
@@ -118,22 +134,70 @@ export default {
         this.value.labels.length
       ) {
         keypoints = this.value.labels.map(k => {
-          return { label: k, edges: [] };
-        });
+          return { label: k, label_error: "", edges: [] };
+        }).filter(kp => kp.label.length !== 0);
 
         this.value.edges.forEach(edge => {
           let label0 = edge[0] - 1;
           let label1 = edge[1] - 1;
-          keypoints[label0].edges.push(this.value.labels[label1]);
-          keypoints[label1].edges.push(this.value.labels[label0]);
+          if (label0 < keypoints.length && label1 < keypoints.length) {
+            keypoints[label0].edges.push(this.value.labels[label1]);
+            keypoints[label1].edges.push(this.value.labels[label0]);
+          }
         });
       }
       return keypoints;
     },
     keypointLabelUpdated(index, label) {
-      this.keypoints[index].label = label;
-      this.hiddenValue = this.propFomKeypoints();
-      this.$emit("input", this.hiddenValue);
+      let current_kp = this.keypoints[index];
+      let previous_label = current_kp.label;
+
+      current_kp.label_error = "";
+      if (label !== "") {
+        for (let i = 0; i < this.keypoints.length; ++i) {
+          if (i !== index) {
+            let kp = this.keypoints[i];
+            if (label === kp.label) {
+              current_kp.label_error = "Duplicate keypoint label";
+              kp.label_error = current_kp.label_error;
+            } else if (previous_label === kp.label && kp.label_error.length !== 0) {
+              kp.label_error = "";
+            }
+          }
+        }
+      } else if (current_kp.edges.length !== 0) {
+        current_kp.label_error = "Label is required";
+      }
+      
+      current_kp.label = label;
+      if (current_kp.label_error === "") {
+        // current_kp.label = label;
+        if (label !== "") {
+          for (let i = 0; i < this.keypoints.length; ++i) {
+            if (i !== index) {
+              let kp = this.keypoints[i];
+              kp.edges = kp.edges.map(edge => {
+                return edge === previous_label ? label : edge;
+              });
+            }
+          }
+        }
+        this.hiddenValue = this.propFomKeypoints();
+        if (label === "") {
+          this.keypoints = this.keypointsFromProp();
+        }
+        this.$emit("input", this.hiddenValue);
+
+      } else if (label !== "") {
+        for (let i = 0; i < this.keypoints.length; ++i) {
+          if (i !== index) {
+            let kp = this.keypoints[i];
+            kp.edges = kp.edges.filter(edge => {
+              return edge != previous_label;
+            });
+          }
+        }
+      }
     },
     keypointEdgesUpdated(index, edges) {
       let new_edges = new Set(edges);
@@ -146,7 +210,10 @@ export default {
           if (!new_edges.has(kp.label) && kp_edges.has(current_kp.label)) {
             kp_edges.delete(current_kp.label);
             kp.edges = [...kp_edges];
-          } else if (new_edges.has(kp.label) && !kp_edges.has(current_kp.label)) {
+          } else if (
+            new_edges.has(kp.label) &&
+            !kp_edges.has(current_kp.label)
+          ) {
             kp_edges.add(current_kp.label);
             kp.edges = [...kp_edges];
           }
@@ -158,11 +225,10 @@ export default {
       this.$emit("input", this.hiddenValue);
     },
     propFomKeypoints() {
-      let labels = [];
       let edge_labels = {};
-      this.keypoints.forEach(kp => {
-        labels.push(kp.label);
-      });
+      let labels = this.keypoints
+        .map(kp => kp.label)
+        .filter(label => label.length !== 0);
       this.keypoints.forEach(kp => {
         kp.edges.forEach(edge => {
           if (edge in edge_labels) {
