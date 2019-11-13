@@ -273,7 +273,6 @@ def import_annotations(task_id, dataset_id, coco_json):
             task.info(f"Annotation already exists (i:{image_id}, c:{category_id})")
 
     for image_id in images_id:
-        
         image_model = images_id[image_id]
         category_ids = categories_by_image[image_id]
         all_category_ids = list(image_model.category_ids)
@@ -282,8 +281,12 @@ def import_annotations(task_id, dataset_id, coco_json):
         image_model.update(
             set__annotated=True,
             set__category_ids=list(set(all_category_ids)),
-            set__num_annotations=AnnotationModel\
-                .objects(image_id=image_id, area__gt=0, deleted=False).count()
+            set__num_annotations=AnnotationModel.objects({
+                "image_id": image_id,
+                "deleted": False,
+                "$or": [{"area": {"$gt": 0}},
+                        {"keypoints": {"$not": {"$size": 0}}}]
+            }).count()
         )
 
     task.set_progress(100, socket=socket)
