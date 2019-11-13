@@ -89,6 +89,9 @@ export default {
   },
   computed: {
     valid() {
+      if (!this.isMounted) {
+        return false;
+      }
       for (let i=0; i < this.keypoints.length; ++i) {
         if (this.keypoints[i].label_error.length !== 0) {
           return false;
@@ -100,12 +103,16 @@ export default {
   data() {
     return {
       keypoints: [],
-      hiddenValue: { edges: [], labels: [] }
+      hiddenValue: { edges: [], labels: [] },
+      isMounted: false
     };
   },
   created() {
     this.keypoints = this.keypointsFromProp();
     this.$emit("initialized");
+  },
+  mounted () {
+    this.isMounted = true;
   },
   methods: {
     export() {
