@@ -34,7 +34,6 @@
           data-toggle="modal"
           :data-target="'#categorySettings' + category.id"
           style="float: right; color: white"
-          @click="onCategorySettingsClick()"
           aria-hidden="true"
         />
 
@@ -85,6 +84,7 @@
       class="modal fade"
       tabindex="-1"
       role="dialog"
+      ref="category_settings"
       :id="'categorySettings' + category.id"
     >
       <div class="modal-dialog" role="document">
@@ -156,6 +156,9 @@ import paper from "paper";
 import Annotations from "@/models/annotations";
 import Annotation from "@/components/annotator/Annotation";
 import Keypoints from "@/components/Keypoints";
+import JQuery from "jquery";
+
+let $ = JQuery;
 
 export default {
   name: "Category",
@@ -222,7 +225,7 @@ export default {
       if (this.search.length === 0) return true;
       return this.filterFound.indexOf(index) > -1;
     },
-    onCategorySettingsClick() {
+    resetCategorySettings() {
       this.supercategory = this.category.supercategory;
       this.color = this.category.color;
       this.keypoint = {
@@ -517,6 +520,8 @@ export default {
   },
   mounted() {
     this.initCategory();
+    $(this.$refs.category_settings).on(
+      "hidden.bs.modal", this.resetCategorySettings);
   }
 };
 </script>

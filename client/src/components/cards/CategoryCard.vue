@@ -33,7 +33,6 @@
           >-->
           <button
             class="dropdown-item"
-            @click="onEditClick"
             data-toggle="modal"
             :data-target="'#categoryEdit' + category.id"
           >Edit</button>
@@ -46,7 +45,8 @@
       >Created by {{ category.creator }}</div>
     </div>
 
-    <div class="modal fade" role="dialog" :id="'categoryEdit' + category.id">
+    <div class="modal fade" role="dialog" ref="category_settings"
+        :id="'categoryEdit' + category.id" >
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -118,6 +118,9 @@ import axios from "axios";
 import toastrs from "@/mixins/toastrs";
 // import TagsInput from "@/components/TagsInput";
 import Keypoints from "@/components/Keypoints";
+import JQuery from "jquery";
+
+let $ = JQuery;
 
 export default {
   name: "CategoryCard",
@@ -153,10 +156,10 @@ export default {
     }
   },
   created() {
-    this.resetEditorFromProps();
+    this.resetCategorySettings();
   },
   methods: {
-    resetEditorFromProps() {
+    resetCategorySettings() {
       this.name = this.category.name;
       this.supercategory = this.category.supercategory;
       this.color = this.category.color;
@@ -164,9 +167,6 @@ export default {
         labels: [...this.category.keypoint_labels],
         edges: [...this.category.keypoint_edges]
       };
-    },
-    onEditClick() {
-      this.resetEditorFromProps();
     },
     onCardClick() {},
     onDownloadClick() {},
@@ -206,6 +206,10 @@ export default {
           this.$parent.updatePage();
         });
     }
+  },
+  mounted() {
+    $(this.$refs.category_settings).on(
+      "hidden.bs.modal", this.resetCategorySettings);
   }
 };
 </script>
