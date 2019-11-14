@@ -469,7 +469,6 @@ export default {
         );
 
         let transform = this.changeZoom(e.deltaY, viewPosition);
-        
         if (transform.zoom < 10 && transform.zoom > 0.01) {
           this.image.scale = 1 / transform.zoom;
           this.paper.view.zoom = transform.zoom;
