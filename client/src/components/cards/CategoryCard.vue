@@ -87,12 +87,12 @@
               </div>
 
               <div class="form-group">
-                <Keypoints
+                <KeypointsDefinition
                   ref="keypoints"
                   v-model="keypoint"
                   element-id="keypoints"
                   placeholder="Add a keypoint"
-                ></Keypoints>
+                ></KeypointsDefinition>
               </div>
             </form>
           </div>
@@ -117,7 +117,7 @@
 import axios from "axios";
 import toastrs from "@/mixins/toastrs";
 // import TagsInput from "@/components/TagsInput";
-import Keypoints from "@/components/Keypoints";
+import KeypointsDefinition from "@/components/KeypointsDefinition";
 import JQuery from "jquery";
 
 let $ = JQuery;
@@ -125,7 +125,7 @@ let $ = JQuery;
 export default {
   name: "CategoryCard",
   mixins: [toastrs],
-  components: { Keypoints },
+  components: { KeypointsDefinition },
   data() {
     return {
       group: null,

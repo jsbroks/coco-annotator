@@ -63,7 +63,7 @@
 import TagsInput from "@/components/TagsInput";
 
 export default {
-  name: "Keypoints",
+  name: "KeypointsDefinition",
   components: { TagsInput },
   props: {
     value: {

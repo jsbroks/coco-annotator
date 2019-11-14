@@ -120,10 +120,10 @@
               </div>
 
               <div class="form-group">
-                <Keypoints ref="keypoints"
+                <KeypointsDefinition ref="keypoints"
                   v-model="keypoint"
                   element-id="keypointLabels"
-                ></Keypoints>
+                ></KeypointsDefinition>
               </div>
             </form>
           </div>
@@ -155,14 +155,14 @@ import paper from "paper";
 
 import Annotations from "@/models/annotations";
 import Annotation from "@/components/annotator/Annotation";
-import Keypoints from "@/components/Keypoints";
+import KeypointsDefinition from "@/components/KeypointsDefinition";
 import JQuery from "jquery";
 
 let $ = JQuery;
 
 export default {
   name: "Category",
-  components: { Annotation, Keypoints },
+  components: { Annotation, KeypointsDefinition },
   props: {
     category: {
       type: Object,
