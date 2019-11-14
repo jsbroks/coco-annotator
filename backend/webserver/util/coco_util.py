@@ -1,4 +1,5 @@
 import pycocotools.mask as mask
+import numpy as np
 
 from database import (
     fix_ids,
