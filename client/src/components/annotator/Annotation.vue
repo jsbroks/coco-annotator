@@ -52,6 +52,32 @@
       />
     </li>
 
+    <ul class="list-group" style="padding-left: 15px; padding-top: 1px;">
+      <li v-for="(label, index) in keypointLabels" :key="index"
+          class="list-group-item text-left">
+        <div>
+          <i 
+            class="fa fa-key annotation-icon"
+            :style="{ float: 'left', 'padding-right': '10px',
+              color: isKeypointLabeled(index) ? 'lightgray': 'gray' }"
+          />
+        </div>
+        <a
+          :style="{
+            float: 'left',
+            width: '70%',
+            color: 'white'
+          }"
+        >
+          <span> {{ label }} </span> 
+          <i style="padding-left: 5px; color: lightgray"
+            >({{ keypointVisibility(index) }})</i
+          >
+        </a>
+      </li>
+    </ul>
+
+
     <div
       class="modal fade"
       tabindex="-1"
@@ -666,6 +692,19 @@ export default {
         action: "modify",
         annotation: this.annotation
       });
+    },
+    isKeypointLabeled(index) {
+      return !!this.keypoints._labelled[index + 1];
+    },
+    keypointVisibility(index) {
+      let labelled = this.keypoints._labelled[index + 1];
+      if (!labelled || labelled._visibility === 0) {
+        return "Unlabeled";
+      } else if (labelled._visibility === 2) {
+        return "Visible";
+      } else {
+        return "Non-visible";
+      }
     }
   },
   watch: {
