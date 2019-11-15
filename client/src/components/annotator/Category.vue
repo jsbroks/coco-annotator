@@ -349,7 +349,7 @@ export default {
         }
     },
     /**
-     * Event handler for annotaiton click
+     * Event handler for annotation click
      */
     onAnnotationClick(index) {
       let indices = { annotation: index, category: this.index };
