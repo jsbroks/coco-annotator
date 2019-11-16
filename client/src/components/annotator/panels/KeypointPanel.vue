@@ -12,7 +12,7 @@ import PanelText from "@/components/PanelText";
 import PanelInputDropdown from "@/components/PanelInputDropdown";
 
 export default {
-  name: "PolygonPanel",
+  name: "KeypointPanel",
   components: { PanelText, PanelInputDropdown },
   props: {
     keypoint: {
