@@ -67,6 +67,7 @@
         :annotation="annotation"
         :current="current.annotation"
         @click="onAnnotationClick(listIndex)"
+        @keypoint-click="onKeypointClick(listIndex, $event)"
         :opacity="opacity"
         :index="listIndex"
         :keypoint-edges="keypoint.edges"
@@ -347,6 +348,20 @@ export default {
             category: this.index
           });
         }
+    },
+    /**
+     * Event handler for keypoint click
+     */
+    onKeypointClick(annotation_index, keypoint_index) {
+      let indices = {
+        annotation: annotation_index,
+        category: this.index,
+        keypoint: keypoint_index,
+      };
+      this.selectedAnnotation = annotation_index;
+      this.showAnnotations = true;
+
+      this.$emit("click", indices);
     },
     /**
      * Event handler for annotation click
