@@ -59,10 +59,11 @@
           <i 
             class="fa fa-key annotation-icon"
             :style="{ float: 'left', 'padding-right': '10px',
-              color: isKeypointLabeled(index) ? 'lightgray': 'gray' }"
+                     color: isKeypointLabeled(index) ? 'lightgray': 'gray' }"
           />
         </div>
         <a
+          @click="onAnnotationKeypointClick(index)"
           :style="{
             float: 'left',
             width: '70%',
@@ -70,10 +71,19 @@
           }"
         >
           <span> {{ label }} </span> 
-          <i style="padding-left: 5px; color: lightgray"
-            >({{ keypointVisibility(index) }})</i
+          <i :style="{'padding-left': '5px',
+                      color: isKeypointLabeled(index) ? 'lightgray': 'gray'}"
+            >({{ getKeypointVisibilityDescription(index) }})</i
           >
         </a>
+        <i
+          v-if="isKeypointLabeled(index)"
+          @click="onAnnotationKeypointSettingsClick(index)"
+          class="fa fa-gear annotation-icon"
+          style="float:right; color: lightgray;"
+          data-toggle="modal"
+          :data-target="'#keypointSettings' + annotation.id"
+        />
       </li>
     </ul>
 
@@ -88,7 +98,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              {{ currentKeypoint }}
+              {{ getKeypointLabel(currentKeypoint) }}
             </h5>
             <button
               type="button"
@@ -101,16 +111,15 @@
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group">
-                <label>Label</label>
-                <TagsInput
-                  v-model="keypoint.tag"
-                  element-id="keypointTags"
-                  :existing-tags="keypointLabelTags"
-                  :typeahead="true"
-                  :typeahead-activation-threshold="0"
-                  :limit="1"
-                ></TagsInput>
+              <div class="form-group row">
+                <label class="col-sm-3 col-form-label">Label</label>
+                <div class="col-sm-8">
+                  <select v-model="keypoint.tag" class="form-control">
+                    <option v-for="(label, index) in keypointLabels" 
+                      :selected="isKeypointSelected(keypoint.tag, index)"
+                      :key="index" :value="[String(index + 1)]">{{label}}</option>
+                  </select>
+                </div>
               </div>
               <div class="form-group row">
                 <label class="col-sm-3 col-form-label">Visibility</label>
@@ -225,7 +234,7 @@ import Metadata from "@/components/Metadata";
 let $ = JQuery;
 
 export default {
-  name: "Annotaiton",
+  name: "Annotation",
   components: {
     Metadata,
     TagsInput
@@ -430,6 +439,22 @@ export default {
         this.$emit("click", this.index);
       }
     },
+    onAnnotationKeypointClick(keypoint_index) {
+      if (this.isVisible) {
+        this.$emit("keypoint-click", keypoint_index);
+      }
+    },
+    onAnnotationKeypointSettingsClick(keypoint_index) {
+      this.keypoint.tag = [String(keypoint_index+1)];
+      if (this.keypoints && this.keypoints._labelled) {
+        let labelled = this.keypoints._labelled[keypoint_index + 1];
+        if (labelled) {
+          visibility = labelled.visibility;
+          this.currentKeypoint = labelled;
+        }
+      }
+      this.keypoint.visibility = this.getKeypointVisibility(keypoint_index);
+    },
     onMouseEnter() {
       if (this.compoundPath == null) return;
 
@@ -455,7 +480,7 @@ export default {
       this.pervious.push(copy);
 
       let action = new UndoAction({
-        name: "Annotaiton " + this.annotation.id,
+        name: "Annotation " + this.annotation.id,
         action: actionName,
         func: this.undoCompound,
         args: {}
@@ -693,17 +718,33 @@ export default {
         annotation: this.annotation
       });
     },
-    isKeypointLabeled(index) {
-      return !!this.keypoints._labelled[index + 1];
+    getKeypointLabel(keypoint) {
+      return keypoint && keypoint.keypoints.labels[keypoint.indexLabel - 1];
     },
-    keypointVisibility(index) {
-      let labelled = this.keypoints._labelled[index + 1];
-      if (!labelled || labelled._visibility === 0) {
-        return "Unlabeled";
-      } else if (labelled._visibility === 2) {
+    isKeypointSelected(tag, index) {
+      return tag == (index + 1);
+    },
+    isKeypointLabeled(index) {
+      return this.keypoints && !!this.keypoints._labelled[index + 1];
+    },
+    getKeypointVisibility(index) {
+      let visibility = 0;
+      if (this.keypoints && this.keypoints._labelled) {
+        let labelled = this.keypoints._labelled[index + 1];
+        if (labelled) {
+          visibility = labelled.visibility;
+        }
+      }
+      return visibility;
+    },
+    getKeypointVisibilityDescription(index) {
+      let visibility = this.getKeypointVisibility(index);
+      if (visibility === 0) {
+        return "Not-labeled";
+      } else if (visibility === 2) {
         return "Visible";
       } else {
-        return "Non-visible";
+        return "Not-visible";
       }
     }
   },
