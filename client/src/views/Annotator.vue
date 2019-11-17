@@ -320,11 +320,13 @@ export default {
       },
       current: {
         category: -1,
-        annotation: -1
+        annotation: -1,
+        keypoint: -1,
       },
       hover: {
         category: -1,
-        annotation: -1
+        annotation: -1,
+        keypoint: -1,
       },
       image: {
         raster: {},
@@ -590,6 +592,11 @@ export default {
     onCategoryClick(indices) {
       this.current.annotation = indices.annotation;
       this.current.category = indices.category;
+      if (indices.keypoint) {
+        this.current.keypoint = indices.keypoint;
+        this.activeTool = this.$refs.keypoint;
+        this.activeTool.click();
+      }
     },
     getCategory(index) {
       if (index == null) return null;
@@ -860,6 +867,15 @@ export default {
         }
       }
     },
+    "current.keypoint"(sk) {
+      if (sk < -1) this.current.keypoint = -1;
+      if (this.currentCategory != null) {
+        let max = this.currentAnnotationLength;
+        if (sk > max) {
+          this.current.keypoint = -1;
+        }
+      }
+    },
     annotating() {
       this.removeFromAnnotatingList();
     },
@@ -875,6 +891,10 @@ export default {
       if (this.currentCategory == null) return null;
       return this.currentCategory.category.annotations.length;
     },
+    currentKeypointLength() {
+      if (this.currentAnnotation == null) return null;
+      return this.currentAnnotation.annotation.keypoints.length;
+    },
     currentCategory() {
       return this.getCategory(this.current.category);
     },
@@ -883,6 +903,16 @@ export default {
         return null;
       }
       return this.currentCategory.getAnnotation(this.current.annotation);
+    },
+    currentKeypoint() {
+      if (this.currentCategory == null) {
+        return null;
+      }
+      if (this.currentAnnotation == null) {
+        return null;
+      }
+      let ann = this.currentCategory.getAnnotation(this.current.annotation);
+      return ann.getKeypoint(this.current.keypoint);
     },
     user() {
       return this.$store.getters["user/user"];
