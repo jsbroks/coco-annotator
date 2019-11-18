@@ -21,23 +21,30 @@
         />
       </div>
 
-      <a
-        @click="onAnnotationClick"
-        :style="{
-          float: 'left',
-          width: '70%',
-          color: isVisible ? 'white' : 'gray'
-        }"
-      >
-        <span v-if="name.length === 0">{{ index + 1 }}</span>
-        <span v-else> {{ name }} </span> {{ annotation.name }}
+      <button
+          class="btn btn-link btn-sm collapsed text-left annotation-text"
+          :style="{
+            float: 'left',
+            width: '70%',
+            color: isVisible ? 'white' : 'gray'
+          }"
+          aria-expanded="false"
+          :aria-controls="'collapse_keypoints' + annotation.id"
+          @click="onAnnotationClick(); showKeypoints = !showKeypoints"
+        >
+        <template v-if="name.length === 0">
+          {{ index + 1 }}
+        </template>
+        <template v-else> {{ name }} </template>
+        {{ annotation.name }}
         <i v-if="isEmpty" style="padding-left: 5px; color: lightgray"
           >(Empty)</i
         >
         <i v-else style="padding-left: 5px; color: lightgray"
           >(id: {{ annotation.id }})</i
         >
-      </a>
+
+        </button>
 
       <i
         class="fa fa-gear annotation-icon"
@@ -52,9 +59,10 @@
       />
     </li>
 
-    <ul class="list-group" style="padding-left: 15px; padding-top: 1px;">
+    <ul v-show="showKeypoints" ref="collapse_keypoints"
+        class="list-group keypoint-list">
       <li v-for="(label, index) in keypointLabels" :key="index"
-          class="list-group-item text-left">
+          class="list-group-item text-left keypoint-item">
         <div>
           <i 
             class="fa fa-key annotation-icon"
@@ -292,6 +300,7 @@ export default {
   data() {
     return {
       isVisible: true,
+      showKeypoints: false,
       color: this.annotation.color,
       compoundPath: null,
       keypoints: null,
@@ -929,6 +938,23 @@ export default {
   font-size: 13px;
   padding: 2px;
   background-color: #4b5162;
+}
+
+.annotation-text {
+  padding: 0;
+  padding-bottom: 4px;
+  margin: 0;
+  line-height: 1;
+}
+
+.keypoint-list {
+  float: left;
+  width: 100%;
+  overflow: hidden;
+}
+
+.keypoint-item {
+  background-color: #383c4a;
 }
 
 .annotation-icon {
