@@ -23,6 +23,7 @@
     "vue-loading-overlay": "^3.1.1",
     "vue-router": "^3.0.2",
     "vue-socket.io": "^3.0.5",
+    "vue-touch": "^2.0.0-beta.4",
     "vuex": "^3.0.1"
   },
   "devDependencies": {

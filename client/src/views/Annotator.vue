@@ -201,9 +201,11 @@
     </aside>
 
     <div class="middle-panel" :style="{ cursor: cursor }">
+    <v-touch @pinch="onpinch" @pinchstart="onpinchstart">
       <div id="frame" class="frame" @wheel="onwheel">
         <canvas class="canvas" id="editor" ref="image" resize />
       </div>
+    </v-touch>   
     </div>
 
     <div v-show="annotating.length > 0" class="fixed-bottom alert alert-warning alert-dismissible fade show">
@@ -355,7 +357,10 @@ export default {
         loader: null
       },
       search: "",
-      annotating: []
+      annotating: [],
+      pinching: {
+        old_zoom: 1
+      }
     };
   },
   methods: {
@@ -418,6 +423,32 @@ export default {
         })
         .finally(() => this.removeProcess(process));
     },
+    onpinchstart(e) {
+      e.preventDefault();
+      if (!this.doneLoading) return;
+      let view = this.paper.view;
+      this.pinching.old_zoom = this.paper.view.zoom;
+      return false;
+    },
+    onpinch(e) {
+      e.preventDefault();
+      if (!this.doneLoading) return;
+      let view = this.paper.view;
+      let viewPosition = view.viewToProject(
+        new paper.Point(e.center.x, e.center.y)
+      );
+      let curr_zoom = e.scale * this.pinching.old_zoom;
+      let beta = this.paper.view.zoom / curr_zoom;
+      let pc = viewPosition.subtract(this.paper.view.center);
+      let a = viewPosition.subtract(pc.multiply(beta)).subtract(this.paper.view.center);  
+      let transform = {zoom: curr_zoom, offset: a}
+      if (transform.zoom < 10 && transform.zoom > 0.01) {
+        this.image.scale = 1 / transform.zoom;
+        this.paper.view.zoom = transform.zoom;
+        this.paper.view.center = view.center.add(transform.offset);
+      }
+      return false;
+    },
     onwheel(e) {
       e.preventDefault();
       if (!this.doneLoading) return;
@@ -438,7 +469,6 @@ export default {
         );
 
         let transform = this.changeZoom(e.deltaY, viewPosition);
-
         if (transform.zoom < 10 && transform.zoom > 0.01) {
           this.image.scale = 1 / transform.zoom;
           this.paper.view.zoom = transform.zoom;

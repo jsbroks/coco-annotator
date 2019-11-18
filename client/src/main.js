@@ -8,6 +8,7 @@ import VueToastr2 from "vue-toastr-2";
 import paper from "paper";
 import VTooltip from "v-tooltip";
 import Loading from "vue-loading-overlay";
+import VueTouch from 'vue-touch'
 import VueSocketIO from "vue-socket.io";
 import { VLazyImagePlugin } from "v-lazy-image";
 
@@ -32,6 +33,7 @@ Vue.use(
     connection: window.location.origin
   })
 );
+Vue.use(VueTouch,{name:'v-touch'});
 
 new Vue({
   router,
