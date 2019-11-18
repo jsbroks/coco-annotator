@@ -286,10 +286,11 @@
           style="max-height: 30%; color: lightgray"
         >
           <div class="form-group">
-            <label>Show Categories</label>
+            <label>Show Annotated Categories </label>
             <TagsInput
               v-model="selected.categories"
               element-id="selectedCategories"
+              title="Only shows images annotated with the selected categories for 'Show Annotated' button. Leave empty to show all annotated images."
               :existing-tags="categoryTags"
               :typeahead="true"
               :typeahead-activation-threshold="0"
