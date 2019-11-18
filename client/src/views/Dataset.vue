@@ -281,6 +281,21 @@
         <PanelToggle name="Show Not Annotated" v-model="panel.showNotAnnotated" />
         <PanelDropdown name="Order" v-model="order" :values="orderTypes" />
       </div>
+        <div
+          class="sidebar-section"
+          style="max-height: 30%; color: lightgray"
+        >
+          <div class="form-group">
+            <label>Show Categories</label>
+            <TagsInput
+              v-model="selected.categories"
+              element-id="selectedCategories"
+              :existing-tags="categoryTags"
+              :typeahead="true"
+              :typeahead-activation-threshold="0"
+            ></TagsInput>
+          </div>
+      </div>
     </div>
 
     <div class="modal fade" tabindex="-1" role="dialog" id="generateDataset">
@@ -500,6 +515,9 @@ export default {
         progress: 0,
         id: null
       },
+      selected: {
+        categories: []
+      },
       datasetExports: [],
       tab: "images",
       order: "file_name",
@@ -539,6 +557,7 @@ export default {
         folder: this.folders.join("/"),
         ...this.query,
         annotated: this.queryAnnotated,
+        category_ids__in: encodeURI(this.selected.categories),
         order: this.order
       })
         .then(response => {
@@ -736,6 +755,9 @@ export default {
       this.updatePage();
     },
     queryAnnotated() {
+      this.updatePage();
+    },
+    "selected.categories"(val) {
       this.updatePage();
     },
     folders() {
