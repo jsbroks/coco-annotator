@@ -218,7 +218,8 @@ export default {
       selectedAnnotation: -1,
       showAnnotations: false,
       isVisible: false,
-      search: ""
+      search: "",
+      isMounted: false,
     };
   },
   methods: {
@@ -257,7 +258,8 @@ export default {
           this.$parent.selectLastEditorTool();
           this.$emit("click", {
             annotation: annotationId,
-            category: this.index
+            category: this.index,
+            keypoint: -1,
           });
         });
 
@@ -345,7 +347,8 @@ export default {
         if (this.isCurrent) {
           this.$emit("click", {
             annotation: this.selectedAnnotation,
-            category: this.index
+            category: this.index,
+            keypoint: -1,
           });
         }
     },
@@ -367,7 +370,11 @@ export default {
      * Event handler for annotation click
      */
     onAnnotationClick(index) {
-      let indices = { annotation: index, category: this.index };
+      let indices = {
+        annotation: index,
+        category: this.index,
+        keypoint: -1 
+      };
       this.selectedAnnotation = index;
       this.showAnnotations = true;
 
@@ -379,7 +386,8 @@ export default {
     onClick() {
       let indices = {
         annotation: this.selectedAnnotation,
-        category: this.index
+        category: this.index,
+        keypoint: -1
       };
       this.$emit("click", indices);
 
@@ -431,7 +439,8 @@ export default {
 
       let indices = {
         annotation: this.selectedAnnotation,
-        category: this.index
+        category: this.index,
+        keypoint: -1,
       };
       this.$emit("click", indices);
 
@@ -475,6 +484,7 @@ export default {
     },
     isFormValid() {
       return (
+        this.isMounted &&
         this.$refs &&
         this.$refs.keypoints &&
         this.$refs.keypoints.valid
@@ -505,6 +515,7 @@ export default {
       if (!showing) {
         this.$emit("click", {
           annotation: -1,
+          keypoint: -1,
           category: this.index
         });
       }
@@ -537,6 +548,7 @@ export default {
     this.initCategory();
     $(this.$refs.category_settings).on(
       "hidden.bs.modal", this.resetCategorySettings);
+    this.isMounted = true;
   }
 };
 </script>

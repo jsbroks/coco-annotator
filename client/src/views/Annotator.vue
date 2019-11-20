@@ -592,10 +592,24 @@ export default {
     onCategoryClick(indices) {
       this.current.annotation = indices.annotation;
       this.current.category = indices.category;
-      if (indices.keypoint) {
+      if (!indices.hasOwnProperty('keypoint')) {
+        indices.keypoint = -1;
+      }
+      if (indices.keypoint !== -1) {
         this.current.keypoint = indices.keypoint;
-        this.activeTool = this.$refs.keypoint;
-        this.activeTool.click();
+        let ann = this.currentCategory.category.annotations[this.current.annotation];
+        let kpTool = this.$refs.keypoint;
+        let category = this.$refs.category[this.current.category];
+        let annotation = category.$refs.annotation[this.current.annotation];
+        let keypoints = annotation.keypoints;
+        let current_kp_visibility = (this.current.keypoint * 3) + 2;
+        if (ann.keypoints[current_kp_visibility] !== 0) {
+          let keypoint = keypoints._keypoints[this.current.keypoint];
+          keypoint.selected = true;
+        } else {
+          this.activeTool = kpTool;
+          this.activeTool.click();
+        }
       }
     },
     getCategory(index) {
