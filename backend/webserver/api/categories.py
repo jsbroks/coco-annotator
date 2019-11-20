@@ -19,6 +19,8 @@ create_category.add_argument(
     'keypoint_edges', type=list, default=[], location='json')
 create_category.add_argument(
     'keypoint_labels', type=list, default=[], location='json')
+create_category.add_argument(
+    'keypoint_colors', type=list, default=[], location='json')
 
 update_category = reqparse.RequestParser()
 update_category.add_argument('name', required=True, location='json')
@@ -27,6 +29,7 @@ update_category.add_argument('color', location='json')
 update_category.add_argument('metadata', type=dict, location='json')
 update_category.add_argument('keypoint_edges', type=list, location='json')
 update_category.add_argument('keypoint_labels', type=list, location='json')
+update_category.add_argument('keypoint_colors', type=list, location='json')
 
 page_data = reqparse.RequestParser()
 page_data.add_argument('page', default=1, type=int)
@@ -52,6 +55,7 @@ class Category(Resource):
         color = args.get('color')
         keypoint_edges = args.get('keypoint_edges')
         keypoint_labels = args.get('keypoint_labels')
+        keypoint_colors = args.get('keypoint_colors')
 
         try:
             category = CategoryModel(
@@ -61,6 +65,7 @@ class Category(Resource):
                 metadata=metadata,
                 keypoint_edges=keypoint_edges,
                 keypoint_labels=keypoint_labels,
+                keypoint_colors=keypoint_colors,
             )
             category.save()
         except NotUniqueError as e:

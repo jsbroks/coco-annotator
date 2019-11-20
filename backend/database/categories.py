@@ -22,7 +22,7 @@ class CategoryModel(DynamicDocument):
 
     keypoint_edges = ListField(default=[])
     keypoint_labels = ListField(default=[])
-    
+    keypoint_colors = ListField(default=[])
 
     @classmethod
     def bulk_create(cls, categories):
