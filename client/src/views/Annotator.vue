@@ -602,8 +602,7 @@ export default {
         let category = this.$refs.category[this.current.category];
         let annotation = category.$refs.annotation[this.current.annotation];
         let keypoints = annotation.keypoints;
-        let current_kp_visibility = (this.current.keypoint * 3) + 2;
-        if (ann.keypoints[current_kp_visibility] !== 0) {
+        if (keypoints._labelled[indices.keypoint + 1]) {
           let keypoint = keypoints._keypoints[this.current.keypoint];
           keypoint.selected = true;
         } else {
