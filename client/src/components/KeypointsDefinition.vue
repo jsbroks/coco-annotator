@@ -191,7 +191,6 @@ export default {
 
       current_kp.label = label;
       if (current_kp.label_error === "") {
-        // current_kp.label = label;
         if (label !== "") {
           for (let i = 0; i < this.keypoints.length; ++i) {
             if (i !== index) {
@@ -203,9 +202,6 @@ export default {
           }
         }
         this.hiddenValue = this.propFomKeypoints();
-        // if (label === "") {
-        //   this.keypoints = this.keypointsFromProp();
-        // }
         this.$emit("input", this.hiddenValue);
       } else if (label !== "") {
         for (let i = 0; i < this.keypoints.length; ++i) {
