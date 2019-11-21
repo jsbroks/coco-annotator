@@ -22,7 +22,7 @@
       </div>
 
       <button
-          class="btn btn-link btn-sm collapsed text-left annotation-text"
+          class="btn btn-sm btn-link collapsed text-left annotation-text"
           :style="{
             float: 'left',
             width: '70%',
@@ -30,7 +30,7 @@
           }"
           aria-expanded="false"
           :aria-controls="'collapse_keypoints' + annotation.id"
-          @click="onAnnotationClick(); showKeypoints = !showKeypoints"
+          @click="onAnnotationClick(!showKeypoints);"
         >
         <template v-if="name.length === 0">
           {{ index + 1 }}
@@ -62,6 +62,7 @@
     <ul v-show="showKeypoints" ref="collapse_keypoints"
         class="list-group keypoint-list">
       <li v-for="(label, index) in keypointLabels" :key="index"
+          :style="{'background-color': getKeypointBackgroundColor(index)}"
           class="list-group-item text-left keypoint-item">
         <div>
           <i 
@@ -443,12 +444,19 @@ export default {
       if (this.compoundPath != null) this.compoundPath.remove();
       if (this.keypoints != null) this.keypoints.remove();
     },
-    onAnnotationClick() {
+    onAnnotationClick(showKeypoints) {
+      if (this.keypointLabels.length) {
+        this.showKeypoints = showKeypoints;
+      }
       if (this.isVisible) {
         this.$emit("click", this.index);
       }
     },
     onAnnotationKeypointClick(keypoint_index) {
+      if (this.isKeypointLabeled(keypoint_index)) {
+        this.keypoint.tag = [String(keypoint_index+1)];
+        this.currentKeypoint = this.keypoints._keypoints[keypoint_index];
+      }
       if (this.isVisible) {
         this.$emit("keypoint-click", keypoint_index);
       }
@@ -550,16 +558,17 @@ export default {
         indexLabel: label || -1,
         radius: this.scale * 6,
         onClick: event => {
-          this.onAnnotationClick();
-
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
+          
           let keypoint = event.target.keypoint;
-
           // Remove if already selected
           if (keypoint == this.currentKeypoint) {
             this.currentKeypoint = null;
             return;
           }
+
+          this.onAnnotationClick(true);
+          this.onAnnotationKeypointClick(keypoint.indexLabel - 1);
 
           if (this.currentKeypoint) {
             let i1 = this.currentKeypoint.indexLabel;
@@ -572,13 +581,10 @@ export default {
               } else {
                 this.$parent.removeKeypointEdge(edge);
               }
-
-              this.currentKeypoint = null;
-              return;
             }
           }
 
-          this.currentKeypoint = event.target.keypoint;
+          this.currentKeypoint = keypoint;
         },
         onDoubleClick: event => {
           if (!this.$parent.isCurrent) return;
@@ -755,6 +761,15 @@ export default {
       } else {
         return "Not-visible";
       }
+    },
+    getKeypointBackgroundColor(index) {
+      if (this.isHover && this.$parent.isHover) return "#646c82";
+
+      // if (this.keypoint.tag == index + 1) return "#4b624c";
+      
+      if (this.isCurrent && this.keypoint.tag == index + 1) return "rgb(30, 86, 36)";
+
+      return "#383c4a";
     }
   },
   watch: {
@@ -809,6 +824,7 @@ export default {
     },
     "keypoint.tag"(newVal) {
       let id = newVal.length === 0 ? -1 : newVal[0];
+      this.currentKeypoint = this.keypoints._keypoints[keypoint_index];
       this.keypoints.setKeypointIndex(this.currentKeypoint, id);
       this.tagRecomputeCounter++;
     },
@@ -955,6 +971,7 @@ export default {
 
 .keypoint-item {
   background-color: #383c4a;
+  cursor: pointer;
 }
 
 .annotation-icon {
