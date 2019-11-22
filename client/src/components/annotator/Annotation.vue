@@ -808,6 +808,8 @@ export default {
         // Start new session
         this.session.start = Date.now();
         this.session.tools = [this.activeTool];
+      } else {
+        this.currentKeypoint = null;
       }
       if (wasCurrent) {
         // Close session
