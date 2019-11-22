@@ -1,5 +1,5 @@
 <template>
-  <div v-show="keypoint.isActive">
+  <div v-show="visible">
     <PanelText name="Settings for next Keypoint" />
     <PanelInputDropdown name="Label" v-model="label" :values="notUsedLabels" />
     <PanelInputDropdown name="Visibility" v-model="visibility" :values="visibilityOptions" />
@@ -57,6 +57,9 @@ export default {
     notUsedLabels() {
       if (!this.currentAnnotation) return {};
       return this.currentAnnotation.notUsedKeypointLabels;
+    },
+    visible() {
+      return this.keypoint.isActive && Object.keys(this.notUsedLabels).length > 0;
     }
   }
 };

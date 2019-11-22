@@ -61,15 +61,31 @@
 
     <ul v-show="showKeypoints" ref="collapse_keypoints"
         class="list-group keypoint-list">
-      <li v-for="(label, index) in keypointLabels" :key="index"
-          :style="{'background-color': getKeypointBackgroundColor(index)}"
+      <li v-for="(kp, index) in keypointListView" :key="index"
+          :style="{'background-color': kp.backgroundColor}"
           class="list-group-item text-left keypoint-item">
         <div>
-          <i 
-            class="fa fa-key annotation-icon"
-            :style="{ float: 'left', 'padding-right': '10px',
-                     color: isKeypointLabeled(index) ? 'lightgray': 'gray' }"
+          <template v-if="kp.visibility === 2">
+            <i 
+            class="fa fa-map-marker keypoint-icon"
+            :style="{ color: kp.visibility !== 0 ? 'lightgray': 'gray' }"
           />
+          </template>
+          <template v-else-if="kp.visibility === 1">
+            <span class="fa-stack" :style="{ color: kp.visibility !== 0 ? 'lightgray': 'gray'}">
+              <i class="fa fa-circle fa-stack-1x keypoint-icon" :style="{'color': 'black'}"></i>
+              <i class="fa fa-map-marker fa-stack-1x keypoint-icon"></i>
+            </span>
+          </template>
+           <template v-else>
+              <!-- <span class="fa-stack" :style="{ color: kp.visibility !== 0 ? 'lightgray': 'gray'}">
+                <i class="fa fa-ban fa-stack-1x keypoint-icon" :style="{'color': 'black'}"></i>
+                <i class="fa fa-map-marker fa-stack-1x keypoint-icon"></i>
+              </span> -->
+            <i 
+            class="fa fa-map-marker keypoint-icon"
+            :style="{ color: '#777'}"/>
+          </template>
         </div>
         <a
           @click="onAnnotationKeypointClick(index)"
@@ -79,14 +95,10 @@
             color: 'white'
           }"
         >
-          <span> {{ label }} </span> 
-          <i :style="{'padding-left': '5px',
-                      color: isKeypointLabeled(index) ? 'lightgray': 'gray'}"
-            >({{ getKeypointVisibilityDescription(index) }})</i
-          >
+          <span> {{ kp.label }} </span> 
         </a>
         <i
-          v-if="isKeypointLabeled(index)"
+          v-if="kp.visibility !== 0"
           @click="onAnnotationKeypointSettingsClick(index)"
           class="fa fa-gear annotation-icon"
           style="float:right; color: lightgray;"
@@ -95,7 +107,6 @@
         />
       </li>
     </ul>
-
 
     <div
       class="modal fade"
@@ -860,6 +871,18 @@ export default {
       }
       return false;
     },
+    keypointListView() {
+      let listView = [];
+      for (let i=0; i < this.keypointLabels.length; ++i) {
+        listView.push({
+          label: this.keypointLabels[i],
+          visibilityDescription: this.getKeypointVisibilityDescription(i),
+          visibility: this.getKeypointVisibility(i),
+          backgroundColor: this.getKeypointBackgroundColor(i),
+        });
+      }
+      return listView;
+    },
     isHover() {
       return this.index === this.hover;
     },
@@ -979,5 +1002,12 @@ export default {
 .annotation-icon {
   margin: 0;
   padding: 3px;
+}
+.keypoint-icon {
+  margin: 0;
+  padding: 3px;
+  float: left;
+  padding-right: 10px;
+  padding-left: 6px;
 }
 </style>
