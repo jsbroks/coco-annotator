@@ -619,7 +619,22 @@ export default {
 
       this.keypoints.addKeypoint(keypoint);
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
-
+      
+      let unusedLabels = this.notUsedKeypointLabels;
+      delete unusedLabels[String(label)];
+      let unusedLabelKeys = Object.keys(unusedLabels);
+      if (unusedLabelKeys.length > 0) {
+        let nextLabel = unusedLabelKeys[0];
+        for (let ul in unusedLabels) {
+          if (ul > label) {
+            nextLabel = ul;
+            break;
+          }
+        }
+        this.keypoint.next.label = nextLabel;
+      } else {
+        this.$emit('keypoints-complete');
+      }
       this.tagRecomputeCounter++;
     },
     deleteKeypoint(keypoint) {
@@ -777,8 +792,11 @@ export default {
       if (this.isHover && this.$parent.isHover) return "#646c82";
 
       // if (this.keypoint.tag == index + 1) return "#4b624c";
-      
-      if (this.isCurrent && this.keypoint.tag == index + 1) return "rgb(30, 86, 36)";
+      let activeIndex = this.keypoint.next.label;
+      if (activeIndex == -1) {
+        activeIndex = this.keypoint.tag;
+      }
+      if (this.isCurrent && activeIndex == index + 1) return "rgb(30, 86, 36)";
 
       return "#383c4a";
     }
@@ -837,7 +855,9 @@ export default {
     },
     "keypoint.tag"(newVal) {
       let id = newVal.length === 0 ? -1 : newVal[0];
-      this.currentKeypoint = this.keypoints._keypoints[keypoint_index];
+      if (id !== -1) {
+        this.currentKeypoint = this.keypoints._keypoints[id - 1];
+      }
       this.keypoints.setKeypointIndex(this.currentKeypoint, id);
       this.tagRecomputeCounter++;
     },

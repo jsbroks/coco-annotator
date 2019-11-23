@@ -139,6 +139,7 @@
             :hover="hover"
             :index="index"
             @click="onCategoryClick"
+            @keypoints-complete="onKeypointsComplete"
             :current="current"
             :active-tool="activeTool"
             :scale="image.scale"
@@ -606,10 +607,15 @@ export default {
           let keypoint = keypoints._keypoints[this.current.keypoint];
           keypoint.selected = true;
         } else {
+          this.currentAnnotation.keypoint.next.label = String(indices.keypoint + 1);
           this.activeTool = kpTool;
           this.activeTool.click();
         }
       }
+    },
+    onKeypointsComplete() {
+      this.activeTool = this.$refs.select;
+      this.activeTool.click();
     },
     getCategory(index) {
       if (index == null) return null;

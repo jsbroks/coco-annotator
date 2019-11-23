@@ -294,9 +294,9 @@ export default {
       this.keypoint = null;
 
       if (
-        event.item &&
-        event.item.data.hasOwnProperty("annotationId") &&
-        event.item.data.hasOwnProperty("categoryId")
+        item &&
+        item.data.hasOwnProperty("annotationId") &&
+        item.data.hasOwnProperty("categoryId")
       ) {
         this.hover.position = event.point;
 
@@ -314,6 +314,17 @@ export default {
       } else if (event.item && event.item.hasOwnProperty("keypoint")) {
         this.hover.position = event.point;
         this.keypoint = item;
+      } else if (item && item.lastChild && item.lastChild.hasOwnProperty("keypoint")) {
+        this.hover.position = event.point;
+        for (let i=0; i < item.children.length; ++i) {
+          if (item.children[i].hasOwnProperty("keypoint")) {
+            let keypoint = item.children[i].keypoint;
+            if (event.point.getDistance(keypoint) <= keypoint.radius) {
+              this.keypoint = item.children[i];
+              break;
+            }
+          }
+        }
       } else {
         this.clear();
       }

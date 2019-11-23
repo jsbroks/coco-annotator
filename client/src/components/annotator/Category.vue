@@ -68,6 +68,7 @@
         :current="current.annotation"
         @click="onAnnotationClick(listIndex)"
         @keypoint-click="onKeypointClick(listIndex, $event)"
+        @keypoints-complete="$emit('keypoints-complete')"
         :opacity="opacity"
         :index="listIndex"
         :keypoint-edges="keypoint.edges"
