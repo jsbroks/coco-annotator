@@ -615,6 +615,7 @@ export default {
       }
     },
     onKeypointsComplete() {
+      this.currentAnnotation.keypoint.next.label = -1;
       this.activeTool = this.$refs.select;
       this.activeTool.click();
     },
