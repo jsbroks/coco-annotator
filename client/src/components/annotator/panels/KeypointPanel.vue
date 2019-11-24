@@ -15,6 +15,7 @@
 <script>
 import PanelText from "@/components/PanelText";
 import PanelInputDropdown from "@/components/PanelInputDropdown";
+import { VisibilityOptions } from "@/libs/keypoints";
 export default {
   name: "KeypointPanel",
   components: { PanelText, PanelInputDropdown },
@@ -32,11 +33,7 @@ export default {
     return {
       visibility: 2,
       label: -1,
-      visibilityOptions: {
-        0: "NOT LABELLED",
-        1: "LABELED NOT VISIBLE",
-        2: "LABELED VISIBLE"
-      }
+      visibilityOptions: VisibilityLabels,
     };
   },
   computed: {

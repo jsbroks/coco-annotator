@@ -141,9 +141,8 @@
                 <label class="col-sm-3 col-form-label">Visibility</label>
                 <div class="col-sm-8">
                   <select v-model="keypoint.visibility" class="form-control">
-                    <option :value="0">NOT LABELED</option>
-                    <option :value="1">LABELED NOT VISIBLE</option>
-                    <option :value="2">LABELED VISIBLE</option>
+                    <option v-for="(desc, label) in visibilityOptions" 
+                      :key="label" :value="label" :selected="keypoint.visibility == label">{{desc}}</option>
                   </select>
                 </div>
               </div>
@@ -240,7 +239,7 @@ import axios from "axios";
 import simplifyjs from "simplify-js";
 import JQuery from "jquery";
 
-import { Keypoint, Keypoints } from "@/libs/keypoints";
+import { Keypoint, Keypoints, VisibilityOptions } from "@/libs/keypoints";
 import { mapMutations } from "vuex";
 import UndoAction from "@/undo";
 
@@ -337,7 +336,8 @@ export default {
         tools: [],
         milliseconds: 0
       },
-      tagRecomputeCounter: 0
+      tagRecomputeCounter: 0,
+      visOptionsyOptions: VisibilityLabels,
     };
   },
   methods: {
@@ -390,7 +390,7 @@ export default {
         if (this.activeTool !== "Select") return;
         $(`#annotationSettings${this.annotation.id}`).modal("show");
       };
-      this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels);
+      this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels, this.keypointColors);
       this.keypoints.radius = this.scale * 6;
       this.keypoints.lineWidth = this.scale * 2;
 
@@ -479,12 +479,10 @@ export default {
     },
     onAnnotationKeypointSettingsClick(labelIndex) {
       this.keypoint.tag = [String(labelIndex+1)];
-      if (this.keypoints && this.keypoints._labelled) {
-        let labelled = this.keypoints._labelled[labelIndex + 1];
-        if (labelled) {
-          visibility = labelled.visibility;
-          this.currentKeypoint = labelled;
-        }
+      let indexLabel = parseInt(String(this.keypoint.tag));
+      if (this.keypoints && indexLabel in this.keypoints._labelled) {
+        let labelled = this.keypoints._labelled[indexLabel];
+        this.currentKeypoint = labelled;
       }
       this.keypoint.visibility = this.getKeypointVisibility(labelIndex);
     },
@@ -578,6 +576,7 @@ export default {
       let keypoint = new Keypoint(point.x, point.y, {
         visibility: visibility || 0,
         indexLabel: label || -1,
+        fillColor: this.keypointColors[label - 1],
         radius: this.scale * 6,
         onClick: event => {
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
@@ -790,16 +789,6 @@ export default {
       }
       return visibility;
     },
-    getKeypointVisibilityDescription(index) {
-      let visibility = this.getKeypointVisibility(index);
-      if (visibility === 0) {
-        return "Not-labeled";
-      } else if (visibility === 2) {
-        return "Visible";
-      } else {
-        return "Not-visible";
-      }
-    },
     getKeypointBackgroundColor(index) {
       if (this.isHover && this.$parent.isHover) return "#646c82";
 
@@ -907,7 +896,6 @@ export default {
       for (let i=0; i < this.keypointLabels.length; ++i) {
         listView.push({
           label: this.keypointLabels[i],
-          visibilityDescription: this.getKeypointVisibilityDescription(i),
           visibility: this.getKeypointVisibility(i),
           backgroundColor: this.getKeypointBackgroundColor(i),
         });

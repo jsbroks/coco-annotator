@@ -1,7 +1,7 @@
 import paper from "paper";
 
 export class Keypoints extends paper.Group {
-  constructor(edges, labels, args) {
+  constructor(edges, labels, colors, args) {
     super();
     args = args || {};
 
@@ -11,6 +11,10 @@ export class Keypoints extends paper.Group {
     this._labelled = {};
     this._keypoints = [];
     this.labels = labels;
+    this.colors = {};
+    for (let i=0; i < colors.length; ++i) {
+      this.colors[String(i+1)] = colors[i];
+    }
 
     this.strokeColor = args.strokeColor || "red";
     this.lineWidth = args.strokeWidth || 4;
@@ -23,26 +27,26 @@ export class Keypoints extends paper.Group {
     return this._keypoints.length === 0;
   }
 
-  setKeypointIndex(keypoint, newIndex) {
-    let oldIndex = keypoint.indexLabel;
-    if (newIndex == oldIndex) return;
+  // setKeypointIndex(keypoint, newIndex) {
+  //   let oldIndex = keypoint.indexLabel;
+  //   if (newIndex == oldIndex) return;
 
-    keypoint.indexLabel = parseInt(newIndex);
+  //   keypoint.indexLabel = parseInt(newIndex);
 
-    if (oldIndex >= 0) {
-      delete this._labelled[oldIndex];
+  //   if (oldIndex >= 0) {
+  //     delete this._labelled[oldIndex];
 
-      let otherIndices = this._edges[oldIndex];
-      if (otherIndices) {
-        otherIndices.forEach(i => this.removeLine([i, oldIndex]));
-      }
-      // TODO: Remove assoicated lines
-    }
-    if (newIndex >= 0) {
-      this._labelled[newIndex] = keypoint;
-      this._drawLines(keypoint);
-    }
-  }
+  //     let otherIndices = this._edges[oldIndex];
+  //     if (otherIndices) {
+  //       otherIndices.forEach(i => this.removeLine([i, oldIndex]));
+  //     }
+  //     // TODO: Remove assoicated lines
+  //   }
+  //   if (newIndex >= 0) {
+  //     this._labelled[newIndex] = keypoint;
+  //     this._drawLines(keypoint);
+  //   }
+  // }
 
   bringToFront() {
     super.bringToFront();
@@ -53,7 +57,8 @@ export class Keypoints extends paper.Group {
   addKeypoint(keypoint) {
     keypoint.keypoints = this;
     keypoint.path.keypoints = this;
-    keypoint.color = this.strokeColor;
+    // keypoint.color = this.strokeColor;
+    keypoint.strokeColor =  this.strokeColor;
     keypoint.path.strokeWidth = this.strokeWidth;
 
     let indexLabel = keypoint.indexLabel;
@@ -118,7 +123,10 @@ export class Keypoints extends paper.Group {
   set color(val) {
     this._color = val;
     this.strokeColor = val;
-    this._keypoints.forEach(k => (k.color = val));
+    this._keypoints.forEach(k => {
+      k.fillColor = this.colors[k.indexLabel];
+      k.strokeColor = val;
+    });
     Object.values(this._lines).forEach(l => (l.strokeColor = val));
   }
 
@@ -310,6 +318,17 @@ export let VisibilityType = {
   UNKNOWN: 3
 };
 
+export let VisibilityOptions = (function() {
+  let options = {};
+  for (let l in VisibilityType) {
+    if (l !== "UNKNOWN") {
+      options[VisibilityType[l]] = l.replace("_", " ");
+    }
+  }
+  return options;
+}());
+
+
 export class Keypoint extends paper.Point {
   constructor(x, y, args) {
     super(x, y);
@@ -328,23 +347,9 @@ export class Keypoint extends paper.Point {
     this.onMouseDrag = args.onMouseDrag;
 
     this._draw();
-    this.color = args.color || "red";
-    this.setFillColor();
-  }
-
-  setFillColor() {
-    if (this.path == null) return;
-
-    switch (this.visibility) {
-      case VisibilityType.NOT_LABELED:
-        this.path.fillColor = "black";
-        break;
-      case VisibilityType.LABELED_NOT_VISIBLE:
-        this.path.fillColor = "white";
-        break;
-      default:
-        this.path.fillColor = this.color;
-    }
+    this.fillColor = args.fillColor || "red";
+    this.strokeColor = args.strokeColor || "red";
+    this.updateFillColor();
   }
 
   move(point) {
@@ -354,7 +359,7 @@ export class Keypoint extends paper.Point {
   }
 
   _draw() {
-    let strokeColor = this.color;
+    let strokeColor = this.strokeColor;
     if (this.path !== null) {
       strokeColor = this.path.strokeColor;
       this.path.remove();
@@ -375,7 +380,7 @@ export class Keypoint extends paper.Point {
     this.path.keypoint = this;
     this.path.keypoints = this.keypoints;
 
-    this.setFillColor();
+    this.updateFillColor();
   }
 
   set visible(val) {
@@ -389,7 +394,7 @@ export class Keypoint extends paper.Point {
 
   set visibility(val) {
     this._visibility = val;
-    this.setFillColor();
+    this.updateFillColor();
   }
 
   get visibility() {
@@ -405,27 +410,53 @@ export class Keypoint extends paper.Point {
     return this._radius;
   }
 
-  set color(val) {
-    this._color = val;
-    this.path.strokeColor = this.selected ? "white" : val;
-    this.setFillColor();
-  }
-
-  get color() {
-    return this._color;
-  }
-
   set strokeColor(val) {
-    this.color = val;
+    this._strokeColor = val;
+    this.path.strokeColor = this.selected ? "white" : val;
+    this.updateFillColor();
   }
 
   get strokeColor() {
-    return this.color;
+    return this._strokeColor;
+  }
+
+  set fillColor(val) {
+    this._fillColor = val;
+    this.updateFillColor();
+  }
+
+  get fillColor() {
+    return this._fillColor;
+  }
+
+  set strokeColor(val) {
+    this._strokeColor = val;
+    this.path.strokeColor = this.selected ? "white" : val;
+    this.updateFillColor();
+  }
+
+  get strokeColor() {
+    return this._strokeColor;
+  }
+
+  updateFillColor() {
+    if (this.path == null) return;
+
+    switch (this.visibility) {
+      case VisibilityType.NOT_LABELED:
+        this.path.fillColor = "black";
+        break;
+      case VisibilityType.LABELED_NOT_VISIBLE:
+        this.path.fillColor = "white";
+        break;
+      default:
+        this.path.fillColor = this.fillColor;
+    }
   }
 
   set selected(val) {
     this._selected = val;
-    this.path.strokeColor = val ? "white" : this.color;
+    this.path.strokeColor = val ? "white" : this.strokeColor;
     this.path.bringToFront();
   }
 
