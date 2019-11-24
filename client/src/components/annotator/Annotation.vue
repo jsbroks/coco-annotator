@@ -453,7 +453,12 @@ export default {
     delete() {
       this.$parent.category.annotations.splice(this.index, 1);
       if (this.compoundPath != null) this.compoundPath.remove();
-      if (this.keypoints != null) this.keypoints.remove();
+      if (this.keypoints != null) {
+        this.keypoints._keypoints.forEach( keypoint => {
+          this.keypoints.deleteKeypoint(keypoint);
+        });
+        this.keypoints.remove();
+      }
     },
     onAnnotationClick(showKeypoints) {
       if (this.keypointLabels.length) {
