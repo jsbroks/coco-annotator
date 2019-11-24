@@ -137,16 +137,6 @@
           </div>
           <div class="modal-body">
             <form>
-              <!-- <div class="form-group row">
-                <label class="col-sm-3 col-form-label">Label</label>
-                <div class="col-sm-8">
-                  <select v-model="keypoint.tag" class="form-control">
-                    <option v-for="(label, index) in keypointLabels" 
-                      :selected="isKeypointSelected(keypoint.tag, index)"
-                      :key="index" :value="[String(index + 1)]">{{label}}</option>
-                  </select>
-                </div>
-              </div> -->
               <div class="form-group row">
                 <label class="col-sm-3 col-form-label">Visibility</label>
                 <div class="col-sm-8">
