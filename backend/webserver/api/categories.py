@@ -119,13 +119,15 @@ class Category(Resource):
         metadata = args.get('metadata', category.metadata)
         keypoint_edges = args.get('keypoint_edges', category.keypoint_edges)
         keypoint_labels = args.get('keypoint_labels', category.keypoint_labels)
+        keypoint_colors = args.get('keypoint_colors', category.keypoint_colors)
 
         # check if there is anything to update
         if category.name == name \
                 and category.supercategory == supercategory \
                 and category.color == color \
                 and category.keypoint_edges == keypoint_edges \
-                and category.keypoint_labels == keypoint_labels:
+                and category.keypoint_labels == keypoint_labels \
+                and category.keypoint_colors == keypoint_colors:
             return {"message": "Nothing to update"}, 200
 
         # check if the name is empty
@@ -140,6 +142,7 @@ class Category(Resource):
         category.color = color
         category.keypoint_edges = keypoint_edges
         category.keypoint_labels = keypoint_labels
+        category.keypoint_colors = keypoint_colors
 
         try:
             category.update(
@@ -149,6 +152,7 @@ class Category(Resource):
                 metadata=category.metadata,
                 keypoint_edges=category.keypoint_edges,
                 keypoint_labels=category.keypoint_labels,
+                keypoint_colors=category.keypoint_colors,
             )
         except NotUniqueError:
             # it is only triggered when the name already exists and the creator is the same

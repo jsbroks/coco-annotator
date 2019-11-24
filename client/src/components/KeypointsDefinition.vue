@@ -39,7 +39,8 @@
             </div>
 
             <div class="col-sm-1 keypoint-color">
-              <input v-model="object.color" type="color" class="form-control" />
+              <!-- <input v-model="object.color" type="color" class="form-control" /> -->
+              <input :value="object.color" @input="colorUpdated(index, $event.target.value)" type="color" class="form-control" />
             </div>
 
             <div class="col-sm-6" style="padding-left: 5px;">
@@ -106,7 +107,7 @@ export default {
   data() {
     return {
       keypoints: [],
-      hiddenValue: { edges: [], labels: [] },
+      hiddenValue: { edges: [], labels: [], colors: [] },
       isMounted: false
     };
   },
@@ -121,9 +122,14 @@ export default {
     export() {
       let keypoints = [];
 
-      this.value.labels.forEach(label => {
-        keypoints.push({ label, edges: [], label_error: "", color: null });
-      });
+      for (let i=0; i < this.value.labels.length; ++i) {
+        keypoints.push({
+          label: this.value.labels[i],
+          edges: [],
+          label_error: "",
+          color: this.value.colors[i],
+        });
+      }
       this.value.edges.forEach(edge => {
         let label0 = edge[0] - 1;
         let label1 = edge[0] - 1;
@@ -148,11 +154,17 @@ export default {
         this.value.labels != null &&
         this.value.labels.length
       ) {
-        keypoints = this.value.labels
-          .map(k => {
-            return { label: k, label_error: "", edges: [] };
-          })
-          .filter(kp => kp.label.length !== 0);
+        for (let i=0; i < this.value.labels.length; ++i) {
+          let label = this.value.labels[i];
+          if (label.length > 0) {
+            keypoints.push({
+              label,
+              label_error: "",
+              edges: [],
+              color: this.value.colors[i] || "#000",
+            });
+          }
+        }
 
         this.value.edges.forEach(edge => {
           let label0 = edge[0] - 1;
@@ -164,6 +176,11 @@ export default {
         });
       }
       return keypoints;
+    },
+    colorUpdated(index, color) {
+      this.keypoints[index].color = color;
+      this.hiddenValue = this.propFomKeypoints();
+      this.$emit("input", this.hiddenValue);
     },
     keypointLabelUpdated(index, label) {
       let current_kp = this.keypoints[index];
@@ -241,9 +258,14 @@ export default {
     },
     propFomKeypoints() {
       let edge_labels = {};
-      let labels = this.keypoints
-        .map(kp => kp.label)
-        .filter(label => label.length !== 0);
+      let labels = [];
+      let colors = [];
+      this.keypoints.forEach(kp => {
+        if (kp.label.length > 0) {
+          labels.push(kp.label);
+          colors.push(kp.color);
+        }
+      })
       this.keypoints.forEach(kp => {
         kp.edges.forEach(edge => {
           if (edge in edge_labels) {
@@ -262,7 +284,7 @@ export default {
           edges.push([label_index, edge_index]);
         });
       }
-      return { labels, edges };
+      return { labels, edges, colors };
     },
     otherKeypointLabels(current_label) {
       let labels = {};

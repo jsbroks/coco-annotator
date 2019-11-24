@@ -62,6 +62,7 @@ class AnnotatorData(Resource):
             if current_user.can_edit(db_category):
                 category_update['keypoint_edges'] = category.get('keypoint_edges', [])
                 category_update['keypoint_labels'] = category.get('keypoint_labels', [])
+                category_update['keypoint_colors'] = category.get('keypoint_colors', [])
             
             db_category.update(**category_update)
 

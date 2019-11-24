@@ -73,6 +73,7 @@
         :index="listIndex"
         :keypoint-edges="keypoint.edges"
         :keypoint-labels="keypoint.labels"
+        :keypoint-colors="keypoint.colors"
         ref="annotation"
         :hover="hover.annotation"
         :active-tool="activeTool"
@@ -214,7 +215,8 @@ export default {
       color: this.category.color,
       keypoint: {
         labels: [...this.category.keypoint_labels],
-        edges: [...this.category.keypoint_edges]
+        edges: [...this.category.keypoint_edges],
+        colors: [...this.category.keypoint_colors],
       },
       selectedAnnotation: -1,
       showAnnotations: false,
@@ -233,7 +235,8 @@ export default {
       this.color = this.category.color;
       this.keypoint = {
         labels: [...this.category.keypoint_labels],
-        edges: [...this.category.keypoint_edges]
+        edges: [...this.category.keypoint_edges],
+        colors: [...this.category.keypoint_colors],
       };
     },
     /**
@@ -281,6 +284,7 @@ export default {
     onUpdateClick() {
       this.category.keypoint_labels = [...this.keypoint.labels];
       this.category.keypoint_edges = [...this.keypoint.edges];
+      this.category.keypoint_colors = [...this.keypoint.colors];
       this.category.supercategory = this.supercategory;
     },
     /**
@@ -302,7 +306,8 @@ export default {
         annotations: [],
         supercategory: this.category.supercategory,
         keypoint_labels: this.category.keypoint_labels,
-        keypoint_edges: this.category.keypoint_edges
+        keypoint_edges: this.category.keypoint_edges,
+        keypoint_colors: this.category.keypoint_colors,
       };
 
       if (refs.hasOwnProperty("annotation")) {
