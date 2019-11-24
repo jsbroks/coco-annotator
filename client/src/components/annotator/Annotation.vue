@@ -105,6 +105,12 @@
           data-toggle="modal"
           :data-target="'#keypointSettings' + annotation.id"
         />
+        <i
+          v-if="kp.visibility !== 0"
+          @click="onDeleteKeypointClick(index)"
+          class="fa fa-trash-o annotation-icon"
+          style="float:right; color: lightgray;"
+        />
       </li>
     </ul>
 
@@ -468,25 +474,31 @@ export default {
         this.$emit("click", this.index);
       }
     },
-    onAnnotationKeypointClick(keypoint_index) {
-      if (this.isKeypointLabeled(keypoint_index)) {
-        this.keypoint.tag = [String(keypoint_index+1)];
+    onAnnotationKeypointClick(labelIndex) {
+      if (this.isKeypointLabeled(labelIndex)) {
+        this.keypoint.tag = [String(labelIndex+1)];
         this.currentKeypoint = this.keypoints._labelled[this.keypoint.tag];
       }
       if (this.isVisible) {
-        this.$emit("keypoint-click", keypoint_index);
+        this.$emit("keypoint-click", labelIndex);
       }
     },
-    onAnnotationKeypointSettingsClick(keypoint_index) {
-      this.keypoint.tag = [String(keypoint_index+1)];
+    onAnnotationKeypointSettingsClick(labelIndex) {
+      this.keypoint.tag = [String(labelIndex+1)];
       if (this.keypoints && this.keypoints._labelled) {
-        let labelled = this.keypoints._labelled[keypoint_index + 1];
+        let labelled = this.keypoints._labelled[labelIndex + 1];
         if (labelled) {
           visibility = labelled.visibility;
           this.currentKeypoint = labelled;
         }
       }
-      this.keypoint.visibility = this.getKeypointVisibility(keypoint_index);
+      this.keypoint.visibility = this.getKeypointVisibility(labelIndex);
+    },
+    onDeleteKeypointClick(labelIndex) {
+      let label = String(labelIndex + 1);
+      if (label in this.keypoints._labelled) {
+        this.deleteKeypoint(this.keypoints._labelled[label]);
+      }
     },
     onMouseEnter() {
       if (this.compoundPath == null) return;
@@ -644,7 +656,7 @@ export default {
       this.tagRecomputeCounter++;
     },
     deleteKeypoint(keypoint) {
-      this.keypoints.delete(keypoint);
+      this.keypoints.deleteKeypoint(keypoint);
     },
     /**
      * Unites current annotation path with anyother path.
