@@ -604,7 +604,8 @@ export default {
         let annotation = category.$refs.annotation[this.current.annotation];
         let keypoints = annotation.keypoints;
         if (keypoints._labelled[indices.keypoint + 1]) {
-          let keypoint = keypoints._keypoints[this.current.keypoint];
+          let indexLabel = String(this.current.keypoint + 1);
+          let keypoint = keypoints._labelled[indexLabel];
           keypoint.selected = true;
         } else {
           this.currentAnnotation.keypoint.next.label = String(indices.keypoint + 1);

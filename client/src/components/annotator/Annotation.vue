@@ -466,7 +466,7 @@ export default {
     onAnnotationKeypointClick(keypoint_index) {
       if (this.isKeypointLabeled(keypoint_index)) {
         this.keypoint.tag = [String(keypoint_index+1)];
-        this.currentKeypoint = this.keypoints._keypoints[keypoint_index];
+        this.currentKeypoint = this.keypoints._labelled[this.keypoint.tag];
       }
       if (this.isVisible) {
         this.$emit("keypoint-click", keypoint_index);
@@ -633,6 +633,7 @@ export default {
         }
         this.keypoint.next.label = nextLabel;
       } else {
+        this.keypoint.next.label = -1;
         this.$emit('keypoints-complete');
       }
       this.tagRecomputeCounter++;
@@ -793,7 +794,7 @@ export default {
 
       // if (this.keypoint.tag == index + 1) return "#4b624c";
       let activeIndex = this.keypoint.next.label;
-      if (activeIndex == -1) {
+      if (this.activeTool === "Select") {
         activeIndex = this.keypoint.tag;
       }
       if (this.isCurrent && activeIndex == index + 1) return "rgb(30, 86, 36)";
@@ -856,9 +857,8 @@ export default {
     "keypoint.tag"(newVal) {
       let id = newVal.length === 0 ? -1 : newVal[0];
       if (id !== -1) {
-        this.currentKeypoint = this.keypoints._keypoints[id - 1];
+        this.currentKeypoint = this.keypoints._labelled[id];
       }
-      this.keypoints.setKeypointIndex(this.currentKeypoint, id);
       this.tagRecomputeCounter++;
     },
     "keypoint.visibility"(newVal) {
