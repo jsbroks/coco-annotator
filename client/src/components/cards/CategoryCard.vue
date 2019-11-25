@@ -137,7 +137,8 @@ export default {
         edges: [...this.category.keypoint_edges],
         colors: [...this.category.keypoint_colors],
       },
-      name: this.category.name
+      name: this.category.name,
+      isMounted: false,
     };
   },
   props: {
@@ -149,6 +150,7 @@ export default {
   computed: {
     isFormValid() {
       return (
+        this.isMounted &&
         this.name.length !== 0 &&
         this.$refs &&
         this.$refs.keypoints &&
@@ -214,6 +216,7 @@ export default {
   mounted() {
     $(this.$refs.category_settings).on(
       "hidden.bs.modal", this.resetCategorySettings);
+    this.isMounted = true;
   }
 };
 </script>
