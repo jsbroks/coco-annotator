@@ -16,6 +16,8 @@ export class Keypoints extends paper.Group {
       this.colors[String(i+1)] = colors[i];
     }
 
+    this.annotationId = args.annotationId;
+    this.categoryName = args.categoryName;
     this.strokeColor = args.strokeColor || "red";
     this.lineWidth = args.strokeWidth || 4;
 
@@ -381,6 +383,10 @@ export class Keypoint extends paper.Point {
     this.path.keypoints = this.keypoints;
 
     this.updateFillColor();
+  }
+
+  getVisibilityDescription() {
+    return VisibilityOptions[this.visibility];
   }
 
   set visible(val) {

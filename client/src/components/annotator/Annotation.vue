@@ -372,7 +372,11 @@ export default {
         if (this.activeTool !== "Select") return;
         $(`#annotationSettings${this.annotation.id}`).modal("show");
       };
-      this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels, this.keypointColors);
+      this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels,
+        this.keypointColors, {
+          annotationId: this.annotation.id,
+          categoryName: this.$parent.category.name,
+        });
       this.keypoints.radius = this.scale * 6;
       this.keypoints.lineWidth = this.scale * 2;
 
