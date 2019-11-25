@@ -66,6 +66,41 @@
 <script>
 import TagsInput from "@/components/TagsInput";
 
+const DISTINCT_COLORS = [
+  "#bf5c4d",
+  "#d99100",
+  "#4d8068",
+  "#0d2b80",
+  "#9c73bf",
+  "#ff1a38",
+  "#bf3300",
+  "#736322",
+  "#33fff1",
+  "#3369ff",
+  "#9d13bf",
+  "#733941",
+  "#ffb499",
+  "#d0d957",
+  "#0b5e73",
+  "#0000ff",
+  "#730b5e",
+  "#ff8533",
+  "#518c0e",
+  "#82c7d9",
+  "#0000d9",
+  "#ff1ab3",
+  "#733c17",
+  "#7cff4d",
+  "#1ab3ff",
+  "#0000cc",
+  "#cc0052",
+  "#cc9c66",
+  "#8ae6a2",
+  "#335280",
+  "#0000bf",
+  "#e673a1"
+];
+
 export default {
   name: "KeypointsDefinition",
   components: { TagsInput },
@@ -108,7 +143,8 @@ export default {
     return {
       keypoints: [],
       hiddenValue: { edges: [], labels: [], colors: [] },
-      isMounted: false
+      isMounted: false,
+      nextDistinct: -1,
     };
   },
   created() {
@@ -144,7 +180,7 @@ export default {
         label: "",
         label_error: "",
         edges: [],
-        color: null
+        color: this.nextDistinctColor(),
       });
     },
     keypointsFromProp() {
@@ -299,6 +335,9 @@ export default {
     },
     clearKeypoints() {
       this.keypoints.splice(0, this.keypoints.length);
+    },
+    nextDistinctColor() {
+      return DISTINCT_COLORS[++this.nextDistinct];
     }
   },
   watch: {
