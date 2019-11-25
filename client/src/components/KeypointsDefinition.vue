@@ -285,6 +285,9 @@ export default {
             kp_edges.add(current_kp.label);
             kp.edges = [...kp_edges];
           }
+          if (kp.edges.length === 0 && kp.label.length === 0 && kp.label_error) {
+            kp.label_error = "";
+          }
         }
       });
 
