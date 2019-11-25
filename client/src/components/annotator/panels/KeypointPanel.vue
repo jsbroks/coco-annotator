@@ -33,7 +33,7 @@ export default {
     return {
       visibility: 2,
       label: -1,
-      visibilityOptions: VisibilityLabels,
+      visibilityOptions: VisibilityOptions,
     };
   },
   computed: {

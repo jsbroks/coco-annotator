@@ -337,7 +337,7 @@ export default {
         milliseconds: 0
       },
       tagRecomputeCounter: 0,
-      visOptionsyOptions: VisibilityLabels,
+      visibilityOptions: VisibilityOptions,
     };
   },
   methods: {
