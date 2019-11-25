@@ -66,22 +66,16 @@
           class="list-group-item text-left keypoint-item">
         <div>
           <template v-if="kp.visibility === 2">
-            <i 
-            class="fa fa-map-marker keypoint-icon"
-            :style="{ color: kp.visibility !== 0 ? 'lightgray': 'gray' }"
-          />
+            <i class="fa fa-map-marker keypoint-icon"
+              :style="{ color: 'lightgray'}"
+              />
           </template>
           <template v-else-if="kp.visibility === 1">
-            <span class="fa-stack" :style="{ color: kp.visibility !== 0 ? 'lightgray': 'gray'}">
-              <i class="fa fa-circle fa-stack-1x keypoint-icon" :style="{'color': 'black'}"></i>
-              <i class="fa fa-map-marker fa-stack-1x keypoint-icon"></i>
-            </span>
+            <i class="fa fa-map-marker keypoint-icon"
+              :style="{ color: 'black'}"
+              />
           </template>
-           <template v-else>
-              <!-- <span class="fa-stack" :style="{ color: kp.visibility !== 0 ? 'lightgray': 'gray'}">
-                <i class="fa fa-ban fa-stack-1x keypoint-icon" :style="{'color': 'black'}"></i>
-                <i class="fa fa-map-marker fa-stack-1x keypoint-icon"></i>
-              </span> -->
+          <template v-else>
             <i 
             class="fa fa-map-marker keypoint-icon"
             :style="{ color: '#777'}"/>
