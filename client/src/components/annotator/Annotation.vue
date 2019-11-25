@@ -65,21 +65,9 @@
           :style="{'background-color': kp.backgroundColor}"
           class="list-group-item text-left keypoint-item">
         <div>
-          <template v-if="kp.visibility === 2">
-            <i class="fa fa-map-marker keypoint-icon"
-              :style="{ color: 'lightgray'}"
+          <i class="fa fa-map-marker keypoint-icon"
+              :style="{ color: kp.iconColor}"
               />
-          </template>
-          <template v-else-if="kp.visibility === 1">
-            <i class="fa fa-map-marker keypoint-icon"
-              :style="{ color: 'black'}"
-              />
-          </template>
-          <template v-else>
-            <i 
-            class="fa fa-map-marker keypoint-icon"
-            :style="{ color: '#777'}"/>
-          </template>
         </div>
         <a
           @click="onAnnotationKeypointClick(index)"
@@ -888,9 +876,17 @@ export default {
     keypointListView() {
       let listView = [];
       for (let i=0; i < this.keypointLabels.length; ++i) {
+        let visibility = this.getKeypointVisibility(i);
+        let iconColor = 'rgb(40, 42, 49)';
+        if (visibility == 1) {
+          iconColor = 'lightgray';
+        } else if (visibility == 2) {
+          iconColor = this.keypointColors[i];
+        }
         listView.push({
           label: this.keypointLabels[i],
-          visibility: this.getKeypointVisibility(i),
+          visibility,
+          iconColor,
           backgroundColor: this.getKeypointBackgroundColor(i),
         });
       }
