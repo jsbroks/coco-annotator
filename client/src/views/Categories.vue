@@ -202,6 +202,7 @@ export default {
       newCategoryKeypoint: {
         labels: [],
         edges: [],
+        colors: []
       },
       categories: [],
       status: {
@@ -247,13 +248,15 @@ export default {
         name: this.newCategoryName,
         supercategory: this.newCategorySupercategory,
         color: this.newCategoryColor,
-        keypoint_labels: this.newCategoryKeypointLabels,
+        keypoint_labels: this.newCategoryKeypoint.labels,
+        keypoint_edges: this.newCategoryKeypoint.edges,
+        keypoint_colors: this.newCategoryKeypoint.colors,
       })
         .then(() => {
           this.newCategoryName = "";
           this.newCategorySupercategory = "";
           this.newCategoryColor = null;
-          this.newCategoryKeypointLabels = [];
+          this.newCategoryKeypoint = {};
           this.updatePage();
         })
         .catch(error => {
