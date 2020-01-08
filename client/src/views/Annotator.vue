@@ -139,6 +139,7 @@
             :hover="hover"
             :index="index"
             @click="onCategoryClick"
+            @keypoints-complete="onKeypointsComplete"
             :current="current"
             :active-tool="activeTool"
             :scale="image.scale"
@@ -322,11 +323,13 @@ export default {
       },
       current: {
         category: -1,
-        annotation: -1
+        annotation: -1,
+        keypoint: -1,
       },
       hover: {
         category: -1,
-        annotation: -1
+        annotation: -1,
+        keypoint: -1,
       },
       image: {
         raster: {},
@@ -620,6 +623,31 @@ export default {
     onCategoryClick(indices) {
       this.current.annotation = indices.annotation;
       this.current.category = indices.category;
+      if (!indices.hasOwnProperty('keypoint')) {
+        indices.keypoint = -1;
+      }
+      if (indices.keypoint !== -1) {
+        this.current.keypoint = indices.keypoint;
+        let ann = this.currentCategory.category.annotations[this.current.annotation];
+        let kpTool = this.$refs.keypoint;
+        let category = this.$refs.category[this.current.category];
+        let annotation = category.$refs.annotation[this.current.annotation];
+        let keypoints = annotation.keypoints;
+        if (keypoints._labelled[indices.keypoint + 1]) {
+          let indexLabel = String(this.current.keypoint + 1);
+          let keypoint = keypoints._labelled[indexLabel];
+          keypoint.selected = true;
+        } else {
+          this.currentAnnotation.keypoint.next.label = String(indices.keypoint + 1);
+          this.activeTool = kpTool;
+          this.activeTool.click();
+        }
+      }
+    },
+    onKeypointsComplete() {
+      this.currentAnnotation.keypoint.next.label = -1;
+      this.activeTool = this.$refs.select;
+      this.activeTool.click();
     },
     getCategory(index) {
       if (index == null) return null;
@@ -890,6 +918,15 @@ export default {
         }
       }
     },
+    "current.keypoint"(sk) {
+      if (sk < -1) this.current.keypoint = -1;
+      if (this.currentCategory != null) {
+        let max = this.currentAnnotationLength;
+        if (sk > max) {
+          this.current.keypoint = -1;
+        }
+      }
+    },
     annotating() {
       this.removeFromAnnotatingList();
     },
@@ -905,6 +942,10 @@ export default {
       if (this.currentCategory == null) return null;
       return this.currentCategory.category.annotations.length;
     },
+    currentKeypointLength() {
+      if (this.currentAnnotation == null) return null;
+      return this.currentAnnotation.annotation.keypoints.length;
+    },
     currentCategory() {
       return this.getCategory(this.current.category);
     },
@@ -913,6 +954,16 @@ export default {
         return null;
       }
       return this.currentCategory.getAnnotation(this.current.annotation);
+    },
+    currentKeypoint() {
+      if (this.currentCategory == null) {
+        return null;
+      }
+      if (this.currentAnnotation == null) {
+        return null;
+      }
+      let ann = this.currentCategory.getAnnotation(this.current.annotation);
+      return ann.getKeypoint(this.current.keypoint);
     },
     user() {
       return this.$store.getters["user/user"];

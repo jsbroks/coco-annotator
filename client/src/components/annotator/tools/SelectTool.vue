@@ -65,14 +65,19 @@ export default {
       let string = " ";
       if (this.keypoint) {
         let index = this.keypoint.keypoint.indexLabel;
+        let label = this.keypoint.keypoints.labels[index - 1];
         let visibility = this.keypoint.keypoint.visibility;
-
-        string += "Keypoint \n";
-        string += "Visibility: " + visibility + " \n";
-        string +=
-          index == -1
-            ? "No Label \n"
-            : "Label: " + this.keypoint.keypoints.labels[index - 1] + " \n";
+        let visibilityDesc = this.keypoint.keypoint.getVisibilityDescription();
+        let annotationId = this.keypoint.keypoints.annotationId;
+        let categoryName = this.keypoint.keypoints.categoryName;
+        string += "Keypoint: " + label + " \n";
+        string += "Visibility: " + visibility + " (" + visibilityDesc + ") \n";
+        if (annotationId !== -1) {
+          string += "ID: " + annotationId + " \n";
+        }
+        if (categoryName) {
+          string += "Category: " + categoryName + " \n";
+        }
         return string.replace(/\n/g, " \n ").slice(0, -2);
       }
 
@@ -164,7 +169,7 @@ export default {
       this.hover.text.bringToFront();
     },
     checkBbox(paperObject) {
-      if(!paperObject) return false;
+      if (!paperObject) return false;
       let annotationId = paperObject.data.annotationId;
       let categoryId = paperObject.data.categoryId;
       let category = this.$parent.getCategory(categoryId);
@@ -193,7 +198,7 @@ export default {
       } else if (hitResult.type === "stroke") {
         let location = hitResult.location;
         this.segment = path.insert(location.index + 1, event.point);
-      } else if (event.item.className == "CompoundPath"){
+      } else if (event.item.className == "CompoundPath") {
         this.initPoint = event.point;
         this.moveObject = event.item;
         paperObject = event.item;
@@ -229,11 +234,11 @@ export default {
       this.point.indicator = true;
     },
     onMouseDrag(event) {
-      if(this.isBbox && this.moveObject){
+      if (this.isBbox && this.moveObject) {
         let delta_x = this.initPoint.x - event.point.x;
         let delta_y = this.initPoint.y - event.point.y;
         let segments = this.moveObject.children[0].segments;
-        segments.forEach( segment => {
+        segments.forEach(segment => {
           let p = segment.point;
           segment.point = new paper.Point(p.x - delta_x, p.y - delta_y);
         });
@@ -241,24 +246,26 @@ export default {
       }
       if (this.segment && this.edit.canMove) {
         this.createPoint(event.point);
-        if(this.isBbox){
+        if (this.isBbox) {
           //counter clockwise prev and next.
-          let isCounterClock = this.segment.previous.point.x == this.segment.point.x;
+          let isCounterClock =
+            this.segment.previous.point.x == this.segment.point.x;
           let prev = isCounterClock ? this.segment.previous : this.segment.next;
-          let next = !isCounterClock ? this.segment.previous : this.segment.next;
-          
+          let next = !isCounterClock
+            ? this.segment.previous
+            : this.segment.next;
+
           prev.point = new paper.Point(event.point.x, prev.point.y);
-          next.point = new paper.Point(next.point.x, event.point.y); 
-        }//getbbox here somehow
+          next.point = new paper.Point(next.point.x, event.point.y);
+        } //getbbox here somehow
         this.segment.point = event.point;
-        
       }
     },
 
-    onMouseUp(event){
+    onMouseUp(event) {
       this.clear();
     },
-    
+
     onMouseMove(event) {
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,
@@ -294,9 +301,9 @@ export default {
       this.keypoint = null;
 
       if (
-        event.item &&
-        event.item.data.hasOwnProperty("annotationId") &&
-        event.item.data.hasOwnProperty("categoryId")
+        item &&
+        item.data.hasOwnProperty("annotationId") &&
+        item.data.hasOwnProperty("categoryId")
       ) {
         this.hover.position = event.point;
 
@@ -307,13 +314,30 @@ export default {
 
         this.hover.category = this.$parent.getCategory(categoryId);
         if (this.hover.category != null) {
-          this.hover.annotation = this.hover.category.getAnnotation(annotationId);
+          this.hover.annotation = this.hover.category.getAnnotation(
+            annotationId
+          );
           event.item.selected = true;
           this.hoverText();
         }
       } else if (event.item && event.item.hasOwnProperty("keypoint")) {
         this.hover.position = event.point;
         this.keypoint = item;
+      } else if (
+        item &&
+        item.lastChild &&
+        item.lastChild.hasOwnProperty("keypoint")
+      ) {
+        this.hover.position = event.point;
+        for (let i = 0; i < item.children.length; ++i) {
+          if (item.children[i].hasOwnProperty("keypoint")) {
+            let keypoint = item.children[i].keypoint;
+            if (event.point.getDistance(keypoint) <= keypoint.radius) {
+              this.keypoint = item.children[i];
+              break;
+            }
+          }
+        }
       } else {
         this.clear();
       }

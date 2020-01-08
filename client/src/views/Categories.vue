@@ -76,12 +76,38 @@
           <div class="modal-body">
             <form>
               <div class="form-group">
-                <label>Category Name</label>
+                <label>Name:</label>
                 <input
-                  v-model="createName"
+                  v-model="newCategoryName"
                   class="form-control"
-                  placeholder="Category name"
+                  :class="{'is-invalid': newCategoryName.trim().length === 0}"
+                  required="true"
+                  placeholder="Name"
                 />
+              </div>
+
+              <div class="form-group">
+                <label>Supercategory:</label>
+                <input
+                  v-model="newCategorySupercategory"
+                  class="form-control"
+                  placeholder="Supercategory"
+                />
+              </div>
+
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Color:</label>
+                <div class="col-sm-9">
+                  <input v-model="newCategoryColor" type="color" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <KeypointsDefinition ref="keypoints"
+                  v-model="newCategoryKeypoint"
+                  element-id="keypoints"
+                  placeholder="Add a keypoint"
+                ></KeypointsDefinition>
               </div>
             </form>
           </div>
@@ -89,6 +115,8 @@
             <button
               type="button"
               class="btn btn-primary"
+              :disabled="!isFormValid"
+              :class="{disabled: !isFormValid}"
               @click="createCategory"
             >
               Create Category
@@ -153,12 +181,13 @@ import toastrs from "@/mixins/toastrs";
 import Category from "@/models/categories";
 import CategoryCard from "@/components/cards/CategoryCard";
 import Pagination from "@/components/Pagination";
+import KeypointsDefinition from "@/components/KeypointsDefinition";
 
 import { mapMutations } from "vuex";
 
 export default {
   name: "Categories",
-  components: { CategoryCard, Pagination },
+  components: { CategoryCard, Pagination, KeypointsDefinition },
   mixins: [toastrs],
   data() {
     return {
@@ -167,12 +196,28 @@ export default {
       page: 1,
       limit: 50,
       range: 11,
-      createName: "",
+      newCategoryName: "",
+      newCategorySupercategory: "",
+      newCategoryColor: null,
+      newCategoryKeypoint: {
+        labels: [],
+        edges: [],
+      },
       categories: [],
       status: {
         data: { state: true, message: "Loading categories" }
       }
     };
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.newCategoryName.length !== 0 &&
+        this.$refs &&
+        this.$refs.keypoints &&
+        this.$refs.keypoints.valid
+      );
+    }
   },
   methods: {
     ...mapMutations(["addProcess", "removeProcess"]),
@@ -196,13 +241,19 @@ export default {
         .finally(() => this.removeProcess(process));
     },
     createCategory() {
-      if (this.createName.length < 1) return;
+      if (this.newCategoryName.length < 1) return;
 
       Category.create({
-        name: this.createName
+        name: this.newCategoryName,
+        supercategory: this.newCategorySupercategory,
+        color: this.newCategoryColor,
+        keypoint_labels: this.newCategoryKeypointLabels,
       })
         .then(() => {
-          this.createName = "";
+          this.newCategoryName = "";
+          this.newCategorySupercategory = "";
+          this.newCategoryColor = null;
+          this.newCategoryKeypointLabels = [];
           this.updatePage();
         })
         .catch(error => {
