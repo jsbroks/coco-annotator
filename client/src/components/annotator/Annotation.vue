@@ -793,6 +793,29 @@ export default {
       if (this.isCurrent) {
         this.session.tools.push(tool);
       }
+      if (tool === "Keypoints") {
+        if (!this.showKeypoints) {
+          this.showKeypoints = true;
+        }
+        var labelIndex = -1;
+        for(let i=0; i < this.keypointLabels.length; ++i) {
+          
+          if (this.isKeypointLabeled(i)) {
+            if (labelIndex < 0) {
+              labelIndex = i;
+            }
+          } else {
+            labelIndex = i;
+            break;
+          }
+        }
+
+        if (labelIndex > -1) {
+          this.keypoint.tag = [String(labelIndex+1)];
+          this.currentKeypoint = this.keypoints._labelled[this.keypoint.tag];
+          this.$emit("keypoint-click", labelIndex);
+        }
+      }
     },
     opacity(opacity) {
       this.compoundPath.opacity = opacity;
