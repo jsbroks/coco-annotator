@@ -677,107 +677,134 @@ export default {
     setCursor(newCursor) {
       this.cursor = newCursor;
     },
-    moveUp() {
-      if (this.current.category < 0) {
-        this.current.category = this.categories.length - 1;
-        return;
+    incrementCategory() {
+      if (this.current.category >= this.categories.length - 1) {
+        this.current.category = -1;
+      } else {
+        this.current.category += 1;
       }
-
-      if (this.currentCategory != null) {
-        if (this.currentAnnotation != null) {
-          // If at start of annotations, go to pervious category
-          if (this.current.annotation === 0) {
-            this.current.category -= 1;
-            // Check if category is open so we can go to the bottom annotation
-            if (
-              this.currentCategory != null &&
-              this.currentCategory.showAnnotations
-            ) {
-              this.current.annotation = this.currentAnnotationLength - 1;
-            }
-          } else {
-            // otherwise go to pervious annotation
-            this.current.annotation -= 1;
-          }
-        } else {
-          // When the new annotation is added, the currentAnnotation
-          // is null since the annotations are not instantly loaded in
-          if (
-            this.current.annotation !== -1 &&
-            this.current.annotation < this.currentAnnotationLength
-          ) {
-            this.current.annotation -= 1;
-          } else {
-            this.current.category -= 1;
-
-            // Check if category is open so we can go to the bottom annotation
-            if (
-              this.currentCategory != null &&
-              this.currentCategory.showAnnotations
-            ) {
-              this.current.annotation = this.currentAnnotationLength - 1;
-            }
-          }
+    },
+    decrementCategory() {
+      if (this.current.category === -1) {
+        this.current.category = this.categories.length - 1;
+        let annotationCount = this.currentCategory.category.annotations.length;
+        if (annotationCount > 0) {
+          this.current.annotation = annotationCount - 1;
         }
       } else {
         this.current.category -= 1;
       }
     },
-    moveDown() {
-      if (this.currentCategory == null) {
-        this.current.category = 0;
-        return;
+    incrementAnnotation() {
+      let annotationCount = this.currentCategory.category.annotations.length;
+      if (this.current.annotation === annotationCount - 1) {
+        this.incrementCategory();
+        this.current.annotation = -1;
+      } else {
+        this.current.annotation += 1;
       }
-
+    },
+    decrementAnnotation() {
+      let annotationCount = this.currentCategory.category.annotations.length;
+      if (this.current.annotation === -1) {
+        this.current.annotation = annotationCount - 1;
+      } else if (this.current.annotation === 0) {
+        this.decrementCategory();
+      } else {
+        this.current.annotation -= 1;
+      }
+    },
+    incrementKeypoint() {
+      let keypointCount = this.currentAnnotation.keypointLabels.length;
+      if (this.current.keypoint === keypointCount - 1) {
+        this.incrementAnnotation();
+        this.current.keypoint = -1;
+      } else {
+        this.current.keypoint += 1;
+      }
+      if (this.currentKeypoint != null) {
+        this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
+      }
+    },
+    decrementKeypoint() {
+      if (this.current.keypoint === 0) {
+        this.decrementAnnotation();
+        this.current.keypoint = -1;
+      } else {
+        this.current.keypoint -= 1;
+      }
+      if (this.currentKeypoint != null) {
+        this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
+      }
+    },
+    moveUp() {
       if (this.currentCategory != null) {
-        let numOfAnnotaitons = this.currentCategory.category.annotations.length;
-
         if (this.currentAnnotation != null) {
-          // If at end of annotations, go to next category
-          if (numOfAnnotaitons - 1 === this.current.annotation) {
-            this.current.annotation = -1;
-            this.current.category += 1;
-
-            if (
-              this.currentCategory != null &&
-              this.currentCategory.showAnnotations
-            ) {
-              this.current.annotation = 0;
-            }
+          if (this.currentKeypoint != null) {
+            this.decrementKeypoint();
           } else {
-            // otherwise go to next annotation
-            this.current.annotation += 1;
+            this.decrementAnnotation();
           }
+        } else if (this.current.annotation == -1) {
+          this.decrementAnnotation();
         } else {
-          // If at a category which has annotations showing, go through annotations
-          this.current.category += 1;
-          if (
-            this.currentCategory != null &&
-            this.currentCategory.showAnnotations
-          ) {
-            this.current.annotation = 0;
-          }
+          this.decrementCategory();
         }
       } else {
-        this.current.category += 1;
+        this.decrementCategory();
+      }
+    },
+    moveDown() {
+      if (this.currentCategory != null) {
+        if (this.currentAnnotation != null) {
+          if (this.currentKeypoint != null) {
+            this.incrementKeypoint();
+          } else {
+            this.incrementAnnotation();
+          }
+        } else if (this.current.annotation == -1) {
+          this.incrementAnnotation();
+        } else {
+          this.incrementCategory();
+        }
+      } else {
+        this.incrementCategory();
       }
     },
     stepIn() {
       if (this.currentCategory != null) {
         if (!this.currentCategory.isVisible) {
           this.currentCategory.isVisible = true;
+          this.current.annotation = 0;
+          this.currentAnnotation.showKeypoints = false;
+          this.current.keypoint = 0;
         } else if (
           !this.currentCategory.showAnnotations &&
           this.currentAnnotationLength > 0
         ) {
           this.currentCategory.showAnnotations = true;
           this.current.annotation = 0;
+          this.currentAnnotation.showKeypoints = false;
+          this.current.keypoint = 0;
+        } else if (
+          !this.currentAnnotation.showKeypoints &&
+          this.currentAnnotation.keypointLabels.length > 0
+        ) {
+          this.currentAnnotation.showKeypoints = true;
+          this.current.keypoint = 0;
+          this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
         }
       }
     },
     stepOut() {
       if (this.currentCategory != null) {
-        if (this.currentCategory.showAnnotations) {
+        if (
+          this.currentAnnotation != null &&
+          this.currentAnnotation.showKeypoints
+        ) {
+          this.currentAnnotation.showKeypoints = false;
+          this.current.keypoint = -1;
+        } else if (this.currentCategory.showAnnotations) {
           this.currentCategory.showAnnotations = false;
           this.current.annotation = -1;
         } else if (this.currentCategory.isVisible) {
@@ -959,11 +986,19 @@ export default {
       if (this.currentCategory == null) {
         return null;
       }
-      if (this.currentAnnotation == null) {
+      if (this.currentAnnotation == null 
+      || this.currentAnnotation.keypointLabels.length === 0 
+      || !this.currentAnnotation.showKeypoints)
+      {
         return null;
       }
-      let ann = this.currentCategory.getAnnotation(this.current.annotation);
-      return ann.getKeypoint(this.current.keypoint);
+      if (this.current.keypoint == -1) {
+        return null;
+      }
+      return {
+        label: [String(this.current.keypoint + 1)],
+        visibility: this.currentAnnotation.getKeypointVisibility(this.current.keypoint)
+      };
     },
     user() {
       return this.$store.getters["user/user"];
