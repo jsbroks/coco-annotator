@@ -957,30 +957,6 @@ export default {
 
       return tags;
     },
-    // usedKeypointLabels() {
-    //   this.tagRecomputeCounter;
-    //   let tags = {};
-
-    //   for (let i = 0; i < this.keypointLabels.length; i++) {
-    //     if (!this.keypoints || this.keypoints._labelled[i + 1]) {
-    //       tags[i + 1] = this.keypointLabels[i];
-    //     }
-    //   }
-
-    //   return tags;
-    // },
-    // keypointLabelTags() {
-    //   this.tagRecomputeCounter;
-    //   let tags = this.notUsedKeypointLabels;
-
-    //   Object.keys(this.usedKeypointLabels).forEach(i => {
-    //     if (this.currentKeypoint && i == this.currentKeypoint.indexLabel) {
-    //       tags[i] = this.usedKeypointLabels[i];
-    //     }
-    //   });
-
-    //   return tags;
-    // }
   },
   sockets: {
     annotation(data) {
