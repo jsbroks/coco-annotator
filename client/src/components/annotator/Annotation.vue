@@ -544,7 +544,7 @@ export default {
       this.compoundPath.addChildren(newChildren);
 
       this.compoundPath.fullySelected = this.isCurrent;
-
+      this.keypoints.bringToFront();
       this.emitModify();
     },
     undoCompound() {
@@ -895,7 +895,7 @@ export default {
     },
     isCurrent() {
       if (this.index === this.current && this.$parent.isCurrent) {
-        if (this.compoundPath != null) this.compoundPath.bringToFront();
+        // if (this.compoundPath != null) this.compoundPath.bringToFront();
         if (this.keypoints != null) this.keypoints.bringToFront();
         return true;
       }

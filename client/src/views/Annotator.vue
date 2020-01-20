@@ -630,13 +630,17 @@ export default {
         this.current.keypoint = indices.keypoint;
         let ann = this.currentCategory.category.annotations[this.current.annotation];
         let kpTool = this.$refs.keypoint;
+        let selectTool = this.$refs.select;
         let category = this.$refs.category[this.current.category];
         let annotation = category.$refs.annotation[this.current.annotation];
+        annotation.showKeypoints = true;
         let keypoints = annotation.keypoints;
         if (keypoints._labelled[indices.keypoint + 1]) {
           let indexLabel = String(this.current.keypoint + 1);
           let keypoint = keypoints._labelled[indexLabel];
           keypoint.selected = true;
+          this.activeTool = selectTool;
+          this.activeTool.click();
         } else {
           this.currentAnnotation.keypoint.next.label = String(indices.keypoint + 1);
           this.activeTool = kpTool;
@@ -682,6 +686,9 @@ export default {
         this.current.category = -1;
       } else {
         this.current.category += 1;
+        if (this.currentKeypoint) {
+          this.currentAnnotation.onAnnotationKeypointClick(this.current.keypoint);
+        }
       }
     },
     decrementCategory() {
@@ -702,6 +709,12 @@ export default {
         this.current.annotation = -1;
       } else {
         this.current.annotation += 1;
+        if (this.currentAnnotation != null && this.currentAnnotation.showKeypoints) {
+          this.current.keypoint = 0;
+          this.currentAnnotation.onAnnotationKeypointClick(this.current.keypoint);
+        } else {
+          this.current.keypoint = -1;
+        }
       }
     },
     decrementAnnotation() {
@@ -712,35 +725,43 @@ export default {
         this.decrementCategory();
       } else {
         this.current.annotation -= 1;
+        if (this.currentAnnotation != null && this.currentAnnotation.showKeypoints) {
+          this.current.keypoint = this.currentAnnotation.keypointLabels.length - 1;
+          this.currentAnnotation.onAnnotationKeypointClick(this.current.keypoint);
+        } else {
+          this.current.keypoint = -1;
+        }
       }
     },
     incrementKeypoint() {
       let keypointCount = this.currentAnnotation.keypointLabels.length;
       if (this.current.keypoint === keypointCount - 1) {
         this.incrementAnnotation();
-        this.current.keypoint = -1;
       } else {
         this.current.keypoint += 1;
       }
       if (this.currentKeypoint != null) {
-        this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
+        this.currentAnnotation.onAnnotationKeypointClick(this.current.keypoint);
+        // this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
       }
     },
     decrementKeypoint() {
       if (this.current.keypoint === 0) {
         this.decrementAnnotation();
-        this.current.keypoint = -1;
       } else {
         this.current.keypoint -= 1;
       }
       if (this.currentKeypoint != null) {
-        this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
+        this.currentAnnotation.onAnnotationKeypointClick(this.current.keypoint);
+        // this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
       }
     },
     moveUp() {
       if (this.currentCategory != null) {
         if (this.currentAnnotation != null) {
           if (this.currentKeypoint != null) {
+            this.decrementKeypoint();
+          } else if (this.currentAnnotation.showKeypoints && this.current.keypoint == -1) {
             this.decrementKeypoint();
           } else {
             this.decrementAnnotation();
@@ -758,6 +779,8 @@ export default {
       if (this.currentCategory != null) {
         if (this.currentAnnotation != null) {
           if (this.currentKeypoint != null) {
+            this.incrementKeypoint();
+          } else if (this.currentAnnotation.showKeypoints && this.current.keypoint == -1) {
             this.incrementKeypoint();
           } else {
             this.incrementAnnotation();
@@ -777,7 +800,7 @@ export default {
           this.currentCategory.isVisible = true;
           this.current.annotation = 0;
           this.currentAnnotation.showKeypoints = false;
-          this.current.keypoint = 0;
+          this.current.keypoint = -1;
         } else if (
           !this.currentCategory.showAnnotations &&
           this.currentAnnotationLength > 0
@@ -785,14 +808,14 @@ export default {
           this.currentCategory.showAnnotations = true;
           this.current.annotation = 0;
           this.currentAnnotation.showKeypoints = false;
-          this.current.keypoint = 0;
+          this.current.keypoint = -1;
         } else if (
           !this.currentAnnotation.showKeypoints &&
           this.currentAnnotation.keypointLabels.length > 0
         ) {
           this.currentAnnotation.showKeypoints = true;
           this.current.keypoint = 0;
-          this.currentAnnotation.$emit("keypoint-click", this.current.keypoint);
+          this.currentAnnotation.onAnnotationKeypointClick(this.current.keypoint);
         }
       }
     },
