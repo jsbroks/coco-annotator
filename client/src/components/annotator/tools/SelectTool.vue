@@ -260,7 +260,7 @@ export default {
         } //getbbox here somehow
         this.segment.point = event.point;
       }
-      else {
+      else if (!this.keypoint) {
         // the event point exists on a relative coordinate system (dependent on screen dimensions) 
         // however, the image on the canvas paper exists on an absolute coordinate system
         // thus, tracking mouse deltas from the previous point is necessary

@@ -544,7 +544,7 @@ export default {
       this.compoundPath.addChildren(newChildren);
 
       this.compoundPath.fullySelected = this.isCurrent;
-
+      this.keypoints.bringToFront();
       this.emitModify();
     },
     undoCompound() {
@@ -792,6 +792,30 @@ export default {
     activeTool(tool) {
       if (this.isCurrent) {
         this.session.tools.push(tool);
+      
+        if (tool === "Keypoints") {
+          if (!this.showKeypoints) {
+            this.showKeypoints = true;
+          }
+          var labelIndex = -1;
+          for(let i=0; i < this.keypointLabels.length; ++i) {
+            
+            if (this.isKeypointLabeled(i)) {
+              if (labelIndex < 0) {
+                labelIndex = i;
+              }
+            } else {
+              labelIndex = i;
+              break;
+            }
+          }
+
+          if (labelIndex > -1) {
+            this.keypoint.tag = [String(labelIndex+1)];
+            this.currentKeypoint = this.keypoints._labelled[this.keypoint.tag];
+            this.$emit("keypoint-click", labelIndex);
+          }
+        }
       }
     },
     opacity(opacity) {
@@ -871,7 +895,7 @@ export default {
     },
     isCurrent() {
       if (this.index === this.current && this.$parent.isCurrent) {
-        if (this.compoundPath != null) this.compoundPath.bringToFront();
+        // if (this.compoundPath != null) this.compoundPath.bringToFront();
         if (this.keypoints != null) this.keypoints.bringToFront();
         return true;
       }
@@ -933,30 +957,6 @@ export default {
 
       return tags;
     },
-    // usedKeypointLabels() {
-    //   this.tagRecomputeCounter;
-    //   let tags = {};
-
-    //   for (let i = 0; i < this.keypointLabels.length; i++) {
-    //     if (!this.keypoints || this.keypoints._labelled[i + 1]) {
-    //       tags[i + 1] = this.keypointLabels[i];
-    //     }
-    //   }
-
-    //   return tags;
-    // },
-    // keypointLabelTags() {
-    //   this.tagRecomputeCounter;
-    //   let tags = this.notUsedKeypointLabels;
-
-    //   Object.keys(this.usedKeypointLabels).forEach(i => {
-    //     if (this.currentKeypoint && i == this.currentKeypoint.indexLabel) {
-    //       tags[i] = this.usedKeypointLabels[i];
-    //     }
-    //   });
-
-    //   return tags;
-    // }
   },
   sockets: {
     annotation(data) {
