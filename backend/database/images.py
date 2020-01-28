@@ -21,9 +21,6 @@ class ImageModel(DynamicDocument):
     # Set maximum thumbnail size (h x w) to use on dataset page
     MAX_THUMBNAIL_DIM = (1024, 1024)
 
-    # Set maximum thumbnail size (h x w) to use on dataset page
-    MAX_THUMBNAIL_DIM = (1024, 1024)
-
     # -- Private
     _dataset = None
 
