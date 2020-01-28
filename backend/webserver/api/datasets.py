@@ -3,6 +3,7 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from mongoengine.errors import NotUniqueError
+from mongoengine.queryset.visitor import Q
 from threading import Thread
 
 from google_images_download import google_images_download as gid
@@ -369,9 +370,56 @@ class DatasetDataId(Resource):
             
             if len(lower) != 0:
                 query[key] = value
-        
+
+        # Change category_ids__in to list
+        if 'category_ids__in' in query.keys():
+            query['category_ids__in'] = [int(x) for x in query['category_ids__in'].split(',')]
+
+        # Initialize mongo query with required elements:
+        query_build = Q(dataset_id=dataset_id)
+        query_build &= Q(path__startswith=directory)
+        query_build &= Q(deleted=False)
+
+        # Define query names that should use complex logic:
+        complex_query = ['annotated', 'category_ids__in']
+
+        # Add additional 'and' arguments to mongo query that do not require complex_query logic
+        for key in query.keys():
+            if key not in complex_query:
+                query_dict = {}
+                query_dict[key] = query[key]
+                query_build &= Q(**query_dict)
+
+        # Add additional arguments to mongo query that require more complex logic to construct
+        if 'annotated' in query.keys():
+
+            if 'category_ids__in' in query.keys() and query['annotated']:
+
+                # Only show annotated images with selected category_ids
+                query_dict = {}
+                query_dict['category_ids__in'] = query['category_ids__in']
+                query_build &= Q(**query_dict)
+
+            else:
+
+                # Only show non-annotated images
+                query_dict = {}
+                query_dict['annotated'] = query['annotated']
+                query_build &= Q(**query_dict)
+
+        elif 'category_ids__in' in query.keys():
+
+            # Ahow annotated images with selected category_ids or non-annotated images
+            query_dict_1 = {}
+            query_dict_1['category_ids__in'] = query['category_ids__in']
+
+            query_dict_2 = {}
+            query_dict_2['annotated'] = False
+            query_build &= (Q(**query_dict_1) | Q(**query_dict_2))
+
+        # Perform mongodb query
         images = current_user.images \
-            .filter(dataset_id=dataset_id, path__startswith=directory, deleted=False, **query) \
+            .filter(query_build) \
             .order_by(order).only('id', 'file_name', 'annotating', 'annotated', 'num_annotations')
         
         total = images.count()

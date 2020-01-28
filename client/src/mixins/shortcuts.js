@@ -140,6 +140,12 @@ export default {
           function: this.$refs.bbox.deletePolygon
         },
         {
+          title: "Polygon Tool Shortcuts",
+          default: ["escape"],
+          name: "Remove Current Polygon",
+          function: this.$refs.polygon.deletePolygon
+        },
+        {
           title: "Eraser Tool Shortcuts",
           default: ["["],
           name: "Increase Radius",
