@@ -3,17 +3,17 @@ FROM node:10 as build-stage
 WORKDIR /workspace/
 COPY ./client /workspace/client
 
-RUN npm install -g --quiet \
+RUN yarn global add -g \
     @vue/cli@3.3.0 \
     @vue/cli-service@3.3.0
 
 COPY ./client/package* /workspace/
 
-RUN npm install
+RUN yarn install
 ENV NODE_PATH=/workspace/node_modules
 
 WORKDIR /workspace/client
-RUN npm run build
+RUN yarn run build
 
 FROM jsbroks/coco-annotator:python-env
 
