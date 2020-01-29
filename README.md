@@ -78,21 +78,8 @@ https://annotator.justinbrooks.ca/
 
 # Backers
 
-Thanks to the backers for making this project possible!
+Become a backer and help support the community.
 
-<p align="center">
-  <a href="http://robotics.uoguelph.ca/"><img src="http://robotics.uoguelph.ca/images/banner.jpg" width=200></a>
-</p>
-<p  align="center">
-  <a href="http://robotics.uoguelph.ca/">The Robotics Institute @ Guelph</a> (<a href="https://github.com/uoguelph-ri">GitHub</a>)
-</p>
-
-<p align="center">
-  <a href="https://intvo.com/"><img src="https://i.ibb.co/LrcMVzC/Intvo-resolution-dark.png" width=150></a>
-</p>
-<p  align="center">
-  <a href="https://intvo.com/">INTVO</a> (<a href="https://github.com/intvo">GitHub</a>)
-</p>
 
 # Built With
 
