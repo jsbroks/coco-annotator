@@ -304,6 +304,9 @@ export default {
         tagValues.push(category.name);
       });
       this.selectedCategories = tagValues;
+    },
+    createSelectedUsers() {
+      this.sharedUsers = this.dataset.users;
     }
   },
   computed: {
@@ -356,6 +359,7 @@ export default {
   },
   mounted() {
     this.createSelectedCategories();
+    this.createSelectedUsers();
   }
 };
 </script>
