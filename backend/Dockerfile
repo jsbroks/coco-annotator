@@ -1,5 +1,8 @@
 # Backend environment docker image
-FROM python:3.6
+FROM tensorflow/tensorflow:1.14.0-gpu-py3
+
+RUN apt-get update
+RUN apt-get install -y git
 
 WORKDIR /workspace/
 
@@ -12,14 +15,13 @@ RUN pip install -r requirements.txt && \
     pip install pycocotools
 
 # Install maskrcnn
-RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git /tmp/maskrcnn && \
-    cd /tmp/maskrcnn && \
-    pip install -r requirements.txt && \
-    python3 setup.py install
+RUN git clone --single-branch --depth 1 https://github.com/matterport/Mask_RCNN.git /tmp/maskrcnn
+#RUN cd /tmp/maskrcnn && pip install -r requirements.txt
+RUN cd /tmp/maskrcnn && python3 setup.py install
 
 # Install DEXTR
 RUN git clone --single --depth 1 https://github.com/jsbroks/dextr-keras.git /tmp/dextr && \
     cd /tmp/dextr && \
-    pip install -r requirements.txt && \
     python setup.py install
 
+RUN apt-get -y -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
