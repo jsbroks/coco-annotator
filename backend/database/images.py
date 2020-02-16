@@ -150,15 +150,16 @@ class ImageModel(DynamicDocument):
         :return: number of annotations
         """
         annotations = annotations.filter(
-            width=self.width, height=self.height, area__gt=0).exclude('events')
+            width=self.width, height=self.height).exclude('events')
 
         for annotation in annotations:
-            clone = annotation.clone()
+            if annotation.area > 0 or len(annotation.keypoints) > 0:
+                clone = annotation.clone()
 
-            clone.dataset_id = self.dataset_id
-            clone.image_id = self.id
+                clone.dataset_id = self.dataset_id
+                clone.image_id = self.id
 
-            clone.save(copy=True)
+                clone.save(copy=True)
 
         return annotations.count()
 
