@@ -2,12 +2,16 @@ import os
 import imantics as im
 
 
-from PIL import Image
+from PIL import Image, ImageFile
 from mongoengine import *
 
 from .events import Event, SessionEvent
 from .datasets import DatasetModel
 from .annotations import AnnotationModel
+
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 
 class ImageModel(DynamicDocument):
 
