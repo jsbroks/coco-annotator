@@ -1,5 +1,7 @@
 import pycocotools.mask as mask
 import numpy as np
+import shapely
+from shapely.geometry import LineString, Point
 
 from database import (
     fix_ids,
@@ -48,8 +50,8 @@ def paperjs_to_coco(image_width, image_height, paperjs):
             
             # Point
             if len(point) == 2:
-                x = _fit(round(center[0] + point[0], 2), image_width, 0)
-                y = _fit(round(center[1] + point[1], 2), image_height, 0)
+                x = round(center[0] + point[0], 2)
+                y = round(center[1] + point[1], 2)
                 segments_to_add.extend([x, y])
 
         # Make sure shape is not all outside the image
@@ -77,6 +79,113 @@ def paperjs_to_coco(image_width, image_height, paperjs):
 
     return segments, area, bbox
 
+
+def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: there's lots of edge cases to this. It needs a different solution or many many if statements :P
+    """
+    Given a paperjs CompoundPath, converts path into coco segmentation format based on children paths
+
+    :param image_width: Width of Image
+    :param image_height: Height of Image
+    :param paperjs: paperjs CompoundPath in dict format
+    :return: segmentation, area, bbox
+    """
+    assert image_width > 0
+    assert image_height > 0
+    assert len(paperjs) == 2
+
+    # Compute segmentation
+    # paperjs points are relative to the center, so we must shift them relative to the top left.
+    segments = []
+    center = [image_width/2, image_height/2]
+
+    if paperjs[0] == "Path":
+        compound_path = {"children": [paperjs]}
+    else:
+        compound_path = paperjs[1]
+    
+    children = compound_path.get('children', [])
+
+    for child in children:
+
+        child_segments = child[1].get('segments', [])
+        segments_to_add = []
+
+
+        i_start = 0
+        inside = False
+        # find a point that's inside the canvas
+        while(i_start < len(child_segments)):
+            point = child_segments[i_start]
+            if len(point) == 4: point = point[0] # curve
+            if len(point) == 2: # point
+                if (abs(point[0]) > image_width/2 or point[1] > image_height/2):
+                    i_start += 1
+                    continue
+                inside = True
+                break
+            i_start += 1
+        
+        if inside: # if point is inside the canvas. Otherwise ignore it
+            edges = {
+                'w_0': np.array([[0,0],[image_width, 0]], np.float),
+                'w_1': np.array([[0,image_height],[image_width, image_height]], np.float),
+                'h_0': np.array([[0,0],[0, image_height]], np.float),
+                'h_1': np.array([[image_width,0],[image_width, image_height]], np.float),
+            }
+            prev_point = None
+            for i in range(i_start, i_start + len(child_segments)):
+                p = i % len(child_segments)
+                point = child_segments[p]
+                
+                # print('point:', point, flush=True)
+                # Cruve
+                if len(point) == 4:
+                    point = point[0]
+                
+                # Point
+                if len(point) == 2:
+                    x = round(center[0] + point[0], 2)
+                    y = round(center[1] + point[1], 2)
+                    x_orig, y_orig = x,y
+                    point_outside = x > image_width or x < 0 or y > image_height or y < 0
+                    # prev_point_outside = prev_point[0] > image_width or prev_point[0] < 0 or prev_point[1] > image_height or prev_point[1] < 0
+                    if point_outside: # outside canvas
+                        line = LineString([[x,y], prev_point])
+                        for _, edge in edges.items():
+                            intersect = line.intersection(LineString(edge))
+                            if not intersect.is_empty:
+                                if intersect.type == 'LineString': intersect = intersect.xy[0]
+                                else: intersect = [intersect.x, intersect.y]
+                                print(x,y, prev_point)
+                                print(intersect, flush=True)
+                                x,y = intersect
+                                break
+                    segments_to_add.extend([x, y])
+                    prev_point = [x_orig,y_orig]
+        # Make sure shape is not all outside the image
+        if sum(segments_to_add) == 0:
+            continue
+
+        if len(segments_to_add) == 4:
+            # len 4 means this is a line with no width; it contributes
+            # no area to the mask, and if we include it, coco will treat
+            # it instead as a bbox (and throw an error)
+            continue
+
+        num_widths = segments_to_add.count(image_width)
+        num_heights = segments_to_add.count(image_height)
+        if num_widths + num_heights == len(segments_to_add):
+            continue
+
+        segments.append(segments_to_add)
+
+    if len(segments) < 1:
+        return [], 0, [0, 0, 0, 0]
+
+    area, bbox = get_segmentation_area_and_bbox(
+        segments, image_height, image_width)
+
+    return segments, area, bbox
 
 def get_segmentation_area_and_bbox(segmentation, image_height, image_width):
     # Convert into rle
