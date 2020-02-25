@@ -34,7 +34,7 @@ def export_annotations(task_id, dataset_id, categories):
     db_categories = CategoryModel.objects(id__in=categories, deleted=False) \
         .only(*CategoryModel.COCO_PROPERTIES)
     db_images = ImageModel.objects(
-        deleted=False, annotated=True, dataset_id=dataset.id).only(
+        deleted=False, dataset_id=dataset.id).only(
         *ImageModel.COCO_PROPERTIES)
     db_annotations = AnnotationModel.objects(
         deleted=False, category_id__in=categories)
@@ -80,6 +80,10 @@ def export_annotations(task_id, dataset_id, categories):
         annotations = db_annotations.filter(image_id=image.get('id'))\
             .only(*AnnotationModel.COCO_PROPERTIES)
         annotations = fix_ids(annotations)
+
+        if len(annotations) == 0:
+            break
+
         num_annotations = 0
         for annotation in annotations:
 
