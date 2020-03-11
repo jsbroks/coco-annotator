@@ -6,6 +6,13 @@ def get_tag():
     result = subprocess.run(["git", "describe", "--abbrev=0", "--tags"], stdout=subprocess.PIPE)
     return str(result.stdout.decode("utf-8")).strip()
 
+def _get_bool(key, default_value):
+    if key in os.environ:
+        value = os.environ[key]
+        if value == 'True' or value == 'true' or value == '1':
+            return True
+        return False
+    return default_value
 
 class Config:
 
@@ -17,7 +24,7 @@ class Config:
     IGNORE_DIRECTORIES = ["_thumbnail", "_settings"]
 
     # Flask/Gunicorn
-    #   
+    #
     #   LOG_LEVEL - The granularity of log output
     #
     #       A string of "debug", "info", "warning", "error", "critical"
@@ -38,10 +45,10 @@ class Config:
     MAX_CONTENT_LENGTH = os.getenv("MAX_CONTENT_LENGTH", 1 * 1024 * 1024 * 1024)  # 1GB
     MONGODB_HOST = os.getenv("MONGODB_HOST", "mongodb://database/flask")
     SECRET_KEY = os.getenv("SECRET_KEY", "<--- CHANGE THIS KEY --->")
-    
+
     LOG_LEVEL = 'debug'
     WORKER_CONNECTIONS = 1000
-    
+
     TESTING = os.getenv("TESTING", False)
 
     ### Workers
@@ -53,8 +60,8 @@ class Config:
     INITIALIZE_FROM_FILE = os.getenv("INITIALIZE_FROM_FILE")
 
     ### User Options
-    LOGIN_DISABLED = os.getenv("LOGIN_DISABLED", False)
-    ALLOW_REGISTRATION = True
+    LOGIN_DISABLED = _get_bool("LOGIN_DISABLED", False)
+    ALLOW_REGISTRATION = _get_bool('ALLOW_REGISTRATION', True)
 
     ### Models
     MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "")
