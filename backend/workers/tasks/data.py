@@ -276,7 +276,7 @@ def import_annotations(task_id, dataset_id, coco_json):
 
             annotation_model.isbbox = isbbox
             annotation_model.save()
-
+            image_model.update(set__annotated=True)
             image_categories.append(category_id)
         else:
             annotation_model.update(deleted=False, isbbox=isbbox)

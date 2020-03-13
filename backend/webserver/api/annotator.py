@@ -50,6 +50,7 @@ class AnnotatorData(Resource):
 
         annotated = False
         # Iterate every category passed in the data
+        num_annotations = 0
         for category in data.get('categories', []):
             category_id = category.get('id')
 
@@ -67,7 +68,6 @@ class AnnotatorData(Resource):
             db_category.update(**category_update)
 
             # Iterate every annotation from the data annotations
-            num_annotations = 0
             for annotation in category.get('annotations', []):
                 counted = False
                 # Find corresponding annotation object in database
@@ -132,10 +132,11 @@ class AnnotatorData(Resource):
 
                 if counted:
                     num_annotations += 1
-
+        if num_annotations > 0:
+            annotated = True
         image_model.update(
             set__metadata=image.get('metadata', {}),
-            set__annotated=(num_annotations > 0),
+            set__annotated=annotated,
             set__category_ids=image.get('category_ids', []),
             set__regenerate_thumbnail=True,
             set__num_annotations=num_annotations
