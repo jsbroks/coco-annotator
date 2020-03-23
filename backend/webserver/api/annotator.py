@@ -49,6 +49,7 @@ class AnnotatorData(Resource):
         current_user.update(preferences=data.get('user', {}))
 
         annotated = False
+        num_annotations = 0
         # Iterate every category passed in the data
         for category in data.get('categories', []):
             category_id = category.get('id')
@@ -67,7 +68,6 @@ class AnnotatorData(Resource):
             db_category.update(**category_update)
 
             # Iterate every annotation from the data annotations
-            num_annotations = 0
             for annotation in category.get('annotations', []):
                 counted = False
                 # Find corresponding annotation object in database
