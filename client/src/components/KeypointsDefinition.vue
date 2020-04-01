@@ -277,13 +277,13 @@ export default {
           let kp_edges = new Set(kp.edges);
           if (!new_edges.has(kp.label) && kp_edges.has(current_kp.label)) {
             kp_edges.delete(current_kp.label);
-            kp.edges = [...kp_edges];
+            kp.edges = Array.from(kp_edges);
           } else if (
             new_edges.has(kp.label) &&
             !kp_edges.has(current_kp.label)
           ) {
             kp_edges.add(current_kp.label);
-            kp.edges = [...kp_edges];
+            kp.edges = Array.from(kp_edges);
           }
           if (kp.edges.length === 0 && kp.label.length === 0 && kp.label_error) {
             kp.label_error = "";
