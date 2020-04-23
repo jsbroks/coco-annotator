@@ -78,8 +78,16 @@ https://annotator.justinbrooks.ca/
 
 # Backers
 
-Become a backer and help support the community.
+If you enjoy the development of coco-annotator or are looking for an enterprise annotation tool, consider checking out DataTorch.
 
+<p align="center">
+  <a href="https://datatorch.io">
+    <img src="https://i.imgur.com/sOQ1s5F.png" width="250" />
+  </a>
+  <p align="center">
+    https://datatorch.io · <a href="mailto:support@datatorch.io">support@datatorch.io</a> · <i>Next generation of coco-annotator</i>
+   </p>
+</p>
 
 # Built With
 
