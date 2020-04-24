@@ -24,7 +24,8 @@ export default {
           strokeWidth: 1,
           radius: 30
         }
-      }
+      },
+      selection: null
     };
   },
   methods: {
@@ -32,6 +33,12 @@ export default {
       if (this.brush.path != null) {
         this.brush.path.remove();
         this.brush.path = null;
+      }
+    },
+    removeSelection() {
+      if (this.selection != null) {
+        this.selection.remove();
+        this.selection = null;
       }
     },
     moveBrush(point) {
@@ -50,27 +57,42 @@ export default {
         center: center
       });
     },
+    createSelection() {
+      this.selection = new paper.Path({
+        strokeColor: this.brush.pathOptions.strokeColor,
+        strokeWidth: this.brush.pathOptions.strokeWidth
+      });
+    },
     onMouseMove(event) {
       this.moveBrush(event.point);
     },
     onMouseDown() {
-      this.$parent.currentAnnotation.createUndoAction("Unite");
+      this.createSelection();
       this.draw();
     },
     onMouseUp() {
-      this.$parent.currentAnnotation.simplifyPath();
+      this.merge();
+      this.removeSelection();
     },
     onMouseDrag(event) {
       this.moveBrush(event.point);
       this.draw();
     },
+
     /**
-     * Unites current brush with selected annotation
+     * Unites current brush with selection
      */
     draw() {
-      // Undo action, will be handled on mouse down
-      // Simplify, will be handled on mouse up
-      this.$parent.currentAnnotation.unite(this.brush.path, false, false);
+      let newSelection = this.selection.unite(this.brush.path);
+
+      this.selection.remove();
+      this.selection = newSelection;
+    },
+    /**
+     * Unites current selection with selected annotation
+     */
+    merge() {
+      this.$parent.uniteCurrentAnnotation(this.selection);
     },
     decreaseRadius() {
       if (!this.isActive) return;
