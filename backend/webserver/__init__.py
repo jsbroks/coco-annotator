@@ -20,7 +20,7 @@ from celery import Celery
 
 from .watcher import run_watcher
 from .api import blueprint as api
-from .util import query_util
+from .util import query_util, thumbnails
 from .authentication import login_manager
 from .sockets import socketio
 
@@ -55,6 +55,7 @@ def create_app():
     # Remove all poeple who were annotating when
     # the server shutdown
     ImageModel.objects.update(annotating=[])
+    thumbnails.generate_thumbnails()
 
     return flask
 

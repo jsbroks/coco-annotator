@@ -70,6 +70,7 @@ class ImageModel(DynamicDocument):
         image.path = path
         image.width = pil_image.size[0]
         image.height = pil_image.size[1]
+        image.regenerate_thumbnail = True
 
         if dataset_id is not None:
             image.dataset_id = dataset_id
@@ -94,15 +95,12 @@ class ImageModel(DynamicDocument):
 
     def thumbnail(self):
         """
-        Generates (if required) and returns thumbnail
+        Generates (if required) thumbnail
         """
         
         thumbnail_path = self.thumbnail_path()
 
-        if self.regenerate_thumbnail or \
-            not os.path.isfile(thumbnail_path):
-            
-            # logger.debug(f'Generating thumbnail for {self.id}')
+        if self.regenerate_thumbnail:
 
             pil_image = self.generate_thumbnail()
             pil_image = pil_image.convert("RGB")
@@ -116,9 +114,14 @@ class ImageModel(DynamicDocument):
 
             self.update(is_modified=False)
             return pil_image
-        else:
-            return Image.open(thumbnail_path)
-    
+
+    def open_thumbnail(self):
+        """
+        Return thumbnail
+        """
+        thumbnail_path = self.thumbnail_path()
+        return Image.open(thumbnail_path)
+
     def thumbnail_path(self):
         folders = self.path.split('/')
         folders.insert(len(folders)-1, self.THUMBNAIL_DIRECTORY)

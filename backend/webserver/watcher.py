@@ -3,6 +3,7 @@ from watchdog.observers import Observer
 
 from config import Config
 from database import ImageModel
+from .util.thumbnails import generate_thumbnail
 
 import re
 
@@ -32,11 +33,13 @@ class ImageFolderHandler(FileSystemEventHandler):
 
         if image is None and event.event_type != 'deleted':
             self._log(f'Adding new file to database: {path}')
-            ImageModel.create_from_path(path).save()
+            image = ImageModel.create_from_path(path).save()
+            generate_thumbnail(image)
 
         elif event.event_type == 'moved':
             self._log(f'Moving image from {event.src_path} to {path}')
             image.update(path=path)
+            generate_thumbnail(image)
 
         elif event.event_type == 'deleted':
             self._log(f'Deleting image from database {path}')

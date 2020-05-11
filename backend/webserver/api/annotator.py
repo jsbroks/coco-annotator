@@ -4,7 +4,7 @@ from flask_restplus import Namespace, Resource
 from flask_login import login_required, current_user
 from flask import request
 
-from ..util import query_util, coco_util, profile
+from ..util import query_util, coco_util, profile, thumbnails
 
 from config import Config
 from database import (
@@ -140,6 +140,8 @@ class AnnotatorData(Resource):
             set__regenerate_thumbnail=True,
             set__num_annotations=num_annotations
         )
+
+        thumbnails.generate_thumbnail(image_model)
 
         return {"success": True}
 

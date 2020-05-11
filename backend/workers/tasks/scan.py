@@ -6,6 +6,7 @@ from database import (
 
 from celery import shared_task
 from ..socket import create_socket
+from .thumbnails import thumbnail_generate_single_image
 
 import os
 
@@ -51,6 +52,8 @@ def scan_dataset(task_id, dataset_id):
                     task.info(f"New file found: {path}")
                 except:
                     task.warning(f"Could not read {path}")
+
+    [thumbnail_generate_single_image.delay(image.id) for image in ImageModel.objects(regenerate_thumbnail=True).all()]
 
     task.info(f"Created {count} new image(s)")
     task.set_progress(100, socket=socket)
