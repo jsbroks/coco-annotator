@@ -132,9 +132,8 @@ class ImageId(Resource):
         if not height:
             height = image.height
         
-        pil_image = image.thumbnail() if thumbnail else Image.open(image.path)
-        image.flag_thumbnail(flag=False)
-        
+        pil_image = image.open_thumbnail() if thumbnail else Image.open(image.path)
+
         pil_image.thumbnail((width, height), Image.ANTIALIAS)
         image_io = io.BytesIO()
         pil_image = pil_image.convert("RGB")
