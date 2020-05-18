@@ -18,11 +18,18 @@ class ImageFolderHandler(FileSystemEventHandler):
     def on_any_event(self, event):
 
         path = event.dest_path if event.event_type == "moved" else event.src_path
-                
+
+        if event.is_directory:
+            # Listen to directory events as some file systems don't generate
+            # per-file `deleted` events when moving/deleting directories
+            if event.event_type == 'deleted':
+                self._log(f'Deleting images from database {path}')
+                ImageModel.objects(path=re.compile('^' + re.escape(path))).delete()
+            return
+
         if (
-            event.is_directory
             # check if its a hidden file
-            or bool(re.search(r'\/\..*?\/', path))
+            bool(re.search(r'\/\..*?\/', path))
             or not path.lower().endswith(self.pattern)
         ):
             return
