@@ -72,7 +72,8 @@ def export_annotations(task_id, dataset_id, categories):
 
     total_annotations = db_annotations.count()
     total_images = db_images.count()
-    for image in fix_ids(db_images):
+    for image in db_images:
+        image = fix_ids(image)
 
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
@@ -82,7 +83,7 @@ def export_annotations(task_id, dataset_id, categories):
         annotations = fix_ids(annotations)
 
         if len(annotations) == 0:
-            break
+            continue
 
         num_annotations = 0
         for annotation in annotations:
