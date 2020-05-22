@@ -52,8 +52,8 @@ class Config:
     TESTING = os.getenv("TESTING", False)
 
     ### Workers
-    CELERY_BROKER_URL = "amqp://user:password@messageq:5672//"
-    CELERY_RESULT_BACKEND = "mongodb://database/flask"
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://user:password@messageq:5672//")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "mongodb://database/flask")
 
     ### Dataset Options
     DATASET_DIRECTORY = os.getenv("DATASET_DIRECTORY", "/datasets/")
