@@ -36,10 +36,20 @@
 
 COCO Annotator is a web-based image annotation tool designed for versatility and efficiently label images to create training data for image localization and object detection. It provides many distinct features including the ability to label an image segment (or part of a segment), track object instances, labeling objects with disconnected visible parts, efficiently storing and export annotations in the well-known [COCO format](http://cocodataset.org/#format-data). The annotation process is delivered through an intuitive and customizable interface and provides many tools for creating accurate datasets.
 
+<br />
+
+<p align="center"><a href="http://www.youtube.com/watch?feature=player_embedded&v=OMJRcjnMMok" target="_blank"><img src="https://img.youtube.com/vi/OMJRcjnMMok/maxresdefault.jpg" 
+alt="Image annotations using COCO Annotator" width="600" /></a></p>
+<p align="center"><i>Checkout the video for a basic guide on installing and using COCO Annotator.</i></p>
+
+<br />
+
 <p align="center"><img width="600" src="https://i.imgur.com/m4RmjCp.gif"></p>
 <p align="center"><i>Note: This video is from v0.1.0 and many new features have been added.</i></p>
 
+
 <br>
+
 <p align="center">If you enjoy my work please consider supporting me</p>
 <p align="center">
   <a href="https://www.patreon.com/jsbroks">
