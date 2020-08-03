@@ -864,7 +864,7 @@ export default {
       if (!categoryComponent) return null;
       return categoryComponent.category;
     },
-    addAnnotation(categoryName, segments, keypoints) {
+    addAnnotation(categoryName, segments, keypoints, isbbox=false) {
       segments = segments || [];
       keypoints = keypoints || [];
 
@@ -877,7 +877,8 @@ export default {
         image_id: this.image.id,
         category_id: category.id,
         segmentation: segments,
-        keypoints: keypoints
+        keypoints: keypoints,
+        isbbox: isbbox
       }).then(response => {
         let annotation = response.data;
         category.annotations.push(annotation);
