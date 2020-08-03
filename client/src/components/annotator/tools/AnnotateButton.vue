@@ -63,11 +63,13 @@ export default {
               let keypoints = annotation.keypoints || [];
               let segmentation = annotation.segmentation || [];
               let category = indexedCategories[annotation.category_id];
+              let isbbox = annotation.isbbox || false;
 
               this.$parent.addAnnotation(
                 category.name,
                 segmentation,
-                keypoints
+                keypoints,
+                isbbox=isbbox
               );
             });
           })
