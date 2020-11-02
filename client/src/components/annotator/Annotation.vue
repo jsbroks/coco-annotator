@@ -202,6 +202,14 @@
           </div>
           <div class="modal-footer">
             <button
+              @click="deleteAnnotation"
+              type="button"
+              class="btn btn-danger"
+              data-dismiss="modal"
+            >
+              Delete
+            </button>
+            <button
               type="button"
               class="btn btn-secondary"
               data-dismiss="modal"
