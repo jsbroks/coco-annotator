@@ -28,8 +28,8 @@ image_upload = reqparse.RequestParser()
 image_upload.add_argument('image', location='files',
                           type=FileStorage, required=True,
                           help='PNG or JPG file')
-image_upload.add_argument('folder', required=False, default='',
-                          help='Folder to insert photo into')
+image_upload.add_argument('dataset_id', required=True, type=int,
+                          help='Id of dataset to insert image into')
 
 image_download = reqparse.RequestParser()
 image_download.add_argument('asAttachment', type=bool, default=False)
@@ -78,34 +78,25 @@ class Images(Resource):
         args = image_upload.parse_args()
         image = args['image']
 
-        folder = args['folder']
-        if len(folder) > 0:
-            folder = folder[0].strip('/') + folder[1:]
-
-        directory = os.path.join(Config.DATASET_DIRECTORY, folder)
+        dataset_id = args['dataset_id']
+        try:
+            dataset = DatasetModel.objects.get(id=dataset_id)
+        except:
+            return {'message': 'dataset does not exist'}, 400
+        directory = dataset.directory
         path = os.path.join(directory, image.filename)
 
         if os.path.exists(path):
             return {'message': 'file already exists'}, 400
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
         pil_image = Image.open(io.BytesIO(image.read()))
 
-        image_model = ImageModel(
-            file_name=image.filename,
-            width=pil_image.size[0],
-            height=pil_image.size[1],
-            path=path
-        )
-
-        image_model.save()
         pil_image.save(path)
 
         image.close()
         pil_image.close()
-        return query_util.fix_ids(image_model)
+        db_image = ImageModel.create_from_path(path, dataset_id).save()
+        return db_image.id
 
 
 @api.route('/<int:image_id>')
