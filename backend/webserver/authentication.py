@@ -1,4 +1,5 @@
 from flask_login import LoginManager, AnonymousUserMixin
+from werkzeug.security import check_password_hash
 from database import (
     UserModel,
     DatasetModel,
@@ -50,16 +51,16 @@ class AnonymousUser(AnonymousUserMixin):
             "is_admin": self.is_admin,
             "anonymous": True
         }
-    
+
     def can_edit(self, model):
         return True
-    
+
     def can_view(self, model):
         return True
-    
+
     def can_download(self, model):
         return True
-    
+
     def can_delete(self, model):
         return True
 
@@ -76,3 +77,14 @@ def load_user(user_id):
 def unauthorized():
     return {'success': False, 'message': 'Authorization required'}, 401
 
+
+@login_manager.request_loader
+def load_user_from_request(request):
+    auth = request.authorization
+    if not auth:
+        return None
+    user = UserModel.objects(username__iexact=auth.username).first()
+    if user and check_password_hash(user.password, auth.password):
+        # login_user(user)
+        return user
+    return None
