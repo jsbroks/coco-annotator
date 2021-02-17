@@ -90,8 +90,9 @@ def export_annotations(task_id, dataset_id, categories):
 
             has_keypoints = len(annotation.get('keypoints', [])) > 0
             has_segmentation = len(annotation.get('segmentation', [])) > 0
+            has_bbox = len(annotation.get('bbox', [])) > 0
 
-            if has_keypoints or has_segmentation:
+            if has_keypoints or has_segmentation or has_bbox:
 
                 if not has_keypoints:
                     if 'keypoints' in annotation:
@@ -231,18 +232,17 @@ def import_annotations(task_id, dataset_id, coco_json):
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation', [])
         keypoints = annotation.get('keypoints', [])
-        bboxes = annotation.get('bbox', [])
         # is_crowd = annotation.get('iscrowed', False)
         area = annotation.get('area', 0)
-        bbox = annotation.get('bbox', [0, 0, 0, 0])
-        isbbox = annotation.get('isbbox', False) if len(bboxes) == 0 else len(bboxes) > 0
+        bbox = annotation.get('bbox', [])
+        isbbox = annotation.get('isbbox', False) if len(bbox) == 0 else True
 
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
 
         has_segmentation = len(segmentation) > 0
         has_keypoints = len(keypoints) > 0
-        has_bbox = len(bboxes) > 0
+        has_bbox = len(bbox) > 0
         if not has_segmentation and not has_keypoints and not has_bbox:
             task.warning(
                 f"Annotation {annotation.get('id')} has none of segmentation, keypoints and bounding boxes")
@@ -261,7 +261,8 @@ def import_annotations(task_id, dataset_id, coco_json):
             image_id=image_model.id,
             category_id=category_model_id,
             segmentation=segmentation,
-            keypoints=keypoints
+            keypoints=keypoints,
+            bbox=bbox
         ).first()
 
         if annotation_model is None:
@@ -273,7 +274,7 @@ def import_annotations(task_id, dataset_id, coco_json):
             annotation_model.color = annotation.get('color')
             annotation_model.metadata = annotation.get('metadata', {})
 
-            if has_segmentation:
+            if has_segmentation or has_bbox:
                 annotation_model.segmentation = segmentation
                 annotation_model.area = area
                 annotation_model.bbox = bbox
