@@ -231,19 +231,21 @@ def import_annotations(task_id, dataset_id, coco_json):
         category_id = annotation.get('category_id')
         segmentation = annotation.get('segmentation', [])
         keypoints = annotation.get('keypoints', [])
+        bboxes = annotation.get('bbox', [])
         # is_crowd = annotation.get('iscrowed', False)
         area = annotation.get('area', 0)
         bbox = annotation.get('bbox', [0, 0, 0, 0])
-        isbbox = annotation.get('isbbox', False)
+        isbbox = annotation.get('isbbox', False) if len(bboxes) == 0 else len(bboxes) > 0
 
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
 
         has_segmentation = len(segmentation) > 0
         has_keypoints = len(keypoints) > 0
-        if not has_segmentation and not has_keypoints:
+        has_bbox = len(bboxes) > 0
+        if not has_segmentation and not has_keypoints and not has_bbox:
             task.warning(
-                f"Annotation {annotation.get('id')} has no segmentation or keypoints")
+                f"Annotation {annotation.get('id')} has none of segmentation, keypoints and bounding boxes")
             continue
 
         try:

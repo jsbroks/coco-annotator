@@ -248,8 +248,9 @@ def get_image_coco(image_id):
 
             has_segmentation = len(annotation.get('segmentation', [])) > 0
             has_keypoints = len(annotation.get('keypoints', [])) > 0
+            has_bbox = len(annotation.get('bbox', [])) > 0
 
-            if has_segmentation or has_keypoints:
+            if has_segmentation or has_keypoints or has_bbox:
 
                 if has_keypoints:
                     arr = np.array(annotation.get('keypoints', []))
