@@ -21,7 +21,7 @@ from mongoengine import Q
 
 
 @shared_task
-def export_annotations(task_id, dataset_id, categories):
+def export_annotations(task_id, dataset_id, categories, with_empty_images=False):
 
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
@@ -83,6 +83,8 @@ def export_annotations(task_id, dataset_id, categories):
         annotations = fix_ids(annotations)
 
         if len(annotations) == 0:
+            if with_empty_images:
+                coco.get('images').append(image)
             continue
 
         num_annotations = 0
