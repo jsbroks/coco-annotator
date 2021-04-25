@@ -209,6 +209,7 @@ export default {
       }
 
       this.removeUndos(this.actionTypes.ADD_POINTS);
+	  this.$parent.save();
       return true;
     },
     removeLastPoint() {
