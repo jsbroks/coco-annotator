@@ -30,7 +30,7 @@ class AnnotatorData(Resource):
         image = data.get('image')
         dataset = data.get('dataset')
         image_id = image.get('id')
-        
+
         image_model = ImageModel.objects(id=image_id).first()
 
         if image_model is None:
@@ -40,9 +40,9 @@ class AnnotatorData(Resource):
         db_dataset = current_user.datasets.filter(id=image_model.dataset_id).first()
         if dataset is None:
             return {'success': False, 'message': 'Could not find associated dataset'}
-        
+
         db_dataset.update(annotate_url=dataset.get('annotate_url', ''))
-        
+
         categories = CategoryModel.objects.all()
         annotations = AnnotationModel.objects(image_id=image_id)
 
@@ -64,7 +64,7 @@ class AnnotatorData(Resource):
                 category_update['keypoint_edges'] = category.get('keypoint_edges', [])
                 category_update['keypoint_labels'] = category.get('keypoint_labels', [])
                 category_update['keypoint_colors'] = category.get('keypoint_colors', [])
-            
+
             db_category.update(**category_update)
 
             # Iterate every annotation from the data annotations
@@ -95,6 +95,7 @@ class AnnotatorData(Resource):
                     sessions.append(model)
 
                 keypoints = annotation.get('keypoints', [])
+                bbox = annotation.get('bbox', [])
                 if keypoints:
                     counted = True
 
@@ -103,6 +104,7 @@ class AnnotatorData(Resource):
                     inc__milliseconds=total_time,
                     set__isbbox=annotation.get('isbbox', False),
                     set__keypoints=keypoints,
+                    set__bbox=bbox,
                     set__metadata=annotation.get('metadata'),
                     set__color=annotation.get('color')
                 )
@@ -203,5 +205,3 @@ class AnnotatorId(Resource):
             data.get('categories').append(category)
 
         return data
-
-
