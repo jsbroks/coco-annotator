@@ -2,6 +2,7 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from flask import send_file
+from mongoengine.errors import NotUniqueError
 
 from ..util import query_util, coco_util
 from database import (
@@ -95,7 +96,10 @@ class Images(Resource):
 
         image.close()
         pil_image.close()
-        db_image = ImageModel.create_from_path(path, dataset_id).save()
+        try:
+            db_image = ImageModel.create_from_path(path, dataset_id).save()
+        except NotUniqueError:
+            db_image = ImageModel.objects.get(path=path)
         return db_image.id
 
 

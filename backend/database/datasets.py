@@ -64,7 +64,7 @@ class DatasetModel(DynamicDocument):
             "name": task.name
         }
 
-    def export_coco(self, categories=None, style="COCO"):
+    def export_coco(self, categories=None, style="COCO", with_empty_images=False):
 
         from workers.tasks import export_annotations
 
@@ -78,7 +78,7 @@ class DatasetModel(DynamicDocument):
         )
         task.save()
 
-        cel_task = export_annotations.delay(task.id, self.id, categories)
+        cel_task = export_annotations.delay(task.id, self.id, categories, with_empty_images)
 
         return {
             "celery_id": cel_task.id,
