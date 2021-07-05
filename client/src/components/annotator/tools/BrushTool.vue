@@ -92,7 +92,7 @@ export default {
      * Unites current selection with selected annotation
      */
     merge() {
-      this.$parent.uniteCurrentAnnotation(this.selection);
+      this.$parent.uniteCurrentAnnotation(this.selection, false);
     },
     decreaseRadius() {
       if (!this.isActive) return;

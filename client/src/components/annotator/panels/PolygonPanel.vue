@@ -27,6 +27,13 @@
       step="2"
       v-model="polygon.polygon.minDistance"
     />
+    <PanelInputNumber
+      name="Simplification Degree"
+      min="0"
+      max="5"
+      step="1"
+      v-model="polygon.polygon.simplify"
+    />
   </div>
 </template>
 
