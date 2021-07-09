@@ -1,8 +1,11 @@
 import pycocotools.mask as mask
 import numpy as np
 import shapely
+import cv2
+import os 
 from shapely.geometry import LineString, Point
-
+import logging
+logger = logging.getLogger('gunicorn.error')
 
 from database import (
     fix_ids,
@@ -15,6 +18,7 @@ from database import (
 def paperjs_to_coco(image_width, image_height, paperjs):
     """
     Given a paperjs CompoundPath, converts path into coco segmentation format based on children paths
+
     :param image_width: Width of Image
     :param image_height: Height of Image
     :param paperjs: paperjs CompoundPath in dict format
@@ -35,6 +39,7 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         compound_path = paperjs[1]
     
     children = compound_path.get('children', [])
+
     for child in children:
 
         child_segments = child[1].get('segments', [])
@@ -42,7 +47,7 @@ def paperjs_to_coco(image_width, image_height, paperjs):
 
         for point in child_segments:
             
-            # Cruve
+            # Curve or segment with handles
             if len(point) == 4 or len(point) == 3:
                 point = point[0]
             
@@ -64,10 +69,12 @@ def paperjs_to_coco(image_width, image_height, paperjs):
 
         num_widths = segments_to_add.count(image_width)
         num_heights = segments_to_add.count(image_height)
+
         if num_widths + num_heights == len(segments_to_add):
             continue
 
         segments.append(segments_to_add)
+
     if len(segments) < 1:
         return [], 0, [0, 0, 0, 0]
 
@@ -75,7 +82,6 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         segments, image_height, image_width)
 
     return segments, area, bbox
-
 
 def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: there's lots of edge cases to this. It needs a different solution or many many if statements :P
     """
@@ -134,7 +140,6 @@ def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: th
                 p = i % len(child_segments)
                 point = child_segments[p]
                 
-                # print('point:', point, flush=True)
                 # Cruve
                 if len(point) == 4:
                     point = point[0]
@@ -188,9 +193,20 @@ def get_segmentation_area_and_bbox(segmentation, image_height, image_width):
     # Convert into rle
     rles = mask.frPyObjects(segmentation, image_height, image_width)
     rle = mask.merge(rles)
-
+    bin_mask = mask.decode(rle)
     return mask.area(rle), mask.toBbox(rle)
 
+def get_bin_mask(segmentation, image_height, image_width):
+    """
+    Computes the binary mask of a polygon annotation
+    :return: binary mask np.array format
+    """
+    # Convert into rle
+    rles = mask.frPyObjects(segmentation, image_height, image_width)
+    rle = mask.merge(rles)
+    #extract the binary mask
+    bin_mask = mask.decode(rle)
+    return bin_mask
 
 def get_annotations_iou(annotation_a, annotation_b):
     """

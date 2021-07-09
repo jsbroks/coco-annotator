@@ -84,7 +84,8 @@ export default {
         );
       }
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
-      
+      this.polygon.path["segmentsType"] = 'polygon';
+      this.polygon.path["simplifyDegree"] = this.simplify;
     },
     /**
      * Frees current polygon
@@ -201,8 +202,7 @@ export default {
 
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
-      this.simplifyPath();
-      this.$parent.uniteCurrentAnnotation(this.polygon.path, false);
+      this.$parent.uniteCurrentAnnotation(this.polygon.path);
 
       this.polygon.path.remove();
       this.polygon.path = null;
@@ -214,27 +214,6 @@ export default {
       this.removeUndos(this.actionTypes.ADD_POINTS);
 	  this.$parent.save();
       return true;
-    },
-    /*
-     * Optimize the path's contour based on the "simplify" input
-     */
-    simplifyPath() {
-
-      let points = [];
-      this.polygon.path.flatten(1);
-
-      //Get currrent polygon's points
-      this.polygon.path.segments.forEach(seg => {
-          points.push({ x: seg.point.x, y: seg.point.y });
-        }
-      );
-
-      //Simplify its points
-      points = simplifyjs(points, this.simplify, true);
-
-      //Update current polygon with simplified contour
-      this.polygon.path.segments = points;
-      
     },
     removeLastPoint() {
       this.polygon.path.removeSegment(this.polygon.path.segments.length - 1);

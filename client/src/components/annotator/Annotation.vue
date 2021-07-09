@@ -518,42 +518,32 @@ export default {
       });
       this.addUndo(action);
     },
-    simplifyPath() {
-      if (this.compoundPath != null && this.compoundPath.isEmpty() && this.keypoints.isEmpty()) {
-          this.deleteAnnotation();
-          return;
-      }
+    
+    simplifyPath(path) {
+
       let simplify = this.simplify;
+      if (path.hasOwnProperty('simplifyDegree')) simplify = path['simplifyDegree'];
 
-      this.compoundPath.flatten(1);
-
-      if (this.compoundPath instanceof paper.Path) {
-        this.compoundPath = new paper.CompoundPath(this.compoundPath);
-        this.compoundPath.data.annotationId = this.index;
-        this.compoundPath.data.categoryId = this.categoryIndex;
-      }
-
-      let newChildren = [];
-      this.compoundPath.children.forEach(path => {
+      if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'polygon'){
         let points = [];
-
+        //Get the path's points
         path.segments.forEach(seg => {
-          points.push({ x: seg.point.x, y: seg.point.y });
-        });
+            points.push({ x: seg.point.x, y: seg.point.y });
+          }
+        );
+
+        //Simplify its points
         points = simplifyjs(points, simplify, true);
 
-        let newPath = new paper.Path(points);
-        newPath.closePath();
+        //Update current path with simplified contour
+        path.segments = points;
+      }
 
-        newChildren.push(newPath);
-      });
-
-      this.compoundPath.removeChildren();
-      this.compoundPath.addChildren(newChildren);
-
-      this.compoundPath.fullySelected = this.isCurrent;
-      this.keypoints.bringToFront();
-      this.emitModify();
+      if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'pixel'){
+        //TO DO
+        path.simplify(simplify);
+      }
+      return path;
     },
     undoCompound() {
       if (this.pervious.length == 0) return;
@@ -648,14 +638,20 @@ export default {
     /**
      * Unites current annotation path with anyother path.
      * @param {paper.CompoundPath} compound compound to unite current annotation path with
-     * @param {boolean} simplify simplify compound after unite
+     * @param {boolean} simplify simplify compound before unite 
      * @param {undoable} undoable add an undo action.
      * @param {isBBox} isBBox mark annotation as bbox.
      */
     unite(compound, simplify = true, undoable = true, isBBox = false) {
+
       if (this.compoundPath == null) this.createCompoundPath();
 
+      if (simplify && compound != null) {
+        compound = this.simplifyPath(compound);
+      }
+
       let newCompound = this.compoundPath.unite(compound);
+      
       newCompound.strokeColor = null;
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
@@ -668,7 +664,6 @@ export default {
       this.compoundPath = newCompound;
       this.keypoints.bringToFront();
 
-      if (simplify) this.simplifyPath();
     },
     /**
      * Subtract current annotation path with anyother path.
@@ -691,7 +686,6 @@ export default {
     },
     setColor() {
       if (this.compoundPath == null) return;
-
       if (!this.$parent.showAnnotations) {
         this.$parent.setColor();
         return;
@@ -724,13 +718,12 @@ export default {
         metadata: metadata
       };
 
-      this.simplifyPath();
+      //this.simplifyPath();
       this.compoundPath.fullySelected = false;
       let json = this.compoundPath.exportJSON({
         asString: false,
         precision: 1
       });
-
       if (!this.keypoints.isEmpty()) {
         annotationData.keypoints = this.keypoints.exportJSON(
           this.keypointLabels,
@@ -964,7 +957,7 @@ export default {
       }
 
       return tags;
-    },
+    }
   },
   sockets: {
     annotation(data) {
