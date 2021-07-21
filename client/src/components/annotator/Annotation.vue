@@ -232,7 +232,6 @@ import JQuery from "jquery";
 import { Keypoint, Keypoints, VisibilityOptions } from "@/libs/keypoints";
 import { mapMutations } from "vuex";
 import UndoAction from "@/undo";
-
 import TagsInput from "@/components/TagsInput";
 import Metadata from "@/components/Metadata";
 
@@ -519,7 +518,11 @@ export default {
       this.addUndo(action);
     },
     
-    simplifyPath(path) {
+    simplifyPath(path = null) {
+
+      //Eliminate segments' handles
+      //ToDo: find a way to represent Bézier curves and get their binary masks in python
+      path.flatten(1);
 
       let simplify = this.simplify;
       if (path.hasOwnProperty('simplifyDegree')) simplify = path['simplifyDegree'];
@@ -540,8 +543,9 @@ export default {
       }
 
       if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'pixel'){
-        //TO DO
-        path.simplify(simplify);
+        //added this because it seems that the function simplifies the path 
+        //a little bit even with tolerance = 0 !
+        if (simplify != 0) path.simplify(simplify);
       }
       return path;
     },
@@ -649,7 +653,7 @@ export default {
       if (simplify && compound != null) {
         compound = this.simplifyPath(compound);
       }
-
+    
       let newCompound = this.compoundPath.unite(compound);
       
       newCompound.strokeColor = null;
@@ -663,7 +667,6 @@ export default {
       this.compoundPath.remove();
       this.compoundPath = newCompound;
       this.keypoints.bringToFront();
-
     },
     /**
      * Subtract current annotation path with anyother path.
@@ -718,7 +721,6 @@ export default {
         metadata: metadata
       };
 
-      //this.simplifyPath();
       this.compoundPath.fullySelected = false;
       let json = this.compoundPath.exportJSON({
         asString: false,

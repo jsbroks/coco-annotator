@@ -1,8 +1,6 @@
 import pycocotools.mask as mask
 import numpy as np
 import shapely
-import cv2
-import os 
 from shapely.geometry import LineString, Point
 import logging
 logger = logging.getLogger('gunicorn.error')
@@ -27,7 +25,7 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     assert image_width > 0
     assert image_height > 0
     assert len(paperjs) == 2
-
+    #logger.info(f"compounfPAth: {paperjs}")
     # Compute segmentation
     # paperjs points are relative to the center, so we must shift them relative to the top left.
     segments = []

@@ -14,7 +14,8 @@ from PIL import Image
 import datetime
 import os
 import io
-
+import logging
+logger = logging.getLogger('gunicorn.error')
 
 api = Namespace('image', description='Image related operations')
 
@@ -196,3 +197,39 @@ class ImageCoco(Resource):
 
         return coco_util.get_image_coco(image_id)
 
+@api.route('/binmask/<int:image_id>/<int:annotation_id>')
+class ImageBinaryMask(Resource):
+
+    @api.expect(image_download)
+    @login_required
+    def get(self, image_id, annotation_id):
+        """ Returns binary mask by annotatio's ID """
+        args = image_download.parse_args()
+        as_attachment = args.get('asAttachment')
+
+        image = current_user.images.filter(id=image_id, deleted=False).first()
+        
+        if image is None:
+            return {'success': False}, 400
+
+        #image dimensions
+        width = image.width
+        height = image.height
+ 
+        try:
+            annotation = AnnotationModel.objects.get(id= annotation_id)
+        except:
+            return {'message': 'annotation does not exist'}, 400
+
+        if (len(list(annotation.segmentation)) == 0):
+            return {'message': 'annotation is empty'}, 400
+            
+        bin_mask =  coco_util.get_bin_mask(list(annotation.segmentation), height, width)
+        
+        img = Image.fromarray((255*bin_mask).astype('uint8'))
+        image_io = io.BytesIO()
+        img.save(image_io, "PNG", quality=95)
+        image_io.seek(0)
+        
+        return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
+        
