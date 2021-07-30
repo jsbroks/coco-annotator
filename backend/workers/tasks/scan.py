@@ -50,8 +50,8 @@ def scan_dataset(task_id, dataset_id):
                     ImageModel.create_from_path(path, dataset.id).save()
                     count += 1
                     task.info(f"New file found: {path}")
-                except:
-                    task.warning(f"Could not read {path}")
+                except Exception as e:
+                    task.warning(f"Could not read {path} because of {e}")
 
     [thumbnail_generate_single_image.delay(image.id) for image in ImageModel.objects(regenerate_thumbnail=True).all()]
 

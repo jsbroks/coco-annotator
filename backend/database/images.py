@@ -1,14 +1,14 @@
 import os
 import imantics as im
 
-
+from pathlib import PurePath
 from PIL import Image, ImageFile
 from mongoengine import *
 
 from .events import Event, SessionEvent
 from .datasets import DatasetModel
 from .annotations import AnnotationModel
-
+from config import Config
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -16,7 +16,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 class ImageModel(DynamicDocument):
 
     COCO_PROPERTIES = ["id", "width", "height", "file_name", "path", "license",\
-                       "flickr_url", "coco_url", "date_captured", "dataset_id"]
+                       "flickr_url", "coco_url", "date_captured", "dataset_id","relpath","num_annotations"]
 
     # -- Contants
     THUMBNAIL_DIRECTORY = '.thumbnail'
@@ -35,6 +35,7 @@ class ImageModel(DynamicDocument):
 
     # Absolute path to image file
     path = StringField(required=True, unique=True)
+    relpath = StringField(required=True, unique=True)
     width = IntField(required=True)
     height = IntField(required=True)
     file_name = StringField()
@@ -74,16 +75,21 @@ class ImageModel(DynamicDocument):
 
         if dataset_id is not None:
             image.dataset_id = dataset_id
+            dataset = DatasetModel.objects.get(id=dataset_id)
+            directory = os.path.join(Config.DATASET_DIRECTORY, dataset.name)
         else:
             # Get dataset name from path
             folders = path.split('/')
+            
             i = folders.index("datasets")
             dataset_name = folders[i+1]
-
+            directory = os.path.join(*folders[:i+2])
             dataset = DatasetModel.objects(name=dataset_name).first()
             if dataset is not None:
                 image.dataset_id = dataset.id
-
+                
+        # UR added relpath
+        image.relpath = str(PurePath(image.path).relative_to(directory))
         pil_image.close()
 
         return image
