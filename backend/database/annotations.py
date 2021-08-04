@@ -1,8 +1,6 @@
 import imantics as im
 import json
-
 from mongoengine import *
-
 from .datasets import DatasetModel
 from .categories import CategoryModel
 from .events import Event
@@ -59,7 +57,6 @@ class AnnotationModel(DynamicDocument):
         super(AnnotationModel, self).__init__(**data)
 
     def save(self, copy=False, *args, **kwargs):
-
         if self.dataset_id and not copy:
             dataset = DatasetModel.objects(id=self.dataset_id).first()
 
@@ -79,15 +76,6 @@ class AnnotationModel(DynamicDocument):
     def is_empty(self):
         return len(self.segmentation) == 0 or self.area == 0
 
-    def mask(self):
-        """ Returns binary mask of annotation """
-        mask = np.zeros((self.height, self.width))
-        pts = [
-            np.array(anno).reshape(-1, 2).round().astype(int)
-            for anno in self.segmentation
-        ]
-        mask = cv2.fillPoly(mask, pts, 1)
-        return mask
 
     def clone(self):
         """ Creates a clone """

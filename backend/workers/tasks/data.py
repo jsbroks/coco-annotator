@@ -19,7 +19,6 @@ from celery import shared_task
 from ..socket import create_socket
 from mongoengine import Q
 
-
 @shared_task
 def export_annotations(task_id, dataset_id, categories):
 

@@ -63,12 +63,12 @@ export default {
       this.erase();
     },
     onMouseUp() {
-      this.$parent.currentAnnotation.simplifyPath();
+      //this.$parent.currentAnnotation.simplifyPath();
     },
     erase() {
       // Undo action, will be handled on mouse down
       // Simplify, will be handled on mouse up
-      this.$parent.currentAnnotation.subtract(this.eraser.brush, false, false);
+      this.$parent.currentAnnotation.subtract(this.eraser.brush, true, false);
     },
     decreaseRadius() {
       if (!this.isActive) return;

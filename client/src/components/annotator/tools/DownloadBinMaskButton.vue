@@ -22,7 +22,10 @@ export default {
   },
   methods: {
     download() {
-      if (this.annotation_id == -1) alert("Please select an annotation !");
+      if (this.annotation_id == -1) {
+        alert("Please select an annotation !");
+        return ;
+      }
       let uri = "/api/image/binmask/" + this.image.id + "/" + this.annotation_id + "?asAttachment=true";
       //download URI
       let link = document.createElement("a");

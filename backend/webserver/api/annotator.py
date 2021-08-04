@@ -108,7 +108,6 @@ class AnnotatorData(Resource):
                 )
 
                 paperjs_object = annotation.get('compoundPath', [])
-
                 # Update paperjs if it exists
                 if len(paperjs_object) == 2:
 
@@ -126,7 +125,6 @@ class AnnotatorData(Resource):
                         set__bbox=bbox,
                         set__paper_object=paperjs_object,
                     )
-
                     if area > 0:
                         counted = True
 
@@ -142,7 +140,6 @@ class AnnotatorData(Resource):
         )
 
         thumbnails.generate_thumbnail(image_model)
-
         return {"success": True}
 
 

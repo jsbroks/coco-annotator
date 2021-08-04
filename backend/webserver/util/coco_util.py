@@ -1,9 +1,6 @@
 import pycocotools.mask as mask
 import numpy as np
-import shapely
 from shapely.geometry import LineString, Point
-import logging
-logger = logging.getLogger('gunicorn.error')
 
 from database import (
     fix_ids,
@@ -25,7 +22,6 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     assert image_width > 0
     assert image_height > 0
     assert len(paperjs) == 2
-    #logger.info(f"compounfPAth: {paperjs}")
     # Compute segmentation
     # paperjs points are relative to the center, so we must shift them relative to the top left.
     segments = []
@@ -191,7 +187,6 @@ def get_segmentation_area_and_bbox(segmentation, image_height, image_width):
     # Convert into rle
     rles = mask.frPyObjects(segmentation, image_height, image_width)
     rle = mask.merge(rles)
-    bin_mask = mask.decode(rle)
     return mask.area(rle), mask.toBbox(rle)
 
 def get_bin_mask(segmentation, image_height, image_width):

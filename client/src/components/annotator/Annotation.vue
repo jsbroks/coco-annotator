@@ -517,13 +517,8 @@ export default {
       });
       this.addUndo(action);
     },
-    
-    simplifyPath(path = null) {
-
-      //Eliminate segments' handles
-      //ToDo: find a way to represent Bézier curves and get their binary masks in python
-      path.flatten(1);
-
+    simplifyPath(path = this.compoundPath) {
+      
       let simplify = this.simplify;
       if (path.hasOwnProperty('simplifyDegree')) simplify = path['simplifyDegree'];
 
@@ -535,18 +530,24 @@ export default {
           }
         );
 
-        //Simplify its points
+        // Simplify its points
         points = simplifyjs(points, simplify, true);
 
-        //Update current path with simplified contour
+        // Update current path with simplified contour
         path.segments = points;
       }
 
-      if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'pixel'){
-        //added this because it seems that the function simplifies the path 
-        //a little bit even with tolerance = 0 !
-        if (simplify != 0) path.simplify(simplify);
+      if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'pixel') {
+        // added this because it seems that the function simplifies the path 
+        // a little bit even with tolerance = 0 !
+        if (simplify != 0) {
+          path.simplify(simplify);
+        }
       }
+      // Eliminate segments' handles
+      // ToDo: find a way to represent Bézier curves and get their binary masks in python
+      path.flatten(1);
+
       return path;
     },
     undoCompound() {
@@ -675,6 +676,9 @@ export default {
      * @param {undoable} undoable add an undo action
      */
     subtract(compound, simplify = true, undoable = true) {
+
+      if (simplify) compound = this.simplifyPath(compound);
+
       if (this.compoundPath == null) this.createCompoundPath();
 
       let newCompound = this.compoundPath.subtract(compound);
@@ -684,8 +688,7 @@ export default {
       this.compoundPath.remove();
       this.compoundPath = newCompound;
       this.keypoints.bringToFront();
-
-      if (simplify) this.simplifyPath();
+      
     },
     setColor() {
       if (this.compoundPath == null) return;

@@ -1,6 +1,5 @@
 <script>
 import paper from "paper";
-import simplifyjs from "simplify-js";
 import tool from "@/mixins/toolBar/tool";
 import UndoAction from "@/undo";
 

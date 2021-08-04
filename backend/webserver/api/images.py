@@ -14,8 +14,6 @@ from PIL import Image
 import datetime
 import os
 import io
-import logging
-logger = logging.getLogger('gunicorn.error')
 
 api = Namespace('image', description='Image related operations')
 
@@ -203,7 +201,7 @@ class ImageBinaryMask(Resource):
     @api.expect(image_download)
     @login_required
     def get(self, image_id, annotation_id):
-        """ Returns binary mask by annotatio's ID """
+        """ Returns binary mask by annotation's ID """
         args = image_download.parse_args()
         as_attachment = args.get('asAttachment')
 
@@ -215,7 +213,8 @@ class ImageBinaryMask(Resource):
         #image dimensions
         width = image.width
         height = image.height
- 
+
+        # Get the binary mask png as attachement 
         try:
             annotation = AnnotationModel.objects.get(id= annotation_id)
         except:
@@ -223,13 +222,12 @@ class ImageBinaryMask(Resource):
 
         if (len(list(annotation.segmentation)) == 0):
             return {'message': 'annotation is empty'}, 400
-            
+        
         bin_mask =  coco_util.get_bin_mask(list(annotation.segmentation), height, width)
         
         img = Image.fromarray((255*bin_mask).astype('uint8'))
         image_io = io.BytesIO()
         img.save(image_io, "PNG", quality=95)
         image_io.seek(0)
-        
         return send_file(image_io, attachment_filename=image.file_name, as_attachment=as_attachment)
         
