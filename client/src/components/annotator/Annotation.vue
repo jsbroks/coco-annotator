@@ -654,9 +654,21 @@ export default {
       if (simplify && compound != null) {
         compound = this.simplifyPath(compound);
       }
-    
-      let newCompound = this.compoundPath.unite(compound);
-      
+
+      // ToRefactor: temporary solutioon for the isuue of unite that eliminates points and lines
+      let pts_or_lines = [];
+      let children = this.compoundPath.children
+      for (let i = 0; i < children.length; i++ ) {
+        if (children[i].segments.length == 2 || children[i].segments.length == 1) {
+          pts_or_lines.push(children[i]);
+        }
+      }
+      let newCompound = new CompoundPath(this.compoundPath.unite(compound));
+
+      // Add the points and lines back
+      for (let i = 0; i < pts_or_lines.length; i++ ) {
+        newCompound.addChild(pts_or_lines[i]);
+      }
       newCompound.strokeColor = null;
       newCompound.strokeWidth = 0;
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
