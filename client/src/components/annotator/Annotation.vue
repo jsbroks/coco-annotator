@@ -1,8 +1,5 @@
 <template>
-  <div
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
-  >
+  <div @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <li
       v-show="showSideMenu"
       class="list-group-item btn btn-link btn-sm text-left"
@@ -22,16 +19,16 @@
       </div>
 
       <button
-          class="btn btn-sm btn-link collapsed text-left annotation-text"
-          :style="{
-            float: 'left',
-            width: '70%',
-            color: isVisible ? 'white' : 'gray'
-          }"
-          aria-expanded="false"
-          :aria-controls="'collapse_keypoints' + annotation.id"
-          @click="onAnnotationClick(!showKeypoints);"
-        >
+        class="btn btn-sm btn-link collapsed text-left annotation-text"
+        :style="{
+          float: 'left',
+          width: '70%',
+          color: isVisible ? 'white' : 'gray',
+        }"
+        aria-expanded="false"
+        :aria-controls="'collapse_keypoints' + annotation.id"
+        @click="onAnnotationClick(!showKeypoints)"
+      >
         <template v-if="name.length === 0">
           {{ index + 1 }}
         </template>
@@ -43,47 +40,53 @@
         <i v-else style="padding-left: 5px; color: lightgray"
           >(id: {{ annotation.id }})</i
         >
-
-        </button>
+      </button>
 
       <i
         class="fa fa-gear annotation-icon"
-        style="float:right"
+        style="float: right"
         data-toggle="modal"
         :data-target="'#annotationSettings' + annotation.id"
       />
       <i
         @click="deleteAnnotation"
         class="fa fa-trash-o annotation-icon"
-        style="float:right"
+        style="float: right"
       />
     </li>
 
-    <ul v-show="showKeypoints" ref="collapse_keypoints"
-        class="list-group keypoint-list">
-      <li v-for="(kp, index) in keypointListView" :key="index"
-          :style="{'background-color': kp.backgroundColor}"
-          class="list-group-item text-left keypoint-item">
+    <ul
+      v-show="showKeypoints"
+      ref="collapse_keypoints"
+      class="list-group keypoint-list"
+    >
+      <li
+        v-for="(kp, index) in keypointListView"
+        :key="index"
+        :style="{ 'background-color': kp.backgroundColor }"
+        class="list-group-item text-left keypoint-item"
+      >
         <div>
-          <i class="fa fa-map-marker keypoint-icon"
-              :style="{ color: kp.iconColor}"
-              />
+          <i
+            class="fa fa-map-marker keypoint-icon"
+            :style="{ color: kp.iconColor }"
+          />
         </div>
         <a
           @click="onAnnotationKeypointClick(index)"
           :style="{
             float: 'left',
             width: '70%',
-            color: 'white'
+            color: 'white',
           }"
         >
-          <span> {{ kp.label }} </span> 
+          <span> {{ kp.label }} </span>
         </a>
         <i
           v-if="kp.visibility !== 0"
           @click="onAnnotationKeypointSettingsClick(index)"
           class="fa fa-gear annotation-icon"
-          style="float:right; color: lightgray;"
+          style="float: right; color: lightgray"
           data-toggle="modal"
           :data-target="'#keypointSettings' + annotation.id"
         />
@@ -91,7 +94,7 @@
           v-if="kp.visibility !== 0"
           @click="onDeleteKeypointClick(index)"
           class="fa fa-trash-o annotation-icon"
-          style="float:right; color: lightgray;"
+          style="float: right; color: lightgray"
         />
       </li>
     </ul>
@@ -123,8 +126,14 @@
                 <label class="col-sm-3 col-form-label">Visibility</label>
                 <div class="col-sm-8">
                   <select v-model="keypoint.visibility" class="form-control">
-                    <option v-for="(desc, label) in visibilityOptions" 
-                      :key="label" :value="label" :selected="keypoint.visibility == label">{{desc}}</option>
+                    <option
+                      v-for="(desc, label) in visibilityOptions"
+                      :key="label"
+                      :value="label"
+                      :selected="keypoint.visibility == label"
+                    >
+                      {{ desc }}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -241,61 +250,61 @@ export default {
   name: "Annotation",
   components: {
     Metadata,
-    TagsInput
+    TagsInput,
   },
   props: {
     annotation: {
       type: Object,
-      required: true
+      required: true,
     },
     index: {
       type: Number,
-      required: true
+      required: true,
     },
     current: {
       type: Number,
-      required: true
+      required: true,
     },
     hover: {
       type: Number,
-      required: true
+      required: true,
     },
     opacity: {
       type: Number,
-      required: true
+      required: true,
     },
     scale: {
       type: Number,
-      default: 1
+      default: 1,
     },
     search: {
       type: String,
-      default: ""
+      default: "",
     },
     simplify: {
       type: Number,
-      default: 1
+      default: 1,
     },
     keypointEdges: {
       type: Array,
-      required: true
+      required: true,
     },
     keypointLabels: {
       type: Array,
-      required: true
+      required: true,
     },
     keypointColors: {
       type: Array,
-      required: true
+      required: true,
     },
     activeTool: {
       type: String,
-      required: true
+      required: true,
     },
     allCategories: {
       type: Array,
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -303,12 +312,13 @@ export default {
       showKeypoints: false,
       color: this.annotation.color,
       compoundPath: null,
+      binaryMask: [],
       keypoints: null,
       metadata: [],
       isEmpty: true,
       name: "",
       uuid: "",
-      pervious: [],
+      previous: [],
       count: 0,
       currentKeypoint: null,
       keypoint: {
@@ -316,14 +326,14 @@ export default {
         visibility: 0,
         next: {
           label: -1,
-          visibility: 2
-        }
+          visibility: 2,
+        },
       },
       sessions: [],
       session: {
         start: Date.now(),
         tools: [],
-        milliseconds: 0
+        milliseconds: 0,
       },
       tagRecomputeCounter: 0,
       visibilityOptions: VisibilityOptions,
@@ -333,7 +343,6 @@ export default {
     ...mapMutations(["addUndo"]),
     initAnnotation() {
       let metaName = this.annotation.metadata.name;
-
       if (metaName) {
         this.name = metaName;
         delete this.annotation.metadata["name"];
@@ -343,10 +352,16 @@ export default {
         this.compoundPath.remove();
         this.compoundPath = null;
       }
+      this.initBinaryMask();
 
       this.createCompoundPath(
         this.annotation.paper_object,
         this.annotation.segmentation
+      );
+    },
+    initBinaryMask() {
+      this.binaryMask = Array.from(Array(this.annotation.height), () =>
+        new Array(this.annotation.width).fill(0)
       );
     },
     createCompoundPath(json, segments) {
@@ -379,11 +394,15 @@ export default {
         if (this.activeTool !== "Select") return;
         $(`#annotationSettings${this.annotation.id}`).modal("show");
       };
-      this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels,
-        this.keypointColors, {
+      this.keypoints = new Keypoints(
+        this.keypointEdges,
+        this.keypointLabels,
+        this.keypointColors,
+        {
           annotationId: this.annotation.id,
           categoryName: this.$parent.category.name,
-        });
+        }
+      );
       this.keypoints.radius = this.scale * 6;
       this.keypoints.lineWidth = this.scale * 2;
 
@@ -436,7 +455,7 @@ export default {
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
         this.$socket.emit("annotation", {
           action: "delete",
-          annotation: this.annotation
+          annotation: this.annotation,
         });
         this.delete();
 
@@ -447,7 +466,7 @@ export default {
       this.$parent.category.annotations.splice(this.index, 1);
       if (this.compoundPath != null) this.compoundPath.remove();
       if (this.keypoints != null) {
-        this.keypoints._keypoints.forEach( keypoint => {
+        this.keypoints._keypoints.forEach((keypoint) => {
           this.keypoints.deleteKeypoint(keypoint);
         });
         this.keypoints.remove();
@@ -463,7 +482,7 @@ export default {
     },
     onAnnotationKeypointClick(labelIndex) {
       if (this.isKeypointLabeled(labelIndex)) {
-        this.keypoint.tag = [String(labelIndex+1)];
+        this.keypoint.tag = [String(labelIndex + 1)];
         this.currentKeypoint = this.keypoints._labelled[this.keypoint.tag];
       }
       if (this.isVisible) {
@@ -471,7 +490,7 @@ export default {
       }
     },
     onAnnotationKeypointSettingsClick(labelIndex) {
-      this.keypoint.tag = [String(labelIndex+1)];
+      this.keypoint.tag = [String(labelIndex + 1)];
       let indexLabel = parseInt(String(this.keypoint.tag));
       if (this.keypoints && indexLabel in this.keypoints._labelled) {
         let labelled = this.keypoints._labelled[indexLabel];
@@ -507,28 +526,29 @@ export default {
       let copy = this.compoundPath.clone();
       copy.fullySelected = false;
       copy.visible = false;
-      this.pervious.push(copy);
-
+      this.previous.push(copy);
       let action = new UndoAction({
         name: "Annotation " + this.annotation.id,
         action: actionName,
         func: this.undoCompound,
-        args: {}
+        args: {},
       });
       this.addUndo(action);
     },
     simplifyPath(path = this.compoundPath) {
-      
       let simplify = this.simplify;
-      if (path.hasOwnProperty('simplifyDegree')) simplify = path['simplifyDegree'];
+      if (path.hasOwnProperty("simplifyDegree"))
+        simplify = path["simplifyDegree"];
 
-      if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'polygon'){
+      if (
+        path.hasOwnProperty("segmentsType") &&
+        path["segmentsType"] == "polygon"
+      ) {
         let points = [];
         //Get the path's points
-        path.segments.forEach(seg => {
-            points.push({ x: seg.point.x, y: seg.point.y });
-          }
-        );
+        path.segments.forEach((seg) => {
+          points.push({ x: seg.point.x, y: seg.point.y });
+        });
 
         // Simplify its points
         points = simplifyjs(points, simplify, true);
@@ -537,23 +557,27 @@ export default {
         path.segments = points;
       }
 
-      if (path.hasOwnProperty('segmentsType') && path['segmentsType'] == 'pixel') {
-        // added this because it seems that the function simplifies the path 
+      if (
+        path.hasOwnProperty("segmentsType") &&
+        path["segmentsType"] == "pixel"
+      ) {
+        // added this because it seems that the function simplifies the path
         // a little bit even with tolerance = 0 !
         if (simplify != 0) {
           path.simplify(simplify);
         }
+        //path.smooth();
       }
       // Eliminate segments' handles
       // ToDo: find a way to represent Bézier curves and get their binary masks in python
-      path.flatten(1);
+      //path.flatten(1);
 
       return path;
     },
     undoCompound() {
-      if (this.pervious.length == 0) return;
+      if (this.previous.length == 0) return;
       this.compoundPath.remove();
-      this.compoundPath = this.pervious.pop();
+      this.compoundPath = this.previous.pop();
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point, visibility, label) {
@@ -567,9 +591,9 @@ export default {
         indexLabel: label || -1,
         fillColor: this.keypointColors[label - 1],
         radius: this.scale * 6,
-        onClick: event => {
+        onClick: (event) => {
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
-          
+
           let keypoint = event.target.keypoint;
           // Remove if already selected
           if (keypoint == this.currentKeypoint) {
@@ -596,7 +620,7 @@ export default {
 
           this.currentKeypoint = keypoint;
         },
-        onDoubleClick: event => {
+        onDoubleClick: (event) => {
           if (!this.$parent.isCurrent) return;
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
           this.currentKeypoint = event.target.keypoint;
@@ -608,17 +632,17 @@ export default {
 
           $(id).modal("show");
         },
-        onMouseDrag: event => {
+        onMouseDrag: (event) => {
           let keypoint = event.target.keypoint;
           if (!["Select", "Keypoints"].includes(this.activeTool)) return;
 
           this.keypoints.moveKeypoint(event.point, keypoint);
-        }
+        },
       });
 
       this.keypoints.addKeypoint(keypoint);
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
-      
+
       let unusedLabels = this.notUsedKeypointLabels;
       delete unusedLabels[String(label)];
       let unusedLabelKeys = Object.keys(unusedLabels);
@@ -633,22 +657,41 @@ export default {
         this.keypoint.next.label = nextLabel;
       } else {
         this.keypoint.next.label = -1;
-        this.$emit('keypoints-complete');
+        this.$emit("keypoints-complete");
       }
       this.tagRecomputeCounter++;
     },
     deleteKeypoint(keypoint) {
       this.keypoints.deleteKeypoint(keypoint);
     },
+    updateBinaryMask(subMask, x, y, height, width, eraser = false) {
+      x = Math.round(x + this.annotation.width / 2);
+      y = Math.round(y + this.annotation.height / 2);
+
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          if (!eraser) {
+            this.binaryMask[y + j][x + i] =
+              this.binaryMask[y + j][x + i] || subMask[j][i];
+          } else if (this.binaryMask[y + j][x + i] && subMask[j][i]) {
+            this.binaryMask[y + j][x + i] = 0;
+          }
+        }
+      }
+      console.log("finished updating bin mask");
+    },
     /**
-     * Extract this annotation'children who are points or lines
+     * Extract current annotation's children who are points or lines
      */
     getPointsAndLines() {
       let pts_or_lines = [];
-      let children = this.compoundPath.children
+      let children = this.compoundPath.children;
 
-      for (let i = 0; i < children.length; i++ ) {
-        if (children[i].segments.length == 2 || children[i].segments.length == 1) {
+      for (let i = 0; i < children.length; i++) {
+        if (
+          children[i].segments.length == 2 ||
+          children[i].segments.length == 1
+        ) {
           pts_or_lines.push(children[i]);
         }
       }
@@ -657,13 +700,14 @@ export default {
     /**
      * Unites current annotation path with anyother path.
      * @param {paper.CompoundPath} compound compound to unite current annotation path with
-     * @param {boolean} simplify simplify compound before unite 
+     * @param {boolean} simplify simplify compound before unite
      * @param {undoable} undoable add an undo action.
      * @param {isBBox} isBBox mark annotation as bbox.
      */
     unite(compound, simplify = true, undoable = true, isBBox = false) {
-
       if (this.compoundPath == null) this.createCompoundPath();
+
+      if (undoable) this.createUndoAction("Unite");
 
       if (simplify && compound != null) {
         compound = this.simplifyPath(compound);
@@ -674,7 +718,7 @@ export default {
       let pts_or_lines = this.getPointsAndLines();
 
       let newCompound = new CompoundPath(this.compoundPath.unite(compound));
-      
+
       // Add the points and lines back
       newCompound.addChildren(pts_or_lines);
 
@@ -683,11 +727,11 @@ export default {
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
       this.annotation.isbbox = isBBox;
-      
-      if (undoable) this.createUndoAction("Unite");
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
+      this.compoundPath.data.annotationId = this.index;
+      this.compoundPath.data.categoryId = this.categoryIndex;
       this.keypoints.bringToFront();
     },
     /**
@@ -697,7 +741,7 @@ export default {
      * @param {undoable} undoable add an undo action
      */
     subtract(compound, simplify = true, undoable = true) {
-
+      if (undoable) this.createUndoAction("Subtract");
       if (simplify) compound = this.simplifyPath(compound);
 
       if (this.compoundPath == null) this.createCompoundPath();
@@ -710,26 +754,71 @@ export default {
 
       // Add the points and lines back
       for (let i = 0; i < pts_or_lines.length; i++) {
-
         if (pts_or_lines[i].segments.length == 1) {
-          //it's an isolated point
-          if (! compound.contains( pts_or_lines[i].segments[0].point )) {
-            newCompound.addChild( pts_or_lines[i] );
-          }
-
+          // It's an isolated point
+          if (!compound.contains(pts_or_lines[i].segments[0].point))
+            newCompound.addChild(pts_or_lines[i]);
         } else {
-          //it's an isolated line
-          if (! compound.intersects( pts_or_lines[i] )) newCompound.addChild( pts_or_lines[i] );
+          // It's an isolated line
+          if (!compound.intersects(pts_or_lines[i]))
+            newCompound.addChild(pts_or_lines[i]);
         }
       }
-      
+
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
-      if (undoable) this.createUndoAction("Subtract");
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
       this.keypoints.bringToFront();
-      
+    },
+    getRLE() {
+      let path, height, width, x, y, x_0, y_0;
+      let children = this.compoundPath.children;
+      for (let index in children) {
+        path = children[index];
+        height = path.bounds.height;
+        width = path.bounds.width;
+        x = path.bounds.x;
+        y = path.bounds.y;
+        x_0 = Math.round(x + this.annotation.width / 2);
+        y_0 = Math.round(y + this.annotation.height / 2);
+        
+        // Register the pixels who belong to the current compoundPath
+        for (var i = 0; i < height; i++) {
+          for (var j = 0; j < width; j++) {
+            if (path.contains(new paper.Point(x + j, y + i))) {
+              this.binaryMask[i + y_0][j + x_0] = 1;
+            }
+          }
+        }
+      }
+      console.log("Finished generating binary mask");
+      return this.encodeRLE();
+    },
+    encodeRLE() {
+      let lastElement = this.binaryMask[0][0];
+      let lastSequenceSize = 1;
+      let encoding = [];
+
+      if (lastElement === 1) {
+        encoding.push(0);
+      }
+      for (let j = 0; j < this.annotation.width; j++) {
+        for (let i = 0; i < this.annotation.height; i++) {
+          if (lastElement !== this.binaryMask[i][j]) {
+            encoding.push(lastSequenceSize);
+            lastElement = this.binaryMask[i][j];
+            lastSequenceSize = 1;
+          } else {
+            lastSequenceSize += 1;
+          }
+        }
+      }
+      encoding.push(lastSequenceSize);
+      console.log(
+        "finished encoding binary mask to rle, to send it into backend"
+      );
+      return encoding;
     },
     setColor() {
       if (this.compoundPath == null) return;
@@ -762,13 +851,13 @@ export default {
         id: this.annotation.id,
         isbbox: this.annotation.isbbox,
         color: this.color,
-        metadata: metadata
+        metadata: metadata,
       };
 
       this.compoundPath.fullySelected = false;
       let json = this.compoundPath.exportJSON({
         asString: false,
-        precision: 1
+        precision: 1,
       });
       if (!this.keypoints.isEmpty()) {
         annotationData.keypoints = this.keypoints.exportJSON(
@@ -787,6 +876,12 @@ export default {
       annotationData.sessions = this.sessions;
       this.sessions = [];
 
+      //export binary mask
+      //TODO: export rle only if brushTool is used in this annotation
+      annotationData.rle = {
+        size: [this.annotation.height, this.annotation.width],
+        counts: this.getRLE(),
+      };
       return annotationData;
     },
     emitModify() {
@@ -795,19 +890,19 @@ export default {
         .replace(/[^a-z]+/g, "");
       this.annotation.paper_object = this.compoundPath.exportJSON({
         asString: false,
-        precision: 1
+        precision: 1,
       });
       this.$socket.emit("annotation", {
         uuid: this.uuid,
         action: "modify",
-        annotation: this.annotation
+        annotation: this.annotation,
       });
     },
     getKeypointLabel(keypoint) {
       return keypoint && keypoint.keypoints.labels[keypoint.indexLabel - 1];
     },
     isKeypointSelected(tag, index) {
-      return tag == (index + 1);
+      return tag == index + 1;
     },
     isKeypointLabeled(index) {
       return this.keypoints && !!this.keypoints._labelled[index + 1];
@@ -833,20 +928,19 @@ export default {
       if (this.isCurrent && activeIndex == index + 1) return "rgb(30, 86, 36)";
 
       return "#383c4a";
-    }
+    },
   },
   watch: {
     activeTool(tool) {
       if (this.isCurrent) {
         this.session.tools.push(tool);
-      
+
         if (tool === "Keypoints") {
           if (!this.showKeypoints) {
             this.showKeypoints = true;
           }
           var labelIndex = -1;
-          for(let i=0; i < this.keypointLabels.length; ++i) {
-            
+          for (let i = 0; i < this.keypointLabels.length; ++i) {
             if (this.isKeypointLabeled(i)) {
               if (labelIndex < 0) {
                 labelIndex = i;
@@ -858,7 +952,7 @@ export default {
           }
 
           if (labelIndex > -1) {
-            this.keypoint.tag = [String(labelIndex+1)];
+            this.keypoint.tag = [String(labelIndex + 1)];
             this.currentKeypoint = this.keypoints._labelled[this.keypoint.tag];
             this.$emit("keypoint-click", labelIndex);
           }
@@ -924,7 +1018,7 @@ export default {
     },
     keypointEdges(newEdges) {
       this.keypoints.color = this.darkHSL;
-      newEdges.forEach(e => this.keypoints.addEdge(e));
+      newEdges.forEach((e) => this.keypoints.addEdge(e));
     },
     scale: {
       immediate: true,
@@ -933,8 +1027,8 @@ export default {
 
         this.keypoints.radius = scale * 6;
         this.keypoints.lineWidth = scale * 2;
-      }
-    }
+      },
+    },
   },
   computed: {
     categoryIndex() {
@@ -950,11 +1044,11 @@ export default {
     },
     keypointListView() {
       let listView = [];
-      for (let i=0; i < this.keypointLabels.length; ++i) {
+      for (let i = 0; i < this.keypointLabels.length; ++i) {
         let visibility = this.getKeypointVisibility(i);
-        let iconColor = 'rgb(40, 42, 49)';
+        let iconColor = "rgb(40, 42, 49)";
         if (visibility == 1) {
-          iconColor = 'lightgray';
+          iconColor = "lightgray";
         } else if (visibility == 2) {
           iconColor = this.keypointColors[i];
         }
@@ -1003,7 +1097,7 @@ export default {
       }
 
       return tags;
-    }
+    },
   },
   sockets: {
     annotation(data) {
@@ -1022,14 +1116,14 @@ export default {
       if (data.action == "delete") {
         this.delete();
       }
-    }
+    },
   },
   mounted() {
     this.initAnnotation();
     $(`#keypointSettings${this.annotation.id}`).on("hidden.bs.modal", () => {
       this.currentKeypoint = null;
     });
-  }
+  },
 };
 </script>
 

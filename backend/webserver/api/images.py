@@ -2,7 +2,7 @@ from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from flask import send_file
-
+import pycocotools.mask as mask
 from ..util import query_util, coco_util
 from database import (
     ImageModel,
@@ -14,6 +14,7 @@ from PIL import Image
 import datetime
 import os
 import io
+
 
 api = Namespace('image', description='Image related operations')
 
@@ -220,10 +221,22 @@ class ImageBinaryMask(Resource):
         except:
             return {'message': 'annotation does not exist'}, 400
 
-        if (len(list(annotation.segmentation)) == 0):
+        if (len(list(annotation.segmentation)) == 0 and not dict(annotation.rle)):
             return {'message': 'annotation is empty'}, 400
-        
-        bin_mask =  coco_util.get_bin_mask(list(annotation.segmentation), height, width)
+
+        # Convert uncompressed RLE to encoded RLE mask
+        '''segmentation = {
+            "counts": list(annotation.binaryMask),
+            "size": [height, width]
+        }
+        '''
+        if dict(annotation.rle) :
+            rles = mask.frPyObjects(dict(annotation.rle), height, width)
+            rle = mask.merge([rles])
+            # Extract the binary mask
+            bin_mask = mask.decode(rle)
+        else :
+            bin_mask =  coco_util.get_bin_mask(list(annotation.segmentation), height, width)
         
         img = Image.fromarray((255*bin_mask).astype('uint8'))
         image_io = io.BytesIO()

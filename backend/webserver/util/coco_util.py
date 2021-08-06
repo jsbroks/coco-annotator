@@ -1,6 +1,7 @@
 import pycocotools.mask as mask
 import numpy as np
 from shapely.geometry import LineString, Point
+import skimage.draw as sd
 
 from database import (
     fix_ids,
@@ -24,7 +25,6 @@ def paperjs_to_coco(image_width, image_height, paperjs):
     assert len(paperjs) == 2
     # Compute segmentation
     # paperjs points are relative to the center, so we must shift them relative to the top left.
-    segments = []
     segments_with_area = []
     pts_or_lines = []
     center = [image_width/2, image_height/2]
@@ -73,7 +73,7 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         segments_with_area.append(segments_to_add)
 
     if len(segments_with_area) < 1:
-        return pts_or_lines, 0, [0, 0, 0, 0]
+        return pts_or_lines, 0, None
     else :
         area, bbox = get_segmentation_area_and_bbox(
         segments_with_area, image_height, image_width)
@@ -197,11 +197,33 @@ def get_bin_mask(segmentation, image_height, image_width):
     Computes the binary mask of a polygon annotation
     :return: binary mask np.array format
     """
-    # Convert into rle
-    rles = mask.frPyObjects(segmentation, image_height, image_width)
-    rle = mask.merge(rles)
-    #extract the binary mask
-    bin_mask = mask.decode(rle)
+    bin_mask = np.zeros((image_height, image_width))
+    points = []
+    lines = []
+    polygons = []
+    
+    for segment in segmentation :
+        if len(segment) == 2:
+            points.append(segment)
+        elif len(segment) == 4:
+            lines.append(segment)
+        else :
+            polygons.append(segment)
+    
+    if len(polygons) != 0 :
+        # Convert into rle
+        rles = mask.frPyObjects(polygons, image_height, image_width)
+        rle = mask.merge(rles)
+        # Extract the binary mask
+        bin_mask = mask.decode(rle)
+
+    for point in points:
+        bin_mask[round(point[1])][round(point[0])] = 1
+
+    for line in lines:
+        rr, cc = sd.line(round(line[0]), round(line[1]), round(line[2]), round(line[3]))
+        bin_mask[cc,rr] = 1
+
     return bin_mask
 
 def get_annotations_iou(annotation_a, annotation_b):
@@ -255,15 +277,19 @@ def get_image_coco(image_id):
         category_annotations = fix_ids(category_annotations)
         for annotation in category_annotations:
             has_segmentation = len(annotation.get('segmentation', [])) > 0
+            has_rle_segmentation = annotation.get('rle', {}) != {}
             has_keypoints = len(annotation.get('keypoints', [])) > 0
 
-            if has_segmentation or has_keypoints:
+            if has_segmentation or has_keypoints or has_rle_segmentation:
 
                 if has_keypoints:
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
-                
+                if has_rle_segmentation:
+                    annotation['segmentation'] = annotation.get('rle')
+
+                annotation.pop('rle')
                 annotations.append(annotation)
 
         if len(category.get('keypoint_labels')) > 0:

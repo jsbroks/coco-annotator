@@ -152,7 +152,7 @@ export default {
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
 
-      this.$parent.uniteCurrentAnnotation(this.polygon.path, false, true, true);
+      this.$parent.uniteCurrentAnnotation(this.polygon.path, true, true, true);
 
       this.polygon.path.remove();
       this.polygon.path = null;

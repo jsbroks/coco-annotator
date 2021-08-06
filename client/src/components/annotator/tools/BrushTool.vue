@@ -3,7 +3,7 @@ import paper from "paper";
 import tool from "@/mixins/toolBar/tool";
 
 export default {
-  name: "EraserTool",
+  name: "BrushTool",
   mixins: [tool],
   props: {
     scale: {
@@ -19,7 +19,7 @@ export default {
       scaleFactor: 3,
       brush: {
         path: null,
-        simplify: 0,
+        simplify: 1,
         pathOptions: {
           strokeColor: "white",
           strokeWidth: 1,

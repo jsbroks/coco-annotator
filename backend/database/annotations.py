@@ -9,7 +9,7 @@ from flask_login import current_user
 
 class AnnotationModel(DynamicDocument):
 
-    COCO_PROPERTIES = ["id", "image_id", "category_id", "segmentation",
+    COCO_PROPERTIES = ["id", "image_id", "category_id", "segmentation", "rle",
                        "iscrowd", "color", "area", "bbox", "metadata",
                        "keypoints", "isbbox"]
 
@@ -19,6 +19,7 @@ class AnnotationModel(DynamicDocument):
     dataset_id = IntField()
 
     segmentation = ListField(default=[])
+    rle = DictField(default={})
     area = IntField(default=0)
     bbox = ListField(default=[0, 0, 0, 0])
     iscrowd = BooleanField(default=False)

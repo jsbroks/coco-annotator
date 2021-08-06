@@ -13,6 +13,9 @@ from database import (
     AnnotationModel,
     SessionEvent
 )
+import logging
+logger = logging.getLogger('gunicorn.error')
+
 
 api = Namespace('annotator', description='Annotator related operations')
 
@@ -110,23 +113,34 @@ class AnnotatorData(Resource):
                 paperjs_object = annotation.get('compoundPath', [])
                 # Update paperjs if it exists
                 if len(paperjs_object) == 2:
+                    if (annotation.get('rle', {}) != {}) :
+                        area = annotation.get('area', 0)
+                        db_annotation.update(
+                            set__area = area,
+                            set__isbbox = annotation.get('isbbox', False),
+                            set__bbox = annotation.get('bbox'),
+                            set__paper_object = paperjs_object,
+                            set__rle = annotation.get('rle', {})
+                        )
+                        if area > 0:
+                            counted = True
+                    else :
+                        width = db_annotation.width
+                        height = db_annotation.height
 
-                    width = db_annotation.width
-                    height = db_annotation.height
-
-                    # Generate coco formatted segmentation data
-                    segmentation, area, bbox = coco_util.\
-                        paperjs_to_coco(width, height, paperjs_object)
-
-                    db_annotation.update(
-                        set__segmentation=segmentation,
-                        set__area=area,
-                        set__isbbox=annotation.get('isbbox', False),
-                        set__bbox=bbox,
-                        set__paper_object=paperjs_object,
-                    )
-                    if area > 0:
-                        counted = True
+                        # Generate coco formatted segmentation data
+                        segmentation, area, bbox = coco_util.\
+                            paperjs_to_coco(width, height, paperjs_object)
+                    
+                        db_annotation.update(
+                            set__segmentation=segmentation,
+                            set__area=area,
+                            set__isbbox=annotation.get('isbbox', False),
+                            set__bbox=bbox,
+                            set__paper_object=paperjs_object
+                        )
+                        if area > 0:
+                            counted = True
 
                 if counted:
                     num_annotations += 1
