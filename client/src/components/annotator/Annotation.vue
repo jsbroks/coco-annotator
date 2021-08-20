@@ -312,6 +312,7 @@ export default {
       showKeypoints: false,
       color: this.annotation.color,
       compoundPath: null,
+      pixelMode: false,
       binaryMask: [],
       keypoints: null,
       metadata: [],
@@ -352,12 +353,12 @@ export default {
         this.compoundPath.remove();
         this.compoundPath = null;
       }
-      this.initBinaryMask();
 
       this.createCompoundPath(
         this.annotation.paper_object,
         this.annotation.segmentation
       );
+      if(JSON.stringify(this.annotation.rle) != "{}") this.pixelMode = true;
     },
     initBinaryMask() {
       this.binaryMask = Array.from(Array(this.annotation.height), () =>
@@ -539,7 +540,7 @@ export default {
       let simplify = this.simplify;
       if (path.hasOwnProperty("simplifyDegree"))
         simplify = path["simplifyDegree"];
-
+      //polygon format
       if (
         path.hasOwnProperty("segmentsType") &&
         path["segmentsType"] == "polygon"
@@ -556,21 +557,22 @@ export default {
         // Update current path with simplified contour
         path.segments = points;
       }
-
-      if (
+      // rle format
+      else if (
         path.hasOwnProperty("segmentsType") &&
         path["segmentsType"] == "pixel"
       ) {
+        this.pixelMode = true;
         // added this because it seems that the function simplifies the path
         // a little bit even with tolerance = 0 !
         if (simplify != 0) {
           path.simplify(simplify);
         }
-        //path.smooth();
+      } 
+      // Eraser: flatten its path only if we are in polygon format
+      else if (! this.pixelMode) {
+        path.flatten(1);
       }
-      // Eliminate segments' handles
-      // ToDo: find a way to represent Bézier curves and get their binary masks in python
-      //path.flatten(1);
 
       return path;
     },
@@ -664,22 +666,6 @@ export default {
     deleteKeypoint(keypoint) {
       this.keypoints.deleteKeypoint(keypoint);
     },
-    updateBinaryMask(subMask, x, y, height, width, eraser = false) {
-      x = Math.round(x + this.annotation.width / 2);
-      y = Math.round(y + this.annotation.height / 2);
-
-      for (let i = 0; i < width; i++) {
-        for (let j = 0; j < height; j++) {
-          if (!eraser) {
-            this.binaryMask[y + j][x + i] =
-              this.binaryMask[y + j][x + i] || subMask[j][i];
-          } else if (this.binaryMask[y + j][x + i] && subMask[j][i]) {
-            this.binaryMask[y + j][x + i] = 0;
-          }
-        }
-      }
-      console.log("finished updating bin mask");
-    },
     /**
      * Extract current annotation's children who are points or lines
      */
@@ -705,6 +691,7 @@ export default {
      * @param {isBBox} isBBox mark annotation as bbox.
      */
     unite(compound, simplify = true, undoable = true, isBBox = false) {
+      console.log("pixelMode from unite", this.pixelMode)
       if (this.compoundPath == null) this.createCompoundPath();
 
       if (undoable) this.createUndoAction("Unite");
@@ -769,25 +756,36 @@ export default {
 
       this.compoundPath.remove();
       this.compoundPath = newCompound;
+      this.compoundPath.data.annotationId = this.index;
+      this.compoundPath.data.categoryId = this.categoryIndex;
       this.keypoints.bringToFront();
     },
     getRLE() {
+    
+      this.initBinaryMask();
+
       let path, height, width, x, y, x_0, y_0;
+      let eraser = false;
       let children = this.compoundPath.children;
+
       for (let index in children) {
+
         path = children[index];
+        eraser = (path.fillColor == null) ;
         height = path.bounds.height;
         width = path.bounds.width;
         x = path.bounds.x;
         y = path.bounds.y;
         x_0 = Math.round(x + this.annotation.width / 2);
         y_0 = Math.round(y + this.annotation.height / 2);
-        
+
         // Register the pixels who belong to the current compoundPath
         for (var i = 0; i < height; i++) {
           for (var j = 0; j < width; j++) {
             if (path.contains(new paper.Point(x + j, y + i))) {
-              this.binaryMask[i + y_0][j + x_0] = 1;
+
+              if (eraser) this.binaryMask[i + y_0][j + x_0] = 0;
+              else this.binaryMask[i + y_0][j + x_0] = 1;
             }
           }
         }
@@ -878,10 +876,19 @@ export default {
 
       //export binary mask
       //TODO: export rle only if brushTool is used in this annotation
-      annotationData.rle = {
-        size: [this.annotation.height, this.annotation.width],
-        counts: this.getRLE(),
-      };
+      if (this.pixelMode) {
+        annotationData.rle = {
+          size: [this.annotation.height, this.annotation.width],
+          counts: this.getRLE(),
+        };
+        annotationData.area = Math.round(this.compoundPath.area);
+        annotationData.bbox = [
+          Math.round(this.compoundPath.bounds.x + this.annotation.width / 2),
+          Math.round(this.compoundPath.bounds.y + this.annotation.height / 2),
+          Math.round(this.compoundPath.bounds.height),
+          Math.round(this.compoundPath.bounds.width),
+        ];
+      }
       return annotationData;
     },
     emitModify() {
