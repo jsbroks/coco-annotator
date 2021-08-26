@@ -139,8 +139,9 @@ export default {
 }
 
 .meta-item {
+  padding: 3px;
   background-color: inherit;
-  height: 30px;
+  height: 40px;
   border: none;
 }
 
