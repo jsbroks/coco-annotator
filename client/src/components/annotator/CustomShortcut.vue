@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div v-if="shortcut.title != null" style="font-size: 13px">
+    <div class="bg-light" v-if="shortcut.title != null" style="font-size: 13px">
       {{ shortcut.title }}
     </div>
     <div class="row" style="cell">
-      <div class="col-sm">
+      <div class="col-sm text-left">
         {{ shortcut.name }}
         <p v-show="readonly" class="mute">(readonly)</p>
       </div>

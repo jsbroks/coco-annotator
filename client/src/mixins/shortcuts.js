@@ -11,6 +11,7 @@ export default {
     annotator() {
       return [
         {
+          title: "General",
           default: ["arrowup"],
           function: this.moveUp,
           name: "Move Up Annotations"

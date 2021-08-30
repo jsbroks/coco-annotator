@@ -56,7 +56,7 @@
 
             <Metadata :metadata="metadata" ref="metadata" />
 
-            <p style="margin: 5px 0 0 0">Keyboard Shortcuts</p>
+            <p style="margin: 30px 0 0 0">Keyboard Shortcuts</p>
 
             <div class="row">
               <div class="col-sm">
