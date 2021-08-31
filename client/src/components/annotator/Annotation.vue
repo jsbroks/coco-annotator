@@ -358,7 +358,7 @@ export default {
         this.annotation.paper_object,
         this.annotation.segmentation
       );
-      if(JSON.stringify(this.annotation.rle) != "{}") this.pixelMode = true;
+      if (JSON.stringify(this.annotation.rle) != "{}") this.pixelMode = true;
     },
     initBinaryMask() {
       this.binaryMask = Array.from(Array(this.annotation.height), () =>
@@ -540,7 +540,7 @@ export default {
       let simplify = this.simplify;
       if (path.hasOwnProperty("simplifyDegree"))
         simplify = path["simplifyDegree"];
-      //polygon format
+      // Polygon format
       if (
         path.hasOwnProperty("segmentsType") &&
         path["segmentsType"] == "polygon"
@@ -557,7 +557,7 @@ export default {
         // Update current path with simplified contour
         path.segments = points;
       }
-      // rle format
+      // RLE format (Using the brushTool)
       else if (
         path.hasOwnProperty("segmentsType") &&
         path["segmentsType"] == "pixel"
@@ -568,9 +568,9 @@ export default {
         if (simplify != 0) {
           path.simplify(simplify);
         }
-      } 
+      }
       // Eraser: flatten its path only if we are in polygon format
-      else if (! this.pixelMode) {
+      else if (!this.pixelMode) {
         path.flatten(1);
       }
 
@@ -691,7 +691,6 @@ export default {
      * @param {isBBox} isBBox mark annotation as bbox.
      */
     unite(compound, simplify = true, undoable = true, isBBox = false) {
-      console.log("pixelMode from unite", this.pixelMode)
       if (this.compoundPath == null) this.createCompoundPath();
 
       if (undoable) this.createUndoAction("Unite");
@@ -720,6 +719,7 @@ export default {
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.data.categoryId = this.categoryIndex;
       this.keypoints.bringToFront();
+      this.emitModify();
     },
     /**
      * Subtract current annotation path with anyother path.
@@ -759,64 +759,6 @@ export default {
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.data.categoryId = this.categoryIndex;
       this.keypoints.bringToFront();
-    },
-    getRLE() {
-    
-      this.initBinaryMask();
-
-      let path, height, width, x, y, x_0, y_0;
-      let eraser = false;
-      let children = this.compoundPath.children;
-
-      for (let index in children) {
-
-        path = children[index];
-        eraser = (path.fillColor == null) ;
-        height = path.bounds.height;
-        width = path.bounds.width;
-        x = path.bounds.x;
-        y = path.bounds.y;
-        x_0 = Math.round(x + this.annotation.width / 2);
-        y_0 = Math.round(y + this.annotation.height / 2);
-
-        // Register the pixels who belong to the current compoundPath
-        for (var i = 0; i < height; i++) {
-          for (var j = 0; j < width; j++) {
-            if (path.contains(new paper.Point(x + j, y + i))) {
-
-              if (eraser) this.binaryMask[i + y_0][j + x_0] = 0;
-              else this.binaryMask[i + y_0][j + x_0] = 1;
-            }
-          }
-        }
-      }
-      console.log("Finished generating binary mask");
-      return this.encodeRLE();
-    },
-    encodeRLE() {
-      let lastElement = this.binaryMask[0][0];
-      let lastSequenceSize = 1;
-      let encoding = [];
-
-      if (lastElement === 1) {
-        encoding.push(0);
-      }
-      for (let j = 0; j < this.annotation.width; j++) {
-        for (let i = 0; i < this.annotation.height; i++) {
-          if (lastElement !== this.binaryMask[i][j]) {
-            encoding.push(lastSequenceSize);
-            lastElement = this.binaryMask[i][j];
-            lastSequenceSize = 1;
-          } else {
-            lastSequenceSize += 1;
-          }
-        }
-      }
-      encoding.push(lastSequenceSize);
-      console.log(
-        "finished encoding binary mask to rle, to send it into backend"
-      );
-      return encoding;
     },
     setColor() {
       if (this.compoundPath == null) return;
@@ -874,21 +816,24 @@ export default {
       annotationData.sessions = this.sessions;
       this.sessions = [];
 
-      //export binary mask
-      //TODO: export rle only if brushTool is used in this annotation
-      if (this.pixelMode) {
-        annotationData.rle = {
-          size: [this.annotation.height, this.annotation.width],
-          counts: this.getRLE(),
-        };
+      if (this.pixelMode && !this.compoundPath.isEmpty()) {
+
         annotationData.area = Math.round(this.compoundPath.area);
         annotationData.bbox = [
           Math.round(this.compoundPath.bounds.x + this.annotation.width / 2),
           Math.round(this.compoundPath.bounds.y + this.annotation.height / 2),
-          Math.round(this.compoundPath.bounds.height),
-          Math.round(this.compoundPath.bounds.width),
+          Math.floor(this.compoundPath.bounds.height),
+          Math.floor(this.compoundPath.bounds.width)
         ];
+        let raster = this.compoundPath.rasterize();
+        raster.visible = false;
+        raster.size = new Size(
+          this.compoundPath.bounds.width,
+          this.compoundPath.bounds.height
+        );
+        annotationData.raster = raster.source;
       }
+
       return annotationData;
     },
     emitModify() {

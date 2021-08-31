@@ -33,6 +33,9 @@ export default {
   exportingCOCO(id, categories) {
     return axios.get(`${baseURL}/${id}/export?categories=${categories}`);
   },
+  exportingSemanticSegmentation(id, categories){
+    return axios.get(`${baseURL}/${id}/semanticSegmentation?categories=${categories}`);
+  },
   getCoco(id) {
     return axios.get(`${baseURL}/${id}/coco`);
   },

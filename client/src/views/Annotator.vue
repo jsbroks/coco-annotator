@@ -80,9 +80,8 @@
       <UndoButton />
 
       <hr />
-      <DownloadBinMaskButton 
+      <DownloadSemanticSegButton 
       :image="image" 
-      :annotation_id="currentAnnotationId"
       />
       <DownloadButton :image="image" />
       <SaveButton />
@@ -248,7 +247,7 @@ import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
 import DownloadButton from "@/components/annotator/tools/DownloadButton";
-import DownloadBinMaskButton from "@/components/annotator/tools/DownloadBinMaskButton";
+import DownloadSemanticSegButton from "@/components/annotator/tools/DownloadSemanticSegButton";
 import SaveButton from "@/components/annotator/tools/SaveButton";
 import SettingsButton from "@/components/annotator/tools/SettingsButton";
 import ModeButton from "@/components/annotator/tools/ModeButton";
@@ -286,7 +285,7 @@ export default {
     BrushTool,
     KeypointTool,
     DownloadButton,
-    DownloadBinMaskButton,
+    DownloadSemanticSegButton,
     SaveButton,
     SettingsButton,
     DeleteButton,
@@ -1029,12 +1028,7 @@ export default {
     },
     user() {
       return this.$store.getters["user/user"];
-    },currentAnnotationId() {
-      if (this.currentAnnotation == null) {
-        return -1;
-      }
-      return this.currentAnnotation.annotation.id;
-    },
+    }
   },
   sockets: {
     annotating(data) {
