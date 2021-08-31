@@ -1,8 +1,15 @@
 import datetime
+import base64
+import io
+from numpy.core.numeric import full
+
+import pycocotools.mask as mask
+import numpy as np
 
 from flask_restplus import Namespace, Resource
 from flask_login import login_required, current_user
 from flask import request
+from PIL import Image
 
 from ..util import query_util, coco_util, profile, thumbnails
 
@@ -13,12 +20,9 @@ from database import (
     AnnotationModel,
     SessionEvent
 )
-import logging
-logger = logging.getLogger('gunicorn.error')
 
 
 api = Namespace('annotator', description='Annotator related operations')
-
 
 @api.route('/data')
 class AnnotatorData(Resource):
@@ -51,7 +55,6 @@ class AnnotatorData(Resource):
 
         current_user.update(preferences=data.get('user', {}))
 
-        annotated = False
         num_annotations = 0
         # Iterate every category passed in the data
         for category in data.get('categories', []):
@@ -112,35 +115,61 @@ class AnnotatorData(Resource):
 
                 paperjs_object = annotation.get('compoundPath', [])
                 # Update paperjs if it exists
+                area = 0
+                bbox = []
+                width = db_annotation.width
+                height = db_annotation.height
                 if len(paperjs_object) == 2:
-                    if (annotation.get('rle', {}) != {}) :
+                    # Store segmentation in RLE format
+                    if (annotation.get('raster', {}) != {}) :
                         area = annotation.get('area', 0)
-                        db_annotation.update(
-                            set__area = area,
-                            set__isbbox = annotation.get('isbbox', False),
-                            set__bbox = annotation.get('bbox'),
-                            set__paper_object = paperjs_object,
-                            set__rle = annotation.get('rle', {})
-                        )
-                        if area > 0:
-                            counted = True
-                    else :
-                        width = db_annotation.width
-                        height = db_annotation.height
+                        bbox = annotation.get('bbox')
+                        ann_x = int(bbox[0])
+                        ann_y = int(bbox[1])
+                        ann_height = int(bbox[2])
+                        ann_width = int(bbox[3])
+                        dataurl = annotation.get('raster')
 
-                        # Generate coco formatted segmentation data
+                        # Convert base64 image to RGB image
+                        image_b64 = dataurl.split(",")[1]
+                        binary = io.BytesIO(base64.b64decode(image_b64))
+                        sub_image = Image.open(binary)
+                        sub_image = np.array(sub_image).reshape((ann_height, ann_width, 4))
+
+                        # convert RGB image to 0/255 image
+                        sub_binary_mask = np.sum(sub_image[:, :, :3], 2)
+                        sub_binary_mask[sub_binary_mask>0] = 1
+
+                        # Insert the sub Image into its position in the full image
+                        full_binary_mask = np.zeros((height,width))
+                        full_binary_mask[ann_y:ann_y+ann_height, ann_x:ann_x+ann_width] = sub_binary_mask
+                        
+                        # TODO: Use pyCOCOTools.encode : the LEB128 rle counts get 
+                        # corrupted when stored in the mongodb (uses Base64)
+                        # rle = mask.encode(np.asfortranarray(full_binary_mask.astype('uint8')))
+                        rle = coco_util.binary_mask_to_rle(full_binary_mask)
+                        
+                        db_annotation.update( 
+                            set__rle = rle,
+                            set__iscrowd = True
+                        )
+                    # Store segmentation in polygon format
+                    else :
                         segmentation, area, bbox = coco_util.\
                             paperjs_to_coco(width, height, paperjs_object)
                     
                         db_annotation.update(
-                            set__segmentation=segmentation,
-                            set__area=area,
-                            set__isbbox=annotation.get('isbbox', False),
-                            set__bbox=bbox,
-                            set__paper_object=paperjs_object
+                            set__segmentation=segmentation
                         )
-                        if area > 0:
-                            counted = True
+
+                    db_annotation.update(
+                        set__area = area,
+                        set__isbbox = annotation.get('isbbox', False),
+                        set__bbox = bbox,
+                        set__paper_object = paperjs_object
+                    )
+                    if area > 0:
+                        counted = True
 
                 if counted:
                     num_annotations += 1
@@ -155,7 +184,6 @@ class AnnotatorData(Resource):
 
         thumbnails.generate_thumbnail(image_model)
         return {"success": True}
-
 
 @api.route('/data/<int:image_id>')
 class AnnotatorId(Resource):

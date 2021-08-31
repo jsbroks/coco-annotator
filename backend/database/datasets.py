@@ -85,7 +85,23 @@ class DatasetModel(DynamicDocument):
             "id": task.id,
             "name": task.name
         }
-
+    def export_semantic_segmentation(self, categories=None) :
+        from workers.tasks import export_semantic_segmentation
+        if categories is None or len(categories) == 0:
+            categories = self.categories
+        task = TaskModel(
+            name=f"Exporting semantic segmentation of {self.name} ",
+            dataset_id=self.id,
+            group="Semantic Segmentation Export"
+        )
+        task.save()
+        cel_task = export_semantic_segmentation.delay(task.id, self.id, categories)
+        return {
+            "celery_id": cel_task.id,
+            "id": task.id,
+            "name": task.name
+        }
+    
     def scan(self):
 
         from workers.tasks import scan_dataset
