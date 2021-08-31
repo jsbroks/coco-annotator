@@ -225,7 +225,25 @@ def get_bin_mask(segmentation, image_height, image_width):
         bin_mask[cc,rr] = 1
 
     return bin_mask
+def binary_mask_to_rle(binary_mask):
+    rle = {'size': list(binary_mask.shape) , 'counts': [] }
+    counts = rle.get('counts')
 
+    last_elem = 0
+    running_length = 0
+
+    for i, elem in enumerate(binary_mask.ravel(order='F')):
+        if elem == last_elem:
+            pass
+        else:
+            counts.append(running_length)
+            running_length = 0
+            last_elem = elem
+        running_length += 1
+
+    counts.append(running_length)
+
+    return rle
 def get_annotations_iou(annotation_a, annotation_b):
     """
     Computes the IOU between two annotation objects
