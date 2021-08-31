@@ -12,7 +12,7 @@ from database import (
     AnnotationModel
 )
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageColor
 import datetime
 import os
 import io
@@ -226,10 +226,10 @@ class ImageSemanticSegmentation(Resource):
         db_annotations = AnnotationModel.objects(deleted=False, image_id=image_id)
         final_image_array = np.zeros((height, width))
         category_count = 1
-        label_colors = [(0, 0, 0)]
+        category_colors = [(0, 0, 0)]
 
         for category in fix_ids(bulk_categories):
-            label_colors.append( tuple(np.random.random(size=3) * 255))
+            category_colors.append(ImageColor.getcolor(category.get('color'), 'RGB')) 
             category_annotations = db_annotations\
                 .filter(category_id=category.get('id'))\
                 .only(*AnnotationModel.COCO_PROPERTIES)
@@ -263,7 +263,7 @@ class ImageSemanticSegmentation(Resource):
 
         for l in range(0, category_count):
             idx = final_image_array == l
-            x, y, z = label_colors[l]
+            x, y, z = category_colors[l]
             r[idx] = x
             g[idx] = y
             b[idx] = z

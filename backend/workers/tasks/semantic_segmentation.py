@@ -14,7 +14,7 @@ import numpy as np
 import pycocotools.mask as mask
 
 import zipfile
-from PIL import Image
+from PIL import Image, ImageColor
 from celery import shared_task
 from ..socket import create_socket
 
@@ -36,12 +36,12 @@ def export_semantic_segmentation(task_id, dataset_id, categories):
     db_annotations = AnnotationModel.objects(
         deleted=False, category_id__in=categories)
 
-    # Iterate through all categories to pick a color for each one
+    # Iterate through all categories to get the color and name of each one
     category_names = []
-    label_colors = [(0, 0, 0)]
+    category_colors = [(0, 0, 0)]
     for category in fix_ids(db_categories):
         category_names.append(category.get('name'))
-        label_colors.append( tuple(np.random.random(size=3) * 255))
+        category_colors.append( ImageColor.getcolor(category.get('color'), 'RGB'))
 
     # Get the path
     # Generate a unique name for the zip 
@@ -110,7 +110,7 @@ def export_semantic_segmentation(task_id, dataset_id, categories):
             b = np.zeros_like(final_image_array).astype(np.uint8)
             for l in found_categories:
                 idx = final_image_array == l
-                x, y, z = label_colors[l]
+                x, y, z = category_colors[l]
                 r[idx] = x
                 g[idx] = y
                 b[idx] = z
@@ -120,7 +120,7 @@ def export_semantic_segmentation(task_id, dataset_id, categories):
 
             # Write the image to the zip
             task.info(f"Writing image {image.get('id')} to the zipfile")
-            zip_file.writestr(image.get('file_name'), image_io.getvalue())
+            zip_file.writestr(dataset.name +"/" + image.get('file_name'), image_io.getvalue())
 
             # Update progress
             progress+=1
