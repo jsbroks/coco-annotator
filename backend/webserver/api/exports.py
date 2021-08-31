@@ -1,13 +1,13 @@
 from flask import send_file
-from flask_restplus import Namespace, Resource, reqparse
+from flask_restplus import Namespace, Resource
 from flask_login import login_required, current_user
 
 import datetime
+
 from ..util import query_util
 
 from database import (
     ExportModel,
-    DatasetModel,
     fix_ids
 )
 
@@ -66,6 +66,8 @@ class DatasetExports(Resource):
         
         if not current_user.can_download(dataset):
             return {"message": "You do not have permission to download the dataset's annotations"}, 403
+        if len(list(export.tags)) >0 and list(export.tags)[0] == "SemanticSeg":
+            return send_file(export.path, attachment_filename=f"{dataset.name}-{'-'.join(export.tags)}.zip", as_attachment=True)
 
-        return send_file(export.path, attachment_filename=f"{dataset.name.encode('utf-8')}-{'-'.join(export.tags).encode('utf-8')}.json", as_attachment=True)
+        return send_file(export.path, attachment_filename=f"{dataset.name}-{'-'.join(export.tags)}.json", as_attachment=True)
 
