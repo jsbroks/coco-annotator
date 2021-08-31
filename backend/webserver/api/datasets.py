@@ -524,6 +524,28 @@ class DatasetExport(Resource):
 
         return dataset.import_coco(json.load(coco))
 
+@api.route('/<int:dataset_id>/semanticSegmentation')
+class DatasetSemanticSegmentation(Resource):
+
+    @api.expect(export)
+    @login_required
+    def get(self, dataset_id):
+
+        args = export.parse_args()
+        categories = args.get('categories')
+        
+        if len(categories) == 0:
+            categories = []
+
+        if len(categories) > 0 or isinstance(categories, str):
+            categories = [int(c) for c in categories.split(',')]
+
+        dataset = DatasetModel.objects(id=dataset_id).first()
+        
+        if not dataset:
+            return {'message': 'Invalid dataset ID'}, 400
+        
+        return dataset.export_semantic_segmentation(categories=categories)
 
 @api.route('/<int:dataset_id>/coco')
 class DatasetCoco(Resource):
