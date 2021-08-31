@@ -16,12 +16,9 @@ from PIL import Image
 import datetime
 import os
 import io
-import logging
-logger = logging.getLogger('gunicorn.error')
 
 
 api = Namespace('image', description='Image related operations')
-
 
 image_all = reqparse.RequestParser()
 image_all.add_argument('fields', required=False, type=str)
@@ -200,30 +197,27 @@ class ImageCoco(Resource):
 
         return coco_util.get_image_coco(image_id)
 
-@api.route('/binmask/<int:image_id>/<int:annotation_id>')
-class ImageBinaryMask(Resource):
+@api.route('/semanticSegmentation/<int:image_id>')
+class ImageSemanticSegmentation(Resource):
 
     @api.expect(image_download)
     @login_required
-    def get(self, image_id, annotation_id):
-        """ Returns binary mask by annotation's ID """
+    def get(self, image_id):
+        """ Returns semantic segmentation by image's ID """
         args = image_download.parse_args()
         as_attachment = args.get('asAttachment')
-
-        image_0 = current_user.images.filter(id=image_id, deleted=False).first()
-        
-        if image_0 is None:
-            return {'success': False}, 400
-
-        #image dimensions
-        width = image_0.width
-        height = image_0.height
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         
         image = ImageModel.objects(id=image_id)\
         .only(*ImageModel.COCO_PROPERTIES)
-    
+
+        if image is None:
+            return {'success': False}, 400
+            
         image = fix_ids(image)[0]
+        #image dimensions
+        width = image.get('width')
+        height = image.get('height')
+
         dataset = DatasetModel.objects(id=image.get('dataset_id')).first()
 
         bulk_categories = CategoryModel.objects(id__in=dataset.categories, deleted=False) \
@@ -233,6 +227,7 @@ class ImageBinaryMask(Resource):
         final_image_array = np.zeros((height, width))
         category_count = 1
         label_colors = [(0, 0, 0)]
+
         for category in fix_ids(bulk_categories):
             label_colors.append( tuple(np.random.random(size=3) * 255))
             category_annotations = db_annotations\
@@ -243,8 +238,6 @@ class ImageBinaryMask(Resource):
                 continue
         
             category_annotations = fix_ids(category_annotations)
-            logger.info(f"category name {category.get('name')}")
-            logger.info(f"length annotations {len(category_annotations)}")
             for annotation in category_annotations:
                 
                 has_segmentation = len(annotation.get('segmentation', [])) > 0
@@ -263,11 +256,11 @@ class ImageBinaryMask(Resource):
                     idx = bin_mask == 1
                     final_image_array[idx] = category_count
             category_count += 1
-        #label_colors = np.array([(0, 0, 0), (128, 0, 0), (0, 128, 0), (0, 64, 128)])
-        logger.info(f"label colors {label_colors}")
+
         r = np.zeros_like(final_image_array).astype(np.uint8)
         g = np.zeros_like(final_image_array).astype(np.uint8)
         b = np.zeros_like(final_image_array).astype(np.uint8)
+
         for l in range(0, category_count):
             idx = final_image_array == l
             x, y, z = label_colors[l]
@@ -277,30 +270,7 @@ class ImageBinaryMask(Resource):
     
         rgb = np.stack([r, g, b], axis=2)
         
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # Get the binary mask png as attachement 
-        '''
-        try:
-            annotation = AnnotationModel.objects.get(id= annotation_id)
-        except:
-            return {'message': 'annotation does not exist'}, 400
-
-        if (len(list(annotation.segmentation)) == 0 and not dict(annotation.rle)):
-            return {'message': 'annotation is empty'}, 400
-        
-        if dict(annotation.rle) :
-            # Convert uncompressed RLE to encoded RLE mask
-            rles = mask.frPyObjects(dict(annotation.rle), height, width)
-            rle = mask.merge([rles])
-            # Extract the binary mask
-            bin_mask = mask.decode(rle)
-        else :
-            bin_mask =  coco_util.get_bin_mask(list(annotation.segmentation), height, width)
-        
-        img = Image.fromarray((255*bin_mask).astype('uint8'))
-        '''
-        img = Image.fromarray(rgb.astype('uint8'), 'RGB')
         image_io = io.BytesIO()
-        img.save(image_io, "PNG", quality=95)
+        Image.fromarray(rgb.astype('uint8')).save(image_io, "PNG", quality=95)
         image_io.seek(0)
-        return send_file(image_io, attachment_filename=image_0.file_name, as_attachment=as_attachment)
+        return send_file(image_io, attachment_filename=image.get('file_name'), as_attachment=as_attachment)
