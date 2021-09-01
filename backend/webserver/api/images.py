@@ -17,7 +17,6 @@ import datetime
 import os
 import io
 
-
 api = Namespace('image', description='Image related operations')
 
 image_all = reqparse.RequestParser()
@@ -211,9 +210,9 @@ class ImageSemanticSegmentation(Resource):
 
         if image is None:
             return {'success': False}, 400
-            
+
         image = fix_ids(image)[0]
-        #image dimensions
+        # Image dimensions
         width = image.get('width')
         height = image.get('height')
 
@@ -230,8 +229,8 @@ class ImageSemanticSegmentation(Resource):
         # if found annotations belong to the 1st and third categories in bulk_categories
         category_colors = [(0, 0, 0)]
         found_categories = []
-        # loop to generate semantic segmentation mask: 
-        # example:pixels belonging to the category of index 2, will be equal to 2
+        # Loop to generate semantic segmentation mask: 
+        # example: pixels belonging to the category of index 2, will have the value 2
         for category in fix_ids(bulk_categories):
             category_colors.append(ImageColor.getcolor(category.get('color'), 'RGB')) 
             category_annotations = db_annotations\
@@ -247,13 +246,9 @@ class ImageSemanticSegmentation(Resource):
                 
                 has_polygon_segmentation = len(annotation.get('segmentation', [])) > 0
                 has_rle_segmentation = annotation.get('rle', {}) != {}
-
                 if has_rle_segmentation:
-                    # Convert uncompressed RLE to encoded RLE mask
-                    rles = mask.frPyObjects(dict(annotation.get('rle', {})), height, width)
-                    rle = mask.merge([rles])
-                    # Extract the binary mask
-                    bin_mask = mask.decode(rle)
+                    CompressedRle = annotation.get('rle')
+                    bin_mask = mask.decode(CompressedRle)
                     idx = bin_mask == 1
                     final_image_array[idx] = category_index
                 elif has_polygon_segmentation:

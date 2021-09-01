@@ -1,8 +1,6 @@
 import datetime
 import base64
 import io
-from numpy.core.numeric import full
-
 import pycocotools.mask as mask
 import numpy as np
 
@@ -20,7 +18,6 @@ from database import (
     AnnotationModel,
     SessionEvent
 )
-
 
 api = Namespace('annotator', description='Annotator related operations')
 
@@ -120,7 +117,7 @@ class AnnotatorData(Resource):
                 width = db_annotation.width
                 height = db_annotation.height
                 if len(paperjs_object) == 2:
-                    # Store segmentation in RLE format
+                    # Store segmentation in compressed RLE format
                     if (annotation.get('raster', {}) != {}) :
                         area = annotation.get('area', 0)
                         bbox = annotation.get('bbox')
@@ -136,22 +133,36 @@ class AnnotatorData(Resource):
                         sub_image = Image.open(binary)
                         sub_image = np.array(sub_image).reshape((ann_height, ann_width, 4))
 
-                        # convert RGB image to 0/255 image
+                        # convert RGB image to binary image( each pixel is either 0 or 1)
                         sub_binary_mask = np.sum(sub_image[:, :, :3], 2)
                         sub_binary_mask[sub_binary_mask>0] = 1
 
-                        # Insert the sub Image into its position in the full image
-                        full_binary_mask = np.zeros((height,width))
-                        full_binary_mask[ann_y:ann_y+ann_height, ann_x:ann_x+ann_width] = sub_binary_mask
-                        
-                        # TODO: Use pyCOCOTools.encode : the LEB128 rle counts get 
-                        # corrupted when stored in the mongodb (uses Base64)
-                        # rle = mask.encode(np.asfortranarray(full_binary_mask.astype('uint8')))
-                        rle = coco_util.binary_mask_to_rle(full_binary_mask)
-                        
-                        db_annotation.update( 
+                        # Insert the sub binary mask into its position in the full image
+                        full_binary_mask = np.zeros((height,width), np.uint8)
+                        # Handle annotations exceeding image borders
+                        y_0 = ann_y
+                        y_end = ann_y+ann_height
+                        x_0 = ann_x
+                        x_end = ann_x+ann_width
+                        '''if ann_x < 0 :
+                            x_0 = 0 
+                            sub_binary_mask = sub_binary_mask[ : , ann_x + ann_width : ]
+                            logger.info(f"sub binary mask size{sub_binary_mask.size}")
+                        if ann_x + ann_width > width:
+                            x_end = width #-1
+                        if ann_y < 0 :
+                            y_0 = 0 
+                        if ann_y + ann_height > height:
+                            y_end = height
+                        logger.info(f"sub binary mask size{sub_binary_mask.size}")'''
+                        full_binary_mask[y_0 : y_end, x_0 : x_end] = sub_binary_mask
+                        rle = mask.encode(np.asfortranarray(full_binary_mask.astype('uint8')))
+                        # Convert rle['counts] brom a bytes list to a byte String
+                        rle['counts'] = rle.get('counts').decode()
+                        db_annotation.update(
                             set__rle = rle,
-                            set__iscrowd = True
+                            set__iscrowd = True,
+                            set__segmentation= [] #Clear segmentation when moving from polygon format to rle 
                         )
                     # Store segmentation in polygon format
                     else :

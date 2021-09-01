@@ -101,10 +101,12 @@ def export_annotations(task_id, dataset_id, categories):
                     annotation['num_keypoints'] = len(arr[arr > 0])
 
                 if has_rle_segmentation:
-                    annotation['segmentation'] = annotation.get('rle')
+                    rle = annotation.get('rle')
+                    annotation['segmentation'] = rle
+                    annotation.pop('rle')
 
                 num_annotations += 1
-                annotation.pop('rle')
+                
                 coco.get('annotations').append(annotation)
             
 

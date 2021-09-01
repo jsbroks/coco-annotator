@@ -29,8 +29,7 @@ export default {
     },
     // Download function
     execute() {
-      //this.$parent.save(this.download);
-      this.download();
+      this.$parent.save(this.download);
     }
   }
 };

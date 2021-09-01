@@ -10,7 +10,6 @@ from database import (
     CategoryModel,
     AnnotationModel
 )
-
 def paperjs_to_coco(image_width, image_height, paperjs):
     """
     Given a paperjs CompoundPath, converts path into coco segmentation format based on children paths
@@ -194,7 +193,8 @@ def get_segmentation_area_and_bbox(segmentation, image_height, image_width):
 
 def get_bin_mask(segmentation, image_height, image_width):
     """
-    Computes the binary mask of a polygon annotation
+    Computes the binary mask of an annotation in polyfon format.
+    It separates segmentations in line and point format (they are not supported by PyCOCOTools)
     :return: binary mask np.array format
     """
     bin_mask = np.zeros((image_height, image_width))
@@ -225,25 +225,7 @@ def get_bin_mask(segmentation, image_height, image_width):
         bin_mask[cc,rr] = 1
 
     return bin_mask
-def binary_mask_to_rle(binary_mask):
-    rle = {'size': list(binary_mask.shape) , 'counts': [] }
-    counts = rle.get('counts')
 
-    last_elem = 0
-    running_length = 0
-
-    for i, elem in enumerate(binary_mask.ravel(order='F')):
-        if elem == last_elem:
-            pass
-        else:
-            counts.append(running_length)
-            running_length = 0
-            last_elem = elem
-        running_length += 1
-
-    counts.append(running_length)
-
-    return rle
 def get_annotations_iou(annotation_a, annotation_b):
     """
     Computes the IOU between two annotation objects
@@ -294,20 +276,20 @@ def get_image_coco(image_id):
         
         category_annotations = fix_ids(category_annotations)
         for annotation in category_annotations:
-            has_segmentation = len(annotation.get('segmentation', [])) > 0
+            has_polygon_segmentation = len(annotation.get('segmentation', [])) > 0
             has_rle_segmentation = annotation.get('rle', {}) != {}
             has_keypoints = len(annotation.get('keypoints', [])) > 0
 
-            if has_segmentation or has_keypoints or has_rle_segmentation:
+            if has_polygon_segmentation or has_keypoints or has_rle_segmentation:
 
                 if has_keypoints:
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
                 if has_rle_segmentation:
-                    annotation['segmentation'] = annotation.get('rle')
-
-                annotation.pop('rle')
+                    rle = annotation.get('rle')
+                    annotation['segmentation'] = rle
+                    annotation.pop('rle')
                 annotations.append(annotation)
 
         if len(category.get('keypoint_labels')) > 0:

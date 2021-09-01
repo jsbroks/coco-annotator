@@ -313,7 +313,6 @@ export default {
       color: this.annotation.color,
       compoundPath: null,
       pixelMode: false,
-      binaryMask: [],
       keypoints: null,
       metadata: [],
       isEmpty: true,
@@ -358,12 +357,9 @@ export default {
         this.annotation.paper_object,
         this.annotation.segmentation
       );
-      if (JSON.stringify(this.annotation.rle) != "{}") this.pixelMode = true;
-    },
-    initBinaryMask() {
-      this.binaryMask = Array.from(Array(this.annotation.height), () =>
-        new Array(this.annotation.width).fill(0)
-      );
+      if (JSON.stringify(this.annotation.rle)!="{}" ) {
+        this.pixelMode = true;
+      }
     },
     createCompoundPath(json, segments) {
       json = json || null;
@@ -816,13 +812,11 @@ export default {
       // Export sessions and reset
       annotationData.sessions = this.sessions;
       this.sessions = [];
-
       if (this.compoundPath != null && this.compoundPath.isEmpty() && this.keypoints.isEmpty()) {
           this.deleteAnnotation();
           return annotationData;
       }
       if (this.pixelMode && !this.compoundPath.isEmpty()) {
-
         annotationData.area = Math.round(this.compoundPath.area);
         annotationData.bbox = [
           Math.round(this.compoundPath.bounds.x + this.annotation.width / 2),
@@ -830,13 +824,17 @@ export default {
           Math.floor(this.compoundPath.bounds.height),
           Math.floor(this.compoundPath.bounds.width)
         ];
-        let raster = this.compoundPath.rasterize();
+        let raster = this.compoundPath.rasterize(900);
         raster.visible = false;
         raster.size = new Size(
           this.compoundPath.bounds.width,
           this.compoundPath.bounds.height
         );
         annotationData.raster = raster.source;
+        annotationData.rasterX = Math.round(raster.bounds.x + this.annotation.width / 2);
+        annotationData.rasterY = Math.round(raster.bounds.y + this.annotation.height / 2);
+        annotationData.rasterHeight = raster.height;
+        annotationData.rasterWidth = raster.width;
       }
 
       return annotationData;

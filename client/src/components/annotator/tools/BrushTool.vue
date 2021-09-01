@@ -19,7 +19,7 @@ export default {
       scaleFactor: 3,
       brush: {
         path: null,
-        simplify: 1,
+        simplify: 0,
         pathOptions: {
           strokeColor: "white",
           strokeWidth: 1,

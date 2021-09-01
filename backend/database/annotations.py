@@ -19,12 +19,12 @@ class AnnotationModel(DynamicDocument):
     dataset_id = IntField()
 
     segmentation = ListField(default=[]) #segmentation in polygon format
-    rle = DictField(default={}) #segmentation in RLE format (uncompressed RLE)
+    rle = DictField(default={}) #segmentation in RLE format (Compressed RLE) 
     area = IntField(default=0)
     bbox = ListField(default=[0, 0, 0, 0])
     iscrowd = BooleanField(default=False)
     isbbox = BooleanField(default=False)
-
+    
     creator = StringField(required=True)
     width = IntField()
     height = IntField()
@@ -77,7 +77,16 @@ class AnnotationModel(DynamicDocument):
     def is_empty(self):
         return len(self.segmentation) == 0 or self.area == 0
 
-
+    def mask(self):
+        """ Returns binary mask of annotation """
+        mask = np.zeros((self.height, self.width))
+        pts = [
+            np.array(anno).reshape(-1, 2).round().astype(int)
+            for anno in self.segmentation
+        ]
+        mask = cv2.fillPoly(mask, pts, 1)
+        return mask
+        
     def clone(self):
         """ Creates a clone """
         create = json.loads(self.to_json())

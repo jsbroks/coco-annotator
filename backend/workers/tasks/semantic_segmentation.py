@@ -12,6 +12,7 @@ import os
 import time
 import numpy as np
 import pycocotools.mask as mask
+import skimage.draw as sd
 
 import zipfile
 from PIL import Image, ImageColor
@@ -78,29 +79,24 @@ def export_semantic_segmentation(task_id, dataset_id, categories):
         
                 if category_annotations.count() == 0:
                     category_index += 1
-
                     continue
+                
                 found_categories.append(category_index)
                 category_annotations = fix_ids(category_annotations)
 
                 for annotation in category_annotations:
-                    has_segmentation = len(annotation.get('segmentation', [])) > 0
+                    has_polygon_segmentation = len(annotation.get('segmentation', [])) > 0
                     has_rle_segmentation = annotation.get('rle', {}) != {}
 
                     if has_rle_segmentation:
-                        # Convert uncompressed RLE to encoded RLE mask
-                        rles = mask.frPyObjects(dict(annotation.get('rle', {})), height, width)
-                        rle = mask.merge([rles])
                         # Extract the binary mask
-                        bin_mask = mask.decode(rle)
+                        CompressedRle = annotation.get('rle')
+                        bin_mask = mask.decode(CompressedRle)
                         idx = bin_mask == 1
                         final_image_array[idx] = category_index
-                    elif has_segmentation:
+                    elif has_polygon_segmentation:
                         # Convert into rle
-                        rles = mask.frPyObjects(list(annotation.get('segmentation')), height, width)
-                        rle = mask.merge(rles)
-                        # Extract the binary mask
-                        bin_mask = mask.decode(rle)
+                        bin_mask = get_bin_mask(list(annotation.get('segmentation')), height, width)
                         idx = bin_mask == 1
                         final_image_array[idx] = category_index
                 category_index += 1
@@ -134,4 +130,40 @@ def export_semantic_segmentation(task_id, dataset_id, categories):
                 tags=["SemanticSeg", *category_names])
     export.save()
 
+def get_bin_mask(segmentation, image_height, image_width):
+    """
+    Computes the binary mask of an annotation in polygon format.
+    It separates segmentations in line and point format (they are not supported by PyCOCOTools)
+    (it's the same function as in webserver/util/coco_util.
+    Couldn't acces it from this folder )
+    :return: binary mask np.array format
+    """
+    bin_mask = np.zeros((image_height, image_width))
+    points = []
+    lines = []
+    polygons = []
+    
+    for segment in segmentation :
+        if len(segment) == 2:
+            points.append(segment)
+        elif len(segment) == 4:
+            lines.append(segment)
+        else :
+            polygons.append(segment)
+    
+    if len(polygons) != 0 :
+        # Convert into rle
+        rles = mask.frPyObjects(polygons, image_height, image_width)
+        rle = mask.merge(rles)
+        # Extract the binary mask
+        bin_mask = mask.decode(rle)
+
+    for point in points:
+        bin_mask[round(point[1])][round(point[0])] = 1
+
+    for line in lines:
+        rr, cc = sd.line(round(line[0]), round(line[1]), round(line[2]), round(line[3]))
+        bin_mask[cc,rr] = 1
+
+    return bin_mask
 __all__ = ["export_semantic_segmentation"]
