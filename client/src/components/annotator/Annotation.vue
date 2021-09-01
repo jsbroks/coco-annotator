@@ -759,6 +759,7 @@ export default {
       this.compoundPath.data.annotationId = this.index;
       this.compoundPath.data.categoryId = this.categoryIndex;
       this.keypoints.bringToFront();
+      this.emitModify()
     },
     setColor() {
       if (this.compoundPath == null) return;
@@ -816,6 +817,10 @@ export default {
       annotationData.sessions = this.sessions;
       this.sessions = [];
 
+      if (this.compoundPath != null && this.compoundPath.isEmpty() && this.keypoints.isEmpty()) {
+          this.deleteAnnotation();
+          return annotationData;
+      }
       if (this.pixelMode && !this.compoundPath.isEmpty()) {
 
         annotationData.area = Math.round(this.compoundPath.area);
