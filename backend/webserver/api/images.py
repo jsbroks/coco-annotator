@@ -199,11 +199,10 @@ class ImageCoco(Resource):
 
 @api.route('/semanticSegmentation/<int:image_id>')
 class ImageSemanticSegmentation(Resource):
-
     @api.expect(image_download)
     @login_required
     def get(self, image_id):
-        """ Returns semantic segmentation by image's ID """
+        """ Returns semantic segmentation image by image's ID """
         args = image_download.parse_args()
         as_attachment = args.get('asAttachment')
         
@@ -224,10 +223,15 @@ class ImageSemanticSegmentation(Resource):
             .only(*CategoryModel.COCO_PROPERTIES)
 
         db_annotations = AnnotationModel.objects(deleted=False, image_id=image_id)
-        final_image_array = np.zeros((height, width))
-        category_count = 1
-        category_colors = [(0, 0, 0)]
 
+        final_image_array = np.zeros((height, width))
+        category_index = 1
+        # category_colors = [black, color1, color2, ...] , found_categories = [1, 3]
+        # if found annotations belong to the 1st and third categories in bulk_categories
+        category_colors = [(0, 0, 0)]
+        found_categories = []
+        # loop to generate semantic segmentation mask: 
+        # example:pixels belonging to the category of index 2, will be equal to 2
         for category in fix_ids(bulk_categories):
             category_colors.append(ImageColor.getcolor(category.get('color'), 'RGB')) 
             category_annotations = db_annotations\
@@ -235,12 +239,13 @@ class ImageSemanticSegmentation(Resource):
                 .only(*AnnotationModel.COCO_PROPERTIES)
         
             if category_annotations.count() == 0:
+                category_index += 1
                 continue
-        
+            found_categories.append(category_index)
             category_annotations = fix_ids(category_annotations)
             for annotation in category_annotations:
                 
-                has_segmentation = len(annotation.get('segmentation', [])) > 0
+                has_polygon_segmentation = len(annotation.get('segmentation', [])) > 0
                 has_rle_segmentation = annotation.get('rle', {}) != {}
 
                 if has_rle_segmentation:
@@ -250,18 +255,18 @@ class ImageSemanticSegmentation(Resource):
                     # Extract the binary mask
                     bin_mask = mask.decode(rle)
                     idx = bin_mask == 1
-                    final_image_array[idx] = category_count
-                elif has_segmentation:
+                    final_image_array[idx] = category_index
+                elif has_polygon_segmentation:
                     bin_mask = coco_util.get_bin_mask(list(annotation.get('segmentation')), height, width)
                     idx = bin_mask == 1
-                    final_image_array[idx] = category_count
-            category_count += 1
-
+                    final_image_array[idx] = category_index
+            category_index += 1
+        # Transfom the 2D array to an RGB image
         r = np.zeros_like(final_image_array).astype(np.uint8)
         g = np.zeros_like(final_image_array).astype(np.uint8)
         b = np.zeros_like(final_image_array).astype(np.uint8)
 
-        for l in range(0, category_count):
+        for l in found_categories:
             idx = final_image_array == l
             x, y, z = category_colors[l]
             r[idx] = x

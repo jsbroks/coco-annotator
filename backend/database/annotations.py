@@ -18,8 +18,8 @@ class AnnotationModel(DynamicDocument):
     category_id = IntField(required=True)
     dataset_id = IntField()
 
-    segmentation = ListField(default=[])
-    rle = DictField(default={})
+    segmentation = ListField(default=[]) #segmentation in polygon format
+    rle = DictField(default={}) #segmentation in RLE format (uncompressed RLE)
     area = IntField(default=0)
     bbox = ListField(default=[0, 0, 0, 0])
     iscrowd = BooleanField(default=False)
