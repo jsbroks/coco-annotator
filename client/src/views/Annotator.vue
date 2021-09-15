@@ -99,6 +99,7 @@
       <FileTitle
         :previousimage="image.previous"
         :nextimage="image.next"
+        :labelmode="this.mode"
         :filename="image.filename"
         ref="filetitle"
       />
@@ -304,6 +305,10 @@ export default {
     identifier: {
       type: [Number, String],
       required: true
+    },
+    labelmode: {
+      type: [String],
+      required: false
     }
   },
   data() {
@@ -313,7 +318,7 @@ export default {
       shapeOpacity: 0.6,
       zoom: 0.2,
       cursor: "move",
-      mode: "segment",
+      mode: this.labelmode || "segment",
       simplify: 1,
       panels: {
         show: {
@@ -919,11 +924,11 @@ export default {
     },
     nextImage() {
       if(this.image.next != null)
-        this.$refs.filetitle.route(this.image.next);
+        this.$refs.filetitle.route(this.image.next, this.mode);
     },
     previousImage() {
       if(this.image.previous != null)
-        this.$refs.filetitle.route(this.image.previous);
+        this.$refs.filetitle.route(this.image.previous, this.mode);
     }
   },
   watch: {
