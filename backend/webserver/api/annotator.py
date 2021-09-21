@@ -144,20 +144,9 @@ class AnnotatorData(Resource):
                         y_end = ann_y+ann_height
                         x_0 = ann_x
                         x_end = ann_x+ann_width
-                        '''if ann_x < 0 :
-                            x_0 = 0 
-                            sub_binary_mask = sub_binary_mask[ : , ann_x + ann_width : ]
-                            logger.info(f"sub binary mask size{sub_binary_mask.size}")
-                        if ann_x + ann_width > width:
-                            x_end = width #-1
-                        if ann_y < 0 :
-                            y_0 = 0 
-                        if ann_y + ann_height > height:
-                            y_end = height
-                        logger.info(f"sub binary mask size{sub_binary_mask.size}")'''
                         full_binary_mask[y_0 : y_end, x_0 : x_end] = sub_binary_mask
                         rle = mask.encode(np.asfortranarray(full_binary_mask.astype('uint8')))
-                        # Convert rle['counts] brom a bytes list to a byte String
+                        # Convert rle['counts] from a bytes list to a byte String
                         rle['counts'] = rle.get('counts').decode()
                         db_annotation.update(
                             set__rle = rle,
