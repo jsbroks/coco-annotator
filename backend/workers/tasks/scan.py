@@ -7,7 +7,7 @@ from database import (
 from celery import shared_task
 from ..socket import create_socket
 from .thumbnails import thumbnail_generate_single_image
-
+from pathlib import PurePath
 import os
 
 
@@ -22,28 +22,34 @@ def scan_dataset(task_id, dataset_id):
     
     directory = dataset.directory
     toplevel = list(os.listdir(directory))
-    task.info(f"Scanning {directory}")
+    task.info(f"Scanning {directory} ")
 
     count = 0
     for root, dirs, files in os.walk(directory):
-
+        task.info(f"Scanning {directory} at {root}")
         try:
-            youarehere = toplevel.index(root.split('/')[-1])
-            progress = int(((youarehere)/len(toplevel))*100)
+            if root in toplevel:
+                youarehere = toplevel.index(root.split('/')[-1])
+                progress = int(((youarehere)/len(toplevel))*100)
+            else:
+                progress = len(toplevel)/100
+                youarehere = root
             task.set_progress(progress, socket=socket)
-        except:
-            pass
+        except Exception as ee:
+            task.warning(f"Could not set progress {youarehere} because of {ee}")
 
         if root.split('/')[-1].startswith('.'):
+            task.debug(f"Ignoring hidden root: {root}")
             continue
         
         for file in files:
             path = os.path.join(root, file)
-
+            relpath = str(PurePath(path).relative_to(directory))
             if path.endswith(ImageModel.PATTERN):
-                db_image = ImageModel.objects(path=path).first()
+                db_image = ImageModel.objects(relpath=relpath).first()
 
                 if db_image is not None:
+                    task.debug(f"File already exists: {relpath}")
                     continue
 
                 try:
