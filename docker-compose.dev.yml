@@ -34,6 +34,7 @@ services:
       - "./backend/database:/workspace/database"
       - "./datasets:/datasets"
       - "./models:/models"
+    user: ${CURRENT_UID}
     environment:
       - FILE_WATCHER=true
       - FLASK_APP=webserver
@@ -81,6 +82,7 @@ services:
       - 5555:5555
     networks:
       - cocoannotator
+    user: ${CURRENT_UID}
   database:
     image: mongo:4.0
     container_name: annotator_mongodb
