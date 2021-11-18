@@ -420,7 +420,7 @@ class DatasetDataId(Resource):
         # Perform mongodb query
         images = current_user.images \
             .filter(query_build) \
-            .order_by(order).only('id', 'file_name', 'annotating', 'annotated', 'num_annotations')
+            .order_by(order).only('id', 'file_name', 'annotating', 'annotated', 'num_annotations', 'category_ids')
         
         total = images.count()
         pages = int(total/per_page) + 1
