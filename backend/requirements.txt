@@ -15,7 +15,7 @@ pytest==3.9.3
 pytest-ordering==0.6
 imantics==0.1.9
 flask-socketio==3.3.2
-celery==4.2.2
+celery==5.2.2
 Shapely==1.7.0
 scipy
 Pillow
