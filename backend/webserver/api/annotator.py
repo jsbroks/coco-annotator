@@ -190,18 +190,21 @@ class AnnotatorId(Resource):
         data['image']['previous'] = pre.id if pre else None
         data['image']['next'] = nex.id if nex else None
 
+        # Optimize query: query all annotation of specific image, and then categorize them according to the categories.
+        all_annotations = AnnotationModel.objects(image_id=image_id, deleted=False).exclude('events').all()
+
         for category in categories:
             category = query_util.fix_ids(category[1])
-
             category_id = category.get('id')
-            annotations = AnnotationModel.objects(image_id=image_id, category_id=category_id, deleted=False)\
-                .exclude('events').all()
+            
+            annotations = []
+            for annotation in all_annotations:
+                if annotation['category_id'] == category_id:
+                    annotations.append(query_util.fix_ids(annotation))
 
             category['show'] = True
             category['visualize'] = False
-            category['annotations'] = [] if annotations is None else query_util.fix_ids(annotations)
+            category['annotations'] = [] if annotations is None else annotations
             data.get('categories').append(category)
 
         return data
-
-
