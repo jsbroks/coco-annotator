@@ -205,21 +205,36 @@ def import_annotations(task_id, dataset_id, coco_json):
     for image in coco_images:
         image_id = image.get('id')
         image_filename = image.get('file_name')
+        image_path = image.get('path')
 
         # update progress
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
 
-        image_model = images.filter(file_name__exact=image_filename).all()
+        if image_path:
+            image_path_split = image_path.split("/")
+            for i in range(len(image_path_split)):
+                partial_filename = "/".join(image_path_split[i:])
+                image_model = images.filter(path__endswith=partial_filename).all()
+                if len(image_model) == 1:
+                    break
+            else:
+                if len(image_model) == 0:
+                    task.warning(f"Could not find image {image_filename}")
+                if len(image_model) > 1:
+                    task.error(
+                            f"Too many images found with the same file name: {image_filename}")
+                continue
+        else:
+            image_model = images.filter(file_name__exact=image_filename).all()
+            if len(image_model) == 0:
+                task.warning(f"Could not find image {image_filename}")
+                continue
 
-        if len(image_model) == 0:
-            task.warning(f"Could not find image {image_filename}")
-            continue
-
-        if len(image_model) > 1:
-            task.error(
-                f"Too many images found with the same file name: {image_filename}")
-            continue
+            if len(image_model) > 1:
+                task.error(
+                    f"Too many images found with the same file name: {image_filename}")
+                continue
 
         task.info(f"Image {image_filename} found")
         image_model = image_model[0]
