@@ -432,6 +432,11 @@
                   :typeahead-activation-threshold="0"
                 ></TagsInput>
               </div>
+              <div>
+                <input type="checkbox" class="form-check-input"
+                  v-model="exporting.with_empty_images">
+                <label class="form-check-label">export with not annotated images</label>
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -528,6 +533,7 @@ export default {
       exporting: {
         categories: [],
         progress: 0,
+        with_empty_images: false,
         id: null
       },
       selected: {
@@ -651,7 +657,7 @@ export default {
     },
     exportCOCO() {
       $("#exportDataset").modal("hide");
-      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories)
+      Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.with_empty_images)
         .then(response => {
           let id = response.data.id;
           this.exporting.id = id;
