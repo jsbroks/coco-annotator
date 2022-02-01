@@ -1,6 +1,5 @@
 <template>
   <div style="display: block; height: inherit;">
-    
     <aside v-show="panels.show.left" class="left-panel shadow-lg">
       <div v-show="mode == 'segment'">
         <hr />
@@ -99,6 +98,7 @@
       <FileTitle
         :previousimage="image.previous"
         :nextimage="image.next"
+        :labelmode="this.mode"
         :filename="image.filename"
         ref="filetitle"
       />
@@ -304,6 +304,10 @@ export default {
     identifier: {
       type: [Number, String],
       required: true
+    },
+    labelmode: {
+      type: [String],
+      required: false
     }
   },
   data() {
@@ -313,7 +317,7 @@ export default {
       shapeOpacity: 0.6,
       zoom: 0.2,
       cursor: "move",
-      mode: "segment",
+      mode: this.labelmode || "segment",
       simplify: 1,
       panels: {
         show: {
@@ -429,7 +433,7 @@ export default {
     onpinchstart(e) {
       e.preventDefault();
       if (!this.doneLoading) return;
-      let view = this.paper.view;
+      // let view = this.paper.view;
       this.pinching.old_zoom = this.paper.view.zoom;
       return false;
     },
@@ -628,7 +632,7 @@ export default {
       }
       if (indices.keypoint !== -1) {
         this.current.keypoint = indices.keypoint;
-        let ann = this.currentCategory.category.annotations[this.current.annotation];
+        // let ann = this.currentCategory.category.annotations[this.current.annotation];
         let kpTool = this.$refs.keypoint;
         let selectTool = this.$refs.select;
         let category = this.$refs.category[this.current.category];
@@ -919,11 +923,11 @@ export default {
     },
     nextImage() {
       if(this.image.next != null)
-        this.$refs.filetitle.route(this.image.next);
+        this.$refs.filetitle.route(this.image.next, this.mode);
     },
     previousImage() {
       if(this.image.previous != null)
-        this.$refs.filetitle.route(this.image.previous);
+        this.$refs.filetitle.route(this.image.previous, this.mode);
     }
   },
   watch: {
