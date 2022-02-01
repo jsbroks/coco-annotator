@@ -154,6 +154,20 @@
                 </div>
               </div>
 
+              <div v-if="stats.users" class="card my-3 p-3 shadow-sm col-6 mr-2">
+                <h6 class="border-bottom border-gray pb-2"><b>Annotations per User</b></h6>
+                <h6 class="row border-bottom border-gray pb-2">
+                    <span class="col-4">Username</span>
+                    <span class="col-4">Annotations</span>
+                    <span class="col-4">Images</span>
+                </h6>
+                <div class="row" v-for="stat in Object.keys(stats.users)">
+                  <strong class="col-4">{{stat}}:</strong>
+                  <span class="col-4">{{stats.users[stat]["annotations"].toFixed(0)}}</span>
+                  <span class="col-4">{{stats.users[stat]["images"].toFixed(0)}}</span>
+                </div>
+              </div>
+
             </div>
             
           </div>

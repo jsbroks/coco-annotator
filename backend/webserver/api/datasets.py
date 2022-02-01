@@ -179,6 +179,23 @@ class DatasetStats(Resource):
         # Calculate annotation counts by category in this dataset
         category_count = dict()
         image_category_count = dict()
+
+
+
+        user_stats = dict()
+
+        for user in dataset.get_users():
+            user_annots = AnnotationModel.objects(dataset_id=dataset_id, deleted=False, creator=user.username)
+            image_count = dict()
+            for annot in user_annots:
+                image_count[annot.image_id] = image_count.get(annot.image_id, 0) + 1
+
+            user_stats[user.username] = {
+                "annotations":  len(user_annots),
+                "images": len(image_count)
+            }
+
+
         for category in dataset.categories:
 
             # Calculate the annotation count in the current category in this dataset
@@ -207,7 +224,8 @@ class DatasetStats(Resource):
                 'Time (ms) per Annotation': annotations.average('milliseconds') or 0
             },
             'categories': category_count,
-            'images_per_category': image_category_count
+            'images_per_category': image_category_count,
+            'users': user_stats
         }
         return stats
 
