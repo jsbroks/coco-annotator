@@ -18,6 +18,7 @@ create_annotation.add_argument('isbbox', type=bool, location='json')
 create_annotation.add_argument('metadata', type=dict, location='json')
 create_annotation.add_argument('segmentation', type=list, location='json')
 create_annotation.add_argument('keypoints', type=list, location='json')
+create_annotation.add_argument('bbox', type=list, location='json')
 create_annotation.add_argument('color', location='json')
 
 update_annotation = reqparse.RequestParser()
@@ -42,11 +43,12 @@ class Annotation(Resource):
         metadata = args.get('metadata', {})
         segmentation = args.get('segmentation', [])
         keypoints = args.get('keypoints', [])
+        bbox = args.get('bbox', [])
 
         image = current_user.images.filter(id=image_id, deleted=False).first()
         if image is None:
             return {"message": "Invalid image id"}, 400
-        
+
         logger.info(
             f'{current_user.username} has created an annotation for image {image_id} with {isbbox}')
         logger.info(
@@ -59,6 +61,7 @@ class Annotation(Resource):
                 metadata=metadata,
                 segmentation=segmentation,
                 keypoints=keypoints,
+                bbox=bbox,
                 isbbox=isbbox
             )
             annotation.save()
