@@ -48,7 +48,7 @@
 
     <ul v-show="showAnnotations" ref="collapse" class="list-group">
       <li
-        v-show="this.category.annotations.length > 1"
+        v-show="this.category.annotations.length > 0"
         class="list-group-item btn btn-link btn-sm text-left"
         :style="{ 'background-color': backgroundColor, color: 'white' }"
       >
@@ -56,6 +56,7 @@
           v-model="search"
           class="annotation-search"
           placeholder="Search"
+          :disabled="this.category.annotations.length < 2"
         />
       </li>
 
