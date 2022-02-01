@@ -40,6 +40,10 @@ class TaskModel(DynamicDocument):
     _update_every = 10
     _progress_update = 0
 
+
+    def debug(self, string):
+        self._log(string, level="DEBUG")
+        
     def error(self, string):
         self._log(string, level="ERROR")
     
