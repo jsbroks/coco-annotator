@@ -56,8 +56,11 @@ class Category(Resource):
         keypoint_edges = args.get('keypoint_edges')
         keypoint_labels = args.get('keypoint_labels')
         keypoint_colors = args.get('keypoint_colors')
-
-        try:
+        
+        # Check if the name is unique.
+        if CategoryModel.objects(name=name).count() > 0:
+            return {'message': 'Category already exists. Please try another category name.'}, 400
+        else:
             category = CategoryModel(
                 name=name,
                 supercategory=supercategory,
@@ -68,8 +71,6 @@ class Category(Resource):
                 keypoint_colors=keypoint_colors,
             )
             category.save()
-        except NotUniqueError as e:
-            return {'message': 'Category already exists. Check the undo tab to fully delete the category.'}, 400
 
         return query_util.fix_ids(category)
 
