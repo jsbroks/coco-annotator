@@ -3,22 +3,23 @@ from flask_login import login_required, current_user
 from werkzeug.datastructures import FileStorage
 from flask import send_file
 from mongoengine.errors import NotUniqueError
+import pycocotools.mask as mask
 
 from ..util import query_util, coco_util
 from database import (
+    fix_ids,
     ImageModel,
+    CategoryModel,
     DatasetModel,
     AnnotationModel
 )
-
-from PIL import Image
+import numpy as np
+from PIL import Image, ImageColor
 import datetime
 import os
 import io
 
-
 api = Namespace('image', description='Image related operations')
-
 
 image_all = reqparse.RequestParser()
 image_all.add_argument('fields', required=False, type=str)
@@ -200,3 +201,81 @@ class ImageCoco(Resource):
 
         return coco_util.get_image_coco(image_id)
 
+@api.route('/semanticSegmentation/<int:image_id>')
+class ImageSemanticSegmentation(Resource):
+    @api.expect(image_download)
+    @login_required
+    def get(self, image_id):
+        """ Returns semantic segmentation image by image's ID """
+        args = image_download.parse_args()
+        as_attachment = args.get('asAttachment')
+        
+        image = ImageModel.objects(id=image_id)\
+        .only(*ImageModel.COCO_PROPERTIES)
+
+        if image is None:
+            return {'success': False}, 400
+
+        image = fix_ids(image)[0]
+        # Image dimensions
+        width = image.get('width')
+        height = image.get('height')
+
+        dataset = DatasetModel.objects(id=image.get('dataset_id')).first()
+
+        bulk_categories = CategoryModel.objects(id__in=dataset.categories, deleted=False) \
+            .only(*CategoryModel.COCO_PROPERTIES)
+
+        db_annotations = AnnotationModel.objects(deleted=False, image_id=image_id)
+
+        final_image_array = np.zeros((height, width))
+        category_index = 1
+        # category_colors = [black, color1, color2, ...] , found_categories = [1, 3]
+        # if found annotations belong to the 1st and third categories in bulk_categories
+        category_colors = [(0, 0, 0)]
+        found_categories = []
+        # Loop to generate semantic segmentation mask: 
+        # example: pixels belonging to the category of index 2, will have the value 2
+        for category in fix_ids(bulk_categories):
+            category_colors.append(ImageColor.getcolor(category.get('color'), 'RGB')) 
+            category_annotations = db_annotations\
+                .filter(category_id=category.get('id'))\
+                .only(*AnnotationModel.COCO_PROPERTIES)
+        
+            if category_annotations.count() == 0:
+                category_index += 1
+                continue
+            found_categories.append(category_index)
+            category_annotations = fix_ids(category_annotations)
+            for annotation in category_annotations:
+                
+                has_polygon_segmentation = len(annotation.get('segmentation', [])) > 0
+                has_rle_segmentation = annotation.get('rle', {}) != {}
+                if has_rle_segmentation:
+                    CompressedRle = annotation.get('rle')
+                    bin_mask = mask.decode(CompressedRle)
+                    idx = bin_mask == 1
+                    final_image_array[idx] = category_index
+                elif has_polygon_segmentation:
+                    bin_mask = coco_util.get_bin_mask(list(annotation.get('segmentation')), height, width)
+                    idx = bin_mask == 1
+                    final_image_array[idx] = category_index
+            category_index += 1
+        # Transfom the 2D array to an RGB image
+        r = np.zeros_like(final_image_array).astype(np.uint8)
+        g = np.zeros_like(final_image_array).astype(np.uint8)
+        b = np.zeros_like(final_image_array).astype(np.uint8)
+
+        for l in found_categories:
+            idx = final_image_array == l
+            x, y, z = category_colors[l]
+            r[idx] = x
+            g[idx] = y
+            b[idx] = z
+    
+        rgb = np.stack([r, g, b], axis=2)
+        
+        image_io = io.BytesIO()
+        Image.fromarray(rgb.astype('uint8')).save(image_io, "PNG", quality=95)
+        image_io.seek(0)
+        return send_file(image_io, attachment_filename=image.get('file_name'), as_attachment=as_attachment)

@@ -80,7 +80,9 @@
       <UndoButton />
 
       <hr />
-
+      <DownloadSemanticSegButton 
+      :image="image" 
+      />
       <DownloadButton :image="image" />
       <SaveButton />
       <ModeButton v-model="mode" />
@@ -245,6 +247,7 @@ import DEXTRTool from "@/components/annotator/tools/DEXTRTool";
 import CopyAnnotationsButton from "@/components/annotator/tools/CopyAnnotationsButton";
 import CenterButton from "@/components/annotator/tools/CenterButton";
 import DownloadButton from "@/components/annotator/tools/DownloadButton";
+import DownloadSemanticSegButton from "@/components/annotator/tools/DownloadSemanticSegButton";
 import SaveButton from "@/components/annotator/tools/SaveButton";
 import SettingsButton from "@/components/annotator/tools/SettingsButton";
 import ModeButton from "@/components/annotator/tools/ModeButton";
@@ -282,6 +285,7 @@ export default {
     BrushTool,
     KeypointTool,
     DownloadButton,
+    DownloadSemanticSegButton,
     SaveButton,
     SettingsButton,
     DeleteButton,
@@ -673,11 +677,9 @@ export default {
       if (this.currentCategory == null) return;
       this.currentAnnotation.subtract(compound, simplify, undoable);
     },
-
     selectLastEditorTool() {
       this.activeTool = localStorage.getItem("editorTool") || "Select";
     },
-
     setCursor(newCursor) {
       this.cursor = newCursor;
     },

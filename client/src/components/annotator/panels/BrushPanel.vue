@@ -11,6 +11,13 @@
       name="Stroke Color"
       v-model="brush.brush.pathOptions.strokeColor"
     />
+        <PanelInputNumber
+      name="Maximum Error"
+      min="0"
+      max="5"
+      step="0.1"
+      v-model="brush.brush.simplify"
+    />
   </div>
 </template>
 

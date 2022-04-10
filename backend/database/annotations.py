@@ -1,8 +1,6 @@
 import imantics as im
 import json
-
 from mongoengine import *
-
 from .datasets import DatasetModel
 from .categories import CategoryModel
 from .events import Event
@@ -11,7 +9,7 @@ from flask_login import current_user
 
 class AnnotationModel(DynamicDocument):
 
-    COCO_PROPERTIES = ["id", "image_id", "category_id", "segmentation",
+    COCO_PROPERTIES = ["id", "image_id", "category_id", "segmentation", "rle",
                        "iscrowd", "color", "area", "bbox", "metadata",
                        "keypoints", "isbbox"]
 
@@ -20,12 +18,13 @@ class AnnotationModel(DynamicDocument):
     category_id = IntField(required=True)
     dataset_id = IntField()
 
-    segmentation = ListField(default=[])
+    segmentation = ListField(default=[]) #segmentation in polygon format
+    rle = DictField(default={}) #segmentation in RLE format (Compressed RLE) 
     area = IntField(default=0)
     bbox = ListField(default=[0, 0, 0, 0])
     iscrowd = BooleanField(default=False)
     isbbox = BooleanField(default=False)
-
+    
     creator = StringField(required=True)
     width = IntField()
     height = IntField()
@@ -59,7 +58,6 @@ class AnnotationModel(DynamicDocument):
         super(AnnotationModel, self).__init__(**data)
 
     def save(self, copy=False, *args, **kwargs):
-
         if self.dataset_id and not copy:
             dataset = DatasetModel.objects(id=self.dataset_id).first()
 
@@ -88,7 +86,7 @@ class AnnotationModel(DynamicDocument):
         ]
         mask = cv2.fillPoly(mask, pts, 1)
         return mask
-
+        
     def clone(self):
         """ Creates a clone """
         create = json.loads(self.to_json())
