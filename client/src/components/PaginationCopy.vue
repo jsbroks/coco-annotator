@@ -18,7 +18,7 @@
       </li>
       <li
         :class="{ 'page-item': true, disabled: page == pages }"
-        @click="nextPage"
+        @click="nextPage" ref="upload"
       >
         <a class="page-link" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
@@ -31,7 +31,7 @@
 
 <script>
 export default {
-  name: "Pagination",
+  name: "PaginationCopy",
   props: {
     pages: {
       type: Number,
@@ -51,27 +51,28 @@ export default {
       if (this.page < 1) {
         this.page = 1;
       }
-      //this.$emit('fun','previous');
     },
     nextPage() {
       this.page += 1;
       if (this.page > this.pages) {
         this.page = this.pages;
       }
-      //this.$emit('fun','next');
     }
   },
   watch: {
     page(newPage, oldPage) {
       if (newPage === oldPage) return;
+      if(this.$parent.pageSynchronous===1){
        if(oldPage>newPage)
        {
-             this.$emit('fun','previous','down',oldPage-newPage);
+             this.$emit('fun','previous','up',oldPage-newPage);
        }
        if(oldPage<newPage)
        {
-             this.$emit('fun','next','down',newPage-oldPage);
+             this.$emit('fun','next','up',newPage-oldPage);
        }
+      }
+       else  this.$emit('changePage');
       clearTimeout(this.timer);
       this.timer = setTimeout(() => this.$emit("pagechange", this.page), 0);
     }

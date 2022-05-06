@@ -3,6 +3,8 @@ FROM node:10 as build-stage
 WORKDIR /workspace/
 COPY ./client /workspace/client
 
+RUN npm config set registry https://registry.npm.taobao.org
+#RUN npm config get registry
 RUN npm install -g @vue/cli@3.3.0
 RUN npm install -g @vue/cli-service@3.3.0
 

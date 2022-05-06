@@ -53,11 +53,11 @@
             No images found in directory.
           </p>
           <div v-else>
-            <Pagination :pages="pages" @pagechange="updatePage" />
+            <Pagination :pages="pages" @pagechange="updatePage" ref= "bortherUp" @fun="fun" />
             <div class="row">
               <ImageCard v-for="image in images" :key="image.id" :image="image" />
             </div>
-            <Pagination :pages="pages" @pagechange="updatePage" />
+            <PaginationCopy :pages="pages" @pagechange="updatePage" ref= "bortherDown" @fun="fun" @changePage="changePage"/>
           </div>
 
         </div>
@@ -467,6 +467,7 @@ import Dataset from "@/models/datasets";
 import Export from "@/models/exports";
 import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
+import PaginationCopy from "@/components/PaginationCopy";
 import PanelString from "@/components/PanelInputString";
 import PanelToggle from "@/components/PanelToggle";
 import PanelDropdown from "@/components/PanelInputDropdown"
@@ -482,6 +483,7 @@ export default {
   components: {
     ImageCard,
     Pagination,
+    PaginationCopy,
     PanelString,
     PanelToggle,
     PanelDropdown,
@@ -496,6 +498,7 @@ export default {
   },
   data() {
     return {
+      pageSynchronous: 1 ,
       pages: 1,
       generateLimit: 100,
       limit: 52,
@@ -601,6 +604,32 @@ export default {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
+    },
+     fun(data,name,pagenum){
+     if(this.pageSynchronous===1){
+     this.pageSynchronous=0;
+     if(name=='down'){
+      for(var i=0;i<pagenum;i++){
+        if(data=='next')
+        this.$refs.bortherDown.nextPage();
+        if(data=='previous')
+        this.$refs.bortherDown.previousPage()  ;
+        }
+      }
+     if(name=='up'){
+      for(var i=0;i<pagenum;i++){
+        if(data=='next')
+        this.$refs.bortherUp.nextPage();
+        if(data=='previous')
+        this.$refs.bortherUp.previousPage();
+        }
+       }
+       }
+       else this.pageSynchronous=1;
+       
+      },
+      changePage() {
+     this.pageSynchronous=1;
     },
     getUsers() {
       Dataset.getUsers(this.dataset.id).then(response => {
@@ -838,6 +867,7 @@ export default {
     this.updatePage();
   },
   mounted() {
+    this.updatePage();
     window.addEventListener("mouseup", this.stopDrag);
     window.addEventListener("mousedown", this.startDrag);
   },
