@@ -1,3 +1,11 @@
+# Introduce
+
+This patch is specially provided by coco-annotator in Chinese Mainland
+
+- Both CSS and NPM addresses are domestic servers in China
+- Fixed the front-end malignant bug
+- Containing the core values of socialism with Chinese characteristics
+
 <p align="center"><img src="https://i.imgur.com/AA7IdbQ.png"></p>
 
 <p align="center">
