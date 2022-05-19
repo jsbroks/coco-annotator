@@ -45,7 +45,7 @@ export default {
         segments: true,
         stroke: true,
         fill: false,
-        tolerance: 10,
+        tolerance: 0, // The tolerance is scaled depending on the zoom
         match: hit => {
           return !hit.item.hasOwnProperty("indicator");
         }
@@ -372,6 +372,7 @@ export default {
         this.edit.distance = newScale * 40;
         this.edit.indicatorSize = newScale * 10;
         this.edit.indicatorWidth = newScale * 2;
+        this.hitOptions.tolerance = newScale * 10;
 
         if (this.edit.center && this.point != null) {
           this.createPoint(this.edit.center);
