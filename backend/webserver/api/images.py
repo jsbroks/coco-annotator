@@ -37,6 +37,7 @@ image_download.add_argument('asAttachment', type=bool, default=False)
 image_download.add_argument('thumbnail', type=bool, default=False)
 image_download.add_argument('width', type=int)
 image_download.add_argument('height', type=int)
+image_download.add_argument('original', type=bool, default=False)
 
 copy_annotations = reqparse.RequestParser()
 copy_annotations.add_argument('category_ids', location='json', type=list,
@@ -113,11 +114,14 @@ class ImageId(Resource):
         args = image_download.parse_args()
         as_attachment = args.get('asAttachment')
         thumbnail = args.get('thumbnail')
+        original = args.get('original')
 
         image = current_user.images.filter(id=image_id, deleted=False).first()
 
         if image is None:
             return {'success': False}, 400
+        if original:
+            return send_file(image.path, attachment_filename=image.file_name, as_attachment=as_attachment)
 
         width = args.get('width')
         height = args.get('height')
