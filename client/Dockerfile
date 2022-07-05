@@ -1,8 +1,8 @@
-FROM node:10
+FROM node:14
 
 RUN npm install -g --quiet \
-    @vue/cli@3.3.0 \
-    @vue/cli-service@3.3.0
+    @vue/cli@3.12.1 \
+    @vue/cli-service@3.12.1
 
 WORKDIR /workspace/
 
