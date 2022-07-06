@@ -48,6 +48,7 @@ export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
 
 update_dataset = reqparse.RequestParser()
+update_dataset.add_argument('project', location='json', type=str, help="New project")
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
                             help="Default annotation metadata")                            
@@ -234,15 +235,19 @@ class DatasetId(Resource):
     def post(self, dataset_id):
 
         """ Updates dataset by ID """
-
+        
         dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
 
         args = update_dataset.parse_args()
+        project = args.get('project')
         categories = args.get('categories')
         default_annotation_metadata = args.get('default_annotation_metadata')
         set_default_annotation_metadata = args.get('set_default_annotation_metadata')
+
+        if project is not None:
+            dataset.tags['project'] = project
 
         if categories is not None:
             dataset.categories = CategoryModel.bulk_create(categories)
@@ -261,6 +266,7 @@ class DatasetId(Resource):
                     .update(**update)
 
         dataset.update(
+            tags = dataset.tags,
             categories=dataset.categories,
             default_annotation_metadata=dataset.default_annotation_metadata
         )
