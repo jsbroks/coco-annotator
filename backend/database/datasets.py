@@ -14,6 +14,7 @@ class DatasetModel(DynamicDocument):
     name = StringField(required=True, unique=True)
     directory = StringField()
     thumbnails = StringField()
+    tags = DictField(default={})
     categories = ListField(default=[])
 
     owner = StringField(required=True)
