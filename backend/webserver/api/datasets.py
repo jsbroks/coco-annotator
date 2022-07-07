@@ -344,6 +344,27 @@ class DatasetData(Resource):
             "categories": query_util.fix_ids(current_user.categories.filter(deleted=False).all())
         }
 
+
+@api.route('/tags')
+class AllUniqueTags(Resource):
+
+    @login_required
+    def get(self):
+        """ Endpoint called by dataset viewer client """
+        datasets = current_user.datasets.filter(deleted=False)
+        tags = []
+
+        for dataset in datasets:
+            for key, value in dataset.tags.items():
+                if len(value) > 0:
+                    tag_string = key + ":" + value  
+                    tags.append(tag_string)
+        
+        return { 
+            "tags": list(set(tags))
+        }        
+
+
 @api.route('/<int:dataset_id>/data')
 class DatasetDataId(Resource):
 
