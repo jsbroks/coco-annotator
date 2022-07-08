@@ -22,6 +22,7 @@ class DatasetModel(DynamicDocument):
     annotate_url = StringField(default="")
 
     default_annotation_metadata = DictField(default={})
+    tags = DictField(default={})
 
     deleted = BooleanField(default=False)
     deleted_date = DateTimeField()

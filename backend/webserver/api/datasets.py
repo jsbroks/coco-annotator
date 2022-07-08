@@ -52,6 +52,7 @@ update_dataset = reqparse.RequestParser()
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
                             help="Default annotation metadata")                            
+update_dataset.add_argument('tags', location='json', type=dict, help="Dataset tags")
 
 dataset_generate = reqparse.RequestParser()
 dataset_generate.add_argument('keywords', location='json', type=list, default=[],
@@ -243,6 +244,7 @@ class DatasetId(Resource):
         categories = args.get('categories')
         default_annotation_metadata = args.get('default_annotation_metadata')
         set_default_annotation_metadata = args.get('set_default_annotation_metadata')
+        tags = args.get('tags')
 
         if categories is not None:
             dataset.categories = CategoryModel.bulk_create(categories)
@@ -260,7 +262,11 @@ class DatasetId(Resource):
                 AnnotationModel.objects(dataset_id=dataset.id, deleted=False)\
                     .update(**update)
 
+        if tags is not None:
+            dataset.tags = tags
+
         dataset.update(
+            tags = dataset.tags,
             categories=dataset.categories,
             default_annotation_metadata=dataset.default_annotation_metadata
         )
@@ -311,8 +317,8 @@ class DatasetData(Resource):
         # includes all keys in filters_dict and any of each key's possible values
         datasets = []
         for dataset in current_user.datasets.filter(deleted=False):
-            metadata = dataset.default_annotation_metadata
-            if not filters_dict or all(key in metadata and metadata[key] in values for key, values in filters_dict.items()):
+            tags = dataset.tags
+            if not filters_dict or all(key in tags and tags[key] in values for key, values in filters_dict.items()):
                 datasets.append(dataset)
 
         pagination = Pagination(len(datasets), limit, page)
@@ -347,13 +353,13 @@ class DatasetFilters(Resource):
     def get(self):
         """ Endpoint called by dataset viewer client """
         
-        # Get all unique default_annotation_metadata items across all datasets per user
-        # Each item becomes a string "key:value" that can be used to filter datasets in the client
+        # Get all unique tag items across all datasets per user
+        # Each tag becomes a string "key:value" that can be used to filter datasets in the client
         datasets = current_user.datasets.filter(deleted=False)
         filters = []
         
         for dataset in datasets:
-            for key, value in dataset.default_annotation_metadata.items():
+            for key, value in dataset.tags.items():
                 if len(value) > 0:
                     filter_string = key + ":" + value  
                     filters.append(filter_string)
