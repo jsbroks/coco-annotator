@@ -46,6 +46,20 @@
           </div>
         </div>
 
+        <form class="row justify-content-md-center">
+          <div class="col-12">
+            <TagsInput
+              v-model="selectedFilters"
+              element-id="createTag"
+              :existing-tags="filterTags"
+              :typeahead="true"
+              :typeahead-activation-threshold="0"
+              placeholder="Filter datasets by tag"
+              v-on:tags-updated="setFilters($event)"
+            ></TagsInput>
+          </div>
+        </form>
+
         <hr />
         <p v-if="datasets.length < 1" class="text-center">
           You need to create a dataset!
@@ -207,6 +221,8 @@ export default {
       datasets: [],
       subdirectories: [],
       categories: [],
+      selectedFilters: [],
+      filterOptions: [],
       users: []
     };
   },
@@ -221,13 +237,19 @@ export default {
 
       Datasets.allData({
         limit: this.limit,
-        page: page
+        page: page,
+        filters: JSON.stringify(this.selectedFilters),
       }).then(response => {
         this.datasets = response.data.datasets;
         this.categories = response.data.categories;
         this.subdirectories = response.data.subdirectories;
         this.pages = response.data.pagination.pages;
         this.page = response.data.pagination.page;
+
+        Datasets.getFilterOptions().then(response => {
+          this.filterOptions = response.data.filters;
+        });
+
         AdminPanel.getUsers(this.limit)
           .then(response => {
             this.users = response.data.users;
@@ -254,6 +276,10 @@ export default {
             error.response.data.message
           );
         });
+    },
+    setFilters(filters) {
+      this.selectedFilters = filters;
+      this.updatePage();
     }
   },
   watch: {
@@ -271,6 +297,13 @@ export default {
       this.categories.forEach(category => {
         tags[category.name] = category.name;
       });
+      return tags;
+    },
+    filterTags() {
+      let tags = {}
+      this.filterOptions.forEach(filter => {
+        tags[filter] = filter
+      })
       return tags;
     },
     validDatasetName() {

@@ -6,9 +6,16 @@ export default {
   allData(params) {
     return axios.get(`${baseURL}/data`, {
       params: {
-        ...params
+        ...params,
       }
     });
+  },
+  getFilterOptions(params) {
+    return axios.get(`${baseURL}/filters`, {
+      params: {
+        ...params
+      }
+    })
   },
   getData(id, params) {
     return axios.get(`${baseURL}/${id}/data`, {
