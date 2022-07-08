@@ -143,18 +143,16 @@ export default {
       type: Function,
       default: () => true
     },
-
     addTagsOnComma: {
       type: Boolean,
       default: false
     },
-
     wrapperClass: {
       type: String,
       default: "tags-input-wrapper-default"
     }
   },
-
+  
   data() {
     return {
       badgeId: 0,
@@ -268,7 +266,7 @@ export default {
 
       // Emit events
       this.$emit("tag-added", slug);
-      this.$emit("tags-updated");
+      this.$emit("tags-updated", this.tags);
     },
 
     removeLastTag() {
@@ -285,7 +283,7 @@ export default {
 
       // Emit events
       this.$emit("tag-removed", slug);
-      this.$emit("tags-updated");
+      this.$emit("tags-updated", this.tags);
     },
 
     searchTag() {
@@ -448,5 +446,6 @@ export default {
 <style>
 .tags-input-root {
   position: relative;
+  width: 100%;
 }
 </style>
