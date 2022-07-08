@@ -1,4 +1,3 @@
-from typing import Any
 from flask import request
 from flask_restplus import Namespace, Resource, reqparse
 from flask_login import login_required, current_user
@@ -37,7 +36,7 @@ page_data.add_argument('page', default=1, type=int)
 page_data.add_argument('limit', default=20, type=int)
 page_data.add_argument('folder', default='', help='Folder for data')
 page_data.add_argument('order', default='file_name', help='Order to display images')
-page_data.add_argument('tags', default='[]', type=str, required=False)
+page_data.add_argument('filters', default='[]', type=str, required=False)
 
 delete_data = reqparse.RequestParser()
 delete_data.add_argument('fully', default=False, type=bool,
@@ -50,7 +49,6 @@ export = reqparse.RequestParser()
 export.add_argument('categories', type=str, default=None, required=False, help='Ids of categories to export')
 
 update_dataset = reqparse.RequestParser()
-update_dataset.add_argument('tags', location='json', type=dict, help="New tags")
 update_dataset.add_argument('categories', location='json', type=list, help="New list of categories")
 update_dataset.add_argument('default_annotation_metadata', location='json', type=dict,
                             help="Default annotation metadata")                            
@@ -242,13 +240,9 @@ class DatasetId(Resource):
             return {"message": "Invalid dataset id"}, 400
 
         args = update_dataset.parse_args()
-        tags = args.get('tags')
         categories = args.get('categories')
         default_annotation_metadata = args.get('default_annotation_metadata')
         set_default_annotation_metadata = args.get('set_default_annotation_metadata')
-
-        if tags is not None:
-            dataset.tags = tags
 
         if categories is not None:
             dataset.categories = CategoryModel.bulk_create(categories)
@@ -267,7 +261,6 @@ class DatasetId(Resource):
                     .update(**update)
 
         dataset.update(
-            tags = dataset.tags,
             categories=dataset.categories,
             default_annotation_metadata=dataset.default_annotation_metadata
         )
@@ -304,20 +297,22 @@ class DatasetData(Resource):
         limit = args['limit']
         page = args['page']
         folder = args['folder']
-        tags = args['tags']
+        filters = args['filters']
 
-        # Convert tags string to dict mapping unique keys to lists of values
-        tags_dict = {}
-        for tag in json.loads(tags):
-            key, value = tag.split(":")
-            if key not in tags_dict:
-                tags_dict[key] = []
-            tags_dict[key].append(value)
+        # Convert filters string to dict mapping unique keys to lists of values
+        filters_dict = {}
+        for filter in json.loads(filters):
+            key, value = filter.split(":")
+            if key not in filters_dict:
+                filters_dict[key] = []
+            filters_dict[key].append(value)
         
-        # Get filtered list of datasets whose tags include all keys in tags_dict and any of each key's possible values
+        # Get filtered list of datasets whose default_annotation_metadata 
+        # includes all keys in filters_dict and any of each key's possible values
         datasets = []
         for dataset in current_user.datasets.filter(deleted=False):
-            if not tags_dict or all(key in dataset.tags and dataset.tags[key] in values for key, values in tags_dict.items()):
+            metadata = dataset.default_annotation_metadata
+            if not filters_dict or all(key in metadata and metadata[key] in values for key, values in filters_dict.items()):
                 datasets.append(dataset)
 
         pagination = Pagination(len(datasets), limit, page)
@@ -345,24 +340,27 @@ class DatasetData(Resource):
         }
 
 
-@api.route('/tags')
-class AllUniqueTags(Resource):
+@api.route('/filters')
+class DatasetFilters(Resource):
 
     @login_required
     def get(self):
         """ Endpoint called by dataset viewer client """
+        
+        # Get all unique default_annotation_metadata items across all datasets per user
+        # Each item becomes a string "key:value" that can be used to filter datasets in the client
         datasets = current_user.datasets.filter(deleted=False)
-        tags = []
-
+        filters = []
+        
         for dataset in datasets:
-            for key, value in dataset.tags.items():
+            for key, value in dataset.default_annotation_metadata.items():
                 if len(value) > 0:
-                    tag_string = key + ":" + value  
-                    tags.append(tag_string)
+                    filter_string = key + ":" + value  
+                    filters.append(filter_string)
         
         return { 
-            "tags": list(set(tags))
-        }        
+            "filters": list(set(filters))
+        }
 
 
 @api.route('/<int:dataset_id>/data')
