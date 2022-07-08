@@ -33,6 +33,7 @@
               type="text"
               class="meta-input"
               :placeholder="keyTitle"
+              @input="validateKeys()"
             />
           </div>
 
@@ -46,6 +47,10 @@
           </div>
         </div>
       </li>
+
+      <div :v-show="errorMessage" class="mt-3 text-danger small">
+        {{ errorMessage }}
+      </div>
     </ul>
   </div>
 </template>
@@ -77,7 +82,8 @@ export default {
   },
   data() {
     return {
-      metadataList: []
+      metadataList: [],
+      errorMessage: null, 
     };
   },
   methods: {
@@ -116,7 +122,17 @@ export default {
           this.metadataList.push({ key: key, value: value });
         }
       }
-    }
+    },
+    validateKeys() {
+      const keys = this.metadataList.map(metadata => metadata.key).filter(key => key.length);
+      const uniqueKeys = [...new Set(keys)];
+      
+      this.errorMessage = keys.length !== uniqueKeys.length
+        ? "Keys must be unique"
+        : null;
+
+     this.$emit("error", !!this.errorMessage);
+    },
   },
   watch: {
     metadata() {
