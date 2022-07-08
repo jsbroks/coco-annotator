@@ -235,7 +235,7 @@ class DatasetId(Resource):
     def post(self, dataset_id):
 
         """ Updates dataset by ID """
-        
+
         dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
         if dataset is None:
             return {"message": "Invalid dataset id"}, 400
@@ -313,8 +313,7 @@ class DatasetData(Resource):
                 filters_dict[key] = []
             filters_dict[key].append(value)
         
-        # Get filtered list of datasets whose default_annotation_metadata 
-        # includes all keys in filters_dict and any of each key's possible values
+        # Get filtered list of datasets whose tags include all keys in filters_dict and any of each key's values
         datasets = []
         for dataset in current_user.datasets.filter(deleted=False):
             tags = dataset.tags
