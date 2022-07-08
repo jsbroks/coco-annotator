@@ -130,10 +130,11 @@
 
               <Metadata
                 :metadata="defaultMetadata"
-                title="Default Annotation Metadata"
+                title="Default Annotation Metadata (Tags)"
                 key-name="Default Key"
                 value-name="Default Value"
                 ref="defaultAnnotation"
+                v-on:error="onValidationError($event)"
               />
             </form>
           </div>
@@ -143,6 +144,7 @@
               class="btn btn-success"
               @click="onSave"
               data-dismiss="modal"
+              :disabled="!allowSave"
             >
               Save
             </button>
@@ -239,7 +241,8 @@ export default {
       defaultMetadata: this.dataset.default_annotation_metadata,
       noImageUrl: require("@/assets/no-image.png"),
       notFoundImageUrl: require("@/assets/404-image.png"),
-      sharedUsers: []
+      sharedUsers: [],
+      allowSave: true,
     };
   },
   methods: {
@@ -278,8 +281,12 @@ export default {
         this.$parent.updatePage();
       });
     },
+    onValidationError(error) {
+      this.allowSave = !error;
+    },
     onSave() {
       this.dataset.categories = this.selectedCategories;
+      this.$refs.defaultAnnotation.clearEmptyItems();
 
       axios
         .post("/api/dataset/" + this.dataset.id, {
@@ -389,6 +396,7 @@ p {
   padding: 2px;
   background-color: #4b5162;
 }
+
 .icon-more {
   width: 10%;
   margin: 3px 0;
@@ -401,6 +409,7 @@ p {
   margin: 0 5px 7px 5px;
   height: 5px;
 }
+
 .card-footer {
   padding: 2px;
   font-size: 11px;
