@@ -127,13 +127,21 @@
                   :typeahead-activation-threshold="0"
                 />
               </div>
+              <hr />
 
               <Metadata
                 :metadata="defaultMetadata"
-                title="Default Annotation Metadata (Tags)"
-                key-name="Default Key"
-                value-name="Default Value"
+                title="Default Annotation Metadata"
                 ref="defaultAnnotation"
+                v-on:error="onValidationError($event)"
+              />
+              <hr />
+
+                            <Metadata
+                :metadata="datasetTags"
+                title="Dataset Tags"
+                ref="datasetTags"
+                empty-message="No tags"
                 v-on:error="onValidationError($event)"
               />
             </form>
@@ -239,6 +247,7 @@ export default {
       imageError: false,
       selectedCategories: [],
       defaultMetadata: this.dataset.default_annotation_metadata,
+      datasetTags: this.dataset.tags,
       noImageUrl: require("@/assets/no-image.png"),
       notFoundImageUrl: require("@/assets/404-image.png"),
       sharedUsers: [],
@@ -287,11 +296,13 @@ export default {
     onSave() {
       this.dataset.categories = this.selectedCategories;
       this.$refs.defaultAnnotation.clearEmptyItems();
+      this.$refs.datasetTags.clearEmptyItems();
 
       axios
         .post("/api/dataset/" + this.dataset.id, {
           categories: this.selectedCategories,
-          default_annotation_metadata: this.$refs.defaultAnnotation.export()
+          default_annotation_metadata: this.$refs.defaultAnnotation.export(),
+          tags: this.$refs.datasetTags.export()
         })
         .then(() => {
           this.$parent.updatePage();

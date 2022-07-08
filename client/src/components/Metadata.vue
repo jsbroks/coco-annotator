@@ -2,12 +2,13 @@
   <div>
     <i
       class="fa fa-plus"
-      style="float: right; margin: 5px; color: green; cursor: pointer"
+      style="float: right; margin: 5px 5px 0 -5px; color: green; cursor: pointer;"
       @click="createMetadata"
     />
 
-    <p class="title" style="margin: 0">{{ title }}</p>
+    <p class="title mb-2">{{ title }}</p>
 
+    <!--
     <div class="row">
       <div class="col-sm">
         <p class="subtitle">{{ keyTitle }}</p>
@@ -16,18 +17,19 @@
         <p class="subtitle">{{ valueTitle }}</p>
       </div>
     </div>
+    -->
 
     <ul class="list-group" style="height: 50%;">
       <li v-if="metadataList.length == 0" class="list-group-item meta-item">
-        <i class="subtitle">No items in metadata.</i>
+        <i class="subtitle">{{ emptyMessage }}</i>
       </li>
       <li
         v-for="(object, index) in metadataList"
         :key="index"
         class="list-group-item meta-item"
       >
-        <div class="row" style="cell">
-          <div class="col-sm">
+        <div class="row d-flex justify-content-between" style="cell">
+          <div class="col-xs">
             <input
               v-model="object.key"
               type="text"
@@ -37,7 +39,7 @@
             />
           </div>
 
-          <div class="col-sm">
+          <div class="col-xs">
             <input
               v-model="object.value"
               type="text"
@@ -46,17 +48,19 @@
             />
           </div>
 
-          <div class="d-flex align-items-center">
+          <div class="col-xs d-flex align-items-center">
             <i
               class="fa fa-minus"
-               style="color:red; cursor: pointer"
+              style="color:red; cursor: pointer"
               @click="deleteMetadata(index)"
             />
           </div>
         </div>
+
+        
       </li>
 
-      <div :v-show="errorMessage" class="mt-3 text-danger small">
+      <div :v-show="errorMessage" class="text-danger small">
         {{ errorMessage }}
       </div>
     </ul>
@@ -77,15 +81,19 @@ export default {
     },
     keyTitle: {
       type: String,
-      default: "Keys"
+      default: "Key"
     },
     valueTitle: {
       type: String,
-      default: "Values"
+      default: "Value"
     },
     exclude: {
       type: String,
       default: ""
+    },
+    emptyMessage: {
+      type: String,
+      default: "No items in metadata"
     }
   },
   data() {
@@ -174,7 +182,8 @@ export default {
 
 .meta-item {
   background-color: inherit;
-  height: 30px;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
   border: none;
 }
 
