@@ -2,7 +2,7 @@
   <div>
     <i
       class="fa fa-plus"
-      style="float: right; margin: 0 4px; color: green"
+      style="float: right; margin: 5px; color: green; cursor: pointer"
       @click="createMetadata"
     />
 
@@ -43,6 +43,14 @@
               type="text"
               class="meta-input"
               :placeholder="valueTitle"
+            />
+          </div>
+
+          <div class="d-flex align-items-center">
+            <i
+              class="fa fa-minus"
+               style="color:red; cursor: pointer"
+              @click="deleteMetadata(index)"
             />
           </div>
         </div>
@@ -107,6 +115,16 @@ export default {
     },
     createMetadata() {
       this.metadataList.push({ key: "", value: "" });
+    },
+    deleteMetadata(index) {
+      delete this.metadataList[index];
+      this.metadataList = this.metadataList.filter(metadata => metadata);
+      this.validateKeys();
+    },
+    clearEmptyItems() {
+      this.metadataList = this.metadataList.filter((metadata) => {
+        return metadata.key || metadata.value;
+      })
     },
     loadMetadata() {
       if (this.metadata != null) {
