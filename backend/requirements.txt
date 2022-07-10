@@ -1,6 +1,6 @@
-eventlet==0.31.0
+eventlet==0.30.2
 opencv-python==4.2.0.32
-flask==1.0.2
+flask==1.1.2
 flask-cors==3.0.9
 flask-login==0.4.1
 flask-restplus==0.12.1
