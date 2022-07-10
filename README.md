@@ -84,6 +84,8 @@ Several annotation tools are currently available, with most applications as a de
 - Annotate images with semi-trained models
 - Generate datasets using google images
 - User authentication system
+- Auto Annotate using MaskRCNN, MaskFormer (thank's to [rune-l](https://github.com/rune-l/coco-annotator) work)
+ or Detectron2 models
 
 For examples and more information check out the [wiki](https://github.com/jsbroks/coco-annotator/wiki).
 

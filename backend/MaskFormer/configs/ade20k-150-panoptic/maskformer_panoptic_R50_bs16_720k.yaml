@@ -1,0 +1,33 @@
+_BASE_: ../ade20k-150/maskformer_R50_bs16_160k.yaml
+MODEL:
+  SEM_SEG_HEAD:
+    PIXEL_DECODER_NAME: "TransformerEncoderPixelDecoder"
+    TRANSFORMER_ENC_LAYERS: 6
+  MASK_FORMER:
+    TRANSFORMER_IN_FEATURE: "transformer_encoder"
+    TEST:
+      PANOPTIC_ON: True
+      OVERLAP_THRESHOLD: 0.8
+      OBJECT_MASK_THRESHOLD: 0.7
+DATASETS:
+  TRAIN: ("ade20k_panoptic_train",)
+  TEST: ("ade20k_panoptic_val",)
+SOLVER:
+  MAX_ITER: 720000
+INPUT:
+  MIN_SIZE_TRAIN: !!python/object/apply:eval ["[int(x * 0.1 * 640) for x in range(5, 21)]"]
+  MIN_SIZE_TRAIN_SAMPLING: "choice"
+  MIN_SIZE_TEST: 640
+  MAX_SIZE_TRAIN: 2560
+  MAX_SIZE_TEST: 2560
+  CROP:
+    ENABLED: True
+    TYPE: "absolute"
+    SIZE: (640, 640)
+    SINGLE_CATEGORY_MAX_AREA: 1.0
+  COLOR_AUG_SSD: True
+  SIZE_DIVISIBILITY: 640  # used in dataset mapper
+  FORMAT: "RGB"
+  DATASET_MAPPER_NAME: "mask_former_panoptic"
+TEST:
+  EVAL_PERIOD: 0

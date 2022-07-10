@@ -1,0 +1,24 @@
+_BASE_: Base-ADE20KFull-847.yaml
+MODEL:
+  META_ARCHITECTURE: "SemanticSegmentor"
+  SEM_SEG_HEAD:
+    NAME: "PerPixelBaselinePlusHead"
+    IN_FEATURES: ["res2", "res3", "res4", "res5"]
+    IGNORE_VALUE: 65535
+    NUM_CLASSES: 847
+    COMMON_STRIDE: 4  # not used, hard-coded
+    LOSS_WEIGHT: 1.0
+    CONVS_DIM: 256
+    MASK_DIM: 256
+    NORM: "GN"
+  MASK_FORMER:
+    TRANSFORMER_IN_FEATURE: "res5"
+    DEEP_SUPERVISION: True
+    HIDDEN_DIM: 256
+    NUM_OBJECT_QUERIES: 847  # remember to set this to NUM_CLASSES
+    NHEADS: 8
+    DROPOUT: 0.1
+    DIM_FEEDFORWARD: 2048
+    ENC_LAYERS: 0
+    DEC_LAYERS: 6
+    PRE_NORM: False

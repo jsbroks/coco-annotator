@@ -1,0 +1,13 @@
+_BASE_: Base-ADE20K-150.yaml
+MODEL:
+  META_ARCHITECTURE: "SemanticSegmentor"
+  SEM_SEG_HEAD:
+    NAME: "PerPixelBaselineHead"
+    IN_FEATURES: ["res2", "res3", "res4", "res5"]
+    IGNORE_VALUE: 255
+    NUM_CLASSES: 150
+    COMMON_STRIDE: 4  # not used, hard-coded
+    LOSS_WEIGHT: 1.0
+    CONVS_DIM: 256
+    MASK_DIM: 256
+    NORM: "GN"

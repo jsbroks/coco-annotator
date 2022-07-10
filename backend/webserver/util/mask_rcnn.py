@@ -12,12 +12,13 @@ logger = logging.getLogger('gunicorn.error')
 MODEL_DIR = "/workspace/models"
 COCO_MODEL_PATH = AnnotatorConfig.MASK_RCNN_FILE
 CLASS_NAMES = AnnotatorConfig.MASK_RCNN_CLASSES.split(',')
+logger.info('Number of classes in the MaskRCNN model: {}'.format(len(CLASS_NAMES)))
 
 class CocoConfig(Config):
     """
     Configuration for COCO Dataset.
     """
-    NAME = "coco"
+    NAME = "ADE20K"
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
     NUM_CLASSES = len(CLASS_NAMES)
@@ -38,7 +39,7 @@ class MaskRCNN():
             self.model.keras_model._make_predict_function()
             logger.info(f"Loaded MaskRCNN model: {COCO_MODEL_PATH}")
         except:
-            logger.error(f"Could not load MaskRCNN model (place 'mask_rcnn_coco.h5' in the models directory)")
+            logger.error(f"Could not load MaskRCNN model (place 'mask_rcnn_coco.h5' in the models directory)", exc_info=True)
             self.model = None
 
 

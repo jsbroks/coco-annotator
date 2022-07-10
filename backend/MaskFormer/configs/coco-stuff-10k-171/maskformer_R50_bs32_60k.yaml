@@ -1,0 +1,27 @@
+_BASE_: Base-COCOStuff10K-171.yaml
+MODEL:
+  META_ARCHITECTURE: "MaskFormer"
+  SEM_SEG_HEAD:
+    NAME: "MaskFormerHead"
+    IN_FEATURES: ["res2", "res3", "res4", "res5"]
+    IGNORE_VALUE: 255
+    NUM_CLASSES: 171
+    COMMON_STRIDE: 4  # not used, hard-coded
+    LOSS_WEIGHT: 1.0
+    CONVS_DIM: 256
+    MASK_DIM: 256
+    NORM: "GN"
+  MASK_FORMER:
+    TRANSFORMER_IN_FEATURE: "res5"
+    DEEP_SUPERVISION: True
+    NO_OBJECT_WEIGHT: 0.1
+    DICE_WEIGHT: 1.0
+    MASK_WEIGHT: 20.0
+    HIDDEN_DIM: 256
+    NUM_OBJECT_QUERIES: 100
+    NHEADS: 8
+    DROPOUT: 0.1
+    DIM_FEEDFORWARD: 2048
+    ENC_LAYERS: 0
+    DEC_LAYERS: 6
+    PRE_NORM: False

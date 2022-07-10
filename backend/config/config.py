@@ -1,6 +1,7 @@
 import os
 import subprocess
-
+import json
+from typing import Optional
 
 def get_tag():
     result = subprocess.run(["git", "describe", "--abbrev=0", "--tags"], stdout=subprocess.PIPE)
@@ -13,6 +14,20 @@ def _get_bool(key, default_value):
             return True
         return False
     return default_value
+
+def mask_classes(code_json: str='/models/code_config.json') -> Optional[str]:
+
+    base_class = "BG"
+
+    if not os.path.exists(code_json):
+        return base_class
+
+    with open(code_json, 'r') as f:
+        class_dict = json.load(f)
+
+    class_list = [class_name.replace(',', '') for class_name in class_dict.keys()]
+
+    return base_class + ',' + ','.join(class_list)
 
 class Config:
 
@@ -64,10 +79,20 @@ class Config:
     ALLOW_REGISTRATION = _get_bool('ALLOW_REGISTRATION', True)
 
     ### Models
-    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "")
-    MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", "BG")
+    MASK_RCNN_FILE = os.getenv("MASK_RCNN_FILE", "/models/mask_rcnn_ade20k_0080.h5")
+    MASK_RCNN_CLASSES = os.getenv("MASK_RCNN_CLASSES", mask_classes())
 
     DEXTR_FILE = os.getenv("DEXTR_FILE", "/models/dextr_pascal-sbd.h5")
+
+    DETECTRON2_FILE = os.getenv("DETECTRON2_FILE", "/models/ade20k-150/maskformer_R50_bs16_160k.yaml")
+    DETECTRON2_WEIGHTS = os.getenv("DETECTRON2_WEIGHTS", "https://dl.fbaipublicfiles.com/maskformer/semantic-ade20k/maskformer_R50_bs16_160k/model_final_d8dbeb.pkl")
+    # MASK_FORMER_FILE = os.getenv("MASK_FORMER_FILE", "/models/ade20k-150/maskformer_R50_bs16_160k.yaml")
+    # MASK_FORMER_WEIGHTS = os.getenv("MASK_FORMER_WEIGHTS", "https://dl.fbaipublicfiles.com/maskformer/semantic-ade20k/maskformer_R50_bs16_160k/model_final_d8dbeb.pkl")
+    MASK_FORMER_FILE = os.getenv("MASK_FORMER_FILE", "")
+    MASK_FORMER_WEIGHTS = os.getenv("MASK_FORMER_WEIGHTS", "")
+
+    MASK_COCO_FILE = os.getenv("MASK_COCO_FILE", "/models/mask_rcnn_coco.h5")
+    MASK_COCO_CLASSES = os.getenv("MASK_COCO_CLASSES", "BG,person,bicycle,car,motorcycle,airplane,bus,train,truck,boat,traffic light,fire hydrant,stop sign,parking meter,bench,bird,cat,dog,horse,sheep,cow,elephant,bear,zebra,giraffe,backpack,umbrella,handbag,tie,suitcase,frisbee,skis,snowboard,sports ball,kite,baseball bat,baseball glove,skateboard,surfboard,tennis racket,bottle,wine glass,cup,fork,knife,spoon,bowl,banana,apple,sandwich,orange,broccoli,carrot,hot dog,pizza,donut,cake,chair,couch,potted plant,bed,dining table,toilet,tv,laptop,mouse,remote,keyboard,cell phone,microwave,oven,toaster,sink,refrigerator,book,clock,vase,scissors,teddy bear,hair drier,toothbrush")
 
 
 __all__ = ["Config"]

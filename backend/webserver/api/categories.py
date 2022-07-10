@@ -156,7 +156,7 @@ class Category(Resource):
             )
         except NotUniqueError:
             # it is only triggered when the name already exists and the creator is the same
-            return {"message": "Category '" + name_to_update + "' already exits"}, 400
+            return {"message": "Category '" + category.name + "' already exits"}, 400
 
         return {"success": True}
 

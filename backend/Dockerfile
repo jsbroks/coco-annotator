@@ -24,4 +24,11 @@ RUN git clone --single --depth 1 https://github.com/jsbroks/dextr-keras.git /tmp
     cd /tmp/dextr && \
     python setup.py install
 
+# Install detectron
+RUN echo "INSTALLING DETECTRON."
+FROM pytorch/pytorch:1.9.0-cuda10.2-cudnn7-runtime
+RUN apt-get update && apt-get install -y gcc libglib2.0-0
+RUN python3 -m pip install detectron2 -f \
+    https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.9/index.html
+
 RUN apt-get -y -o Dpkg::Options::="--force-confmiss" install --reinstall netbase

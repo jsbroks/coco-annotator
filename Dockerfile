@@ -16,9 +16,24 @@ RUN npm run build
 
 FROM jsbroks/coco-annotator:python-env
 
+RUN echo "INSTALLING DETECTRON."
+RUN pip3 install torch torchvision torchaudio
+RUN apt-get update && apt-get install -y gcc libglib2.0-0
+RUN python -m pip install detectron2 -f \
+    https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.10/index.html
+
+COPY ./backend/requirements.txt /workspace/
+RUN pip install -r requirements.txt && \
+    pip install gunicorn[eventlet]==19.9.0 && \
+    pip install pycocotools && \
+    apt update && apt install -y libsm6 libxext6 && \
+    apt-get install -y libxrender-dev
+
+RUN apt-get -y -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+
 WORKDIR /workspace/
 COPY ./backend/ /workspace/
-COPY ./.git /workspace/.git
+#COPY ./.git /workspace/.git
 RUN python set_path.py
 
 COPY --from=build-stage /workspace/client/dist /workspace/dist
