@@ -3,7 +3,7 @@ import paper from "paper";
 import tool from "@/mixins/toolBar/tool";
 
 export default {
-  name: "EraserTool",
+  name: "BrushTool",
   mixins: [tool],
   props: {
     scale: {
@@ -19,6 +19,7 @@ export default {
       scaleFactor: 3,
       brush: {
         path: null,
+        simplify: 0,
         pathOptions: {
           strokeColor: "white",
           strokeWidth: 1,
@@ -56,6 +57,7 @@ export default {
         radius: this.brush.pathOptions.radius,
         center: center
       });
+      
     },
     createSelection() {
       this.selection = new paper.Path({
@@ -92,6 +94,8 @@ export default {
      * Unites current selection with selected annotation
      */
     merge() {
+      this.selection["segmentsType"] = 'pixel';
+      this.selection["simplifyDegree"] = this.brush.simplify;
       this.$parent.uniteCurrentAnnotation(this.selection);
     },
     decreaseRadius() {
@@ -105,7 +109,8 @@ export default {
     export() {
       return {
         strokeColor: this.brush.pathOptions.strokeColor,
-        radius: this.brush.pathOptions.radius
+        radius: this.brush.pathOptions.radius,
+        simplify: this.brush.simplify
       };
     },
     setPreferences(pref) {
@@ -132,6 +137,9 @@ export default {
       if (this.brush.path == null) return;
 
       this.brush.path.strokeColor = newColor;
+    },
+    "brush.simplify"(newDegree) {
+      this.simplify = newDegree;
     },
     isActive(active) {
       if (this.brush.path != null) {
