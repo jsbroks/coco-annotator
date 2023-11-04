@@ -1,6 +1,6 @@
 version: "3"
 volumes:
-  dev_mongodb_data:
+  mongodb_data:
     external: false
 networks:
   cocoannotator:
@@ -13,7 +13,7 @@ services:
       context: .
       dockerfile: ./client/Dockerfile
     ports:
-      - "5000:8080"
+      - "8080:8080"
     volumes:
       - "./client:/workspace/client"
     networks:
@@ -25,14 +25,15 @@ services:
     build:
       context: .
       dockerfile: ./backend/webserver/Dockerfile
+    ports:
+      - 5000:5000
     volumes:
       - "./backend/config:/workspace/config"
       - "./backend/webserver:/workspace/webserver"
       - "./backend/workers:/workspace/workers"
       - "./backend/database:/workspace/database"
-      - "/hdd-raid0/coco-datasets-models-mongo_backup/datasets:/datasets"
-      - "/hdd-raid0/coco-datasets-models-mongo_backup/models:/models"
-
+      - "./datasets:/datasets"
+      - "./models:/models"
     environment:
       - FILE_WATCHER=true
       - FLASK_APP=webserver
@@ -72,7 +73,7 @@ services:
       - "./backend/webserver:/workspace/webserver"
       - "./backend/workers:/workspace/workers"
       - "./backend/database:/workspace/database"
-      - "/hdd-raid0/coco-datasets-models-mongo_backup/datasets:/datasets"
+      - "./datasets:/datasets"
     depends_on:
       - messageq
       - database
@@ -87,16 +88,12 @@ services:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
     volumes:
-      - "dev_mongodb_data:/data/db"
+      - "mongodb_data:/data/db"
     ports:
       - "27017:27017"
-    command: "mongod --smallfiles --logpath=/dev/null"   
-        #command: "mongod --smallfiles --oplogSize 128 --replSet rs0"
+    command: "mongod --smallfiles --logpath=/dev/null"
     networks:
       - cocoannotator
-    ports:
-      - 27017:27017
-
   messageq:
     image: rabbitmq:3
     container_name: annotator_message_q
