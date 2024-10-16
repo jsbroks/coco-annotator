@@ -1,10 +1,10 @@
-FROM node:10 as build-stage
+FROM node:14 as build-stage
 
 WORKDIR /workspace/
 COPY ./client /workspace/client
 
-RUN npm install -g @vue/cli@3.3.0
-RUN npm install -g @vue/cli-service@3.3.0
+RUN npm install -g @vue/cli@3.12.1
+RUN npm install -g @vue/cli-service@3.12.1
 
 COPY ./client/package* /workspace/
 
