@@ -34,7 +34,7 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         compound_path = {"children": [paperjs]}
     else:
         compound_path = paperjs[1]
-    
+
     children = compound_path.get('children', [])
 
     for child in children:
@@ -43,11 +43,11 @@ def paperjs_to_coco(image_width, image_height, paperjs):
         segments_to_add = []
 
         for point in child_segments:
-            
+
             # Cruve
             if len(point) == 4:
                 point = point[0]
-            
+
             # Point
             if len(point) == 2:
                 x = round(center[0] + point[0], 2)
@@ -102,7 +102,7 @@ def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: th
         compound_path = {"children": [paperjs]}
     else:
         compound_path = paperjs[1]
-    
+
     children = compound_path.get('children', [])
 
     for child in children:
@@ -124,7 +124,7 @@ def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: th
                 inside = True
                 break
             i_start += 1
-        
+
         if inside: # if point is inside the canvas. Otherwise ignore it
             edges = {
                 'w_0': np.array([[0,0],[image_width, 0]], np.float),
@@ -136,12 +136,12 @@ def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: th
             for i in range(i_start, i_start + len(child_segments)):
                 p = i % len(child_segments)
                 point = child_segments[p]
-                
+
                 # print('point:', point, flush=True)
                 # Cruve
                 if len(point) == 4:
                     point = point[0]
-                
+
                 # Point
                 if len(point) == 2:
                     x = round(center[0] + point[0], 2)
@@ -221,7 +221,7 @@ def get_image_coco(image_id):
     """
     image = ImageModel.objects(id=image_id)\
         .only(*ImageModel.COCO_PROPERTIES)
-    
+
     image = fix_ids(image)[0]
     dataset = DatasetModel.objects(id=image.get('dataset_id')).first()
 
@@ -239,23 +239,24 @@ def get_image_coco(image_id):
         category_annotations = db_annotations\
             .filter(category_id=category.get('id'))\
             .only(*AnnotationModel.COCO_PROPERTIES)
-        
+
         if category_annotations.count() == 0:
             continue
-        
+
         category_annotations = fix_ids(category_annotations)
         for annotation in category_annotations:
 
             has_segmentation = len(annotation.get('segmentation', [])) > 0
             has_keypoints = len(annotation.get('keypoints', [])) > 0
+            has_bbox = len(annotation.get('bbox', [])) > 0
 
-            if has_segmentation or has_keypoints:
+            if has_segmentation or has_keypoints or has_bbox:
 
                 if has_keypoints:
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
-                
+
                 annotations.append(annotation)
 
         if len(category.get('keypoint_labels')) > 0:
@@ -264,7 +265,7 @@ def get_image_coco(image_id):
         else:
             del category['keypoint_edges']
             del category['keypoint_labels']
-        
+
         categories.append(category)
 
     coco = {
@@ -322,8 +323,9 @@ def get_dataset_coco(dataset):
 
             has_keypoints = len(annotation.get('keypoints', [])) > 0
             has_segmentation = len(annotation.get('segmentation', [])) > 0
+            has_bbox = len(annotation.get('bbox', [])) > 0
 
-            if has_keypoints or has_segmentation:
+            if has_keypoints or has_segmentation or has_bbox:
                 del annotation['deleted']
 
                 if not has_keypoints:
@@ -332,7 +334,7 @@ def get_dataset_coco(dataset):
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
-                
+
                 coco.get('annotations').append(annotation)
 
         image = fix_ids(image)
