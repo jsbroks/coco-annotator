@@ -11,8 +11,8 @@ export default {
     }).then(response => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `${dataset}-${id}.json`);
+      link.href = `${baseURL}/${id}/download`//url;
+      link.download = `${dataset}-${id}`;
       document.body.appendChild(link);
       link.click();
     });

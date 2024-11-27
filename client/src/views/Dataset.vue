@@ -1,32 +1,54 @@
 <template>
   <div @mousemove="mouseMove">
     <div style="padding-top: 55px" />
-    
-    <div
-      class="bg-light"
-      :style="{ 'margin-left': sidebar.width + 'px' }"
-    >
-      <nav class="nav border-bottom shadow-sm" style="background-color: #4b5162">
-        <a class="btn tab" @click="tab = 'images'" :style="{'color': tab == 'images' ? 'white' : 'darkgray'}">
+
+    <div class="bg-light" :style="{ 'margin-left': sidebar.width + 'px' }">
+      <nav
+        class="nav border-bottom shadow-sm"
+        style="background-color: #4b5162"
+      >
+        <a
+          class="btn tab"
+          @click="tab = 'images'"
+          :style="{ color: tab == 'images' ? 'white' : 'darkgray' }"
+        >
           <i class="fa fa-picture-o" aria-hidden="true"></i> Images
         </a>
-        <a class="btn tab" @click="tab = 'exports'" :style="{'color': tab == 'exports' ? 'white' : 'darkgray'}">
+        <a
+          class="btn tab"
+          @click="tab = 'exports'"
+          :style="{ color: tab == 'exports' ? 'white' : 'darkgray' }"
+        >
           <i class="fa fa-share" aria-hidden="true"></i> Exports
         </a>
-        <a class="btn tab" @click="tab = 'members'" :style="{'color': tab == 'members' ? 'white' : 'darkgray'}">
+        <a
+          class="btn tab"
+          @click="tab = 'members'"
+          :style="{ color: tab == 'members' ? 'white' : 'darkgray' }"
+        >
           <i class="fa fa-users" aria-hidden="true"></i> Members
         </a>
-        <a class="btn tab" @click="tab = 'statistics'" :style="{'color': tab == 'statistics' ? 'white' : 'darkgray'}">
+        <a
+          class="btn tab"
+          @click="tab = 'statistics'"
+          :style="{ color: tab == 'statistics' ? 'white' : 'darkgray' }"
+        >
           <i class="fa fa-bar-chart" aria-hidden="true"></i> Statistics
         </a>
-        <a class="btn tab" @click="tab = 'settings'" :style="{'color': tab == 'settings' ? 'white' : 'darkgray'}">
+        <a
+          class="btn tab"
+          @click="tab = 'settings'"
+          :style="{ color: tab == 'settings' ? 'white' : 'darkgray' }"
+        >
           <i class="fa fa-cog" aria-hidden="true"></i> Settings
         </a>
       </nav>
-    
-      <div class="bg-light text-left" style="overflow: auto; height: calc(100vh - 100px); margin: 10px">
+
+      <div
+        class="bg-light text-left"
+        style="overflow: auto; height: calc(100vh - 100px); margin: 10px"
+      >
         <div class="container" v-show="tab == 'images'">
-          
           <ol class="breadcrumb">
             <li class="breadcrumb-item"></li>
             <li class="breadcrumb-item active">
@@ -55,102 +77,158 @@
           <div v-else>
             <Pagination :pages="pages" @pagechange="updatePage" />
             <div class="row">
-              <ImageCard v-for="image in images" :key="image.id" :image="image" />
+              <ImageCard
+                v-for="image in images"
+                :key="image.id"
+                :image="image"
+              />
             </div>
             <Pagination :pages="pages" @pagechange="updatePage" />
           </div>
-
         </div>
         <div class="container" v-show="tab == 'exports'">
           <div class="card my-3 p-3 shadow-sm mr-2">
             <h6 class="border-bottom border-gray pb-2"><b>Exports</b></h6>
-            
+
             <div class="media text-muted pt-3" v-for="exp in datasetExports">
               <div class="media-body lh-125 border-bottom border-gray">
-                  {{exp.id}}. Exported {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago
-                  <div style="display: inline">
-                    <span
-                      v-for="tag in exp.tags"
-                      class="badge badge-secondary"
-                      style="margin: 1px"
-                    >
-                      {{tag}}
-                    </span>
-                  </div>
-                  <button 
-                    class="btn btn-sm btn-success"
-                    style="float: right; margin: 2px; padding: 2px"
-                    @click="downloadExport(exp.id)"
+                {{ exp.id }}. Exported
+                {{ exp.ago.length > 0 ? exp.ago : 0 + " seconds" }} ago
+                <div style="display: inline">
+                  <span
+                    v-for="tag in exp.tags"
+                    class="badge badge-secondary"
+                    style="margin: 1px"
                   >
-                    Download
-                  </button>
+                    {{ tag }}
+                  </span>
+                </div>
+                <button
+                  class="btn btn-sm btn-success"
+                  style="float: right; margin: 2px; padding: 2px"
+                  @click="downloadExport(exp.id)"
+                >
+                  Download
+                </button>
               </div>
             </div>
           </div>
         </div>
 
         <div class="container" v-show="tab == 'members'">
+          <div class="card my-3 p-3 shadow-sm mr-2">
+            <h6 class="border-bottom border-gray pb-2">
+              <b>Invite Members</b>
+            </h6>
+          </div>
 
           <div class="card my-3 p-3 shadow-sm mr-2">
-            <h6 class="border-bottom border-gray pb-2"><b>Invite Members</b></h6>
-            
-          </div>
-          
-          <div class="card my-3 p-3 shadow-sm mr-2">
-            <h6 class="border-bottom border-gray pb-2"><b>Existing Members</b></h6>
-            
+            <h6 class="border-bottom border-gray pb-2">
+              <b>Existing Members</b>
+            </h6>
+
             <div class="media text-muted pt-3" v-for="user in users">
-              <img src="https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/256x256/plain/user.png" class="mr-2 rounded" style="width: 32px; height: 32px;">
-              <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                <div class="d-flex justify-content-between align-items-center w-100">
+              <img
+                src="https://d1nhio0ox7pgb.cloudfront.net/_img/o_collection_png/green_dark_grey/256x256/plain/user.png"
+                class="mr-2 rounded"
+                style="width: 32px; height: 32px"
+              />
+              <div
+                class="
+                  media-body
+                  pb-3
+                  mb-0
+                  small
+                  lh-125
+                  border-bottom border-gray
+                "
+              >
+                <div
+                  class="
+                    d-flex
+                    justify-content-between
+                    align-items-center
+                    w-100
+                  "
+                >
                   <div class="text-gray-dark">
-                    <strong>{{ user.name }}</strong> @{{user.username}}
+                    <strong>{{ user.name }}</strong> @{{ user.username }}
                   </div>
                   <a href="#">{{ user.group }}</a>
                 </div>
-                <span class="d-block">Last seen: {{ new Date(user.last_seen['$date']).toISOString().slice(0, 19).replace('T', ' ') }} UTC</span>
+                <span class="d-block"
+                  >Last seen:
+                  {{
+                    new Date(user.last_seen["$date"])
+                      .toISOString()
+                      .slice(0, 19)
+                      .replace("T", " ")
+                  }}
+                  UTC</span
+                >
               </div>
             </div>
           </div>
-
         </div>
         <div class="container" v-show="tab == 'statistics'">
-          <div v-if="stats == null">
-            Crunching numbers...
-          </div>
+          <div v-if="stats == null">Crunching numbers...</div>
 
           <div v-else>
             <div class="row">
-              
-              <div v-if="stats.total" class="card my-3 p-3 shadow-sm col-3 mr-2">
+              <div
+                v-if="stats.total"
+                class="card my-3 p-3 shadow-sm col-3 mr-2"
+              >
                 <h6 class="border-bottom border-gray pb-2"><b>Total</b></h6>
                 <div class="row" v-for="stat in Object.keys(stats.total)">
-                  <strong class="col-8">{{stat}}:</strong>
-                  <span class="col-4">{{stats.total[stat].toFixed(0)}}</span>
+                  <strong class="col-8">{{ stat }}:</strong>
+                  <span class="col-4">{{ stats.total[stat].toFixed(0) }}</span>
                 </div>
               </div>
 
-              <div v-if="stats.average" class="card my-3 p-3 shadow-sm col-4 mr-2">
+              <div
+                v-if="stats.average"
+                class="card my-3 p-3 shadow-sm col-4 mr-2"
+              >
                 <h6 class="border-bottom border-gray pb-2"><b>Average</b></h6>
                 <div class="row" v-for="stat in Object.keys(stats.average)">
-                  <strong class="col-8">{{stat}}:</strong>
-                  <span class="col-4">{{stats.average[stat].toFixed(0)}}</span>
+                  <strong class="col-8">{{ stat }}:</strong>
+                  <span class="col-4">{{
+                    stats.average[stat].toFixed(0)
+                  }}</span>
                 </div>
               </div>
 
-              <div v-if="stats.categories" class="card my-3 p-3 shadow-sm col-4 mr-2">
-                <h6 class="border-bottom border-gray pb-2"><b>Annotations Per Category</b></h6>
+              <div
+                v-if="stats.categories"
+                class="card my-3 p-3 shadow-sm col-4 mr-2"
+              >
+                <h6 class="border-bottom border-gray pb-2">
+                  <b>Annotations Per Category</b>
+                </h6>
                 <div class="row" v-for="stat in Object.keys(stats.categories)">
-                  <strong class="col-8">{{stat}}:</strong>
-                  <span class="col-4">{{stats.categories[stat].toFixed(0)}}</span>
+                  <strong class="col-8">{{ stat }}:</strong>
+                  <span class="col-4">{{
+                    stats.categories[stat].toFixed(0)
+                  }}</span>
                 </div>
               </div>
 
-              <div v-if="stats.images_per_category" class="card my-3 p-3 shadow-sm col-4 mr-2">
-                <h6 class="border-bottom border-gray pb-2"><b>Annotated Images Per Category</b></h6>
-                <div class="row" v-for="stat in Object.keys(stats.images_per_category)">
-                  <strong class="col-8">{{stat}}:</strong>
-                  <span class="col-4">{{stats.images_per_category[stat].toFixed(0)}}</span>
+              <div
+                v-if="stats.images_per_category"
+                class="card my-3 p-3 shadow-sm col-4 mr-2"
+              >
+                <h6 class="border-bottom border-gray pb-2">
+                  <b>Annotated Images Per Category</b>
+                </h6>
+                <div
+                  class="row"
+                  v-for="stat in Object.keys(stats.images_per_category)"
+                >
+                  <strong class="col-8">{{ stat }}:</strong>
+                  <span class="col-4">{{
+                    stats.images_per_category[stat].toFixed(0)
+                  }}</span>
                 </div>
               </div>
 
@@ -169,14 +247,13 @@
               </div>
 
             </div>
-            
           </div>
         </div>
         <div class="container" v-show="tab == 'settings'">
           <div class="card my-3 p-3 shadow-sm mr-2">
             <h6 class="border-bottom border-gray pb-2"><b>Metadata</b></h6>
-            
-            <button 
+
+            <button
               class="btn btn-sm btn-block btn-danger"
               @click="resetMetadata"
             >
@@ -184,7 +261,6 @@
             </button>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -210,7 +286,7 @@
           <div v-if="generate.id != null" class="progress">
             <div
               class="progress-bar bg-success"
-              :style="{ 'width': `${generate.progress}%` }"
+              :style="{ width: `${generate.progress}%` }"
             >
               Generating
             </div>
@@ -226,7 +302,7 @@
           <div v-if="scan.id != null" class="progress">
             <div
               class="progress-bar bg-secondary"
-              :style="{ 'width': `${scan.progress}%` }"
+              :style="{ width: `${scan.progress}%` }"
             >
               Scanning
             </div>
@@ -242,7 +318,7 @@
           <div v-if="importing.id != null" class="progress">
             <div
               class="progress-bar bg-primary"
-              :style="{ 'width': `${importing.progress}%` }"
+              :style="{ width: `${importing.progress}%` }"
             >
               Importing
             </div>
@@ -258,15 +334,30 @@
           <div v-if="exporting.id != null" class="progress">
             <div
               class="progress-bar bg-dark"
-              :style="{ 'width': `${exporting.progress}%` }"
+              :style="{ width: `${exporting.progress}%` }"
             >
               Exporting
             </div>
           </div>
           <div v-else>Export COCO</div>
         </button>
+        <button
+          type="button"
+          class="btn btn-secondary btn-block"
+          @click="segmentationModal"
+        >
+          <div v-if="exportingSemanticSegmentation.id != null" class="progress">
+            <div
+              class="progress-bar bg-dark"
+              :style="{ width: `${exportingSemanticSegmentation.progress}%` }"
+            >
+              Exporting
+            </div>
+          </div>
+          <div v-else>Export Semantic Segmentation</div>
+        </button>
       </div>
-      <hr>
+      <hr />
       <h6 class="sidebar-title text-center">Subdirectories</h6>
       <div class="sidebar-section" style="max-height: 30%; color: lightgray">
         <div v-if="subdirectories.length > 0">
@@ -284,32 +375,33 @@
           No subdirectory found.
         </p>
       </div>
-      <hr>
+      <hr />
       <h6 class="sidebar-title text-center">Filtering Options</h6>
-      <div
-        class="sidebar-section"
-        style="max-height: 30%; color: lightgray"
-      >
-        <PanelString name="Contains" v-model="query.file_name__icontains" @submit="updatePage" />
+      <div class="sidebar-section" style="max-height: 30%; color: lightgray">
+        <PanelString
+          name="Contains"
+          v-model="query.file_name__icontains"
+          @submit="updatePage"
+        />
         <PanelToggle name="Show Annotated" v-model="panel.showAnnotated" />
-        <PanelToggle name="Show Not Annotated" v-model="panel.showNotAnnotated" />
+        <PanelToggle
+          name="Show Not Annotated"
+          v-model="panel.showNotAnnotated"
+        />
         <PanelDropdown name="Order" v-model="order" :values="orderTypes" />
       </div>
-        <div
-          class="sidebar-section"
-          style="max-height: 30%; color: lightgray"
-        >
-          <div class="form-group">
-            <label>Show Annotated Categories </label>
-            <TagsInput
-              v-model="selected.categories"
-              element-id="selectedCategories"
-              title="Only shows images annotated with the selected categories for 'Show Annotated' button. Leave empty to show all annotated images."
-              :existing-tags="categoryTags"
-              :typeahead="true"
-              :typeahead-activation-threshold="0"
-            ></TagsInput>
-          </div>
+      <div class="sidebar-section" style="max-height: 30%; color: lightgray">
+        <div class="form-group">
+          <label>Show Annotated Categories </label>
+          <TagsInput
+            v-model="selected.categories"
+            element-id="selectedCategories"
+            title="Only shows images annotated with the selected categories for 'Show Annotated' button. Leave empty to show all annotated images."
+            :existing-tags="categoryTags"
+            :typeahead="true"
+            :typeahead-activation-threshold="0"
+          ></TagsInput>
+        </div>
       </div>
     </div>
 
@@ -367,7 +459,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Upload COCO Annotaitons</h5>
+            <h5 class="modal-title">Upload COCO Annotations</h5>
             <button
               type="button"
               class="close"
@@ -410,7 +502,7 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Export {{dataset.name}}</h5>
+            <h5 class="modal-title">Export {{ dataset.name }}</h5>
             <button
               type="button"
               class="close"
@@ -440,10 +532,61 @@
             </form>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @click="exportCOCO">
+              Export
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      id="exportSemanticSegmentation"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Export Semantic Segmentation of {{ dataset.name }}'s Images
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label>Categories * Export all if Empty *</label>
+                <TagsInput
+                  v-model="exportingSemanticSegmentation.categories"
+                  element-id="exportCategoriesSS"
+                  :existing-tags="categoryTags"
+                  :typeahead="true"
+                  :typeahead-activation-threshold="0"
+                ></TagsInput>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
             <button
               type="button"
               class="btn btn-primary"
-              @click="exportCOCO"
+              @click="exportSegmentation"
             >
               Export
             </button>
@@ -469,7 +612,7 @@ import ImageCard from "@/components/cards/ImageCard";
 import Pagination from "@/components/Pagination";
 import PanelString from "@/components/PanelInputString";
 import PanelToggle from "@/components/PanelToggle";
-import PanelDropdown from "@/components/PanelInputDropdown"
+import PanelDropdown from "@/components/PanelInputDropdown";
 import JQuery from "jquery";
 import TagsInput from "@/components/TagsInput";
 
@@ -485,14 +628,14 @@ export default {
     PanelString,
     PanelToggle,
     PanelDropdown,
-    TagsInput
+    TagsInput,
   },
   mixins: [toastrs],
   props: {
     identifier: {
       type: [Number, String],
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
@@ -504,40 +647,45 @@ export default {
       images: [],
       folders: [],
       dataset: {
-        id: 0
+        id: 0,
       },
       users: [],
       subdirectories: [],
       status: {
-        data: { state: true, message: "Loading data" }
+        data: { state: true, message: "Loading data" },
       },
       keyword: "",
       mouseDown: false,
       sidebar: {
         drag: false,
         width: window.innerWidth * 0.2,
-        canResize: false
+        canResize: false,
       },
       scan: {
         progress: 0,
-        id: null
+        id: null,
       },
       generate: {
         progress: 0,
-        id: null
+        id: null,
       },
       importing: {
         progress: 0,
-        id: null
+        id: null,
       },
       exporting: {
         categories: [],
         progress: 0,
         with_empty_images: false,
-        id: null
+        id: null,
+      },
+      exportingSemanticSegmentation: {
+        categories: [],
+        progress: 0,
+        id: null,
       },
       selected: {
-        categories: []
+        categories: [],
       },
       datasetExports: [],
       tab: "images",
@@ -545,17 +693,17 @@ export default {
       orderTypes: {
         file_name: "File Name",
         id: "Id",
-        path: "File Path"
+        path: "File Path",
       },
       query: {
         file_name__icontains: "",
-        ...this.$route.query
+        ...this.$route.query,
       },
       panel: {
         showAnnotated: true,
-        showNotAnnotated: true
+        showNotAnnotated: true,
       },
-      stats: null
+      stats: null,
     };
   },
   methods: {
@@ -565,7 +713,7 @@ export default {
 
       Dataset.generate(this.dataset.id, {
         keywords: [this.keyword],
-        limit: this.generateLimit
+        limit: this.generateLimit,
       });
     },
     updatePage(page) {
@@ -579,9 +727,9 @@ export default {
         ...this.query,
         annotated: this.queryAnnotated,
         category_ids__in: encodeURI(this.selected.categories),
-        order: this.order
+        order: this.order,
       })
-        .then(response => {
+        .then((response) => {
           let data = response.data;
 
           this.images = data.images;
@@ -597,13 +745,13 @@ export default {
           // this.importing.id = data.importId;
           // this.exporting.id = data.exportId;
         })
-        .catch(error => {
+        .catch((error) => {
           this.axiosReqestError("Loading Dataset", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
     },
     getUsers() {
-      Dataset.getUsers(this.dataset.id).then(response => {
+      Dataset.getUsers(this.dataset.id).then((response) => {
         this.users = response.data;
       });
     },
@@ -611,21 +759,23 @@ export default {
       Export.download(id, this.dataset.name);
     },
     getExports() {
-      Dataset.getExports(this.dataset.id).then(response => {
+      Dataset.getExports(this.dataset.id).then((response) => {
         this.datasetExports = response.data;
       });
     },
     resetMetadata() {
-      let r = confirm("You can not undo reseting of all metadata in"
-        + "this dataset. This includes metadata of images"
-        + "and annotations.");
-      
+      let r = confirm(
+        "You can not undo reseting of all metadata in" +
+          "this dataset. This includes metadata of images" +
+          "and annotations."
+      );
+
       if (r) {
         Dataset.resetMetadata(this.dataset.id);
       }
     },
     getStats() {
-      Dataset.getStats(this.dataset.id).then(response => {
+      Dataset.getStats(this.dataset.id).then((response) => {
         this.stats = response.data;
       });
     },
@@ -636,11 +786,11 @@ export default {
       }
 
       Dataset.scan(this.dataset.id)
-        .then(response => {
+        .then((response) => {
           let id = response.data.id;
           this.scan.id = id;
         })
-        .catch(error => {
+        .catch((error) => {
           this.axiosReqestError(
             "Scanning Dataset",
             error.response.data.message
@@ -655,17 +805,36 @@ export default {
       }
       $("#exportDataset").modal("show");
     },
+    segmentationModal() {
+      $("#exportSemanticSegmentation").modal("show");
+    },
     exportCOCO() {
       $("#exportDataset").modal("hide");
       Dataset.exportingCOCO(this.dataset.id, this.exporting.categories, this.exporting.with_empty_images)
-        .then(response => {
-          let id = response.data.id;
-          this.exporting.id = id;
-        })
-        .catch(error => {
-          this.axiosReqestError("Exporting COCO", error.response.data.message);
-        })
-        .finally(() => this.removeProcess(process));
+      .then((response) => {
+        let id = response.data.id;
+        this.exporting.id = id;
+      })
+      .catch((error) => {
+        this.axiosReqestError("Exporting COCO", error.response.data.message);
+      })
+      .finally(() => this.removeProcess(process));
+    },
+    exportSegmentation() {
+      $("#exportSemanticSegmentation").modal("hide");
+      Dataset.exportingSemanticSegmentation(
+        this.dataset.id,
+        this.exportingSemanticSegmentation.categories
+      )
+      .then((response) => {
+        let id = response.data.id;
+        this.exportingSemanticSegmentation.id = id;
+      })
+      .catch((error) => {
+        this.axiosReqestError("Exporting Semantic Segmentation", error.response.data.message);
+      })
+      .finally(() => this.removeProcess(process));
+      
     },
     removeFolder(folder) {
       let index = this.folders.indexOf(folder);
@@ -682,11 +851,11 @@ export default {
     importCOCO() {
       let uploaded = document.getElementById("coco");
       Dataset.uploadCoco(this.dataset.id, uploaded.files[0])
-        .then(response => {
+        .then((response) => {
           let id = response.data.id;
           this.importing.id = id;
         })
-        .catch(error => {
+        .catch((error) => {
           this.axiosReqestError("Importing COCO", error.response.data.message);
         })
         .finally(() => this.removeProcess(process));
@@ -704,7 +873,7 @@ export default {
         event.preventDefault();
         let max = window.innerWidth * 0.5;
         this.sidebar.width = Math.min(Math.max(event.x, 150), max);
-        localStorage.setItem("dataset/sideWidth", this.sidebar.width)
+        localStorage.setItem("dataset/sideWidth", this.sidebar.width);
       }
     },
     startDrag() {
@@ -714,7 +883,7 @@ export default {
     stopDrag() {
       this.mouseDown = false;
       this.sidebar.canResize = false;
-    }
+    },
   },
   computed: {
     queryAnnotated() {
@@ -728,9 +897,9 @@ export default {
     },
     categoryTags() {
       let tags = {};
-      this.categories.forEach(c => tags[c.id] = c.name);
+      this.categories.forEach((c) => (tags[c.id] = c.name));
       return tags;
-    }
+    },
   },
   sockets: {
     taskProgress(data) {
@@ -749,9 +918,12 @@ export default {
       if (data.id === this.exporting.id) {
         this.exporting.progress = data.progress;
       }
+      if (data.id === this.exportingSemanticSegmentation.id) {
+        this.exportingSemanticSegmentation.progress = data.progress;
+      }
     },
     annotating(data) {
-      let image = this.images.find(i => i.id == data.image_id);
+      let image = this.images.find((i) => i.id == data.image_id);
       if (image == null) return;
 
       if (data.active) {
@@ -762,7 +934,7 @@ export default {
       } else {
         image.annotating.splice(image.annotating.indexOf(data.username), 1);
       }
-    }
+    },
   },
   watch: {
     tab(tab) {
@@ -819,6 +991,12 @@ export default {
           this.getExports();
         }, 1000);
       }
+    },
+    "exportingSemanticSegmentation.progress"(progress) {
+      if (progress >= 100) {
+        this.exportingSemanticSegmentation.progress = 0;
+          this.exportingSemanticSegmentation.id = null;
+      }
     }
   },
   beforeRouteUpdate() {
@@ -829,7 +1007,7 @@ export default {
     let tab = localStorage.getItem("dataset/tab");
     let order = localStorage.getItem("dataset/order");
     let sideWidth = localStorage.getItem("dataset/sideWidth");
-    
+
     if (sideWidth !== null) this.sidebar.width = parseInt(sideWidth);
     if (tab !== null) this.tab = tab;
     if (order !== null) this.order = order;
@@ -844,7 +1022,7 @@ export default {
   destroyed() {
     window.removeEventListener("mouseup", this.stopDrag);
     window.removeEventListener("mousedown", this.startDrag);
-  }
+  },
 };
 </script>
 

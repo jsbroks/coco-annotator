@@ -54,6 +54,7 @@ export default {
     ...mapMutations(["addUndo", "removeUndos"]),
     export() {
       return {
+        simplify: this.polygon.simplify,
         guidance: this.polygon.guidance,
         completeDistance: this.polygon.completeDistance,
         minDistance: this.polygon.minDistance,
@@ -82,6 +83,8 @@ export default {
         );
       }
       this.polygon.path = new paper.Path(this.polygon.pathOptions);
+      this.polygon.path["segmentsType"] = 'polygon';
+      this.polygon.path["simplifyDegree"] = this.simplify;
     },
     /**
      * Frees current polygon
@@ -198,7 +201,6 @@ export default {
 
       this.polygon.path.fillColor = "black";
       this.polygon.path.closePath();
-
       this.$parent.uniteCurrentAnnotation(this.polygon.path);
 
       this.polygon.path.remove();
@@ -209,7 +211,7 @@ export default {
       }
 
       this.removeUndos(this.actionTypes.ADD_POINTS);
-	  this.$parent.save();
+	  //this.$parent.save();
       return true;
     },
     removeLastPoint() {
@@ -248,6 +250,10 @@ export default {
     },
     "polygon.minDistance"(newDistance) {
       this.tool.minDistance = newDistance;
+    },
+    "polygon.simplify"(newDegree) {
+      this.tool.simplify = newDegree;
+      this.simplify = newDegree;
     },
     "polygon.pathOptions.strokeColor"(newColor) {
       if (this.polygon.path == null) return;

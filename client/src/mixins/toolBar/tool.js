@@ -64,6 +64,9 @@ export default {
       if (this.isDisabled) {
         return this.name + " (select an annotation to activate tool)";
       }
+      if (this.name == "Brush") {
+        return this.name + " Tool" + " (for RLE segmentation format)";
+      }
       return this.name + " Tool";
     }
   },

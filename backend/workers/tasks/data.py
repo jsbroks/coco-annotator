@@ -19,7 +19,6 @@ from celery import shared_task
 from ..socket import create_socket
 from mongoengine import Q
 
-
 @shared_task
 def export_annotations(task_id, dataset_id, categories, with_empty_images=False):
 
@@ -52,6 +51,7 @@ def export_annotations(task_id, dataset_id, categories, with_empty_images=False)
 
     # iterate though all categoires and upsert
     category_names = []
+    
     for category in fix_ids(db_categories):
 
         if len(category.get('keypoint_labels', [])) > 0:
@@ -89,12 +89,12 @@ def export_annotations(task_id, dataset_id, categories, with_empty_images=False)
 
         num_annotations = 0
         for annotation in annotations:
-
+            
             has_keypoints = len(annotation.get('keypoints', [])) > 0
             has_segmentation = len(annotation.get('segmentation', [])) > 0
+            has_rle_segmentation = annotation.get('rle', {}) != {}
 
-            if has_keypoints or has_segmentation:
-
+            if has_keypoints or has_segmentation or has_rle_segmentation:
                 if not has_keypoints:
                     if 'keypoints' in annotation:
                         del annotation['keypoints']
@@ -103,8 +103,15 @@ def export_annotations(task_id, dataset_id, categories, with_empty_images=False)
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
 
+                if has_rle_segmentation:
+                    rle = annotation.get('rle')
+                    annotation['segmentation'] = rle
+                    annotation.pop('rle')
+
                 num_annotations += 1
+                
                 coco.get('annotations').append(annotation)
+            
 
         task.info(
             f"Exporting {num_annotations} annotations for image {image.get('id')}")
