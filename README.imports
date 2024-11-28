@@ -1,0 +1,7 @@
+Importing from other sources of COCO annotations can be very cumbersome, often relative pathnames are encouraged (in the coco-annotator too apparently), however importing or exporting removes that relationship.
+A new attribute has been added to the ImageCatalouge to capture the relative path of an image at import time as well as scanning. if there are no sub-directories this variable will be equal to the file_name, however the search logic will use the relative pathname to discover the image.
+When exporting the relative path will replace the 'file_name' entry in the 'image' dictionary, this behaviour can be switched off by setting the 'EXPORT_RELPATH' environment variable to false (in the compose file for the workers).
+If the annotation only contains a bbox and no valid segmentation the segmentation is derived form the bbox. Previously this annotation would have been ignored.
+
+ Uwe Rosebrock July 2021
+ 

@@ -18,7 +18,13 @@ import os
 from celery import shared_task
 from ..socket import create_socket
 from mongoengine import Q
+from config import Config
+from pathlib import PurePath
 
+
+def bbox2seg(bbox):
+    return [bbox[0],bbox[1],bbox[0]+bbox[2],bbox[1],bbox[0]+bbox[2],bbox[1]+bbox[3],bbox[0],bbox[1]+bbox[3]]
+    
 
 @shared_task
 def export_annotations(task_id, dataset_id, categories, with_empty_images=False):
@@ -74,7 +80,10 @@ def export_annotations(task_id, dataset_id, categories, with_empty_images=False)
     total_images = db_images.count()
     for image in db_images:
         image = fix_ids(image)
-
+        
+        if Config.EXPORT_RELPATH and 'relpath' in image:
+            image['file_name'] = image['relpath']
+        
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
 
@@ -105,7 +114,11 @@ def export_annotations(task_id, dataset_id, categories, with_empty_images=False)
 
                 num_annotations += 1
                 coco.get('annotations').append(annotation)
-
+        '''
+        if num_annotations > 0:
+            image["num_annotations"]=num_annotations
+            image["annotated"]=True
+        '''
         task.info(
             f"Exporting {num_annotations} annotations for image {image.get('id')}")
         coco.get('images').append(image)
@@ -137,7 +150,8 @@ def import_annotations(task_id, dataset_id, coco_json):
 
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
-
+    # UR added relpath
+    directory = os.path.join(Config.DATASET_DIRECTORY, dataset.name)
     task.update(status="PROGRESS")
     socket = create_socket()
 
@@ -205,12 +219,12 @@ def import_annotations(task_id, dataset_id, coco_json):
     for image in coco_images:
         image_id = image.get('id')
         image_filename = image.get('file_name')
-
+        
         # update progress
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
-
-        image_model = images.filter(file_name__exact=image_filename).all()
+        # UR added relpath
+        image_model = images.filter(relpath=image_filename).all()
 
         if len(image_model) == 0:
             task.warning(f"Could not find image {image_filename}")
@@ -241,11 +255,11 @@ def import_annotations(task_id, dataset_id, coco_json):
         progress += 1
         task.set_progress((progress / total_items) * 100, socket=socket)
 
-        has_segmentation = len(segmentation) > 0
+        has_segmentation = (len(segmentation) > 0 or isbbox) and sum(bbox) > 1
         has_keypoints = len(keypoints) > 0
         if not has_segmentation and not has_keypoints:
             task.warning(
-                f"Annotation {annotation.get('id')} has no segmentation or keypoints")
+                f"Annotation {annotation.get('id')} has no segmentation, bbox or keypoints")
             continue
 
         try:
@@ -261,7 +275,8 @@ def import_annotations(task_id, dataset_id, coco_json):
             image_id=image_model.id,
             category_id=category_model_id,
             segmentation=segmentation,
-            keypoints=keypoints
+            keypoints=keypoints,
+            bbox = bbox
         ).first()
 
         if annotation_model is None:
@@ -274,9 +289,14 @@ def import_annotations(task_id, dataset_id, coco_json):
             annotation_model.metadata = annotation.get('metadata', {})
 
             if has_segmentation:
+                if len(segmentation) < 1 or len(segmentation[0]) < 1: ## we have an empty segment with a bbox
+                    task.info(f"Creating segment from bbox {bbox}")
+                    segmentation = [bbox2seg(bbox)]
+                    isbbox = True
+                    
                 annotation_model.segmentation = segmentation
-                annotation_model.area = area
-                annotation_model.bbox = bbox
+            annotation_model.area = area
+            annotation_model.bbox = bbox
 
             if has_keypoints:
                 annotation_model.keypoints = keypoints
@@ -285,6 +305,7 @@ def import_annotations(task_id, dataset_id, coco_json):
             annotation_model.save()
 
             image_categories.append(category_id)
+            
         else:
             annotation_model.update(deleted=False, isbbox=isbbox)
             task.info(

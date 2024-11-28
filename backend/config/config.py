@@ -50,6 +50,8 @@ class Config:
     WORKER_CONNECTIONS = 1000
 
     TESTING = os.getenv("TESTING", False)
+    
+    EXPORT_RELPATH = os.getenv("EXPORT_RELPATH", True)
 
     ### Workers
     CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://user:password@messageq:5672//")
