@@ -36,7 +36,7 @@ services:
     networks:
       - cocoannotator
   messageq:
-    image: rabbitmq:3
+    image: rabbitmq:3.7.0
     container_name: annotator_message_q
     environment:
       - RABBITMQ_DEFAULT_USER=user
