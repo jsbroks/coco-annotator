@@ -1,8 +1,8 @@
 from database import ImageModel
-from celery import task
+from celery import shared_task
 
 
-@task
+@shared_task
 def thumbnail_generate_single_image(image_id):
     image = ImageModel.objects(id=image_id).first()
     image.thumbnail()
