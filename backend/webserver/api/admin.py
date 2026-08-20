@@ -78,7 +78,7 @@ class User(Resource):
         user.is_admin = args.get('isAdmin', False)
         user.save()
 
-        user_json = fix_ids(current_user)
+        user_json = fix_ids(user)
         del user_json['password']
 
         return {'success': True, 'user': user_json}
