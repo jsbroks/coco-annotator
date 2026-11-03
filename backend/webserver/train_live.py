@@ -169,8 +169,9 @@ def train_watch(data):
         run_id = int((data or {}).get('run_id'))
     except (TypeError, ValueError):
         return {'ok': False}
-    run = TrainRunModel.objects(id=run_id).only('id', 'status').first()
-    if run is None:
+    run = TrainRunModel.objects(id=run_id).first()
+    from .api.train import run_visible
+    if run is None or not run_visible(run):
         return {'ok': False}
     sid = request.sid
     _leave(sid)

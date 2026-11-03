@@ -263,12 +263,18 @@ def test_training(dataset_directory, tmp_path, monkeypatch):
     assert up.status_code == 200, up.data
     up = up.get_json()
     assert up["kind"] == "yaml" and up["name"] == "my-yolo26s.yaml"
+    # loading a .pt runs code from it: "train" alone may not upload one
+    assert t.post("/api/train/uploads", data={"file": (io.BytesIO(b"PK\x03\x04weights"), "best.pt")},
+                  content_type="multipart/form-data").status_code == 403
+    from database import UserModel
+    UserModel.objects(username="tr_owner").update(set__is_admin=True)
     w = t.post("/api/train/uploads", data={"file": (io.BytesIO(b"PK\x03\x04weights"), "best.pt")},
                content_type="multipart/form-data").get_json()
     assert w["kind"] == "pt"
     for name, body in (("x.txt", b"hi"), ("x.yaml", b"lr0: 1\n"), ("x.pt", b"not torch")):
         assert t.post("/api/train/uploads", data={"file": (io.BytesIO(body), name)},
                       content_type="multipart/form-data").status_code == 400, name
+    UserModel.objects(username="tr_owner").update(set__is_admin=False)
     assert [u["id"] for u in t.get("/api/train/uploads").get_json()["uploads"]] == [w["id"], up["id"]]
     assert len(os.listdir(models / ".training" / "uploads")) == 2
 
@@ -370,7 +376,14 @@ def test_live_output(tmp_path, monkeypatch):
         got = received(lambda g: any(e["progress"].strip() == "1/2 4/10" for e in g))
         assert got and time.time() - t0 < 1  # live, not once a second
         # a second page shares the watcher, without lines twice
-        s2 = socketio.test_client(app, flask_test_client=_login("tr_live2", role="trainer"))
+        # another trainer who may not see the run's dataset gets nothing
+        s_other = socketio.test_client(app, flask_test_client=_login("tr_live_other", role="trainer"))
+        assert s_other.emit("train_watch", {"run_id": run.id}, callback=True)["ok"] is False
+        s_other.disconnect()
+        c2 = _login("tr_live2", role="trainer")
+        from database import UserModel
+        UserModel.objects(username="tr_live2").update(set__is_admin=True)
+        s2 = socketio.test_client(app, flask_test_client=c2)
         assert s2.emit("train_watch", {"run_id": run.id}, callback=True)["lines"][-1] == "epoch 1/2"
         out.feed(b"\ndone\n")
         got = received(lambda g: any("done" in e["lines"] for e in g))
@@ -522,8 +535,8 @@ def test_other_servers(dataset_directory, tmp_path, monkeypatch):
 
     # a training for gpu2, one for any trainer, one for an unknown one
     assert t.post("/api/train/", json={"export_id": eid, "target": "nope"}).status_code == 400
-    upload = t.post("/api/train/uploads", data={"file": (io.BytesIO(b"PK\x03\x04w"), "mine.pt")},
-                    content_type="multipart/form-data").get_json()
+    upload = admin.post("/api/train/uploads", data={"file": (io.BytesIO(b"PK\x03\x04w"), "mine.pt")},
+                        content_type="multipart/form-data").get_json()
     mine = t.post("/api/train/", json={"export_id": eid, "epochs": 3, "target": "gpu2", "source": "upload",
                                       "upload_id": upload["id"]}).get_json()
     anyone = t.post("/api/train/", json={"export_id": eid, "epochs": 2}).get_json()

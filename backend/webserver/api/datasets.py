@@ -440,10 +440,13 @@ class DatasetStats(Resource):
 
         user_stats, sources = _annotation_sources(dataset)
 
+        names = {c.id: c.name for c in CategoryModel.objects(id__in=list(dataset.categories)).only('id', 'name')}
         for category in dataset.categories:
+            if category not in names:
+                continue  # permanently deleted since
 
             # Calculate the annotation count in the current category in this dataset
-            cat_name = CategoryModel.objects(id=category).first()['name']
+            cat_name = names[category]
             cat_count = AnnotationModel.objects(dataset_id=dataset_id, category_id=category, deleted=False).count()
             category_count.update({str(cat_name): cat_count})
 
@@ -725,10 +728,22 @@ class DatasetData(Resource):
             "total": total_shown,
             "names": names,
             # deleted datasets the user could restore or replace: name -> images
-            "trashed": [{"id": d.id, "name": d.name, "images": ImageModel.objects(dataset_id=d.id).count()}
-                        for d in DatasetModel.objects(deleted=True).only('id', 'name', 'owner')
-                        if d.is_owner(current_user)],
+            "trashed": _trashed_datasets(current_user),
         }
+
+
+def _trashed_datasets(user):
+    """Deleted datasets the user owns (all of them for an admin), with their
+    image counts from one aggregation instead of a count per dataset."""
+    trashed = DatasetModel.objects(deleted=True).only('id', 'name', 'owner')
+    if not user.is_admin:
+        trashed = trashed.filter(owner__iexact=user.username)
+    trashed = list(trashed)
+    if not trashed:
+        return []
+    counts = {row['_id']: row['n'] for row in ImageModel.objects(dataset_id__in=[d.id for d in trashed])
+              .aggregate([{'$group': {'_id': '$dataset_id', 'n': {'$sum': 1}}}])}
+    return [{"id": d.id, "name": d.name, "images": counts.get(d.id, 0)} for d in trashed]
 
 @api.route('/<int:dataset_id>/data')
 class DatasetDataId(Resource):

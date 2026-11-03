@@ -280,8 +280,13 @@ class ImageCopyUndo(Resource):
             return {'message': 'Invalid image id'}, 400
         if not current_user.can_edit(image.dataset):
             return {'message': 'You do not have permission to edit this dataset'}, 403
-        ids = [int(i) for i in (request.get_json(silent=True) or {}).get('ids', [])]
-        removed = AnnotationModel.objects(id__in=ids, image_id=image.id).delete()
+        try:
+            ids = [int(i) for i in (request.get_json(silent=True) or {}).get('ids') or []]
+        except (TypeError, ValueError):
+            return {'message': 'ids: a list of annotation ids'}, 400
+        # only copies this user just made: anything else goes through the trash
+        removed = AnnotationModel.objects(id__in=ids, image_id=image.id, copied_from__exists=True,
+                                          creator=current_user.username).delete()
         from ..util.trash import refresh_image
         refresh_image(image.id)
         return {'removed': removed}

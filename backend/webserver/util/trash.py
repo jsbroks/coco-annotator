@@ -308,6 +308,10 @@ def _purge_docs(kind, docs):
                 doc.delete()  # also deletes its annotations and thumbnail
             elif kind == 'dataset':
                 purge_dataset(doc)
+            elif kind == 'category':
+                # no dataset may keep pointing at it (stats, exports look it up)
+                DatasetModel.objects(categories=doc.id).update(pull__categories=doc.id)
+                doc.delete()
             else:
                 doc.delete()
             count += 1

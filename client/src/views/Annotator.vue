@@ -2001,7 +2001,9 @@ export default {
           this.annotating.push(data.username);
         }
       } else {
-        this.annotating.splice(this.annotating.indexOf(data.username), 1);
+        // not in the list (another tab already left): splice(-1) would drop someone else
+        const found = this.annotating.indexOf(data.username);
+        if (found >= 0) this.annotating.splice(found, 1);
       }
     }
   },

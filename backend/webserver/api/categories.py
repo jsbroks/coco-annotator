@@ -159,7 +159,9 @@ class Category(Resource):
             parents = category.parents()
         supercategory = parents[0] if parents else ''
         color = args.get('color', category.color)
-        metadata = args.get('metadata', category.metadata)
+        metadata = args.get('metadata')
+        if metadata is None:  # not sent: keep it
+            metadata = category.metadata
         keypoint_edges = args.get('keypoint_edges', category.keypoint_edges)
         keypoint_labels = args.get('keypoint_labels', category.keypoint_labels)
         keypoint_colors = args.get('keypoint_colors', category.keypoint_colors)
@@ -168,6 +170,7 @@ class Category(Resource):
         if category.name == name \
                 and category.parents() == parents \
                 and category.color == color \
+                and category.metadata == metadata \
                 and category.keypoint_edges == keypoint_edges \
                 and category.keypoint_labels == keypoint_labels \
                 and category.keypoint_colors == keypoint_colors:
@@ -194,7 +197,7 @@ class Category(Resource):
                 supercategory=category.supercategory,
                 supercategories=parents,
                 color=category.color,
-                metadata=category.metadata,
+                metadata=metadata,
                 keypoint_edges=category.keypoint_edges,
                 keypoint_labels=category.keypoint_labels,
                 keypoint_colors=category.keypoint_colors,

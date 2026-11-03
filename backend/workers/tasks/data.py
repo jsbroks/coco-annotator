@@ -594,6 +594,13 @@ def import_annotations(task_id, dataset_id, coco_json, create_categories=True):
             category_model = categories.filter(name__iexact=category_name, supercategory=file_parents[0]).first()
         if category_model is None:
             category_model = categories.filter(name__iexact=category_name).first()
+        if category_model is not None and category_model.deleted:
+            # in the trash: importing it again brings it back (as bulk_create),
+            # else its annotations would be hidden from lists and exports
+            category_model.update(set__deleted=False, unset__deleted_date=True,
+                                  unset__deleted_by=True, unset__delete_batch=True)
+            category_model.reload()
+            task.info(f"{category_name} category restored from the trash")
 
         if category_model is None and not create_categories:
             # the user may not make categories: its annotations are left out

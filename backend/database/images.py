@@ -183,8 +183,8 @@ class ImageModel(DynamicDocument):
         avoids decoding and resizing the 1024 px thumbnail on every request.
         """
         source = self.thumbnail_path()
-        base, _ = os.path.splitext(source)
-        path = f"{base}.{int(width)}x{int(height)}.jpg"
+        # keep the extension: img1.jpg and img1.png need their own files
+        path = f"{source}.{int(width)}x{int(height)}.jpg"
 
         def fresh():
             return os.path.isfile(path) and os.path.isfile(source) \
@@ -225,8 +225,7 @@ class ImageModel(DynamicDocument):
             pass
 
         source = self.path
-        base, _ = os.path.splitext(self.thumbnail_path())
-        path = f"{base}.display.jpg"
+        path = f"{self.thumbnail_path()}.display.jpg"  # extension kept, as above
 
         def fresh():
             return os.path.isfile(path) and os.path.getmtime(path) >= os.path.getmtime(source)

@@ -179,8 +179,10 @@ class UsersBulk(Resource):
                 invalid.append({"username": username, "reason": "duplicate"})
                 continue
             seen.add(username)
-            if UserModel.objects(username__iexact=username).first():
-                existing.append(username)
+            found = UserModel.objects(username__iexact=username).first()
+            if found:
+                # the account as stored (b12345678): dataset.users is matched exactly
+                existing.append(found.username)
                 continue
 
             password = password or _new_password()

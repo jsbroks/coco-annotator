@@ -234,6 +234,31 @@ def _export_ok(export):
     return export_dataset(export) is not None
 
 
+def run_visible(run, user=None, cache=None):
+    """The user may see a run's details, log and outputs (plots show its
+    images, best.pt was trained on them): its creator, an admin, or someone
+    who may download every dataset it was trained on."""
+    user = user or current_user
+    if user.is_admin or run.creator == user.username:
+        return True
+    key = (run.export_id, run.dataset_id)
+    if cache is not None and key in cache:
+        return cache[key]
+    ok = _run_data_visible(run, user)
+    if cache is not None:
+        cache[key] = ok
+    return ok
+
+
+def _run_data_visible(run, user):
+    export = ExportModel.objects(id=run.export_id).first() if run.export_id else None
+    if export is not None:
+        from .exports import export_dataset
+        return export_dataset(export) is not None
+    dataset = user.datasets.filter(id=run.dataset_id).first() if run.dataset_id else None
+    return dataset is not None and user.can_download(dataset)
+
+
 def _task_of(export):
     tags = list(export.tags or [])
     return tags[1] if tags[:1] == ["YOLO"] and len(tags) > 1 else None
@@ -312,6 +337,9 @@ class TrainUploads(Resource):
         ext = os.path.splitext(original)[1].lower()
         if ext not in ('.pt', '.yaml', '.yml'):
             return {'message': 'Only .pt weights or .yaml model files'}, 400
+        if ext == '.pt' and not current_user.has_perm('manage_models'):
+            # loading a .pt file runs code from it (pickle), as on the Models page
+            return {'message': 'Uploading .pt weights needs the "manage models" permission'}, 403
         os.makedirs(uploads_dir(), exist_ok=True)
         upload = TrainUploadModel(original=original[:120], kind='pt' if ext == '.pt' else 'yaml',
                                   uploader=current_user.username, filename='-')
@@ -454,12 +482,13 @@ class TrainRuns(Resource):
         runs = TrainRunModel.objects.order_by('-id').limit(100)
         queued = [r.id for r in TrainRunModel.objects(status='queued').order_by('id').only('id')]
         weights = _fitness_weights()
+        visible = {}
         out = []
         for r in runs:
             d = r.to_dict()
             d['queue_position'] = queued.index(r.id) + 1 if r.id in queued else None
             d['best'] = _best(r, weights)
-            d['archive'] = _archive(r)
+            d['archive'] = _archive(r) if run_visible(r, cache=visible) else None
             d['resumable'] = resumable(r)
             out.append(d)
         return {'runs': out}
@@ -562,7 +591,7 @@ class TrainRun(Resource):
         if not _allowed():
             return {'message': 'No permission to train models'}, 403
         run = TrainRunModel.objects(id=run_id).first()
-        if run is None:
+        if run is None or not run_visible(run):
             return {'message': 'Invalid run'}, 400
         out = run.to_dict(full=True)
         out['best'] = _best(run, _fitness_weights())
@@ -633,7 +662,7 @@ class TrainRunDownload(Resource):
         if not _allowed():
             return {'message': 'No permission to train models'}, 403
         run = TrainRunModel.objects(id=run_id).first()
-        if run is None:
+        if run is None or not run_visible(run):
             return {'message': 'Invalid run'}, 400
         if run.status in ('queued', 'running'):
             return {'message': 'The training has not finished'}, 400
@@ -657,7 +686,8 @@ class TrainRunSteps(Resource):
         4000 points (each epoch's end always kept) """
         if not _allowed():
             return {'message': 'No permission to train models'}, 403
-        if TrainRunModel.objects(id=run_id).only('id').first() is None:
+        run = TrainRunModel.objects(id=run_id).first()
+        if run is None or not run_visible(run):
             return {'message': 'Invalid run'}, 400
         from ..train_live import read_steps
         points = read_steps(os.path.join(work_dir(run_id), 'steps.jsonl'))
