@@ -14,6 +14,7 @@ models/*.h5
 models/*.pth
 models/*.pt
 models/**/*.pt
+models/.training/
 db/*
 !db/.gitkeep
 mongo-dump-*/
