@@ -15,6 +15,9 @@ case). Missing categories can be created and added to the dataset.
 
 Models are loaded lazily, cached, and run one prediction at a time per
 server (a single GPU is shared by all users).
+
+MediaPipe models (``.task`` / ``.tflite``) live in the same folder and go
+through the same service: see :mod:`webserver.util.mediapipe_models`.
 """
 import logging
 import os
@@ -27,6 +30,7 @@ from config import Config
 from geometry import polygon_to_rbbox
 # COCO person keypoints / skeleton (17-keypoint pose models)
 from geometry.yolo_format import COCO_KEYPOINTS, COCO_SKELETON
+from . import mediapipe_models
 
 logger = logging.getLogger('gunicorn.error')
 
@@ -154,15 +158,25 @@ class YoloService:
 
     # ------------------------------------------------------------ discovery
     @property
-    def installed(self):
+    def ultralytics_installed(self):
         try:
             import ultralytics  # noqa: F401
             return True
         except ImportError:
             return False
 
+    @property
+    def mediapipe_installed(self):
+        return mediapipe_models.installed()
+
+    @property
+    def installed(self):
+        """Some model support (Ultralytics YOLO or MediaPipe) is there."""
+        return self.ultralytics_installed or self.mediapipe_installed
+
     def model_names(self):
-        """Relative paths of all ``.pt`` files in the models folder."""
+        """Relative paths of all ``.pt`` (YOLO) and ``.task`` / ``.tflite``
+        (MediaPipe) files in the models folder."""
         if not os.path.isdir(self.directory):
             return []
         names = []
@@ -170,14 +184,16 @@ class YoloService:
             dirs[:] = [d for d in dirs if not d.startswith('.')]
             for f in files:
                 # SAM 2 checkpoints (sam2*.pt) live here too but are not YOLO models
-                if f.lower().endswith('.pt') and not f.startswith('.') and not f.lower().startswith('sam2'):
+                if f.startswith('.') or f.lower().startswith('sam2'):
+                    continue
+                if f.lower().endswith(('.pt',) + mediapipe_models.EXTENSIONS):
                     full = os.path.join(root, f)
                     names.append(os.path.relpath(full, self.directory))
         return sorted(names)
 
     def path_for(self, name):
         """Absolute path of a model, refusing anything outside the folder."""
-        if not name or not name.lower().endswith('.pt'):
+        if not name or not name.lower().endswith(('.pt',) + mediapipe_models.EXTENSIONS):
             raise ValueError("Unknown model")
         base = os.path.realpath(self.directory)
         path = os.path.realpath(os.path.join(base, name))
@@ -214,6 +230,10 @@ class YoloService:
             return model
 
     def info(self, name):
+        if mediapipe_models.is_mediapipe(name):
+            if not self.mediapipe_installed:
+                raise ValueError("MediaPipe is not installed on this server")
+            return mediapipe_models.info(self.path_for(name), name)
         model = self.load(name)
         names = {int(k): str(v) for k, v in dict(model.names).items()}
         kpt_shape = None
@@ -226,6 +246,7 @@ class YoloService:
             "task": model.task,
             "classes": [names[k] for k in sorted(names)],
             "kpt_shape": kpt_shape,
+            "framework": "ultralytics",
         }
 
     def cached_info(self, name):
@@ -269,8 +290,12 @@ class YoloService:
         from werkzeug.utils import secure_filename
 
         name = secure_filename(file_storage.filename or "")
+        if mediapipe_models.is_mediapipe(name) and os.path.splitext(name)[0]:
+            return self._save_mediapipe(file_storage.save, name, overwrite)
         if not name.lower().endswith('.pt') or name.lower() == '.pt':
-            raise ValueError("Only .pt files can be uploaded")
+            raise ValueError("Only .pt (YOLO) or .task / .tflite (MediaPipe) files can be uploaded")
+        if not self.ultralytics_installed:
+            raise ValueError("YOLO support (Ultralytics) is not installed on this server")
 
         os.makedirs(self.directory, exist_ok=True)
         path = os.path.join(self.directory, name)
@@ -299,8 +324,58 @@ class YoloService:
         self._info.pop(name, None)
         return self.info(name)
 
+    def _save_mediapipe(self, write, name, overwrite):
+        """Store a MediaPipe model (``write(tmp_path)`` puts the file there)
+        under ``name`` (may be in a subfolder) once it is known to work."""
+        if not self.mediapipe_installed:
+            raise ValueError("MediaPipe is not installed on this server")
+        path = os.path.join(self.directory, name)
+        if os.path.exists(path) and not overwrite:
+            raise FileExistsError(name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        # hidden (not listed) with the same extension, checked before it is used
+        tmp = os.path.join(os.path.dirname(path),
+                           f".uploading-{os.getpid()}-{threading.get_ident()}-{os.path.basename(name)}")
+        try:
+            write(tmp)
+            mediapipe_models.detect_kind(tmp)
+        except Exception as e:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+            if isinstance(e, ValueError):
+                raise
+            raise ValueError(f"Could not store {name}: {e}")
+        os.replace(tmp, path)
+        mediapipe_models.runner.forget(path)
+        self._info.pop(name, None)
+        return self.info(name)
+
+    def install_official(self, key, overwrite=False):
+        """Download one of MediaPipe's official models into the folder."""
+        import urllib.request
+        entry = mediapipe_models.catalog_entry(key)
+        if entry is None:
+            raise ValueError("Unknown official model")
+        name = mediapipe_models.catalog_name(entry)
+
+        def write(tmp):
+            limit = 100 * 1024 * 1024
+            with urllib.request.urlopen(entry["url"], timeout=60) as response, open(tmp, "wb") as out:
+                size = 0
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    size += len(chunk)
+                    if size > limit:
+                        raise ValueError("Download too large")
+                    out.write(chunk)
+        return self._save_mediapipe(write, name, overwrite)
+
     def delete(self, name):
         path = self.path_for(name)
+        if mediapipe_models.is_mediapipe(name):
+            mediapipe_models.runner.forget(path)
         os.remove(path)
         with self._load_lock:
             self._models.pop(name, None)
@@ -318,6 +393,10 @@ class YoloService:
 
     # ------------------------------------------------------------ predict
     def predict(self, name, image_path, conf=0.25, iou=0.7, imgsz=None):
+        if mediapipe_models.is_mediapipe(name):
+            path = self.path_for(name)
+            with self._predict_lock:
+                return mediapipe_models.runner.predict(path, image_path, conf=conf)
         model = self.load(name)
         names = {int(k): str(v) for k, v in dict(model.names).items()}
         kwargs = {"conf": float(conf), "iou": float(iou), "verbose": False,

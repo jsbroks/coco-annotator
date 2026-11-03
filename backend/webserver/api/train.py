@@ -521,6 +521,8 @@ class TrainRuns(Resource):
                 YoloService(Config.MODELS_DIRECTORY).path_for(args['base_model'])
             except ValueError:
                 return {'message': 'Unknown model'}, 400
+            if not args['base_model'].lower().endswith('.pt'):
+                return {'message': 'Only YOLO (.pt) models can be trained further'}, 400
             model = os.path.join(Config.MODELS_DIRECTORY, args['base_model'])
             label = args['base_model']
         elif source == 'upload':

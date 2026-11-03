@@ -45,7 +45,7 @@
           <div v-if="data.can_manage" class="card p-3 mb-3 shadow-sm">
             <label class="form-label fw-semibold mb-1" for="modelUpload">{{ $t('modelRun.uploadModel') }}</label>
             <div class="input-group input-group-sm">
-              <input id="modelUpload" ref="file" type="file" accept=".pt" class="form-control" :disabled="uploading" @change="e => (file = e.target.files[0] || null)" />
+              <input id="modelUpload" ref="file" type="file" accept=".pt,.task,.tflite" class="form-control" :disabled="uploading" @change="e => (file = e.target.files[0] || null)" />
               <button type="button" class="btn btn-primary" :disabled="!file || uploading" @click="upload">
                 <i v-if="uploading" class="fa fa-spinner fa-spin" />
                 {{ uploading ? `${uploadProgress}%` : $t('modelRun.upload') }}
@@ -54,6 +54,36 @@
             <div class="form-text">{{ $t('modelRun.uploadHint') }}</div>
           </div>
           <div v-else class="alert alert-light border small">{{ $t('models.readOnly') }}</div>
+
+          <!-- MediaPipe's official models -->
+          <div v-if="data.can_manage && catalog" class="card p-3 mb-3 shadow-sm">
+            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+              <span class="fw-semibold">{{ $t('models.mediapipe.title') }}</span>
+              <span class="badge text-bg-info">MediaPipe</span>
+              <a href="#" class="small ms-auto" @click.prevent="showCatalog = !showCatalog">
+                {{ showCatalog ? $t('trash.hideItems') : $t('models.mediapipe.show', { n: catalog.models.length }) }}
+              </a>
+            </div>
+            <div class="form-text mt-0">{{ $t('models.mediapipe.hint') }}</div>
+            <div v-if="!catalog.installed" class="alert alert-warning small mt-2 mb-0">{{ $t('models.mediapipe.notInstalled') }}</div>
+            <div v-else-if="showCatalog" class="mt-2">
+              <div v-for="group in catalogGroups" :key="group.task" class="mb-2">
+                <div class="small text-muted fw-semibold mb-1">{{ $t('models.mediapipe.task.' + group.task) }}</div>
+                <div v-for="c in group.models" :key="c.key" class="d-flex align-items-center gap-2 catalog-row">
+                  <div class="flex-grow-1 min-w-0">
+                    <span class="fw-semibold">{{ c.key }}</span>
+                    <span class="small text-muted ms-1">{{ c.size_mb }} MB</span>
+                    <div class="small text-muted">{{ $t('models.mediapipe.about.' + c.key) }}</div>
+                  </div>
+                  <span v-if="c.added" class="small text-success text-nowrap"><i class="fa fa-check" /> {{ $t('models.mediapipe.added') }}</span>
+                  <button v-else type="button" class="btn btn-sm btn-outline-primary text-nowrap" :disabled="!!installing" @click="install(c)">
+                    <i class="fa" :class="installing === c.key ? 'fa-spinner fa-spin' : 'fa-download'" />
+                    {{ installing === c.key ? $t('models.mediapipe.adding') : $t('models.mediapipe.add') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div v-if="!data.models.length" class="text-center text-muted py-5">
             <i class="fa fa-cubes fa-3x d-block mb-2" />{{ $t('models.none') }}
@@ -67,6 +97,7 @@
                   <div class="d-flex align-items-center flex-wrap gap-2">
                     <h5 class="mb-0 text-break">{{ m.display_name || m.name }}</h5>
                     <span v-if="m.task" class="badge text-bg-dark">{{ taskLabel(m.task) }}</span>
+                    <span v-if="m.framework === 'mediapipe'" class="badge text-bg-info">MediaPipe</span>
                     <span v-if="!m.enabled" class="badge text-bg-secondary">{{ $t('models.off') }}</span>
                     <span v-if="m.error" class="badge text-bg-danger">{{ $t('modelRun.cannotLoad') }}</span>
                   </div>
@@ -161,15 +192,28 @@
 <script>
 import axios from "axios";
 
-/** Uploaded YOLO models: on / off, name, note, default confidence, usage, upload, download, delete. */
+/** Uploaded YOLO / MediaPipe models: on / off, name, note, default confidence, usage, upload, download, delete. */
 export default {
   name: "Models",
   data() {
-    return { data: null, loading: false, file: null, uploading: false, uploadProgress: 0, editing: {}, busy: {}, showAll: {} };
+    return {
+      data: null, loading: false, file: null, uploading: false, uploadProgress: 0, editing: {}, busy: {}, showAll: {},
+      // MediaPipe's official models (admins can add them from here)
+      catalog: null, showCatalog: false, installing: null
+    };
   },
   computed: {
     enabledCount() {
       return this.data ? this.data.models.filter(m => m.enabled).length : 0;
+    },
+    catalogGroups() {
+      const groups = [];
+      for (const c of (this.catalog && this.catalog.models) || []) {
+        let group = groups.find(g => g.task === c.task);
+        if (!group) groups.push((group = { task: c.task, models: [] }));
+        group.models.push(c);
+      }
+      return groups;
     }
   },
   created() {
@@ -185,8 +229,31 @@ export default {
       this.loading = true;
       return axios
         .get("/api/model/yolo", { params: { all: 1 } })
-        .then(r => (this.data = r.data))
+        .then(r => {
+          this.data = r.data;
+          if (r.data.can_manage) return this.loadCatalog();
+        })
         .finally(() => (this.loading = false));
+    },
+    loadCatalog() {
+      return axios
+        .get("/api/model/mediapipe/catalog")
+        .then(r => (this.catalog = r.data))
+        .catch(() => (this.catalog = null));
+    },
+    async install(c) {
+      if (this.installing) return;
+      this.installing = c.key;
+      try {
+        const r = await axios.post(`/api/model/mediapipe/install/${encodeURIComponent(c.key)}`);
+        this.$toastr.success(this.$t("modelRun.uploaded", { name: r.data.model.name }));
+        await this.load();
+      } catch (error) {
+        const data = (error.response && error.response.data) || {};
+        this.$toastr.error(data.message || String(error), c.key);
+      } finally {
+        this.installing = null;
+      }
     },
     taskLabel(task) {
       const key = "modelRun.task." + task;
@@ -299,6 +366,10 @@ export default {
   background: #f8f9fa;
   border-radius: 6px;
   padding: 10px;
+}
+.catalog-row {
+  padding: 4px 0;
+  border-top: 1px solid #f1f3f5;
 }
 .usage {
   color: #495057;

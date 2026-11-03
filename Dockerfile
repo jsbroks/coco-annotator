@@ -7,6 +7,7 @@
 # Build args:
 #   SAM=none|cpu|cuda     install PyTorch, Segment Anything and Ultralytics
 #                         (SAM tool and pre-annotation with your YOLO models)
+#   MEDIAPIPE=1|0         MediaPipe pre-annotation models (webserver; default on)
 #   VERSION               version string shown in the UI
 
 ############################ web client ############################
@@ -57,6 +58,18 @@ CMD ["celery", "-A", "workers", "worker", "-l", "info"]
 
 ############################ webserver #############################
 FROM python-base AS webserver
+# MediaPipe models for pre-annotation (MEDIAPIPE=0 leaves them out). It pulls
+# in the GUI build of OpenCV: swapped for the headless one, as above.
+ARG MEDIAPIPE=1
+COPY backend/requirements-mediapipe.txt ./
+RUN if [ "$MEDIAPIPE" = "1" ]; then \
+      apt-get update \
+      && apt-get install -y --no-install-recommends libegl1 libgles2 \
+      && rm -rf /var/lib/apt/lists/* \
+      && pip install -r requirements-mediapipe.txt \
+      && pip uninstall -y opencv-contrib-python opencv-python opencv-python-headless \
+      && pip install "opencv-python-headless==4.*"; \
+    fi
 ARG VERSION=v1.0.0
 ENV VERSION=${VERSION} DEBUG=false
 COPY backend/ /workspace/

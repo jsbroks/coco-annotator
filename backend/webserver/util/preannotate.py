@@ -64,11 +64,15 @@ class CategoryResolver:
         self.by_name[key] = category
         return category
 
-    def ensure_keypoints(self, category, count):
-        """True if keypoints of length ``count`` can be stored for it."""
+    def ensure_keypoints(self, category, count, model_labels=None, model_edges=None):
+        """True if keypoints of length ``count`` can be stored for it. A
+        category without keypoints takes the model's names and skeleton
+        (MediaPipe gives them), else COCO's for 17, else numbers."""
         labels = list(category.keypoint_labels or [])
         if not labels:
-            if count == len(COCO_KEYPOINTS):
+            if model_labels and len(model_labels) == count:
+                labels, edges = list(model_labels), [list(e) for e in (model_edges or [])]
+            elif count == len(COCO_KEYPOINTS):
                 labels, edges = list(COCO_KEYPOINTS), [list(e) for e in COCO_SKELETON]
             else:
                 labels, edges = [str(i + 1) for i in range(count)], []
@@ -100,7 +104,8 @@ def apply_predictions(image, predictions, resolver, username=None, task_id=None,
         if p.get("isrbbox"):
             annotation.isrbbox = True
             annotation.rbbox = p["rbbox"]
-        if p.get("keypoints") and resolver.ensure_keypoints(category, p["num_keypoints"]):
+        if p.get("keypoints") and resolver.ensure_keypoints(category, p["num_keypoints"],
+                                                            p.get("keypoint_labels"), p.get("skeleton")):
             annotation.keypoints = p["keypoints"]
         if task_id is not None:
             annotation.import_task = task_id  # the activity log can take the run back

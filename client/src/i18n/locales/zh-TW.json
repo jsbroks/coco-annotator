@@ -419,8 +419,8 @@
     "titleDataset": "用模型預標註 {name}",
     "titleImage": "用模型標註這張圖片",
     "upload": "上傳",
-    "uploadHint": "Ultralytics YOLO 權重檔（detect、OBB、segment 或 pose），例如 runs/.../weights/best.pt。建議先改成好認的檔名，清單上會顯示檔名。只上傳你信任來源的模型。",
-    "uploadModel": "新增模型（.pt）",
+    "uploadHint": "Ultralytics YOLO 權重檔（detect、OBB、segment 或 pose，例如 runs/.../weights/best.pt），或 MediaPipe 模型（.task：姿態、手部；.tflite：物件偵測、影像分割）。建議先改成好認的檔名，清單上會顯示檔名。只上傳你信任來源的模型。",
+    "uploadModel": "新增模型（.pt / .task / .tflite）",
     "uploaded": "已新增模型 {name}",
     "manageModels": "到「模型」頁上傳、開關或管理模型",
     "seeModels": "到「模型」頁查看所有模型"
@@ -1352,7 +1352,7 @@
   },
   "models": {
     "title": "模型",
-    "subtitle": "上傳的 YOLO 模型：開關、命名、備註、預設信心值和使用紀錄",
+    "subtitle": "上傳的 YOLO 和 MediaPipe 模型：開關、命名、備註、預設信心值和使用紀錄",
     "device": "運算裝置",
     "sam": "SAM（點選分割）",
     "samOff": "未啟用",
@@ -1378,7 +1378,35 @@
     "made": "產生 {n} 個標註",
     "lastUsed": "上次 {time}（{user}）",
     "neverUsed": "還沒用過",
-    "saved": "已儲存 {name}"
+    "saved": "已儲存 {name}",
+    "mediapipe": {
+      "title": "MediaPipe 官方模型",
+      "show": "顯示 {n} 個模型",
+      "hint": "Google 提供的現成模型，按「加入」由伺服器下載到模型資料夾，之後就能像 YOLO 模型一樣用來預標註。姿態和手部會自動建立含關鍵點名稱和骨架連線的類別；在 CPU 上執行。",
+      "notInstalled": "這台伺服器沒有安裝 MediaPipe（映像檔用 MEDIAPIPE=0 建置）。",
+      "add": "加入",
+      "adding": "下載中…",
+      "added": "已加入",
+      "task": {
+        "pose": "人體姿態（33 個關鍵點）",
+        "hand": "手部（21 個關鍵點，分左右手）",
+        "detect": "物件偵測",
+        "segment": "影像分割"
+      },
+      "about": {
+        "pose_landmarker_lite": "最快，準確度較低",
+        "pose_landmarker_full": "速度和準確度平衡",
+        "pose_landmarker_heavy": "最準確，最慢",
+        "hand_landmarker": "每隻手一個框 + 21 個關鍵點",
+        "efficientdet_lite0": "COCO 80 類，速度快",
+        "efficientdet_lite2": "COCO 80 類，較準確",
+        "ssd_mobilenet_v2": "COCO 80 類，最輕量",
+        "selfie_segmenter": "人像（整個人）",
+        "selfie_multiclass_256x256": "頭髮、身體皮膚、臉部皮膚、衣服、其他",
+        "hair_segmenter": "頭髮",
+        "deeplab_v3": "PASCAL VOC 20 類（人、車、動物…）"
+      }
+    }
   },
   "noPageAccess": {
     "title": "你沒有「{page}」頁面的權限",

@@ -419,8 +419,8 @@
     "titleDataset": "Pre-annotate {name} with a model",
     "titleImage": "Annotate this image with a model",
     "upload": "Upload",
-    "uploadHint": "Ultralytics YOLO weights (detect, OBB, segment or pose), e.g. runs/.../weights/best.pt. Rename the file first: the file name is shown in the list. Only upload models from people you trust.",
-    "uploadModel": "Add a model (.pt)",
+    "uploadHint": "Ultralytics YOLO weights (detect, OBB, segment or pose, e.g. runs/.../weights/best.pt), or a MediaPipe model (.task: pose, hands; .tflite: object detection, image segmentation). Rename the file first: the file name is shown in the list. Only upload models from people you trust.",
+    "uploadModel": "Add a model (.pt / .task / .tflite)",
     "uploaded": "Model {name} added",
     "manageModels": "Upload, turn on / off or manage models on the Models page",
     "seeModels": "See all models on the Models page"
@@ -1217,7 +1217,7 @@
   },
   "models": {
     "title": "Models",
-    "subtitle": "Uploaded YOLO models: on / off, names, notes, default confidence and usage",
+    "subtitle": "Uploaded YOLO and MediaPipe models: on / off, name, note, default confidence and usage",
     "device": "Device",
     "sam": "SAM (click to segment)",
     "samOff": "not available",
@@ -1243,7 +1243,35 @@
     "made": "{n} annotations made",
     "lastUsed": "last {time} ({user})",
     "neverUsed": "never used",
-    "saved": "Saved {name}"
+    "saved": "Saved {name}",
+    "mediapipe": {
+      "title": "MediaPipe official models",
+      "show": "Show {n} models",
+      "hint": "Ready-made models by Google. Add one and the server downloads it into the models folder; it then pre-annotates like a YOLO model. Pose and hand models create categories with keypoint names and a skeleton. They run on the CPU.",
+      "notInstalled": "MediaPipe is not installed on this server (the image was built with MEDIAPIPE=0).",
+      "add": "Add",
+      "adding": "Downloading…",
+      "added": "Added",
+      "task": {
+        "pose": "Body pose (33 keypoints)",
+        "hand": "Hands (21 keypoints, left / right)",
+        "detect": "Object detection",
+        "segment": "Image segmentation"
+      },
+      "about": {
+        "pose_landmarker_lite": "Fastest, less accurate",
+        "pose_landmarker_full": "Balance of speed and accuracy",
+        "pose_landmarker_heavy": "Most accurate, slowest",
+        "hand_landmarker": "A box + 21 keypoints per hand",
+        "efficientdet_lite0": "80 COCO classes, fast",
+        "efficientdet_lite2": "80 COCO classes, more accurate",
+        "ssd_mobilenet_v2": "80 COCO classes, lightest",
+        "selfie_segmenter": "People (the whole person)",
+        "selfie_multiclass_256x256": "Hair, body skin, face skin, clothes, others",
+        "hair_segmenter": "Hair",
+        "deeplab_v3": "20 PASCAL VOC classes (person, car, animals, …)"
+      }
+    }
   },
   "noPageAccess": {
     "title": "You do not have access to {page}",

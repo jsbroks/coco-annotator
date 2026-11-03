@@ -6,6 +6,7 @@ from database import ActivityModel, ImageModel, ModelInfoModel
 from flask import send_file
 from ..util.sam import sam
 from ..util.yolo import yolo
+from ..util import mediapipe_models
 from ..util import preannotate
 from ..sockets import socketio
 
@@ -174,7 +175,8 @@ class YoloModels(Resource):
         models = _with_meta(yolo.list(), include_usage=manage)
         if not manage:
             models = [m for m in models if m['enabled']]
-        result = {"installed": True, "models": models, "can_manage": current_user.has_perm('manage_models')}
+        result = {"installed": True, "models": models, "can_manage": current_user.has_perm('manage_models'),
+                  "ultralytics": yolo.ultralytics_installed, "mediapipe": yolo.mediapipe_installed}
         if manage:
             result.update({"device": yolo.device_name(), "directory": yolo.directory, "sam": sam.status()})
         return result
@@ -182,7 +184,7 @@ class YoloModels(Resource):
 
 yolo_upload = reqparse.RequestParser()
 yolo_upload.add_argument('file', location='files', type=FileStorage, required=True,
-                         help='Ultralytics YOLO .pt file')
+                         help='Ultralytics YOLO .pt, or MediaPipe .task / .tflite file')
 yolo_upload.add_argument('overwrite', location='form', type=str, default='false')
 
 
@@ -207,14 +209,54 @@ class YoloUpload(Resource):
         except ValueError as e:
             return {"message": str(e)}, 400
         logger.info(f"User {current_user.username} added model {info['name']}")
-        import datetime
-        meta = ModelInfoModel.objects(name=info['name']).first() or ModelInfoModel(name=info['name'])
-        meta.uploaded_by = current_user.username
-        meta.uploaded_at = datetime.datetime.utcnow()
-        meta.save()
-        from ..util import activity
-        activity.record('model_upload', current_user, detail={'name': info['name'], 'task': info.get('task'),
-                                                              'replaced': bool(overwrite)}, text=info['name'])
+        _record_added(info['name'], info.get('task'), overwrite)
+        return {"success": True, "model": info}
+
+
+def _record_added(name, task, replaced):
+    import datetime
+    meta = ModelInfoModel.objects(name=name).first() or ModelInfoModel(name=name)
+    meta.uploaded_by = current_user.username
+    meta.uploaded_at = datetime.datetime.utcnow()
+    meta.save()
+    from ..util import activity
+    activity.record('model_upload', current_user, detail={'name': name, 'task': task, 'replaced': bool(replaced)},
+                    text=name)
+
+
+@api.route('/mediapipe/catalog')
+class MediaPipeCatalog(Resource):
+
+    @login_required
+    def get(self):
+        """ MediaPipe's official models: which are in the models folder """
+        if not current_user.can_page('models'):
+            return {"message": "You do not have access to the Models page", "code": "no_page"}, 403
+        have = set(yolo.model_names())
+        return {"installed": yolo.mediapipe_installed, "can_manage": current_user.has_perm('manage_models'),
+                "models": [dict(entry, name=mediapipe_models.catalog_name(entry),
+                                added=mediapipe_models.catalog_name(entry) in have)
+                           for entry in mediapipe_models.CATALOG]}
+
+
+@api.route('/mediapipe/install/<string:key>')
+class MediaPipeInstall(Resource):
+
+    @login_required
+    def post(self, key):
+        """ Download an official MediaPipe model into the models folder (admins only) """
+        if not current_user.has_perm('manage_models'):
+            return {"message": "Only admins can add models"}, 403
+        if not yolo.mediapipe_installed:
+            return {"disabled": True, "message": "MediaPipe is not installed on this server"}, 400
+        try:
+            info = yolo.install_official(key)
+        except FileExistsError as e:
+            return {"exists": True, "message": f"{e} is already there"}, 409
+        except ValueError as e:
+            return {"message": str(e)}, 400
+        logger.info(f"User {current_user.username} added MediaPipe model {info['name']}")
+        _record_added(info['name'], info.get('task'), False)
         return {"success": True, "model": info}
 
 

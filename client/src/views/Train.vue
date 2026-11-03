@@ -739,7 +739,8 @@ export default {
         this.status = st.data;
         this.catalog = cat.data;
         this.exports = ex.data.exports || [];
-        this.models = (md.data.models || []).filter(m => m.name);
+        // only YOLO (.pt) models can be trained further, not MediaPipe ones
+        this.models = (md.data.models || []).filter(m => m.name && m.framework !== "mediapipe");
         this.uploads = up.data.uploads || [];
         const wanted = Number(this.$route.query.export);
         if (wanted && this.exports.some(e => e.id === wanted)) this.form.export_id = wanted;
