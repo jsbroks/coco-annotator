@@ -14,7 +14,7 @@ class TestCategory:
     def setup_class(cls):
         CategoryModel.objects.delete()
 
-    @pytest.mark.run(before='test_post_categories')
+    @pytest.mark.order(before='test_post_categories')
     def test_get_empty(self, client):
         response = client.get("/api/category/")
         data = json.loads(response.data)
@@ -26,7 +26,7 @@ class TestCategory:
         response = client.post("/api/category/")
         assert response.status_code == 400
 
-    @pytest.mark.run(after="test_get_empty")
+    @pytest.mark.order(after="test_get_empty")
     def test_post_categories(self, client):
         global category1_id, category2_id, category3_id
         # Category 1 Test
@@ -74,14 +74,14 @@ class TestCategory:
     def test_post_categories_invalid(self, client):
         pass
 
-    @pytest.mark.run(after='test_post_categories')
+    @pytest.mark.order(after='test_post_categories')
     def test_post_already_existing_category(self, client):
         pass
 
 
 class TestCategoryId:
 
-    @pytest.mark.run(after='test_post_categories')
+    @pytest.mark.order(after='test_post_categories')
     def test_get(self, client):
         response = client.get("/api/category/{}".format(category2_id))
 
@@ -98,12 +98,12 @@ class TestCategoryId:
         response = client.delete("/api/category/1000")
         assert response.status_code == 400
 
-    @pytest.mark.run(after='test_post_categories')
+    @pytest.mark.order(after='test_post_categories')
     def test_get(self, client):
         response = client.delete("/api/category/{}".format(category3_id))
         assert response.status_code == 200
 
-    @pytest.mark.run(after='test_post_categories')
+    @pytest.mark.order(after='test_post_categories')
     def test_put_equal(self, client):
         """ Test response when the name to update is the same as already stored """
         data = {
@@ -133,7 +133,7 @@ class TestCategoryId:
         response = client.put("/api/category/{}".format(category1_id), json=data)
         assert response.status_code == 400
 
-    @pytest.mark.run(after='test_put_not_unique')
+    @pytest.mark.order(after='test_put_not_unique')
     def test_put(self, client):
         """ Test response when update is correct"""
         data = {
@@ -142,7 +142,7 @@ class TestCategoryId:
         response = client.put("/api/category/{}".format(category1_id), json=data)
         assert response.status_code == 200
 
-    @pytest.mark.run(after='test_put')
+    @pytest.mark.order(after='test_put')
     def test_put_reset(self, client):
         """ Reset test after a correct update """
         data = {

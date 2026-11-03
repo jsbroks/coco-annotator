@@ -1,8 +1,10 @@
 from database import (
     ImageModel,
     TaskModel,
-    DatasetModel
+    DatasetModel,
+    ActivityModel
 )
+import datetime
 
 from celery import shared_task
 from ..socket import create_socket
@@ -56,6 +58,10 @@ def scan_dataset(task_id, dataset_id):
     [thumbnail_generate_single_image.delay(image.id) for image in ImageModel.objects(regenerate_thumbnail=True).all()]
 
     task.info(f"Created {count} new image(s)")
+    # the activity line only shows when the scan found something
+    ActivityModel.objects(task_id=task_id, action='scan').update(
+        set__counts={'images': count}, set__hidden=count == 0,
+        set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
     task.set_progress(100, socket=socket)
 
 

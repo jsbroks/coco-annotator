@@ -1,17 +1,17 @@
 <template>
   <div>
     <div class="bg-light" v-if="shortcut.title != null" style="font-size: 13px">
-      {{ shortcut.title }}
+      {{ $tr('shortcut', shortcut.title) }}
     </div>
     <div class="row" style="cell">
-      <div class="col-sm text-left">
-        {{ shortcut.name }}
-        <p v-show="readonly" class="mute">(readonly)</p>
+      <div class="col-sm text-start">
+        {{ $tr('shortcut', shortcut.name) }}
+        <p v-show="readonly" class="mute">{{ $t('customShortcut.readonly') }}</p>
       </div>
 
       <div class="col-sm">
         <input
-          :id="_uid"
+          :id="uid"
           :value="keys.join('+').toUpperCase()"
           type="text"
           class="input"
@@ -23,6 +23,9 @@
 </template>
 
 <script>
+import { modalOpen } from "@/libs/modal";
+const NON_TEXT_INPUTS = ["checkbox", "radio", "range", "button", "submit", "reset", "color", "file"];
+
 export default {
   name: "CustomShortcut",
   props: {
@@ -48,10 +51,14 @@ export default {
     function(e) {
       let target = e.target.tagName.toLowerCase();
 
-      if (target === "input") return;
-      if (target === "textarea") return;
+      // typing in a text box is not a shortcut; a focused switch / checkbox /
+      // slider (just clicked in the sidebar) must not block them though
+      if (target === "input" && !NON_TEXT_INPUTS.includes((e.target.type || "").toLowerCase())) return;
+      if (target === "textarea" || target === "select" || e.target.isContentEditable) return;
 
       e.preventDefault();
+      // so that e.g. Space does not also flip the focused switch
+      if (target === "input") e.target.blur();
       this.shortcut.function();
     },
     onkeydown(e) {
@@ -65,10 +72,10 @@ export default {
         this.keysDown.push(key);
       }
 
-      if (parseInt(e.target.id) === this._uid) {
+      if (parseInt(e.target.id) === this.uid) {
         e.preventDefault();
         this.keys = this.keysDown;
-      } else if (this.$route.name === "annotate") {
+      } else if (this.$route.name === "annotate" && !modalOpen()) {
         if (this.keysDown.sort().join(",") === this.keys.sort().join(",")) {
           this.function(e);
         }
@@ -85,6 +92,10 @@ export default {
     }
   },
   computed: {
+    uid() {
+      // Vue 2's this._uid
+      return this.$.uid;
+    },
     toggleKey() {
       return this.keysDown.toString().replace(/,/g, "+");
     }
@@ -96,9 +107,9 @@ export default {
       (this.onKeydown = this.onkeydown.bind(this))
     );
   },
-  destroyed() {
+  unmounted() {
     window.removeEventListener("keydown", this.onKeydown);
-    window.removeEventListener("keydup", this.onKeyup);
+    window.removeEventListener("keyup", this.onKeyup);
   }
 };
 </script>

@@ -1,0 +1,16 @@
+[Unit]
+Description=COCO Annotator (Docker Compose, GPU)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/hunter/coco-annotator
+ExecStart=/usr/bin/docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.yml -f docker-compose.gpu.yml down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

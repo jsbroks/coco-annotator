@@ -9,6 +9,9 @@ export default {
   createUser(user) {
     return axios.post(baseURL + "user/", { ...user });
   },
+  editUser(username, changes) {
+    return axios.patch(baseURL + `user/${username}`, { ...changes });
+  },
   deleteUser(username) {
     return axios.delete(baseURL + `user/${username}`);
   }

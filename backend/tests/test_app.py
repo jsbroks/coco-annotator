@@ -2,7 +2,7 @@ import json
 import pytest
 
 
-@pytest.mark.first
+@pytest.mark.order(1)
 def test_api(client):
     response = client.get('/api/swagger.json')
     assert response is not None

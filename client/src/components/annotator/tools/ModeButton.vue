@@ -3,11 +3,8 @@ import button from "@/mixins/toolBar/button";
 
 export default {
   name: "ModeButton",
+  emits: ["update:mode"],
   mixins: [button],
-  model: {
-    prop: "mode",
-    event: "update"
-  },
   props: {
     mode: {
       type: String,
@@ -25,6 +22,9 @@ export default {
     }
   },
   computed: {
+    buttonLabel() {
+      return this.$t("toolbar.modeLabel", { mode: this.$t("toolbar.mode." + this.mode) });
+    },
     icon() {
       if (this.mode == "segment") return "fa-pencil-square-o";
       if (this.mode == "label") return "fa-tags";
@@ -37,7 +37,7 @@ export default {
       return "segment";
     },
     execute() {
-      this.$emit("update", this.next());
+      this.$emit("update:mode", this.next());
     }
   }
 };

@@ -78,6 +78,20 @@ export default {
           }
         },
         {
+          default: ["o"],
+          name: "Rotated BBox Tool",
+          function: () => {
+            if (!this.$refs.rbbox.isDisabled) this.activeTool = "Rotated BBox";
+          }
+        },
+        {
+          default: ["a"],
+          name: "SAM Tool",
+          function: () => {
+            if (!this.$refs.sam.isDisabled) this.activeTool = "SAM";
+          }
+        },
+        {
           default: ["n"],
           name: "Next Image",
           function: this.nextImage
@@ -107,7 +121,7 @@ export default {
           default: ["k"],
           name: "Keypoints Tool",
           function: () => {
-            if (!this.$refs.magicwand.isDisabled) this.activeTool = "Keypoints";
+            if (!this.$refs.keypoint.isDisabled) this.activeTool = "Keypoints";
           }
         },
         {
@@ -125,9 +139,29 @@ export default {
           }
         },
         {
-          default: ["c"],
+          default: ["m"],
           name: "Center Image",
           function: this.fit
+        },
+        {
+          default: ["c"],
+          name: "Copy Previous Annotations",
+          function: this.copyFromPrevious
+        },
+        {
+          default: ["d"],
+          name: "Clear Annotations",
+          function: this.clearAnnotations
+        },
+        {
+          default: ["y"],
+          name: "Approve Or Done",
+          function: () => this.$refs.reviewBar && this.$refs.reviewBar.shortcutApprove()
+        },
+        {
+          default: ["x"],
+          name: "Reject",
+          function: () => this.$refs.reviewBar && this.$refs.reviewBar.shortcutReject()
         },
         {
           default: ["control", "s"],
@@ -138,7 +172,18 @@ export default {
           title: "BBox Tool Shortcuts",
           default: ["escape"],
           name: "Remove Current BBox",
-          function: this.$refs.bbox.deletePolygon
+          function: this.$refs.bbox.deleteBbox
+        },
+        {
+          title: "Keypoints Tool Shortcuts",
+          default: ["q"],
+          name: "Skip Keypoint",
+          function: this.skipKeypoint
+        },
+        {
+          default: ["escape"],
+          name: "Stop Keypoints",
+          function: this.stopKeypoints
         },
         {
           title: "Polygon Tool Shortcuts",

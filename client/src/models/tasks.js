@@ -9,6 +9,9 @@ export default {
   delete(id) {
     return axios.delete(baseURL + id);
   },
+  clearCompleted() {
+    return axios.delete(baseURL + "completed");
+  },
   getLogs(id) {
     return axios.get(baseURL + id + "/logs");
   }

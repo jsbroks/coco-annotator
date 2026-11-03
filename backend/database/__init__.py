@@ -10,14 +10,33 @@ from .images import *
 from .events import *
 from .users import *
 from .tasks import *
+from .activity import *
+from .model_info import *
+from .roles import RoleModel
+from .help import HelpModel
+from .chat import ChatMessageModel, ChatReadModel, ChatPhotoModel
+from .training import TrainRunModel, TrainerStatusModel, TrainUploadModel, TrainWorkerModel
 
 import json
+
+from bson.json_util import LEGACY_JSON_OPTIONS
+
+# What pymongo / mongoengine used when nothing was said (they warn about it):
+# kept, so data written before reads the same
+UUID_REPRESENTATION = "pythonLegacy"
+JSON_OPTIONS = LEGACY_JSON_OPTIONS
 
 
 def connect_mongo(name, host=None):
     if host is None:
         host = Config.MONGODB_HOST
-    connect(name, host=host)
+    if host.startswith("mongomock://"):
+        # In-memory database for tests / local development without MongoDB
+        import mongomock
+        connect(name, host="mongodb://" + host[len("mongomock://"):],
+                mongo_client_class=mongomock.MongoClient, uuidRepresentation=UUID_REPRESENTATION)
+        return
+    connect(name, host=host, uuidRepresentation=UUID_REPRESENTATION)
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171
@@ -41,8 +60,20 @@ def upsert(model, query=None, update=None):
     return new_model
 
 
+def ensure_indexes():
+    """Create the indexes declared in each model's meta (idempotent).
+
+    MongoDB builds them once; on an existing database with many images and
+    annotations this can take a few seconds on the first start.
+    """
+    CategoryModel.drop_old_unique_index()
+    for model in (ImageModel, AnnotationModel, DatasetModel, CategoryModel,
+                  UserModel, TaskModel, ExportModel, ActivityModel, HelpModel):
+        model.ensure_indexes()
+
+
 def fix_ids(q):
-    json_obj = json.loads(q.to_json().replace('\"_id\"', '\"id\"'))
+    json_obj = json.loads(q.to_json(json_options=JSON_OPTIONS).replace('\"_id\"', '\"id\"'))
     return json_obj
 
 

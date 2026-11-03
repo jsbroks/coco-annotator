@@ -10,6 +10,7 @@
 <script>
 export default {
   name: "PanelButton",
+  emits: ["click"],
   props: {
     name: {
       type: String,

@@ -2,8 +2,8 @@ import subprocess
 import requests
 
 
-COMMITS = "https://api.github.com/repos/jsbroks/coco-annotator/commits/{}"
-COMPARE = "https://api.github.com/repos/jsbroks/coco-annotator/compare/{}...{}"
+COMMITS = "https://api.github.com/repos/Tsaicc-biovlsi/coco-annotator/commits/{}"
+COMPARE = "https://api.github.com/repos/Tsaicc-biovlsi/coco-annotator/compare/{}...{}"
 
 CURRENT_VERSION = ""
 LATEST_VERSION = ""

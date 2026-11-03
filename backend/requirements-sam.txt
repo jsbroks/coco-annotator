@@ -1,0 +1,7 @@
+# AI-assisted annotation: Segment Anything and your own Ultralytics YOLO
+# models. Installed on top of requirements.txt only when wanted (Docker build
+# arg SAM=cpu|cuda), so the default image stays small and PyTorch-free.
+torch>=2.4
+torchvision>=0.19
+segment-anything==1.0
+ultralytics>=8.3

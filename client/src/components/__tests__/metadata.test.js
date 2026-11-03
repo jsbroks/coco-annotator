@@ -1,9 +1,15 @@
+import { describe, it, expect } from "vitest";
 import { shallowMount } from "@vue/test-utils";
-import Metadata from "@/components/Metadata";
+import i18n, { setLocale } from "@/i18n";
+
+setLocale("en");
+const global = { plugins: [i18n] };
+import Metadata from "@/components/Metadata.vue";
 
 describe("Metadata.vue Empty", () => {
   const wrapper = shallowMount(Metadata, {
-    propsData: { metadata: {} }
+    global,
+    props: { metadata: {} }
   });
 
   it("empty metadata", () => {
@@ -14,22 +20,21 @@ describe("Metadata.vue Empty", () => {
     expect(wrapper.vm.export()).toEqual({});
   });
 
-  it("creating 3 entries", () => {
-    wrapper.find(".fa-plus").trigger("click");
-    wrapper.find(".fa-plus").trigger("click");
-    wrapper.find(".fa-plus").trigger("click");
-    wrapper.find(".fa-plus").trigger("click");
+  it("creating 3 entries", async () => {
+    for (let i = 0; i < 4; i++) {
+      await wrapper.find(".fa-plus").trigger("click");
+    }
 
     expect(wrapper.vm.metadataList.length).toEqual(4);
 
     let inputs = wrapper.findAll(".meta-input");
     expect(inputs.length).toEqual(4 * 2);
 
-    inputs.wrappers.forEach((value, index) => {
-      value.setValue(String.fromCharCode(97 + index));
-    });
-    inputs.wrappers[5].setValue("true");
-    inputs.wrappers[7].setValue("123");
+    for (const [index, input] of inputs.entries()) {
+      await input.setValue(String.fromCharCode(97 + index));
+    }
+    await inputs[5].setValue("true");
+    await inputs[7].setValue("123");
   });
 
   it("export metadata", () => {
@@ -53,7 +58,8 @@ describe("Metadata.vue with metadata", () => {
     //e: { test: true, data: "info" }
   };
   const wrapper = shallowMount(Metadata, {
-    propsData: {
+    global,
+    props: {
       metadata: metadata,
       exclude: "name",
       keyTitle: "Custom Keys",
@@ -69,10 +75,10 @@ describe("Metadata.vue with metadata", () => {
     expect(wrapper.find(".title").text()).toEqual("Custom Title");
 
     let subtitles = wrapper.findAll(".subtitle");
-    expect(subtitles.wrappers[0].text()).toEqual("Custom Keys");
-    expect(subtitles.wrappers[1].text()).toEqual("Custom Values");
+    expect(subtitles[0].text()).toEqual("Custom Keys");
+    expect(subtitles[1].text()).toEqual("Custom Values");
 
-    let inputs = wrapper.findAll(".meta-input").wrappers;
+    let inputs = wrapper.findAll(".meta-input");
     expect(inputs.length).toEqual(4 * 2);
   });
 

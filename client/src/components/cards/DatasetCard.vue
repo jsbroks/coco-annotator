@@ -1,15 +1,21 @@
 <template>
-  <div class="col-md-3">
+  <div class="col-sm-6 col-md-4 col-xl-3 col-xxl-2">
     <!-- Dataset Card -->
     <div class="card mb-4 box-shadow">
-      <!-- Display Image -->
-      <img
-        @click="onImageClick"
-        :src="imageUrl"
-        class="card-img-top"
-        @error="imageError = true"
-        style="width: 100%; display: block;"
-      />
+      <!-- Display Image (with the planned task in the corner) -->
+      <div class="cover">
+        <img
+          @click="onImageClick"
+          :src="imageUrl"
+          class="card-img-top"
+          @error="imageError = true"
+          style="width: 100%; display: block;"
+        />
+        <span v-if="dataset.task" class="task-tag" :title="$t('datasetTask.label')">
+          <i class="fa fa-fw" :class="TASK_ICONS[dataset.task]" :style="dataset.task === 'obb' ? { transform: 'rotate(-30deg)' } : null" />
+          {{ $t('datasetTask.' + dataset.task + '.name') }}
+        </span>
+      </div>
 
       <!-- Card Body -->
       <div class="card-body">
@@ -23,7 +29,7 @@
         <i
           class="card-text fa fa-ellipsis-v fa-x icon-more"
           :id="'dropdownDataset' + dataset.id"
-          data-toggle="dropdown"
+          data-bs-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
           aria-hidden="true"
@@ -32,9 +38,28 @@
         <br />
 
         <div>
-          <div v-if="dataset.numberImages > 0">
-            {{ dataset.numberAnnotated }} of {{ dataset.numberImages }} images
-            annotated.
+          <div v-if="dataset.numberImages > 0 && statusParts" class="status-summary">
+            <!-- the same statuses and colours as the dataset's progress -->
+            <div class="status-legend">
+              <span v-for="p in statusParts.filter(p => p.n)" :key="p.key" class="status-item" :title="p.label + ' ' + p.n + '（' + p.pct + '%）'">
+                <span class="dot" :class="p.cls" />{{ p.label }} {{ p.n }}
+              </span>
+              <span class="ms-auto text-muted">{{ $t('review.totalImages', { n: dataset.numberImages }) }}</span>
+            </div>
+            <div class="progress-stacked status-bar">
+              <div
+                v-for="p in statusParts"
+                :key="p.key"
+                class="progress"
+                :style="{ width: p.share + '%' }"
+                :title="p.label + ' ' + p.n"
+              >
+                <div class="progress-bar" :class="p.cls" />
+              </div>
+            </div>
+          </div>
+          <div v-else-if="dataset.numberImages > 0">
+            {{ $t('datasetCard.annotated', { done: dataset.numberAnnotated, total: dataset.numberImages }) }}
             <div class="progress">
               <div
                 class="progress-bar"
@@ -44,12 +69,12 @@
             </div>
           </div>
 
-          <p v-else>No images in dataset.</p>
+          <p v-else>{{ $t('datasetCard.noImagesInDataset') }}</p>
           <span
             v-for="(category, index) in listCategories"
             :key="index"
-            class="badge badge-pill badge-primary category-badge"
-            :style="{ 'background-color': category.color }"
+            class="badge rounded-pill text-white category-badge"
+            :style="{ 'background-color': category.color || 'var(--bs-primary)' }"
           >
             {{ category.name }}
           </span>
@@ -61,25 +86,25 @@
         >
           <button
             class="dropdown-item"
-            data-toggle="modal"
-            :data-target="'#datasetEdit' + dataset.id"
+            data-bs-toggle="modal"
+            :data-bs-target="'#datasetEdit' + dataset.id"
           >
-            Edit
+            {{ $t('datasetCard.edit') }}
           </button>
           <button
             v-if="dataset.permissions.owner"
             class="dropdown-item"
-            data-toggle="modal"
-            :data-target="'#datasetShare' + dataset.id"
+            data-bs-toggle="modal"
+            :data-bs-target="'#datasetShare' + dataset.id"
           >
-            Share
+            {{ $t('datasetCard.share') }}
           </button>
           <button
             class="dropdown-item"
             @click="onCocoDownloadClick"
             v-show="dataset.permissions.download"
           >
-            Download COCO
+            {{ $t('datasetCard.downloadCoco') }}
           </button>
           <hr v-show="dataset.permissions.delete" />
           <button
@@ -87,7 +112,7 @@
             v-show="dataset.permissions.delete"
             @click="onDeleteClick"
           >
-            Delete
+            {{ $t('datasetCard.delete') }}
           </button>
         </div>
       </div>
@@ -96,7 +121,7 @@
         v-show="$store.getters['user/loginEnabled']"
         class="card-footer text-muted"
       >
-        Created by {{ dataset.owner }}
+        {{ $t('common.createdBy', { name: dataset.owner }) }}
       </div>
     </div>
 
@@ -108,21 +133,20 @@
             <h5 class="modal-title">{{ dataset.name }}</h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group">
-                <label>Default Categories</label>
+              <div class="mb-3">
+                <label>{{ $t('datasetCard.defaultCategories') }}</label>
                 <TagsInput
-                  v-model="selectedCategories"
+                  v-model:value="selectedCategories"
                   element-id="changeDataset"
                   :existing-tags="categoryTags"
+                  :only-existing-tags="!$store.getters['user/can']('create_categories')"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
                 />
@@ -130,7 +154,7 @@
 
               <Metadata
                 :metadata="defaultMetadata"
-                title="Default Annotation Metadata"
+                :title="$t('datasetCard.defaultAnnotationMetadata')"
                 key-name="Default Key"
                 value-name="Default Value"
                 ref="defaultAnnotation"
@@ -142,16 +166,16 @@
               type="button"
               class="btn btn-success"
               @click="onSave"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Save
+              {{ $t('datasetCard.save') }}
             </button>
             <button
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Close
+              {{ $t('datasetCard.close') }}
             </button>
           </div>
         </div>
@@ -166,24 +190,22 @@
             <h5 class="modal-title">{{ dataset.name }}</h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group">
-                <label>Users shared with</label>
+              <div class="mb-3">
+                <label>{{ $t('datasetCard.usersSharedWith') }}</label>
                 <TagsInput
-                  v-model="sharedUsers"
+                  v-model:value="sharedUsers"
                   element-id="usersList"
                   :existing-tags="users"
                   :typeahead="true"
                   :typeahead-activation-threshold="0"
-                  placeholder="Add usernames"
+                  :placeholder="$t('datasetCard.addUsernames')"
                 />
               </div>
             </form>
@@ -193,16 +215,16 @@
               type="button"
               class="btn btn-success"
               @click="onShare"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Save
+              {{ $t('datasetCard.save') }}
             </button>
             <button
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Close
+              {{ $t('datasetCard.close') }}
             </button>
           </div>
         </div>
@@ -212,10 +234,13 @@
 </template>
 
 <script>
+import noImageImg from "@/assets/no-image.png";
+import notFoundImageImg from "@/assets/404-image.png";
 import axios from "axios";
-import Metadata from "@/components/Metadata";
+import { TASK_ICONS } from "@/components/TaskPicker.vue";
+import Metadata from "@/components/Metadata.vue";
 
-import TagsInput from "@/components/TagsInput";
+import TagsInput from "@/components/TagsInput.vue";
 
 import { mapMutations } from "vuex";
 
@@ -234,11 +259,12 @@ export default {
   },
   data() {
     return {
+      TASK_ICONS,
       imageError: false,
       selectedCategories: [],
       defaultMetadata: this.dataset.default_annotation_metadata,
-      noImageUrl: require("@/assets/no-image.png"),
-      notFoundImageUrl: require("@/assets/404-image.png"),
+      noImageUrl: noImageImg,
+      notFoundImageUrl: notFoundImageImg,
       sharedUsers: []
     };
   },
@@ -255,6 +281,13 @@ export default {
           users: this.sharedUsers
         })
         .then(() => {
+          this.$parent.updatePage();
+        })
+        .catch(error => {
+          const data = (error.response && error.response.data) || {};
+          this.$toastr.error(
+            data.code === "no_create_categories" ? this.$t("categoryPicker.noCreate", { names: data.name }) : data.message || String(error)
+          );
           this.$parent.updatePage();
         });
     },
@@ -310,6 +343,18 @@ export default {
     }
   },
   computed: {
+    /** approved / waiting / rejected / not done, like the progress panel */
+    statusParts() {
+      const counts = this.dataset.statusCounts;
+      if (!counts) return null;
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
+      if (!total) return null;
+      const colours = { approved: "bg-success", labeled: "bg-warning", rejected: "bg-danger", unlabeled: "bg-secondary" };
+      return ["approved", "labeled", "rejected", "unlabeled"].map(key => {
+        const n = counts[key] || 0;
+        return { key, n, cls: colours[key], label: this.$t("review.status." + key), share: (100 * n) / total, pct: Math.round((100 * n) / total) };
+      });
+    },
     percent() {
       return 100 * (this.dataset.numberAnnotated / this.dataset.numberImages);
     },
@@ -365,6 +410,21 @@ export default {
 </script>
 
 <style scoped>
+.cover {
+  position: relative;
+}
+.task-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(17, 24, 39, 0.78);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 2px 8px 2px 4px;
+  pointer-events: none;
+}
 .card-img-overlay {
   padding: 0 10px 0 0;
 }
@@ -400,6 +460,37 @@ p {
 .progress {
   margin: 0 5px 7px 5px;
   height: 5px;
+}
+.status-summary {
+  margin-bottom: 7px;
+}
+.status-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+.status-item {
+  white-space: nowrap;
+}
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: 0;
+}
+.status-bar {
+  height: 6px;
+  margin: 0;
+}
+/* the parts of the stacked bar (not the outer margin rule above) */
+.status-bar .progress {
+  margin: 0;
+  height: 100%;
 }
 .card-footer {
   padding: 2px;

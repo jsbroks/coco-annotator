@@ -1,0 +1,51 @@
+# A trainer on another server: trains for the annotator at TRAINER_URL with
+# this server's GPU (README: 用其他伺服器訓練).
+#
+#   1. On the annotator: 訓練 → 訓練伺服器 → 新增 (a name), copy the token
+#   2. Here, in this folder, a .env with
+#        TRAINER_URL=http://<the annotator server's IP>:5000
+#        TRAINER_TOKEN=<the token>
+#   3. docker compose -f docker-compose.worker.yml up -d
+#
+# Nothing is built: it runs Ultralytics' own image (PyTorch + CUDA +
+# Ultralytics) with this folder's code mounted, so updating is `git pull`
+# and `docker compose -f docker-compose.worker.yml restart`.
+# WORKER_IMAGE picks another image (a pinned version, or the annotator's own
+# image copied over: see the README).
+#
+# Its working files (exports kept for the next time, base weights, runs that
+# can still be resumed) are in ./worker. Requires the NVIDIA Container Toolkit.
+services:
+  trainer-worker:
+    image: ${WORKER_IMAGE:-ultralytics/ultralytics:latest}
+    container_name: annotator_trainer_worker
+    restart: unless-stopped
+    working_dir: /app
+    command: ["python", "-m", "trainer.worker"]
+    environment:
+      TRAINER_URL: ${TRAINER_URL:?set TRAINER_URL in .env}
+      TRAINER_TOKEN: ${TRAINER_TOKEN:?set TRAINER_TOKEN in .env}
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: "1"
+      MODELS_DIRECTORY: /work
+      YOLO_CONFIG_DIR: /work/.ultralytics
+      # exports kept here (GB)
+      WORKER_CACHE_GB: ${WORKER_CACHE_GB:-30}
+      # nvidia-smi in the container: a GPU used outside this site (a training
+      # run by hand on this computer) takes no queued training until it is free
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      GPU_BUSY_MEMORY_MB: ${GPU_BUSY_MEMORY_MB:-2048}
+      GPU_BUSY_UTIL: ${GPU_BUSY_UTIL:-50}
+      GPU_BUSY_CHECK: ${GPU_BUSY_CHECK:-true}
+    # the training data loaders share memory between processes
+    shm_size: ${TRAIN_SHM:-8gb}
+    volumes:
+      - "./backend:/app:ro"
+      - "${WORKER_DIR:-./worker}:/work"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

@@ -1,6 +1,10 @@
+import { renderToolIcon } from "./render";
+import { tr } from "@/i18n";
+
 export default {
-  template:
-    "<div><i v-tooltip.right='name' class='fa fa-x' :class='icon' :style='{ color: iconColor }' @click='click'></i><br></div>",
+  render() {
+    return renderToolIcon(this, this.buttonLabel !== undefined ? this.buttonLabel : tr("toolbar", this.name));
+  },
   data() {
     return {
       color: {

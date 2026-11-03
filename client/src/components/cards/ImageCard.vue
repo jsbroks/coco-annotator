@@ -1,5 +1,5 @@
 <template>
-  <div class="col-md-3">
+  <div class="col-sm-6 col-md-4 col-xl-3 col-xxl-2">
     <div
       class="card mb-4 shadow-sm"
       :class="{'border': annotated, 'border-danger': annotated}"
@@ -11,13 +11,14 @@
           :src="imageUrl"
           :src-placeholder="loaderUrl"
           class="card-img-top"
+          @error="imageError = true"
           style="width: 100%; display: block"
           :style="{'opacity': annotated ? 0.3 : 1}"
         />
       </div>
 
       <b v-if="annotated" class="overlay-text text-center">
-        Being annotated by {{image.annotating.join(', ')}}
+        {{ $t('imageCard.beingAnnotated', { users: image.annotating.join(', ') }) }}
       </b>
 
       <div class="card-body" style="width: 100%" :style="{'opacity': annotated ? 0.3 : 1}">
@@ -34,7 +35,7 @@
           <i
             class="card-text fa fa-ellipsis-v fa-x icon-more"
             :id="'dropdownImage' + image.id"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
             aria-hidden="true"
@@ -48,37 +49,57 @@
               class="btn dropdown-item"
               @click="onDeleteClick"
             >
-              Delete
+              {{ $t('imageCard.delete') }}
             </button>
             <button class="btn dropdown-item" @click="openAnnotator">
-              Annotate
+              {{ $t('imageCard.annotate') }}
             </button>
             <button
               class="btn dropdown-item"
               @click="onDownloadClick"
             >
-              Download Image & COCO
+              {{ $t('imageCard.downloadImageCoco') }}
             </button>
           </div>
         </div>
 
         <div class="row">
           <p v-show="image.num_annotations > 0">
-            {{ image.num_annotations }} annotation<span
-              v-show="image.num_annotations > 1"
-              >s</span
-            >
+            {{ $t('imageCard.annotations', { n: image.num_annotations }, image.num_annotations) }}
           </p>
-          <p v-show="image.annotated == true && image.num_annotations < 0">Annotated</p>
-          <p v-show="image.annotated == false">No annotations</p>
+          <p v-show="image.annotated == true && image.num_annotations < 0">{{ $t('imageCard.annotated') }}</p>
+          <p v-show="image.annotated == false">{{ $t('imageCard.noAnnotations') }}</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-1 small">
+          <span class="badge" :class="statusClass(image.status || 'unlabeled')" :title="image.review_note || ''">
+            {{ $t('review.status.' + (image.status || 'unlabeled')) }}
+          </span>
+          <span v-if="image.ai" class="badge ai-badge" :title="$t('imageCard.aiHint')">
+            <i class="fa fa-magic" /> AI
+          </span>
+          <span
+            v-if="image.image_class != null && categoryMap[image.image_class]"
+            class="badge"
+            :style="{
+              backgroundColor: categoryMap[image.image_class].color || 'var(--bs-primary)',
+              color: textColorFor(categoryMap[image.image_class].color)
+            }"
+            :title="$t('imageClass.title')"
+          >
+            {{ categoryMap[image.image_class].name }}
+          </span>
+          <span v-if="image.assignee" class="text-muted text-truncate" :title="$t('review.assignee')">
+            <i class="fa fa-user-o" /> {{ image.assignee }}
+          </span>
         </div>
 
         <div class="row">
           <!--<span
             v-for="(category, index) in image.categories"
             :key="index"
-            class="badge badge-pill badge-primary category-badge"
-            :style="{ 'background-color': category.color }"
+            class="badge rounded-pill text-white category-badge"
+            :style="{ 'background-color': category.color || 'var(--bs-primary)' }"
           >
             {{ category.name }}
           </span>-->
@@ -89,7 +110,11 @@
 </template>
 
 <script>
+import loaderImg from "@/assets/loader.gif";
+import notFoundImageImg from "@/assets/404-image.png";
 import axios from "axios";
+import { statusClass } from "@/components/annotator/ReviewBar.vue";
+import { textColorFor } from "@/libs/colors";
 
 export default {
   name: "ImageCard",
@@ -97,16 +122,24 @@ export default {
     image: {
       type: Object,
       required: true
+    },
+    /** { [category id]: { name, color } } for the whole-image class badge */
+    categoryMap: {
+      type: Object,
+      default: () => ({})
     }
   },
   data() {
     return {
       hover: false,
       showAnnotations: true,
-      loaderUrl: require("@/assets/loader.gif")
+      loaderUrl: loaderImg,
+      imageError: false
     };
   },
   methods: {
+    statusClass,
+    textColorFor,
     downloadURI(uri, exportName) {
       let link = document.createElement("a");
       link.href = uri;
@@ -145,6 +178,8 @@ export default {
   },
   computed: {
     imageUrl() {
+      // the file is missing on the server (deleted or moved on disk)
+      if (this.imageError) return notFoundImageImg;
       let d = new Date();
       if (this.showAnnotations) {
         return `/api/image/${
@@ -196,6 +231,10 @@ p {
   padding: 3px 10px;
   float: right;
   color: black;
+}
+.ai-badge {
+  background: #ede7fb;
+  color: #6a3fc4;
 }
 .category-badge {
   float: left;

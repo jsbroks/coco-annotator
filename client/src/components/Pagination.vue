@@ -4,7 +4,7 @@
       <li class="page-item" @click="previousPage">
         <a class="page-link" aria-label="Previous">
           <span aria-hidden="true">&laquo;</span>
-          <span class="sr-only">Previous</span>
+          <span class="visually-hidden">{{ $t('pagination.previous') }}</span>
         </a>
       </li>
       <li
@@ -22,7 +22,7 @@
       >
         <a class="page-link" aria-label="Next">
           <span aria-hidden="true">&raquo;</span>
-          <span class="sr-only">Next</span>
+          <span class="visually-hidden">{{ $t('pagination.next') }}</span>
         </a>
       </li>
     </ul>
@@ -32,16 +32,22 @@
 <script>
 export default {
   name: "Pagination",
+  emits: ["pagechange"],
   props: {
     pages: {
       type: Number,
       required: true
+    },
+    /** the page shown elsewhere (another pager for the same list): kept in step */
+    current: {
+      type: Number,
+      default: null
     }
   },
   data() {
     return {
-      range: 11,
-      page: 1,
+      maxRange: 11,
+      page: this.current || 1,
       timer: null
     };
   },
@@ -60,14 +66,28 @@ export default {
     }
   },
   watch: {
+    current(value) {
+      // follow the other pager without announcing a change back
+      if (value != null && value !== this.page) {
+        this.syncing = true;
+        this.page = value;
+      }
+    },
     page(newPage, oldPage) {
       if (newPage === oldPage) return;
+      if (this.syncing) {
+        this.syncing = false;
+        return;
+      }
 
       clearTimeout(this.timer);
       this.timer = setTimeout(() => this.$emit("pagechange", this.page), 0);
     }
   },
   computed: {
+    range() {
+      return Math.max(0, Math.min(this.maxRange, this.pages));
+    },
     startPage() {
       if (this.range > this.pages) {
         return 0;
@@ -83,11 +103,6 @@ export default {
       }
 
       return start;
-    }
-  },
-  created() {
-    if (this.range > this.pages) {
-      this.range = this.pages;
     }
   }
 };

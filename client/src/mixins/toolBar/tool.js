@@ -1,24 +1,26 @@
 import paper from "paper";
+import { renderToolIcon } from "./render";
+import { tr } from "@/i18n";
 
 export default {
-  model: {
-    prop: "selected",
-    event: "update"
-  },
+  emits: ["setcursor", "update:selected"],
   props: {
     selected: {
       type: String,
       required: true
     }
   },
-  template:
-    "<div><i v-tooltip.right='tooltip' class='fa fa-x' :class='icon' :style='{ color: iconColor }' @click='click'></i><br></div>",
+  render() {
+    return renderToolIcon(this, this.tooltip);
+  },
   data() {
     return {
       tool: null,
       enabled: false,
       cursor: "default",
-      color: {
+      // Named iconColors (not color): Vue 3 merges mixin data shallowly, and
+      // several tools have their own `color` settings object.
+      iconColors: {
         enabled: "white",
         active: "#2ecc71",
         disabled: "gray",
@@ -37,7 +39,7 @@ export default {
     update() {
       if (this.isDisabled) return;
 
-      this.$emit("update", this.name);
+      this.$emit("update:selected", this.name);
     },
     setPreferences() {}
   },
@@ -50,21 +52,24 @@ export default {
       return false;
     },
     iconColor() {
-      if (this.isDisabled) return this.color.disabled;
+      if (this.isDisabled) return this.iconColors.disabled;
 
-      if (this.isToggled) return this.color.toggle;
-      if (this.isActive) return this.color.active;
+      if (this.isToggled) return this.iconColors.toggle;
+      if (this.isActive) return this.iconColors.active;
 
-      return this.color.enabled;
+      return this.iconColors.enabled;
     },
     isDisabled() {
       return false;
     },
+    label() {
+      return tr("toolbar", this.name);
+    },
     tooltip() {
       if (this.isDisabled) {
-        return this.name + " (select an annotation to activate tool)";
+        return this.$t("toolbar.needsAnnotation", { tool: this.label });
       }
-      return this.name + " Tool";
+      return this.$t("toolbar.tool", { tool: this.label });
     }
   },
   watch: {
@@ -75,7 +80,7 @@ export default {
     },
     isDisabled(disabled) {
       if (disabled && this.isActive) {
-        this.$emit("update", "Select");
+        this.$emit("update:selected", "Select");
       }
     }
   },

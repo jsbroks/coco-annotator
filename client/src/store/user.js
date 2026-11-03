@@ -13,6 +13,17 @@ const getters = {
     if (!state.user) return false;
     return state.user.is_admin;
   },
+  /** What the user's role (身分) allows: pages (activity, models, tasks) and
+   *  manage_models / manage_users / all_datasets. Admins have everything. */
+  can: state => perm => {
+    const user = state.user;
+    if (!user) return false;
+    // the server lists an admin's permissions too (all of those in use: the
+    // web terminal only when it is turned on)
+    if (Array.isArray(user.perms)) return user.perms.includes(perm);
+    return !!user.is_admin;
+  },
+  canPage: (state, getters) => page => getters.can(page),
   loginEnabled(state) {
     if (!state.user) return false;
     if (!state.user.anonymous) return true;

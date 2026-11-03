@@ -1,6 +1,6 @@
 # Contributing to HTML5 Boilerplate
 
-Love [COCO Annotator](/jsbroks/coco-annotator) and want to get involved?
+Love [COCO Annotator](https://github.com/Tsaicc-biovlsi/coco-annotator) and want to get involved?
 Thanks! We're actively looking for folks interested in helping out and there 
 are plenty of ways you can help!
 
@@ -15,7 +15,7 @@ patches and features.
 
 ## Using the issue tracker
 
-The [issue tracker](/jsbroks/coco-annotator/issues) is
+The [issue tracker](https://github.com/Tsaicc-biovlsi/coco-annotator/issues) is
 the preferred channel for [bug reports](#bugs), [features requests](#features)
 and [submitting pull requests](#pull-requests), but please respect the following
 restrictions:

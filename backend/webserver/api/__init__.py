@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_restplus import Api
+from flask_restx import Api
 
 from .annotations import api as ns_annotations
 from .categories import api as ns_categories
@@ -13,6 +13,14 @@ from .admin import api as ns_admin
 from .tasks import api as ns_tasks
 from .undo import api as ns_undo
 from .info import api as ns_info
+from .review import api as ns_review
+from .trash import api as ns_trash
+from .activity import api as ns_activity
+from .help import api as ns_help
+from .chat import api as ns_chat
+from .train import api as ns_train
+from .train_worker import api as ns_train_worker
+from .terminal import api as ns_terminal
 
 from config import Config
 
@@ -41,4 +49,12 @@ api.add_namespace(ns_undo)
 api.add_namespace(ns_models)
 api.add_namespace(ns_admin)
 api.add_namespace(ns_annotator)
+api.add_namespace(ns_review)
+api.add_namespace(ns_trash)
+api.add_namespace(ns_activity)
+api.add_namespace(ns_help)
+api.add_namespace(ns_chat)
+api.add_namespace(ns_train)
+api.add_namespace(ns_train_worker)
+api.add_namespace(ns_terminal)
 

@@ -1,0 +1,77 @@
+/*
+ * Bootstrap 5 changed several defaults this UI was designed around (it was
+ * built on Bootstrap 4). Imported right after bootstrap.css so these rules
+ * win over Bootstrap's own, while component styles still override them.
+ */
+
+/* Links and link-buttons: underline on hover only */
+a,
+.btn-link {
+  text-decoration: none;
+}
+a:hover,
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+label {
+  margin-bottom: 0.5rem;
+}
+
+/* former .btn-block stacking */
+.btn.w-100 + .btn.w-100 {
+  margin-top: 0.5rem;
+}
+
+/* Bootstrap 5 forces every child of .row to width:100%; only grid columns
+   should be sized by the row (Bootstrap 4 behaviour). :where() keeps this
+   at the same specificity as Bootstrap's rule so components can override. */
+.row > :where(:not([class*="col"])) {
+  flex-shrink: 1;
+  width: auto;
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 0;
+}
+
+/* Bootstrap 5 dropped the breadcrumb background */
+.breadcrumb {
+  padding: 0.75rem 1rem;
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+}
+
+/* No extra-wide (xxl) container: keep pages at the Bootstrap 4 width */
+@media (min-width: 1400px) {
+  .container,
+  .container-lg,
+  .container-md,
+  .container-sm,
+  .container-xl,
+  .container-xxl {
+    max-width: 1140px;
+  }
+}
+
+/* Subtle list borders, as before (they sit on dark sidebars) */
+.list-group {
+  --bs-list-group-border-color: rgba(0, 0, 0, 0.125);
+}
+
+/* Pages use the screen width (Bootstrap's .container stops at 1320 px,
+   leaving wide empty margins on big monitors) */
+.page-container {
+  width: 100%;
+  max-width: 1840px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+@media (max-width: 575.98px) {
+  .page-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

@@ -5,8 +5,9 @@
         class="tags-input-badge tags-input-badge-pill tags-input-badge-selected-default"
         v-for="(badge, index) in tagBadges"
         :key="index"
+        :style="badgeStyle ? badgeStyle(badge) : null"
       >
-        <span v-html="badge"></span>
+        <span class="badge-text">{{ badge }}</span>
 
         <i
           href="#"
@@ -18,10 +19,10 @@
       <input
         type="text"
         ref="taginput"
-        :placeholder="showPlaceholder ? placeholder : ''"
+        :placeholder="showPlaceholder ? placeholder || $t('tagsInput.addACategory') : ''"
         v-model="input"
         @keydown.enter.prevent="tagFromInput"
-        @keydown.8="removeLastTag"
+        @keydown.backspace="removeLastTag"
         @keydown.down="nextSearchResult"
         @keydown.up="prevSearchResult"
         @keydown.exact="onKeyDown"
@@ -41,8 +42,9 @@
       />
     </div>
 
-    <!-- Typeahead/Autocomplete -->
-    <div v-show="searchResults.length">
+    <!-- Typeahead/Autocomplete: overlays the content below so that hiding it
+         (on blur) does not move buttons under the mouse mid-click -->
+    <div v-show="searchResults.length" class="tags-input-typeahead">
       <p
         v-if="typeaheadStyle === 'badges'"
         :class="`typeahead-${typeaheadStyle}`"
@@ -86,6 +88,7 @@
 
 <script>
 export default {
+  emits: ["initialized", "tag-added", "tag-removed", "tags-updated", "update:value"],
   props: {
     elementId: {
       type: String,
@@ -121,7 +124,12 @@ export default {
     },
     placeholder: {
       type: String,
-      default: "Add a category"
+      default: ""
+    },
+    // a tag's own style (tag text -> style object)
+    badgeStyle: {
+      type: Function,
+      default: null
     },
     limit: {
       type: Number,
@@ -189,16 +197,22 @@ export default {
   },
 
   watch: {
-    tags() {
-      // Updating the hidden input
-      this.hiddenInput = this.tags.join(",");
+    tags: {
+      deep: true,
+      handler() {
+        // Updating the hidden input
+        this.hiddenInput = this.tags.join(",");
 
-      // Update the bound v-model value
-      this.$emit("input", this.tags);
+        // Update the bound v-model value
+        this.$emit("update:value", this.tags);
+      }
     },
 
-    value() {
-      this.tagsFromValue();
+    value: {
+      deep: true,
+      handler() {
+        this.tagsFromValue();
+      }
     }
   },
 
@@ -262,7 +276,8 @@ export default {
 
       // Attach the tag if it hasn't been attached yet
       if (!this.tagSelected(slug)) {
-        this.tagBadges.push(text.replace(/\s/g, "&nbsp;"));
+        // plain text (never HTML): names come from other users
+        this.tagBadges.push(text);
         this.tags.push(slug);
       }
 
@@ -446,7 +461,24 @@ export default {
 </script>
 
 <style>
+.tags-input-typeahead {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1060;
+  margin-top: 2px;
+  padding: 4px 6px 0;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .tags-input-root {
   position: relative;
+}
+.badge-text {
+  white-space: pre;
 }
 </style>

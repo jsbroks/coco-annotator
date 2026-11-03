@@ -1,5 +1,5 @@
 <template>
-  <div class="col-md-3">
+  <div class="col-sm-6 col-md-4 col-xl-3 col-xxl-2">
     <div class="card mb-4 box-shadow" @click="onCardClick">
       <div class="card-body">
         <span class="d-inline-block text-truncate" style="max-width: 75%; float: left">
@@ -9,8 +9,8 @@
 
         <i
           class="card-text fa fa-ellipsis-v fa-x icon-more"
-          :id="'dropdownCategory' + category.id"
-          data-toggle="dropdown"
+          :id="'dropdownCategory' + category.id + uid"
+          data-bs-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
           aria-hidden="true"
@@ -20,45 +20,50 @@
 
         <div>
           <p v-if="category.numberAnnotations > 0">
-            {{ category.numberAnnotations }} objects have been made with this
-            category.
+            {{ $t('categoryCard.objects', { n: category.numberAnnotations }) }}
           </p>
-          <p v-else>No annotations use this category</p>
+          <p v-else>{{ $t('categoryCard.noAnnotationsUseThisCategory') }}</p>
         </div>
 
-        <div class="dropdown-menu" :aria-labelledby="'dropdownCategory' + category.id">
-          <a class="dropdown-item" @click="onDeleteClick">Delete</a>
+        <div v-if="below" class="parent-line text-truncate" :title="pathLabel(below)">
+          <i class="fa fa-folder-open-o" /> {{ pathLabel(below, groupParent) }}
+        </div>
+        <div v-if="otherParents.length" class="parent-line text-truncate" :title="otherParents.map(p => pathLabel(p)).join('、')">
+          <i class="fa fa-folder-o" />
+          {{ groupParent || below ? $t('parents.alsoIn', { names: otherParents.map(p => pathLabel(p)).join('、') }) : otherParents.map(p => pathLabel(p)).join('、') }}
+        </div>
+
+        <div class="dropdown-menu" :aria-labelledby="'dropdownCategory' + category.id + uid">
+          <a class="dropdown-item" @click="onDeleteClick">{{ $t('categoryCard.delete') }}</a>
           <!--<a class="dropdown-item" @click="onDownloadClick"
-            >Download COCO & Images</a
+            >{{ $t('categoryCard.downloadCocoImages') }}</a
           >-->
           <button
             class="dropdown-item"
-            data-toggle="modal"
-            :data-target="'#categoryEdit' + category.id"
-          >Edit</button>
+            data-bs-toggle="modal"
+            :data-bs-target="'#categoryEdit' + category.id + uid"
+          >{{ $t('categoryCard.edit') }}</button>
         </div>
       </div>
 
       <div
         v-show="$store.getters['user/loginEnabled']"
         class="card-footer text-muted"
-      >Created by {{ category.creator }}</div>
+      >{{ $t('common.createdBy', { name: category.creator }) }}</div>
     </div>
 
     <div class="modal fade" role="dialog" ref="category_settings"
-        :id="'categoryEdit' + category.id" >
-      <div class="modal-dialog" role="document">
+        :id="'categoryEdit' + category.id + uid" >
+      <div class="modal-dialog" :class="{ 'modal-xl': kpRows > 3, 'modal-lg': kpRows > 0 && kpRows <= 3, 'modal-dialog-scrollable': kpRows > 3 }" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Category: {{ category.name }}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+            <h5 class="modal-title">{{ $t('categoryCard.title', { name: category.name }) }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group">
-                <label>Name</label>
+              <div class="mb-3">
+                <label>{{ $t('categoryCard.name') }}</label>
                 <input
                   type="text"
                   :value="name"
@@ -69,30 +74,30 @@
                 />
               </div>
 
-              <div class="form-group">
-                <label>Supercategory</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  :value="category.supercategory"
-                  @input="supercategory = $event.target.value"
-                />
+              <div class="mb-3">
+                <label>{{ $t('categoryCard.supercategory') }}</label>
+                <ParentInput v-model="parents" :known="knownParents" />
+                <div class="form-text">{{ $t('parents.hint') }}</div>
               </div>
 
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label">Color</label>
+              <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label">{{ $t('categoryCard.color') }}</label>
                 <div class="col-sm-9">
-                  <input v-model="color" type="color" class="form-control" />
+                  <input v-model="color" type="color" class="form-control form-control-color w-100" />
                 </div>
               </div>
 
-              <div class="form-group">
-                <KeypointsDefinition
+              <div class="mb-3">
+                <KeypointsDefinition @rows="kpRows = $event"
                   ref="keypoints"
-                  v-model="keypoint"
+                  v-model:value="keypoint"
                   element-id="keypoints"
-                  placeholder="Add a keypoint"
+                  :placeholder="$t('categoryCard.addAKeypoint')"
                 ></KeypointsDefinition>
+                <div v-if="kpSave" class="small mt-1" :class="kpSave === 'error' ? 'text-danger' : 'text-muted'">
+                  <i class="fa" :class="{ 'fa-spinner fa-spin': kpSave === 'saving', 'fa-check text-success': kpSave === 'saved', 'fa-exclamation-triangle': kpSave === 'error' }" />
+                  {{ $t('keypointsDefinition.autosave.' + kpSave) }}
+                </div>
               </div>
             </form>
           </div>
@@ -103,9 +108,9 @@
               @click="onUpdateClick"
               :disabled="!isFormValid"
               :class="{ disabled: !isFormValid }"
-              data-dismiss="modal"
-            >Update</button>
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              data-bs-dismiss="modal"
+            >{{ $t('categoryCard.update') }}</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('categoryCard.close') }}</button>
           </div>
         </div>
       </div>
@@ -114,22 +119,26 @@
 </template>
 
 <script>
+import { onModalHidden } from "@/libs/modal";
 import axios from "axios";
 import toastrs from "@/mixins/toastrs";
-// import TagsInput from "@/components/TagsInput";
-import KeypointsDefinition from "@/components/KeypointsDefinition";
-import JQuery from "jquery";
+// import TagsInput from "@/components/TagsInput.vue";
+import KeypointsDefinition from "@/components/KeypointsDefinition.vue";
+import ParentInput from "@/components/ParentInput.vue";
+import { isUnder, parentsOf, pathLabel } from "@/libs/parents";
 
-let $ = JQuery;
 
 export default {
   name: "CategoryCard",
   mixins: [toastrs],
-  components: { KeypointsDefinition },
+  components: { KeypointsDefinition, ParentInput },
+  emits: ["changed"],
   data() {
     return {
+      // keypoints listed in the dialog (several: a wider dialog)
+      kpRows: 0,
       group: null,
-      supercategory: this.category.supercategory,
+      parents: parentsOf(this.category),
       color: this.category.color,
       metadata: [],
       keypoint: {
@@ -139,15 +148,32 @@ export default {
       },
       name: this.category.name,
       isMounted: false,
+      // keypoints are saved as they change: '' | saving | saved | error
+      kpSave: "",
     };
   },
   props: {
     category: {
       type: Object,
       required: true
-    }
+    },
+    /** makes element ids unique when a card is shown in several groups */
+    uid: { type: String, default: "" },
+    /** the group this card is shown in (its other parents are listed) */
+    groupParent: { type: String, default: null },
+    knownParents: { type: Array, default: () => [] }
   },
   computed: {
+    /** shown in a folder above its own: the folder (below this one) it is in */
+    below() {
+      if (!this.groupParent) return null;
+      const parents = parentsOf(this.category);
+      if (parents.includes(this.groupParent)) return null;
+      return parents.find(p => isUnder(p, this.groupParent)) || null;
+    },
+    otherParents() {
+      return parentsOf(this.category).filter(p => p !== this.groupParent && p !== this.below);
+    },
     isFormValid() {
       return (
         this.isMounted &&
@@ -158,13 +184,24 @@ export default {
       );
     }
   },
+  watch: {
+    keypoint: {
+      deep: true,
+      handler() {
+        clearTimeout(this.kpTimer);
+        this.kpTimer = setTimeout(() => this.saveKeypoints(), 500);
+      }
+    }
+  },
   created() {
     this.resetCategorySettings();
   },
   methods: {
+    pathLabel,
     resetCategorySettings() {
+      this.kpSave = "";
       this.name = this.category.name;
-      this.supercategory = this.category.supercategory;
+      this.parents = parentsOf(this.category);
       this.color = this.category.color;
       this.keypoint = {
         labels: [...this.category.keypoint_labels],
@@ -172,11 +209,43 @@ export default {
         colors: [...this.category.keypoint_colors],
       };
     },
+    /** the keypoints, connections and their colours: saved right away */
+    saveKeypoints() {
+      const kp = this.keypoint;
+      const same =
+        JSON.stringify(kp.labels) === JSON.stringify(this.category.keypoint_labels) &&
+        JSON.stringify(kp.edges) === JSON.stringify(this.category.keypoint_edges) &&
+        JSON.stringify(kp.colors) === JSON.stringify(this.category.keypoint_colors);
+      if (same || !this.$refs.keypoints || !this.$refs.keypoints.valid) return;
+      this.kpSave = "saving";
+      const sent = { labels: [...kp.labels], edges: kp.edges.map(e => [...e]), colors: [...kp.colors] };
+      axios
+        .put("/api/category/" + this.category.id, {
+          // the rest as saved (the dialog's other fields wait for Update)
+          name: this.category.name,
+          color: this.category.color,
+          supercategories: parentsOf(this.category),
+          metadata: this.category.metadata,
+          keypoint_labels: sent.labels,
+          keypoint_edges: sent.edges,
+          keypoint_colors: sent.colors
+        })
+        .then(() => {
+          this.category.keypoint_labels = sent.labels;
+          this.category.keypoint_edges = sent.edges;
+          this.category.keypoint_colors = sent.colors;
+          this.kpSave = "saved";
+        })
+        .catch(error => {
+          this.kpSave = "error";
+          this.axiosReqestError("Updating Category", (error.response && error.response.data && error.response.data.message) || String(error));
+        });
+    },
     onCardClick() {},
     onDownloadClick() {},
     onDeleteClick() {
       axios.delete("/api/category/" + this.category.id).then(() => {
-        this.$parent.updatePage();
+        this.$emit("changed");
       });
     },
     onUpdateClick() {
@@ -184,7 +253,7 @@ export default {
         .put("/api/category/" + this.category.id, {
           name: this.name,
           color: this.color,
-          supercategory: this.supercategory,
+          supercategories: this.parents,
           metadata: this.metadata,
           keypoint_edges: this.keypoint.edges,
           keypoint_labels: this.keypoint.labels,
@@ -196,26 +265,26 @@ export default {
             "Category successfully updated"
           );
           this.category.name = this.name;
-          this.category.supercategory = this.supercategory;
+          this.category.supercategories = [...this.parents];
+          this.category.supercategory = this.parents[0] || "";
           this.category.color = this.color;
           this.category.metadata = { ...this.metadata };
           this.category.keypoint_edges = [...this.keypoint.edges];
           this.category.keypoint_labels = [...this.keypoint.labels];
           this.category.keypoint_colors = [...this.keypoint.colors];
-          this.$parent.updatePage();
+          this.$emit("changed");
         })
         .catch(error => {
           this.axiosReqestError(
             "Updating Category",
             error.response.data.message
           );
-          this.$parent.updatePage();
+          this.$emit("changed");
         });
     }
   },
   mounted() {
-    $(this.$refs.category_settings).on(
-      "hidden.bs.modal", this.resetCategorySettings);
+    onModalHidden(this.$refs.category_settings, this.resetCategorySettings);
     this.isMounted = true;
   }
 };
@@ -238,6 +307,12 @@ export default {
   display: inline;
   margin: 0;
   padding-right: 10px;
+}
+
+.parent-line {
+  clear: both;
+  font-size: 0.75rem;
+  color: #1d5ea8;
 }
 
 .card-footer {

@@ -1,11 +1,11 @@
 <template>
   <div v-show="select.isActive">
-    <PanelToggle name="Show Hover Text" v-model="select.hover.showText" />
+    <PanelToggle :name="$t('selectPanel.showHoverText')" v-model:value="select.hover.showText" />
   </div>
 </template>
 
 <script>
-import PanelToggle from "@/components/PanelToggle";
+import PanelToggle from "@/components/PanelToggle.vue";
 
 export default {
   name: "SelectPanel",

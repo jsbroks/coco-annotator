@@ -2,6 +2,10 @@ import axios from "axios";
 
 const baseURL = "/api/dataset";
 
+export function isYoloFile(file) {
+  return !!file && /\.zip$/i.test(file.name);
+}
+
 export default {
   allData(params) {
     return axios.get(`${baseURL}/data`, {
@@ -17,21 +21,31 @@ export default {
       }
     });
   },
-  create(name, categories) {
-    return axios.post(`${baseURL}/?name=${name}`, {
-      categories: categories
-    });
-  },
-  generate(id, body) {
-    return axios.post(`${baseURL}/${id}/generate`, {
-      ...body
+  create(name, categories, task = "", replaceTrashed = false) {
+    return axios.post(`${baseURL}/?name=${encodeURIComponent(name)}`, {
+      categories: categories,
+      task,
+      replace_trashed: replaceTrashed
     });
   },
   scan(id) {
     return axios.get(`${baseURL}/${id}/scan`);
   },
-  exportingCOCO(id, categories, with_empty_images) {
-    return axios.get(`${baseURL}/${id}/export?categories=${categories}&with_empty_images=${with_empty_images}`);
+  /** options: { format: "coco" | "yolo", yolo_task, with_images } */
+  exportingCOCO(id, categories, with_empty_images, options = {}) {
+    return axios.get(`${baseURL}/${id}/export`, {
+      params: { categories: String(categories || ""), with_empty_images, ...options }
+    });
+  },
+  /** A COCO .json or a YOLO .zip (label .txt files + data.yaml / classes.txt) */
+  uploadAnnotations(id, file, yoloTask = "auto") {
+    if (!isYoloFile(file)) return this.uploadCoco(id, file);
+    const form = new FormData();
+    form.append("yolo", file);
+    form.append("task", yoloTask);
+    return axios.post(`${baseURL}/${id}/yolo`, form, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
   },
   getCoco(id) {
     return axios.get(`${baseURL}/${id}/coco`);

@@ -1,12 +1,12 @@
 <template>
-  <div class="form-inline my-2 my-lg-0" style="margin-right: 10px">
+  <div class="d-flex align-items-center my-2 my-lg-0" style="margin-right: 10px">
     <div class="dropdown show">
       <a
-        class="btn-outline-light btn-sm dropdown-toggle"
+        class="btn btn-outline-light btn-sm dropdown-toggle"
         href="#"
         role="button"
         id="dropdownMenuLink"
-        data-toggle="dropdown"
+        data-bs-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
       >
@@ -14,26 +14,26 @@
       </a>
 
       <ul
-        class="dropdown-menu dropdown-menu-right"
+        class="dropdown-menu dropdown-menu-end"
         aria-labelledby="dropdownMenuLink"
         role="menu"
       >
         <li>
           <a
-            v-show="$store.getters['user/isAdmin']"
+            v-show="$store.getters['user/can']('manage_users')"
             class="dropdown-item"
             href="#"
           >
-            <RouterLink class="route" to="/admin/panel">Admin Panel</RouterLink>
+            <RouterLink class="route" to="/admin/panel">{{ $t('user.adminPanel') }}</RouterLink>
           </a>
         </li>
         <li>
           <a class="dropdown-item" href="#">
-            <RouterLink class="route" to="/user">User Settings</RouterLink>
+            <RouterLink class="route" to="/user">{{ $t('user.userSettings') }}</RouterLink>
           </a>
         </li>
         <li>
-          <a class="dropdown-item" href="#" @click="logoutButton">Logout</a>
+          <a class="dropdown-item" href="#" @click="logoutButton">{{ $t('user.logout') }}</a>
         </li>
       </ul>
     </div>
@@ -61,7 +61,7 @@ export default {
     },
     display() {
       if (!this.user) return "";
-      return this.user.name.length === 0 ? this.user.username : this.user.name;
+      return this.user.name || this.user.username || "";
     }
   }
 };

@@ -1,5 +1,5 @@
 from flask_login import LoginManager, AnonymousUserMixin
-from werkzeug.security import check_password_hash
+from .util.passwords import hash_password, check_password, check_and_upgrade
 from database import (
     UserModel,
     DatasetModel,
@@ -28,6 +28,19 @@ class AnonymousUser(AnonymousUserMixin):
     def images(self):
         return ImageModel.objects
 
+    # login disabled: everything is editable, like for an admin
+    @property
+    def editable_datasets(self):
+        return self.datasets
+
+    @property
+    def editable_images(self):
+        return self.images
+
+    @property
+    def editable_annotations(self):
+        return self.annotations
+
     @property
     def username(self):
         return "anonymous"
@@ -43,12 +56,27 @@ class AnonymousUser(AnonymousUserMixin):
     def update(self, *args, **kwargs):
         pass
 
+    # login turned off: one shared user, nothing to hide
+    role_key = 'admin'
+
+    def perms(self):
+        from database.roles import available
+        return set(available())
+
+    def has_perm(self, perm):
+        return True
+
+    def can_page(self, page):
+        return True
+
     def to_json(self):
         return {
             "admin": False,
             "username": self.username,
             "name": self.name,
             "is_admin": self.is_admin,
+            "role": "admin",
+            "perms": sorted(self.perms()),
             "anonymous": True
         }
 
@@ -84,7 +112,7 @@ def load_user_from_request(request):
     if not auth:
         return None
     user = UserModel.objects(username__iexact=auth.username).first()
-    if user and check_password_hash(user.password, auth.password):
+    if user and check_and_upgrade(user, auth.password):
         # login_user(user)
         return user
     return None

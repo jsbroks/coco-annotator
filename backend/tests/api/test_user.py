@@ -4,7 +4,7 @@ import pytest
 from database import UserModel
 
 
-@pytest.mark.second
+@pytest.mark.order(2)
 class TestUser:
 
     @classmethod

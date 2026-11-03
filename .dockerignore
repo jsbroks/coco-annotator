@@ -1,2 +1,9 @@
-datasets/*
-models/*
+.git
+datasets
+models
+db
+**/node_modules
+client/dist
+backend/dist
+**/__pycache__
+**/.pytest_cache

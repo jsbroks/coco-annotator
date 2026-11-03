@@ -11,3 +11,18 @@ dist/*
 
 docs/.vuepress/dist/*
 models/*.h5
+models/*.pth
+models/*.pt
+models/**/*.pt
+models/.training/
+models/mediapipe/
+models/**/*.task
+models/**/*.tflite
+db/*
+!db/.gitkeep
+mongo-dump-*/
+.env
+backups/
+
+# a trainer worker's files (docker-compose.worker.yml)
+/worker/

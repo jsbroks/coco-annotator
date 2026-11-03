@@ -1,11 +1,17 @@
 # Annotator Web Client
 
-## Project setup
+Vue 3 + Vite.
 
-### Development Mode
+```bash
+npm ci
+npm run dev      # http://localhost:8080, proxies /api and /socket.io to BACKEND_URL (default http://localhost:5000)
+npm run build    # production build into dist/ (served by the Flask webserver)
+npm test         # unit tests (Vitest)
+npm run lint
+```
 
-`docker-compose up --build`
+With Docker: `docker compose -f docker-compose.dev.yml up --build` from the
+repository root starts the dev server, the API and its services.
 
-### Production Mode
-
-`docker-compose up -f docker-compose.prod.yml up --build`
+Note: paper.js is loaded as a classic `<script>` (see `vite.config.js` and
+`src/libs/paper-shim.js`) because it does not work in strict-mode ES modules.

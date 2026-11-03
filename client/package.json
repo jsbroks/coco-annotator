@@ -1,71 +1,46 @@
 {
-  "name": "client",
-  "version": "0.1.0",
+  "name": "coco-annotator-client",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "test": "vue-cli-service test:unit"
+    "dev": "vite",
+    "serve": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src",
+    "test": "vitest run"
   },
   "dependencies": {
-    "axios": "^0.18.0",
-    "bootstrap": "^4.1.3",
-    "intersection-observer": "^0.5.1",
-    "jquery": "^3.3.1",
-    "paper": "^0.11.8",
-    "popper.js": "^1.14.5",
-    "simplify-js": "^1.2.3",
+    "@popperjs/core": "^2.11.8",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "axios": "^1.12.0",
+    "bootstrap": "^5.3.8",
+    "fflate": "^0.8.3",
+    "floating-vue": "^5.2.2",
+    "font-awesome": "^4.7.0",
+    "hammerjs": "^2.0.8",
+    "paper": "^0.12.18",
+    "simplify-js": "^1.2.4",
+    "socket.io-client": "^4.8.1",
     "toastr": "^2.1.4",
-    "v-lazy-image": "^1.3.2",
-    "v-tooltip": "^2.0.0-rc.33",
-    "vue": "^2.5.17",
-    "vue-loading-overlay": "^3.1.1",
-    "vue-router": "^3.0.2",
-    "vue-socket.io": "^3.0.5",
-    "vue-touch": "^2.0.0-beta.4",
-    "vuex": "^3.0.1"
+    "v-lazy-image": "^2.1.1",
+    "vue": "^3.5.22",
+    "vue-i18n": "^11.4.13",
+    "vue-loading-overlay": "^6.0.6",
+    "vue-router": "^4.5.1",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.1.1",
-    "@vue/cli-plugin-eslint": "^3.1.1",
-    "@vue/cli-plugin-unit-jest": "^3.4.0",
-    "@vue/cli-service": "^3.1.1",
-    "@vue/eslint-config-prettier": "^4.0.0",
-    "@vue/test-utils": "^1.0.0-beta.20",
-    "babel-core": "7.0.0-bridge.0",
-    "babel-eslint": "^10.0.1",
-    "babel-jest": "^24.1.0",
-    "eslint": "^5.8.0",
-    "eslint-plugin-vue": "^5.0.0-0",
-    "vue-template-compiler": "^2.5.17",
-    "vue-toastr-2": "0.0.10"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "browser": true,
-      "es6": true,
-      "node": true,
-      "jest": true
-    },
-    "extends": [
-      "plugin:vue/strongly-recommended",
-      "plugin:prettier/recommended",
-      "@vue/prettier"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ]
+    "@eslint/js": "^9.36.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/test-utils": "^2.4.6",
+    "eslint": "^9.36.0",
+    "eslint-plugin-vue": "^10.5.0",
+    "globals": "^16.4.0",
+    "jsdom": "^27.0.0",
+    "vite": "^7.1.7",
+    "vitest": "^5.0.3"
+  }
 }

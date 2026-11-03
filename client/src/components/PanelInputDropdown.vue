@@ -1,10 +1,8 @@
 <template>
   <div class="input-group tool-input-group">
-    <div class="input-group-prepend tool-option-pre">
-      <span class="input-group-text tool-option-font">{{ name }}</span>
-    </div>
-    <select v-model="localValue" class="form-control tool-option-input">
-      <option :key="option.key" v-for="option in options" :value="option.key" :selected="option.selected">{{ option.value }}</option>
+    <span class="input-group-text tool-option-font tool-option-pre">{{ name }}</span>
+    <select v-model="localValue" class="form-select tool-option-input">
+      <option :key="option.key" v-for="option in options" :value="option.key" :selected="option.selected">{{ $tr('option', option.value) }}</option>
     </select>
   </div>
 </template>
@@ -12,10 +10,7 @@
 <script>
 export default {
   name: "PanelInputDropdown",
-  model: {
-    prop: "value",
-    event: "update"
-  },
+  emits: ["update:value"],
   props: {
     name: {
       type: String,
@@ -37,7 +32,7 @@ export default {
   },
   watch: {
     localValue() {
-      this.$emit("update", this.localValue);
+      this.$emit("update:value", this.localValue);
     },
     value(newValue) {
       this.localValue = newValue;

@@ -1,40 +1,40 @@
 <template>
   <div v-show="polygon.isActive">
-    <PanelButton name="Close Polygon" @click="polygon.complete" />
-    <PanelButton name="Delete Polygon" @click="polygon.deletePolygon" />
-    <PanelToggle name="Guidance" v-model="polygon.polygon.guidance" />
-    <PanelToggle name="Auto Select Color" v-model="polygon.color.auto" />
+    <PanelButton :name="$t('polygonPanel.closePolygon')" @click="polygon.complete" />
+    <PanelButton :name="$t('polygonPanel.deletePolygon')" @click="polygon.deletePolygon" />
+    <PanelToggle :name="$t('polygonPanel.guidance')" v-model:value="polygon.polygon.guidance" />
+    <PanelToggle :name="$t('polygonPanel.autoSelectColor')" v-model:value="polygon.color.auto" />
     <PanelToggle
       v-show="polygon.color.auto"
-      name="Only Black or White"
-      v-model="polygon.color.blackOrWhite"
+      :name="$t('polygonPanel.onlyBlackOrWhite')"
+      v-model:value="polygon.color.blackOrWhite"
     />
     <PanelInputString
-      name="Stroke Color"
-      v-model="polygon.polygon.pathOptions.strokeColor"
+      :name="$t('polygonPanel.strokeColor')"
+      v-model:value="polygon.polygon.pathOptions.strokeColor"
     />
     <PanelInputNumber
-      name="Auto Complete Distance"
+      :name="$t('polygonPanel.autoCompleteDistance')"
       min="0"
       max="1000"
       step="5"
-      v-model="polygon.polygon.completeDistance"
+      v-model:value="polygon.polygon.completeDistance"
     />
     <PanelInputNumber
-      name="Min Distance"
+      :name="$t('polygonPanel.minDistance')"
       min="0"
       max="500"
       step="2"
-      v-model="polygon.polygon.minDistance"
+      v-model:value="polygon.polygon.minDistance"
     />
   </div>
 </template>
 
 <script>
-import PanelButton from "@/components/PanelButton";
-import PanelToggle from "@/components/PanelToggle";
-import PanelInputString from "@/components/PanelInputString";
-import PanelInputNumber from "@/components/PanelInputNumber";
+import PanelButton from "@/components/PanelButton.vue";
+import PanelToggle from "@/components/PanelToggle.vue";
+import PanelInputString from "@/components/PanelInputString.vue";
+import PanelInputNumber from "@/components/PanelInputNumber.vue";
 
 export default {
   name: "PolygonPanel",

@@ -127,10 +127,10 @@ def paperjs_to_coco_cliptobounds(image_width, image_height, paperjs): # todo: th
         
         if inside: # if point is inside the canvas. Otherwise ignore it
             edges = {
-                'w_0': np.array([[0,0],[image_width, 0]], np.float),
-                'w_1': np.array([[0,image_height],[image_width, image_height]], np.float),
-                'h_0': np.array([[0,0],[0, image_height]], np.float),
-                'h_1': np.array([[image_width,0],[image_width, image_height]], np.float),
+                'w_0': np.array([[0,0],[image_width, 0]], np.float64),
+                'w_1': np.array([[0,image_height],[image_width, image_height]], np.float64),
+                'h_0': np.array([[0,0],[0, image_height]], np.float64),
+                'h_1': np.array([[image_width,0],[image_width, image_height]], np.float64),
             }
             prev_point = None
             for i in range(i_start, i_start + len(child_segments)):
@@ -255,7 +255,11 @@ def get_image_coco(image_id):
                     arr = np.array(annotation.get('keypoints', []))
                     arr = arr[2::3]
                     annotation['num_keypoints'] = len(arr[arr > 0])
-                
+
+                if not annotation.get('isrbbox'):
+                    annotation.pop('isrbbox', None)
+                    annotation.pop('rbbox', None)
+
                 annotations.append(annotation)
 
         if len(category.get('keypoint_labels')) > 0:

@@ -1,20 +1,18 @@
 <template>
   <div v-show="keypoint.isActive">
-    <PanelText name="Settings for next Keypoint" />
+    <PanelText :name="$t('keypointPanel.settingsForNextKeypoint')" />
     <div class="input-group tool-input-group">
-      <div class="input-group-prepend tool-option-pre">
-        <span class="input-group-text tool-option-font">Label</span>
-      </div>
-      <div class="form-control tool-option-input text-left">
+      <span class="input-group-text tool-option-font tool-option-pre">{{ $t('keypointPanel.label') }}</span>
+      <div class="form-control tool-option-input text-start">
         {{ keypointLabel }}
       </div>
     </div>
-    <PanelInputDropdown name="Visibility" v-model="visibility" :values="visibilityOptions" />
+    <PanelInputDropdown :name="$t('keypointPanel.visibility')" v-model:value="visibility" :values="visibilityOptions" />
   </div>
 </template>
 <script>
-import PanelText from "@/components/PanelText";
-import PanelInputDropdown from "@/components/PanelInputDropdown";
+import PanelText from "@/components/PanelText.vue";
+import PanelInputDropdown from "@/components/PanelInputDropdown.vue";
 import { VisibilityOptions } from "@/libs/keypoints";
 export default {
   name: "KeypointPanel",

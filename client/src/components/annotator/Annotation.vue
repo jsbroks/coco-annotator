@@ -5,7 +5,7 @@
   >
     <li
       v-show="showSideMenu"
-      class="list-group-item btn btn-link btn-sm text-left"
+      class="list-group-item btn btn-link btn-sm text-start"
       :style="{ 'background-color': backgroundColor, color: 'white' }"
     >
       <div @click="isVisible = !isVisible">
@@ -22,7 +22,7 @@
       </div>
 
       <button
-          class="btn btn-sm btn-link collapsed text-left annotation-text"
+          class="btn btn-sm btn-link collapsed text-start annotation-text"
           :style="{
             float: 'left',
             width: '70%',
@@ -38,7 +38,7 @@
         <template v-else> {{ name }} </template>
         {{ annotation.name }}
         <i v-if="isEmpty" style="padding-left: 5px; color: lightgray"
-          >(Empty)</i
+          >({{ $t('annotation.empty') }})</i
         >
         <i v-else style="padding-left: 5px; color: lightgray"
           >(id: {{ annotation.id }})</i
@@ -49,8 +49,8 @@
       <i
         class="fa fa-gear annotation-icon"
         style="float:right"
-        data-toggle="modal"
-        :data-target="'#annotationSettings' + annotation.id"
+        data-bs-toggle="modal"
+        :data-bs-target="'#annotationSettings' + annotation.id"
       />
       <i
         @click="deleteAnnotation"
@@ -63,7 +63,7 @@
         class="list-group keypoint-list">
       <li v-for="(kp, index) in keypointListView" :key="index"
           :style="{'background-color': kp.backgroundColor}"
-          class="list-group-item text-left keypoint-item">
+          class="list-group-item text-start keypoint-item">
         <div>
           <i class="fa fa-map-marker keypoint-icon"
               :style="{ color: kp.iconColor}"
@@ -84,8 +84,8 @@
           @click="onAnnotationKeypointSettingsClick(index)"
           class="fa fa-gear annotation-icon"
           style="float:right; color: lightgray;"
-          data-toggle="modal"
-          :data-target="'#keypointSettings' + annotation.id"
+          data-bs-toggle="modal"
+          :data-bs-target="'#keypointSettings' + annotation.id"
         />
         <i
           v-if="kp.visibility !== 0"
@@ -110,19 +110,17 @@
             </h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group row">
-                <label class="col-sm-3 col-form-label">Visibility</label>
+              <div class="mb-3 row">
+                <label class="col-sm-3 col-form-label">{{ $t('annotation.visibility') }}</label>
                 <div class="col-sm-8">
-                  <select v-model="keypoint.visibility" class="form-control">
+                  <select v-model="keypoint.visibility" class="form-select">
                     <option v-for="(desc, label) in visibilityOptions" 
                       :key="label" :value="label" :selected="keypoint.visibility == label">{{desc}}</option>
                   </select>
@@ -134,9 +132,9 @@
             <button
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Close
+              {{ $t('annotation.close') }}
             </button>
           </div>
         </div>
@@ -158,31 +156,29 @@
             </h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group row">
-                <label class="col-sm-3 col-form-label">Color</label>
+              <div class="mb-3 row">
+                <label class="col-sm-3 col-form-label">{{ $t('annotation.color') }}</label>
                 <div class="col-sm-8">
-                  <input v-model="color" type="color" class="form-control" />
+                  <input v-model="color" type="color" class="form-control form-control-color w-100" />
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-3 col-form-label">Name</label>
+              <div class="mb-3 row">
+                <label class="col-sm-3 col-form-label">{{ $t('annotation.name') }}</label>
                 <div class="col-sm-8">
                   <input v-model="name" class="form-control" />
                 </div>
               </div>
-              <div class="form-group row">
-                <label class="col-sm-3 col-form-label">Category</label>
+              <div class="mb-3 row">
+                <label class="col-sm-3 col-form-label">{{ $t('annotation.category') }}</label>
                 <div class="col-sm-8">
-                  <select class="form-control" @change="setCategory">
+                  <select class="form-select" @change="setCategory">
                     <option
                       v-for="option in allCategories"
                       :selected="annotation.category_id === option.value"
@@ -205,16 +201,16 @@
               @click="deleteAnnotation"
               type="button"
               class="btn btn-danger"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Delete
+              {{ $t('annotation.delete') }}
             </button>
             <button
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Close
+              {{ $t('annotation.close') }}
             </button>
           </div>
         </div>
@@ -224,25 +220,29 @@
 </template>
 
 <script>
+import { hideModal, onModalHidden, showModal, closeModalsIn } from "@/libs/modal";
 import paper from "paper";
+import { minAreaRect } from "@/libs/minAreaRect";
 import axios from "axios";
 import simplifyjs from "simplify-js";
-import JQuery from "jquery";
 
 import { Keypoint, Keypoints, VisibilityOptions } from "@/libs/keypoints";
 import { mapMutations } from "vuex";
-import UndoAction from "@/undo";
+import UndoAction, { restoreAnnotations } from "@/undo";
 
-import TagsInput from "@/components/TagsInput";
-import Metadata from "@/components/Metadata";
+import Metadata from "@/components/Metadata.vue";
 
-let $ = JQuery;
+
+const CLICK_THROUGH_TOOLS = ["Rotated BBox", "SAM"];
+
+// how much of an object with keypoints' box is filled (the rest: the picture)
+const KEYPOINT_BOX_FILL = 0.12;
 
 export default {
   name: "Annotation",
+  emits: ["click", "deleted", "keypoint-click", "keypoints-complete"],
   components: {
-    Metadata,
-    TagsInput
+    Metadata
   },
   props: {
     annotation: {
@@ -327,6 +327,8 @@ export default {
         milliseconds: 0
       },
       tagRecomputeCounter: 0,
+      // keypoints passed over (not visible): not offered again as the next one
+      kpSkipped: [],
       visibilityOptions: VisibilityOptions,
     };
   },
@@ -376,10 +378,8 @@ export default {
 
       // Create new compoundpath
       this.compoundPath = new paper.CompoundPath();
-      this.compoundPath.onDoubleClick = () => {
-        if (this.activeTool !== "Select") return;
-        $(`#annotationSettings${this.annotation.id}`).modal("show");
-      };
+      // double-click (any tool): the annotator opens the settings
+      this.compoundPath.onDoubleClick = () => {};
       this.keypoints = new Keypoints(this.keypointEdges, this.keypointLabels,
         this.keypointColors, {
           annotationId: this.annotation.id,
@@ -387,6 +387,8 @@ export default {
         });
       this.keypoints.radius = this.scale * 6;
       this.keypoints.lineWidth = this.scale * 2;
+      // "only this category" may already be on for another category
+      this.keypoints.opacity = this.opacity < 0.2 ? 0.2 : 1;
 
       let keypoints = this.annotation.keypoints;
       if (keypoints) {
@@ -430,10 +432,45 @@ export default {
       this.setColor();
 
       this.compoundPath.onClick = () => {
+        // Tools that place points on the image must not have their clicks
+        // turned into "select this annotation" (it would cancel the shape
+        // being drawn). Pick another annotation from the sidebar instead.
+        if (CLICK_THROUGH_TOOLS.includes(this.activeTool)) return;
         this.$emit("click", this.index);
       };
     },
-    deleteAnnotation() {
+    /** The drawing tool this annotation was made with */
+    matchingTool() {
+      const a = this.annotation || {};
+      if (a.isrbbox) return "Rotated BBox";
+      if (a.isbbox) return "BBox";
+      if (this.compoundPath && !this.compoundPath.isEmpty()) return "Polygon";
+      return null;
+    },
+    /** Everything needed to bring this annotation back after a delete */
+    snapshot() {
+      let data = { ...this.annotation, metadata: { ...(this.annotation.metadata || {}) } };
+      if (this.$refs.metadata) data.metadata = this.$refs.metadata.export();
+      if (this.name) data.metadata.name = this.name;
+      if (this.compoundPath != null) {
+        data.paper_object = this.compoundPath.exportJSON({ asString: false, precision: 1 });
+      }
+      if (this.keypoints != null && !this.keypoints.isEmpty()) {
+        data.keypoints = this.keypoints.exportJSON(
+          this.keypointLabels,
+          this.annotation.width,
+          this.annotation.height
+        );
+      }
+      return { category: this.$parent.category, data };
+    },
+    openSettings() {
+      showModal(`#annotationSettings${this.annotation.id}`);
+    },
+    deleteAnnotation(options) {
+      // (templates call this with the click event as argument)
+      let undoable = !(options && options.undoable === false) && !this.isBlank();
+      let snapshot = undoable ? this.snapshot() : null;
       axios.delete("/api/annotation/" + this.annotation.id).then(() => {
         this.$socket.emit("annotation", {
           action: "delete",
@@ -442,6 +479,16 @@ export default {
         this.delete();
 
         this.$emit("deleted", this.index);
+        if (snapshot) {
+          this.addUndo(
+            new UndoAction({
+              name: "Annotation " + snapshot.data.id,
+              action: "Delete",
+              func: restoreAnnotations,
+              args: [snapshot]
+            })
+          );
+        }
       });
     },
     delete() {
@@ -508,6 +555,7 @@ export default {
       let copy = this.compoundPath.clone();
       copy.fullySelected = false;
       copy.visible = false;
+      copy.data.isrbbox = !!this.annotation.isrbbox;
       this.pervious.push(copy);
 
       let action = new UndoAction({
@@ -520,7 +568,7 @@ export default {
     },
     simplifyPath() {
       if (this.compoundPath != null && this.compoundPath.isEmpty() && this.keypoints.isEmpty()) {
-          this.deleteAnnotation();
+          this.deleteAnnotation({ undoable: false });
           return;
       }
       let simplify = this.simplify;
@@ -540,7 +588,10 @@ export default {
         path.segments.forEach(seg => {
           points.push({ x: seg.point.x, y: seg.point.y });
         });
-        points = simplifyjs(points, simplify, true);
+        // rotated boxes keep their exact 4 corners
+        if (!this.annotation.isrbbox) {
+          points = simplifyjs(points, simplify, true);
+        }
 
         let newPath = new paper.Path(points);
         newPath.closePath();
@@ -559,6 +610,8 @@ export default {
       if (this.pervious.length == 0) return;
       this.compoundPath.remove();
       this.compoundPath = this.pervious.pop();
+      this.compoundPath.visible = this.isVisible;
+      this.annotation.isrbbox = !!this.compoundPath.data.isrbbox;
       this.compoundPath.fullySelected = this.isCurrent;
     },
     addKeypoint(point, visibility, label) {
@@ -611,7 +664,7 @@ export default {
           this.keypoint.tag = indexLabel == -1 ? [] : [indexLabel.toString()];
           this.keypoint.visibility = this.currentKeypoint.visibility;
 
-          $(id).modal("show");
+          showModal(id);
         },
         onMouseDrag: event => {
           let keypoint = event.target.keypoint;
@@ -624,26 +677,35 @@ export default {
       this.keypoints.addKeypoint(keypoint);
       this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
       
-      let unusedLabels = this.notUsedKeypointLabels;
-      delete unusedLabels[String(label)];
-      let unusedLabelKeys = Object.keys(unusedLabels);
-      if (unusedLabelKeys.length > 0) {
-        let nextLabel = unusedLabelKeys[0];
-        for (let ul in unusedLabels) {
-          if (ul > label) {
-            nextLabel = ul;
-            break;
-          }
-        }
-        this.keypoint.next.label = nextLabel;
-      } else {
+      this.kpSkipped = this.kpSkipped.filter(l => l !== label);
+      this.advanceKeypoint(label);
+      this.tagRecomputeCounter++;
+    },
+    /** the next keypoint to place after ``label``: the next one not placed
+     *  (nor passed over) in order; none left: done */
+    advanceKeypoint(label) {
+      const left = Object.keys(this.notUsedKeypointLabels)
+        .map(Number)
+        .filter(l => l !== label && !this.kpSkipped.includes(l));
+      const next = left.find(l => l > label) ?? left[0];
+      if (next == null) {
         this.keypoint.next.label = -1;
-        this.$emit('keypoints-complete');
+        this.$emit("keypoints-complete");
+      } else {
+        this.keypoint.next.label = String(next);
       }
+    },
+    /** pass over the keypoint asked for next (it cannot be seen) */
+    skipKeypoint() {
+      const label = parseInt(this.keypoint.next.label);
+      if (!(label > 0)) return;
+      if (!this.kpSkipped.includes(label)) this.kpSkipped.push(label);
+      this.advanceKeypoint(label);
       this.tagRecomputeCounter++;
     },
     deleteKeypoint(keypoint) {
       this.keypoints.deleteKeypoint(keypoint);
+      this.tagRecomputeCounter++;
     },
     /**
      * Unites current annotation path with anyother path.
@@ -661,6 +723,8 @@ export default {
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
       newCompound.onClick = this.compoundPath.onClick;
       this.annotation.isbbox = isBBox;
+      // any free-form edit turns a rotated box back into a polygon
+      this.annotation.isrbbox = false;
       
       if (undoable) this.createUndoAction("Unite");
 
@@ -669,6 +733,64 @@ export default {
       this.keypoints.bringToFront();
 
       if (simplify) this.simplifyPath();
+    },
+    /**
+     * Replace the annotation shape with a rotated bounding box.
+     * @param {paper.Point[]} corners 4 corners, first edge defines the angle
+     */
+    setRotatedBox(corners, undoable = true) {
+      if (this.compoundPath == null) this.createCompoundPath();
+      if (undoable) this.createUndoAction("Rotated BBox");
+
+      let path = new paper.Path(corners);
+      path.closePath();
+
+      let newCompound = new paper.CompoundPath({ children: [path] });
+      newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
+      newCompound.onClick = this.compoundPath.onClick;
+      newCompound.data.annotationId = this.index;
+      newCompound.data.categoryId = this.categoryIndex;
+
+      this.compoundPath.remove();
+      this.compoundPath = newCompound;
+      this.annotation.isbbox = false;
+      this.annotation.isrbbox = true;
+
+      this.setColor();
+      this.compoundPath.fullySelected = false;
+      this.isEmpty = this.compoundPath.isEmpty() && this.keypoints.isEmpty();
+      this.keypoints.bringToFront();
+      this.emitModify();
+    },
+    /**
+     * Turn this shape (polygon, box, SAM outline) into the smallest rotated
+     * box around it. Returns false when there is nothing to turn.
+     * @param {number} pad grow every side by this many image pixels
+     */
+    toRotatedBox(pad = 0) {
+      if (this.compoundPath == null || this.compoundPath.isEmpty()) return false;
+      const flat = this.compoundPath.clone({ insert: false });
+      flat.flatten(1);
+      const points = [];
+      (flat.children && flat.children.length ? flat.children : [flat]).forEach(path =>
+        (path.segments || []).forEach(seg => points.push({ x: seg.point.x, y: seg.point.y })));
+      flat.remove();
+      const rect = minAreaRect(points, pad);
+      if (!rect || rect.w < 1 || rect.h < 1) return false;
+      this.setRotatedBox(rect.corners.map(c => new paper.Point(c.x, c.y)));
+      return true;
+    },
+    /**
+     * Corners of the rotated box, or null if this is not a rotated box.
+     * @returns {paper.Point[]|null}
+     */
+    getRotatedBoxCorners() {
+      if (!this.annotation.isrbbox || this.compoundPath == null) return null;
+      let children = this.compoundPath.children || [];
+      if (children.length !== 1) return null;
+      let segments = children[0].segments;
+      if (segments.length !== 4) return null;
+      return segments.map(seg => seg.point.clone());
     },
     /**
      * Subtract current annotation path with anyother path.
@@ -681,6 +803,8 @@ export default {
 
       let newCompound = this.compoundPath.subtract(compound);
       newCompound.onDoubleClick = this.compoundPath.onDoubleClick;
+      newCompound.onClick = this.compoundPath.onClick;
+      this.annotation.isrbbox = false;
       if (undoable) this.createUndoAction("Subtract");
 
       this.compoundPath.remove();
@@ -692,14 +816,33 @@ export default {
     setColor() {
       if (this.compoundPath == null) return;
 
+      // a new shape (rotated box, unite, ...) starts fully opaque: always set it
+      this.compoundPath.opacity = this.opacity;
       if (!this.$parent.showAnnotations) {
         this.$parent.setColor();
         return;
       }
 
-      this.compoundPath.opacity = this.opacity;
-      this.compoundPath.fillColor = this.color;
-      this.keypoints.color = this.darkHSL;
+      this.paintShape(this.color);
+      if (this.keypoints != null) this.keypoints.color = this.darkHSL;
+    },
+    /** fill the shape. An object with keypoints: a faint fill and a clear
+     *  outline, so the picture in its box (where they go) can be seen */
+    paintShape(color, opacity = this.opacity) {
+      const path = this.compoundPath;
+      if (path == null) return;
+      if (this.keypointLabels && this.keypointLabels.length) {
+        const fill = new paper.Color(color);
+        fill.alpha = KEYPOINT_BOX_FILL;
+        path.fillColor = fill;
+        path.strokeColor = color;
+        path.strokeWidth = 2 * this.scale;
+        // dimmed with the rest of its category ("only this category")
+        path.opacity = opacity < 0.2 ? opacity : 1;
+      } else {
+        path.fillColor = color;
+        path.opacity = opacity;
+      }
     },
     setCategory(event) {
       const newCategoryName = event.target.value;
@@ -711,15 +854,41 @@ export default {
         oldCategory,
         newCategoryName
       );
-      $(`#annotationSettings${annotation.id}`).modal("hide");
+      hideModal(`#annotationSettings${annotation.id}`);
     },
-    export() {
+    isBlank() {
+      let noShape = this.compoundPath == null || this.compoundPath.isEmpty();
+      return noShape && (this.keypoints == null || this.keypoints.isEmpty());
+    },
+    /** Geometry, keypoints and settings, without side effects (for autosave) */
+    signature() {
+      if (this.isBlank()) return "";
+      let keypoints = this.keypoints && !this.keypoints.isEmpty()
+        ? JSON.stringify(this.keypoints.exportJSON(this.keypointLabels, this.annotation.width, this.annotation.height))
+        : "";
+      let metadata = this.$refs.metadata ? JSON.stringify(this.$refs.metadata.export()) : "";
+      return [
+        this.annotation.id,
+        this.compoundPath ? this.compoundPath.pathData : "",
+        keypoints,
+        metadata,
+        this.name,
+        this.color,
+        this.annotation.isbbox,
+        this.annotation.isrbbox
+      ].join("|");
+    },
+    export(options = {}) {
+      // an autosave must not delete an annotation that was just created and
+      // is still empty (a normal save removes empty annotations)
+      if (options.auto && this.isBlank()) return null;
       if (this.compoundPath == null) this.createCompoundPath();
       let metadata = this.$refs.metadata.export();
       if (this.name.length > 0) metadata.name = this.name;
       let annotationData = {
         id: this.annotation.id,
         isbbox: this.annotation.isbbox,
+        isrbbox: !!this.annotation.isrbbox,
         color: this.color,
         metadata: metadata
       };
@@ -754,6 +923,8 @@ export default {
       this.uuid = Math.random()
         .toString(36)
         .replace(/[^a-z]+/g, "");
+      // remember what we sent: an echo of an older edit must not undo a newer one
+      this.sentUuids = [...(this.sentUuids || []).slice(-49), this.uuid];
       this.annotation.paper_object = this.compoundPath.exportJSON({
         asString: false,
         precision: 1
@@ -827,7 +998,9 @@ export default {
       }
     },
     opacity(opacity) {
-      this.compoundPath.opacity = opacity;
+      if (this.compoundPath) this.setColor();
+      // "only this category": keypoints of the other categories fade too
+      if (this.keypoints) this.keypoints.opacity = opacity < 0.2 ? 0.2 : 1;
     },
     color() {
       this.setColor();
@@ -882,6 +1055,7 @@ export default {
     "keypoint.visibility"(newVal) {
       if (!this.currentKeypoint) return;
       this.currentKeypoint.visibility = newVal;
+      this.tagRecomputeCounter++;
     },
     keypointEdges(newEdges) {
       this.keypoints.color = this.darkHSL;
@@ -890,6 +1064,9 @@ export default {
     scale: {
       immediate: true,
       handler(scale) {
+        if (this.compoundPath && this.keypointLabels && this.keypointLabels.length) {
+          this.compoundPath.strokeWidth = 2 * scale;
+        }
         if (!this.keypoints) return;
 
         this.keypoints.radius = scale * 6;
@@ -910,6 +1087,8 @@ export default {
       return false;
     },
     keypointListView() {
+      // paper.js objects are not reactive: depend on the manual counter
+      this.tagRecomputeCounter;
       let listView = [];
       for (let i=0; i < this.keypointLabels.length; ++i) {
         let visibility = this.getKeypointVisibility(i);
@@ -971,9 +1150,16 @@ export default {
       let annotation = data.annotation;
 
       if (this.uuid == data.uuid) return;
+      if (this.sentUuids && this.sentUuids.includes(data.uuid)) return;
       if (annotation.id != this.annotation.id) return;
 
       if (data.action == "modify") {
+        // the kind of shape comes along: a rotated box (or bbox) edited by
+        // someone else must stay one here, or the next edit or save here
+        // would turn it into a polygon
+        this.annotation.isbbox = !!annotation.isbbox;
+        this.annotation.isrbbox = !!annotation.isrbbox;
+        this.annotation.paper_object = annotation.paper_object;
         this.createCompoundPath(
           annotation.paper_object,
           annotation.segmentation
@@ -987,9 +1173,17 @@ export default {
   },
   mounted() {
     this.initAnnotation();
-    $(`#keypointSettings${this.annotation.id}`).on("hidden.bs.modal", () => {
+    onModalHidden(`#keypointSettings${this.annotation.id}`, () => {
       this.currentKeypoint = null;
     });
+  },
+  beforeUnmount() {
+    // its settings dialog may be open (e.g. the image's annotations were cleared)
+    closeModalsIn(this.$el);
+    // The shapes live on the paper.js canvas, outside Vue: remove them when
+    // the annotation leaves the list (cleared, reloaded, moved category).
+    if (this.compoundPath != null) this.compoundPath.remove();
+    if (this.keypoints != null) this.keypoints.remove();
   }
 };
 </script>

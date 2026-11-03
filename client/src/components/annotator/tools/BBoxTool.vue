@@ -95,13 +95,10 @@ export default {
       if (!this.color.auto) return;
 
       this.color.circle.position = point;
-      let raster = this.$parent.image.raster;
-      let color = raster.getAverageColor(this.color.circle);
+      // sampled from a small copy of the image (see libs/colorSampler.js)
+      let color = this.$parent.averageColor(point, this.color.radius);
       if (color) {
-        this.polygon.pathOptions.strokeColor = invertColor(
-          color.toCSS(true),
-          this.color.blackOrWhite
-        );
+        this.polygon.pathOptions.strokeColor = invertColor(color, this.color.blackOrWhite);
       }
     },
     checkAnnotationExist() {
@@ -111,6 +108,20 @@ export default {
       );
     },
     onMouseDown(event) {
+      if (this.polygon.path == null) {
+        // starting on a polygon or rotated box: switch to that shape's tool instead
+        const other = this.$parent.toolForShapeAt && this.$parent.toolForShapeAt(event.point);
+        if (other && other !== this.name) {
+          this.$parent.activeTool = other;
+          // a rotated box: the same press selects it / grabs its corner
+          const rbbox = this.$parent.$refs.rbbox;
+          if (other === "Rotated BBox" && rbbox && rbbox.tool) {
+            rbbox.tool.activate();
+            rbbox.onMouseDown(event);
+          }
+          return;
+        }
+      }
       if (this.polygon.path == null && this.checkAnnotationExist()) {
         this.$parent.currentCategory.createAnnotation();
       }
@@ -162,6 +173,8 @@ export default {
       }
 
       this.removeUndos(this.actionTypes.ADD_POINTS);
+      // an object with keypoints: they come next
+      if (this.$parent.afterBoxDrawn) this.$parent.afterBoxDrawn(this.name);
 
       return true;
     },

@@ -1,6 +1,6 @@
 <template>
   <div class="tool-option-input tool-option-font">
-    <p>{{ name }}</p>
+    <p style="margin: 0 0 2px 0">{{ name }}</p>
   </div>
 </template>
 
@@ -22,7 +22,7 @@ export default {
   background-color: #383c4a;
   color: white;
   font-size: 12px;
-  height: 20px;
-  padding: 2px 0 0 0;
+  min-height: 20px;
+  padding: 2px 4px 0 4px;
 }
 </style>

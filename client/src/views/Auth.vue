@@ -3,35 +3,31 @@
     <div style="padding-top: 55px" />
     <div
       class="album py-5 container"
-      style="overflow: auto; height: calc(100vh - 55px)"
+      style="overflow: auto; height: calc(var(--vh) - 55px)"
     >
       <div class="row">
-        <div class="col-sm text-left">
+        <div class="col-sm text-start">
           <!-- Change this section to whatever you would like -->
           <h1>COCO Annotator</h1>
           <hr />
           <div v-if="totalUsers === 0">
-            <h3>You have successfully installed COCO Annotator!</h3>
-            <p>Use the registeration form to create an admin account</p>
+            <h3>{{ $t('auth.youHaveSuccessfullyInstalledCoco') }}</h3>
+            <p>{{ $t('auth.useTheRegisterationFormTo') }}</p>
             <p>
-              If you have any questions please checkout the
-              <a href="https://github.com/jsbroks/coco-annotator/wiki">wiki</a>
-              before posting
-              <a href="https://github.com/jsbroks/coco-annotator/issues"
-                >issues</a
-              >.
+              <i18n-t keypath="auth.questions" tag="span">
+                <template #wiki><a :href="docsUrl" target="_blank" rel="noopener">{{ $t('auth.wiki') }}</a></template>
+                <template #issues><a :href="issuesUrl" target="_blank" rel="noopener">{{ $t('auth.issues') }}</a></template>
+              </i18n-t>
             </p>
           </div>
           <div v-else>
             <p>
-              COCO Annotator is a web-based image annotation tool designed for
-              versatility and efficiently label images to create training data
-              for image localization and object detection.
+              {{ $t('auth.description') }}
               <br /><br />
-              Login to create a datasets.
+              {{ $t('auth.loginToCreate') }}
               <br /><br />
-              Find out more
-              <a href="https://github.com/jsbroks/coco-annotator">Github</a>
+              {{ $t('auth.findOutMore') }}
+              <a :href="repoUrl" target="_blank" rel="noopener">GitHub</a>
             </p>
           </div>
           <!-- End of section -->
@@ -43,14 +39,14 @@
                 class="nav-link"
                 :class="{ active: tab === 'login' }"
                 id="home-tab"
-                data-toggle="tab"
+                data-bs-toggle="tab"
                 href="#login"
                 role="tab"
                 aria-controls="home"
                 aria-selected="true"
                 @click="tab = 'login'"
               >
-                Login
+                {{ $t('auth.login') }}
               </a>
             </li>
             <li class="nav-item" v-show="showRegistrationForm">
@@ -58,7 +54,7 @@
                 class="nav-link"
                 :class="{ active: tab === 'register' }"
                 id="contact-tab"
-                data-toggle="tab"
+                data-bs-toggle="tab"
                 href="#register"
                 role="tab"
                 aria-controls="contact"
@@ -66,12 +62,12 @@
                 @click="tab = 'register'"
                 ref="registerTab"
               >
-                Register
+                {{ $t('auth.register') }}
               </a>
             </li>
           </ul>
           <div
-            class="tab-content panel border-bottom border-right border-left text-left"
+            class="tab-content panel border-bottom border-end border-start text-start"
           >
             <div
               class="tab-pane fade show active"
@@ -80,18 +76,18 @@
               aria-labelledby="login-tab"
             >
               <form class="vld-parent" ref="loginForm">
-                <div class="form-group">
-                  <label>Username</label>
+                <div class="mb-3">
+                  <label>{{ $t('auth.username') }}</label>
                   <input
                     v-model="loginForm.username"
                     type="text"
                     class="form-control"
                     required
                   />
-                  <div class="invalid-feedback">Invalid username format</div>
+                  <div class="invalid-feedback">{{ $t('auth.invalidUsernameFormat') }}</div>
                 </div>
-                <div class="form-group">
-                  <label>Password</label>
+                <div class="mb-3">
+                  <label>{{ $t('auth.password') }}</label>
                   <input
                     v-model="loginForm.password"
                     type="password"
@@ -100,11 +96,11 @@
                 </div>
                 <button
                   type="submit"
-                  class="btn btn-primary btn-block"
+                  class="btn btn-primary w-100"
                   :class="{ disabled: !loginValid }"
                   @click.prevent="loginUser"
                 >
-                  Login
+                  {{ $t('auth.login') }}
                 </button>
               </form>
             </div>
@@ -115,12 +111,12 @@
               aria-labelledby="register-tab"
             >
               <div v-if="!showRegistrationForm">
-                You are not allowed to register new accounts
+                {{ $t('auth.youAreNotAllowedTo') }}
               </div>
               <form v-else class="vld-parent" ref="registerForm">
-                <div class="form-group" novalidate="">
+                <div class="mb-3" novalidate="">
                   <label
-                    >Full Name <span class="text-mute">(Optional)</span></label
+                    >{{ $t('auth.fullName') }} <span class="text-mute">{{ $t('auth.optional') }}</span></label
                   >
                   <input
                     v-model="registerForm.name"
@@ -129,8 +125,8 @@
                   />
                 </div>
 
-                <div class="form-group">
-                  <label>Username</label>
+                <div class="mb-3">
+                  <label>{{ $t('auth.username') }}</label>
                   <input
                     v-model="registerForm.username"
                     :class="inputUsernameClasses(registerForm.username)"
@@ -138,11 +134,11 @@
                     class="form-control"
                     required
                   />
-                  <div class="invalid-feedback">Invalid username format</div>
+                  <div class="invalid-feedback">{{ $t('auth.invalidUsernameFormat') }}</div>
                 </div>
 
-                <div class="form-group">
-                  <label>Password</label>
+                <div class="mb-3">
+                  <label>{{ $t('auth.password') }}</label>
                   <input
                     v-model="registerForm.password"
                     :class="inputPasswordClasses(registerForm.password)"
@@ -151,12 +147,12 @@
                     required
                   />
                   <div class="invalid-feedback">
-                    Minimum length of 5 characters.
+                    {{ $t('auth.minimumLengthOf5Characters') }}
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label>Confirm Password</label>
+                <div class="mb-3">
+                  <label>{{ $t('auth.confirmPassword') }}</label>
                   <input
                     v-model="registerForm.confirmPassword"
                     :class="{
@@ -170,11 +166,11 @@
                 </div>
                 <button
                   type="submit"
-                  class="btn btn-primary btn-block"
+                  class="btn btn-primary w-100"
                   :class="{ disabled: !registerValid }"
                   @click.prevent="registerUser"
                 >
-                  Register
+                  {{ $t('auth.register') }}
                 </button>
               </form>
             </div>
@@ -187,6 +183,7 @@
 
 <script>
 import toastrs from "@/mixins/toastrs";
+import { DOCS_URL, ISSUES_URL, REPO_URL } from "@/links";
 import { mapActions, mapMutations } from "vuex";
 export default {
   name: "Authentication",
@@ -201,6 +198,9 @@ export default {
   },
   data() {
     return {
+      docsUrl: DOCS_URL,
+      issuesUrl: ISSUES_URL,
+      repoUrl: REPO_URL,
       tab: "login",
       registerForm: {
         loading: false,

@@ -2,7 +2,7 @@
   <button
     class="btn btn-outline-light tool-input-button"
     :class="{ active: value }"
-    @click="$emit('update', !value)"
+    @click="$emit('update:value', !value)"
   >
     {{ name }}
   </button>
@@ -11,10 +11,7 @@
 <script>
 export default {
   name: "ToggleButton",
-  model: {
-    prop: "value",
-    event: "update"
-  },
+  emits: ["update:value"],
   props: {
     name: {
       type: String,

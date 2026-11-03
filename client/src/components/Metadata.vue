@@ -6,20 +6,20 @@
       @click="createMetadata"
     />
 
-    <p class="title" style="margin: 0">{{ title }}</p>
+    <p class="title" style="margin: 0">{{ title || $t('metadata.title') }}</p>
 
     <div class="row">
       <div class="col-sm">
-        <p class="subtitle">{{ keyTitle }}</p>
+        <p class="subtitle">{{ keyTitle || $t('metadata.keys') }}</p>
       </div>
       <div class="col-sm">
-        <p class="subtitle">{{ valueTitle }}</p>
+        <p class="subtitle">{{ valueTitle || $t('metadata.values') }}</p>
       </div>
     </div>
 
     <ul class="list-group" style="height: 50%;">
       <li v-if="metadataList.length == 0" class="list-group-item meta-item">
-        <i class="subtitle">No items in metadata.</i>
+        <i class="subtitle">{{ $t('metadata.noItemsInMetadata') }}</i>
       </li>
       <li
         v-for="(object, index) in metadataList"
@@ -32,7 +32,7 @@
               v-model="object.key"
               type="text"
               class="meta-input"
-              :placeholder="keyTitle"
+              :placeholder="keyTitle || $t('metadata.keys')"
             />
           </div>
 
@@ -41,7 +41,7 @@
               v-model="object.value"
               type="text"
               class="meta-input"
-              :placeholder="valueTitle"
+              :placeholder="valueTitle || $t('metadata.values')"
             />
           </div>
         </div>
@@ -60,15 +60,15 @@ export default {
     },
     title: {
       type: String,
-      default: "Metadata"
+      default: ""
     },
     keyTitle: {
       type: String,
-      default: "Keys"
+      default: ""
     },
     valueTitle: {
       type: String,
-      default: "Values"
+      default: ""
     },
     exclude: {
       type: String,

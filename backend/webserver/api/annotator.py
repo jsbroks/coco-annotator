@@ -1,10 +1,11 @@
 import datetime
 
-from flask_restplus import Namespace, Resource
+from flask_restx import Namespace, Resource
 from flask_login import login_required, current_user
 from flask import request
 
-from ..util import query_util, coco_util, profile, thumbnails
+from ..util import query_util, coco_util, profile, thumbnails, activity
+from geometry import polygon_to_rbbox
 
 from config import Config
 from database import (
@@ -15,6 +16,15 @@ from database import (
 )
 
 api = Namespace('annotator', description='Annotator related operations')
+
+
+def _rounded(values):
+    """Shape data rounded, so saving the same drawing again is not a change."""
+    if isinstance(values, (list, tuple)):
+        return [_rounded(v) for v in values]
+    if isinstance(values, float):
+        return round(values, 1)
+    return values
 
 
 @api.route('/data')
@@ -36,20 +46,24 @@ class AnnotatorData(Resource):
         if image_model is None:
             return {'success': False, 'message': 'Image does not exist'}, 400
 
-        # Check if current user can access dataset
-        db_dataset = current_user.datasets.filter(id=image_model.dataset_id).first()
-        if dataset is None:
-            return {'success': False, 'message': 'Could not find associated dataset'}
-        
-        db_dataset.update(annotate_url=dataset.get('annotate_url', ''))
-        
-        categories = CategoryModel.objects.all()
+        # Saving needs being a member of the dataset (seeing it is not enough)
+        db_dataset = current_user.editable_datasets.filter(id=image_model.dataset_id).first()
+        if db_dataset is None:
+            return {'success': False, 'message': 'You can not edit this dataset'}, 403
+
+        if isinstance(dataset, dict) and 'annotate_url' in dataset:
+            db_dataset.update(annotate_url=dataset.get('annotate_url') or '')
+
+        # only this dataset's categories (and those already used on the image)
+        used = AnnotationModel.objects(image_id=image_id).distinct('category_id')
+        categories = CategoryModel.objects(id__in=list(set(db_dataset.categories or []) | set(used)))
         annotations = AnnotationModel.objects(image_id=image_id)
 
         current_user.update(preferences=data.get('user', {}))
 
         annotated = False
         num_annotations = 0
+        saved = []  # (annotation id, has a shape, shape changed) for the activity log
         # Iterate every category passed in the data
         for category in data.get('categories', []):
             category_id = category.get('id')
@@ -59,13 +73,22 @@ class AnnotatorData(Resource):
             if db_category is None:
                 continue
 
-            category_update = {'color': category.get('color')}
+            # a category may be shared with other datasets: its colour and
+            # settings are changed only by its creator (or an admin)
+            category_update = {}
             if current_user.can_edit(db_category):
+                if category.get('color'):
+                    category_update['color'] = category.get('color')
                 category_update['keypoint_edges'] = category.get('keypoint_edges', [])
                 category_update['keypoint_labels'] = category.get('keypoint_labels', [])
                 category_update['keypoint_colors'] = category.get('keypoint_colors', [])
+                if category.get('supercategories') is not None:
+                    parents = db_category.set_parents(category.get('supercategories'))
+                    if parents['supercategories'] != db_category.parents():
+                        category_update.update(parents)
             
-            db_category.update(**category_update)
+            if category_update:
+                db_category.update(**category_update)
 
             # Iterate every annotation from the data annotations
             for annotation in category.get('annotations', []):
@@ -97,11 +120,16 @@ class AnnotatorData(Resource):
                 keypoints = annotation.get('keypoints', [])
                 if keypoints:
                     counted = True
+                old_shape = (db_annotation.segmentation or [], db_annotation.keypoints or [])
+                new_segmentation = old_shape[0]
+
+                isrbbox = bool(annotation.get('isrbbox', False))
 
                 db_annotation.update(
                     add_to_set__events=sessions,
                     inc__milliseconds=total_time,
                     set__isbbox=annotation.get('isbbox', False),
+                    set__isrbbox=isrbbox,
                     set__keypoints=keypoints,
                     set__metadata=annotation.get('metadata'),
                     set__color=annotation.get('color')
@@ -119,19 +147,31 @@ class AnnotatorData(Resource):
                     segmentation, area, bbox = coco_util.\
                         paperjs_to_coco(width, height, paperjs_object)
 
+                    rbbox = []
+                    if isrbbox and len(segmentation) == 1:
+                        rbbox = polygon_to_rbbox(segmentation[0])
+
                     db_annotation.update(
                         set__segmentation=segmentation,
                         set__area=area,
                         set__isbbox=annotation.get('isbbox', False),
+                        set__isrbbox=isrbbox and bool(rbbox),
+                        set__rbbox=rbbox,
                         set__bbox=bbox,
                         set__paper_object=paperjs_object,
                     )
 
+                    new_segmentation = segmentation
                     if area > 0:
                         counted = True
 
                 if counted:
                     num_annotations += 1
+                changed = (_rounded(new_segmentation), _rounded(keypoints)) != \
+                    (_rounded(old_shape[0]), _rounded(old_shape[1]))
+                saved.append((db_annotation.id, counted, changed))
+
+        activity.annotations_saved(current_user, image_model, saved)
 
         image_model.update(
             set__metadata=image.get('metadata', {}),
@@ -186,6 +226,9 @@ class AnnotatorId(Resource):
                 'image': image.permissions(current_user)
             }
         }
+
+        from .review import image_review_info
+        data['review'] = image_review_info(image)
 
         data['image']['previous'] = pre.id if pre else None
         data['image']['next'] = nex.id if nex else None

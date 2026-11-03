@@ -1,0 +1,3 @@
+# MediaPipe pre-annotation (.task / .tflite models), installed in the webserver
+# image only (see Dockerfile). It needs libEGL / libGLESv2 even on the CPU.
+mediapipe==1.1.1

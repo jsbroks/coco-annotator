@@ -1,8 +1,6 @@
 <template>
   <div class="input-group tool-input-group">
-    <div class="input-group-prepend tool-option-pre">
-      <span class="input-group-text tool-option-font">{{ name }}</span>
-    </div>
+    <span class="input-group-text tool-option-font tool-option-pre">{{ name }}</span>
     <input
       v-model.number="localValue"
       type="number"
@@ -17,10 +15,7 @@
 <script>
 export default {
   name: "PanelInputNumber",
-  model: {
-    prop: "value",
-    event: "update"
-  },
+  emits: ["update:value"],
   props: {
     name: {
       type: String,
@@ -50,7 +45,7 @@ export default {
   },
   watch: {
     localValue() {
-      this.$emit("update", this.localValue);
+      this.$emit("update:value", this.localValue);
     },
     value(newValue) {
       this.localValue = newValue;

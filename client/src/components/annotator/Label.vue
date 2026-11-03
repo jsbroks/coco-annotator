@@ -22,10 +22,7 @@
 <script>
 export default {
   name: "Label",
-  model: {
-    prop: "categoryIds",
-    event: "update"
-  },
+  emits: ["update:categoryIds"],
   props: {
     category: {
       type: Object,
@@ -61,7 +58,7 @@ export default {
       } else {
         copy.splice(copy.indexOf(this.category.id), 1);
       }
-      this.$emit("update", copy);
+      this.$emit("update:categoryIds", copy);
     }
   }
 };

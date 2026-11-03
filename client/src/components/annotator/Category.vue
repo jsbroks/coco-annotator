@@ -7,7 +7,12 @@
       'border-color': borderColor
     }"
   >
-    <div class="card-header" :id="'heading' + category.id">
+    <div
+      class="card-header"
+      :id="'heading' + category.id"
+      @mouseenter="$emit('focus', category.id)"
+      @mouseleave="$emit('focus', null)"
+    >
       <div :style="{ color: isVisible ? 'white' : 'gray' }">
         <div @click="onEyeClick">
           <i
@@ -31,10 +36,19 @@
 
         <i
           class="fa fa-gear category-icon"
-          data-toggle="modal"
-          :data-target="'#categorySettings' + category.id"
+          data-bs-toggle="modal"
+          :data-bs-target="'#categorySettings' + category.id"
           style="float: right; color: white"
           aria-hidden="true"
+        />
+
+        <i
+          class="fa fa-crosshairs category-icon solo-icon"
+          :class="{ on: solo }"
+          :title="solo ? $t('annotator.soloOff') : $t('annotator.soloOn')"
+          style="float: right"
+          aria-hidden="true"
+          @click.stop="$emit('solo', category.id)"
         />
 
         <i
@@ -49,13 +63,13 @@
     <ul v-show="showAnnotations" ref="collapse" class="list-group">
       <li
         v-show="this.category.annotations.length > 0"
-        class="list-group-item btn btn-link btn-sm text-left"
+        class="list-group-item btn btn-link btn-sm text-start"
         :style="{ 'background-color': backgroundColor, color: 'white' }"
       >
         <input
           v-model="search"
           class="annotation-search"
-          placeholder="Search"
+          :placeholder="$t('category.search')"
           :disabled="this.category.annotations.length < 2"
         />
       </li>
@@ -91,43 +105,40 @@
       ref="category_settings"
       :id="'categorySettings' + category.id"
     >
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog" :class="{ 'modal-xl': kpRows > 3, 'modal-lg': kpRows > 0 && kpRows <= 3, 'modal-dialog-scrollable': kpRows > 3 }" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ category.name }}</h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
             <form>
-              <div class="form-group">
-                <label>Supercategory</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  :value="supercategory"
-                  @input="supercategory = $event.target.value"
-                />
+              <div class="mb-3">
+                <label>{{ $t('category.supercategory') }}</label>
+                <ParentInput v-model="parents" :known="knownParents" fetch-known />
+                <div class="form-text">{{ $t('parents.hint') }}</div>
               </div>
 
-              <div class="form-group row">
-                <label class="col-sm-2 col-form-label">Color</label>
+              <div class="mb-3 row">
+                <label class="col-sm-2 col-form-label">{{ $t('category.color') }}</label>
                 <div class="col-sm-9">
-                  <input v-model="color" type="color" class="form-control" />
+                  <input v-model="color" type="color" class="form-control form-control-color w-100" />
                 </div>
               </div>
 
-              <div class="form-group">
-                <KeypointsDefinition ref="keypoints"
-                  v-model="keypoint"
+              <div class="mb-3">
+                <KeypointsDefinition @rows="kpRows = $event" ref="keypoints"
+                  v-model:value="keypoint"
                   element-id="keypointLabels"
                 ></KeypointsDefinition>
+                <div v-if="kpApplied" class="small text-muted mt-1">
+                  <i class="fa fa-check text-success" /> {{ $t('keypointsDefinition.autosave.applied') }}
+                </div>
               </div>
             </form>
           </div>
@@ -138,14 +149,14 @@
               @click="onUpdateClick"
               :disabled="!isFormValid"
               :class="{ disabled: !isFormValid }"
-              data-dismiss="modal"
-            >Update</button>
+              data-bs-dismiss="modal"
+            >{{ $t('category.update') }}</button>
             <button
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Close
+              {{ $t('category.close') }}
             </button>
           </div>
         </div>
@@ -155,18 +166,20 @@
 </template>
 
 <script>
+import { onModalHidden, closeModalsIn } from "@/libs/modal";
 import paper from "paper";
 
 import Annotations from "@/models/annotations";
-import Annotation from "@/components/annotator/Annotation";
-import KeypointsDefinition from "@/components/KeypointsDefinition";
-import JQuery from "jquery";
+import Annotation from "@/components/annotator/Annotation.vue";
+import KeypointsDefinition from "@/components/KeypointsDefinition.vue";
+import ParentInput from "@/components/ParentInput.vue";
+import { allParents, parentsOf } from "@/libs/parents";
 
-let $ = JQuery;
 
 export default {
   name: "Category",
-  components: { Annotation, KeypointsDefinition },
+  emits: ["click", "keypoints-complete", "focus", "solo"],
+  components: { Annotation, KeypointsDefinition, ParentInput },
   props: {
     category: {
       type: Object,
@@ -204,6 +217,11 @@ export default {
       type: String,
       required: true
     },
+    // "only this category" is on for this one
+    solo: {
+      type: Boolean,
+      default: false
+    },
     allCategories: {
       type: Array,
       required: true
@@ -211,8 +229,10 @@ export default {
   },
   data: function() {
     return {
+      // keypoints listed in the settings (several: a wider dialog)
+      kpRows: 0,
       group: null,
-      supercategory: this.category.supercategory,
+      parents: parentsOf(this.category),
       color: this.category.color,
       keypoint: {
         labels: [...this.category.keypoint_labels],
@@ -224,15 +244,20 @@ export default {
       isVisible: false,
       search: "",
       isMounted: false,
+      kpApplied: false,
     };
   },
   methods: {
+    // Vue 3 does not keep v-for ref arrays in source order: sort by index
+    annotationRefs() {
+      return [...(this.$refs.annotation || [])].sort((a, b) => a.index - b.index);
+    },
     show(index) {
       if (this.search.length === 0) return true;
       return this.filterFound.indexOf(index) > -1;
     },
     resetCategorySettings() {
-      this.supercategory = this.category.supercategory;
+      this.parents = parentsOf(this.category);
       this.color = this.category.color;
       this.keypoint = {
         labels: [...this.category.keypoint_labels],
@@ -246,7 +271,8 @@ export default {
     createAnnotation() {
       let parent = this.$parent;
       let annotationId = this.category.annotations.length;
-      Annotations.create({
+      // Resolves once the new annotation is mounted and selected
+      return Annotations.create({
         image_id: parent.image.id,
         category_id: this.category.id,
       }).then(response => {
@@ -271,7 +297,7 @@ export default {
         this.isVisible = true;
         this.showAnnotations = true;
 
-        let annotations = this.$refs.annotation;
+        let annotations = this.annotationRefs();
         if (annotations == null) return;
 
         let annotation = annotations[annotationId - 1];
@@ -280,19 +306,21 @@ export default {
         } else {
           this.$parent.scrollElement(annotation.$el);
         }
+        return this.$nextTick();
       });
     },
     onUpdateClick() {
       this.category.keypoint_labels = [...this.keypoint.labels];
       this.category.keypoint_edges = [...this.keypoint.edges];
       this.category.keypoint_colors = [...this.keypoint.colors];
-      this.category.supercategory = this.supercategory;
+      this.category.supercategories = [...this.parents];
+      this.category.supercategory = this.parents[0] || "";
     },
     /**
      * Exports data for send to backend
      * @returns {json} Annotation data, and settings
      */
-    export() {
+    export(options = {}) {
       let refs = this.$refs;
       let categoryData = {
         // Category Identification
@@ -306,6 +334,7 @@ export default {
         metadata: [],
         annotations: [],
         supercategory: this.category.supercategory,
+        supercategories: parentsOf(this.category),
         keypoint_labels: this.category.keypoint_labels,
         keypoint_edges: this.category.keypoint_edges,
         keypoint_colors: this.category.keypoint_colors,
@@ -313,11 +342,22 @@ export default {
 
       if (refs.hasOwnProperty("annotation")) {
         refs.annotation.forEach(annotation => {
-          categoryData.annotations.push(annotation.export());
+          let data = annotation.export(options);
+          if (data) categoryData.annotations.push(data);
         });
       }
 
       return categoryData;
+    },
+    signature() {
+      let annotations = this.annotationRefs().map(a => a.signature()).filter(Boolean);
+      return [
+        this.category.id,
+        this.color,
+        JSON.stringify(this.category.keypoint_labels || []),
+        JSON.stringify(this.category.keypoint_edges || []),
+        ...annotations
+      ].join("\n");
     },
 
     addKeypointEdge(edge) {
@@ -334,7 +374,7 @@ export default {
       if (index !== -1) {
         let edge = this.keypoint.edges[index];
         this.keypoint.edges.splice(index, 1);
-        let annotations = this.$refs.annotation;
+        let annotations = this.annotationRefs();
         if (annotations) {
           annotations.forEach(a => a.keypoints.removeLine(edge));
         }
@@ -415,9 +455,9 @@ export default {
      * @returns {Annotation} returns annotation and provided index
      */
     getAnnotation(index) {
-      let ref = this.$refs.annotation;
+      let ref = this.annotationRefs();
       if (ref == null) return null;
-      return this.$refs.annotation[index];
+      return this.annotationRefs()[index];
     },
     /**
      * Sets color of current group depending on state.
@@ -425,7 +465,7 @@ export default {
      * Show as group color if showAnnotations is false
      */
     setColor() {
-      let annotations = this.$refs.annotation;
+      let annotations = this.annotationRefs();
       if (annotations == null) return;
       if (!this.isVisible) return;
 
@@ -433,9 +473,12 @@ export default {
         annotations.forEach(a => a.setColor());
       } else {
         annotations.forEach(a => {
-          a.compoundPath.fillColor = this.color;
-          a.keypoints.color = this.darkHSL;
-          a.keypoints.bringToFront();
+          // annotations still being mounted have no shape yet
+          if (a.compoundPath != null) a.paintShape(this.color, this.opacity);
+          if (a.keypoints != null) {
+            a.keypoints.color = this.darkHSL;
+            a.keypoints.bringToFront();
+          }
         });
       }
     },
@@ -455,6 +498,9 @@ export default {
     }
   },
   computed: {
+    knownParents() {
+      return allParents(this.allCategories);
+    },
     showCategory() {
       let search = this.categorysearch.toLowerCase();
       if (search.length === 0) return true;
@@ -499,17 +545,34 @@ export default {
     }
   },
   watch: {
+    // keypoints and their connections take effect as they are chosen (the
+    // annotator saves the category with the image)
+    keypoint: {
+      deep: true,
+      handler(kp) {
+        if (!this.isMounted || !this.$refs.keypoints || !this.$refs.keypoints.valid) return;
+        const same =
+          JSON.stringify(kp.labels) === JSON.stringify(this.category.keypoint_labels) &&
+          JSON.stringify(kp.edges) === JSON.stringify(this.category.keypoint_edges) &&
+          JSON.stringify(kp.colors) === JSON.stringify(this.category.keypoint_colors);
+        if (same) return;
+        this.category.keypoint_labels = [...kp.labels];
+        this.category.keypoint_edges = kp.edges.map(e => [...e]);
+        this.category.keypoint_colors = [...kp.colors];
+        this.kpApplied = true;
+      }
+    },
     color() {
       this.setColor();
     },
     opacity() {
-      let annotations = this.$refs.annotation;
+      let annotations = this.annotationRefs();
       if (annotations == null) return;
 
-      annotations.forEach(a => (a.compoundPath.opacity = this.opacity));
+      annotations.forEach(a => a.compoundPath && (a.compoundPath.opacity = this.opacity));
     },
     isVisible(newVisible) {
-      let annotations = this.$refs.annotation;
+      let annotations = this.annotationRefs();
       if (annotations == null) return;
 
       annotations.forEach(a => {
@@ -551,10 +614,12 @@ export default {
       }
     }
   },
+  beforeUnmount() {
+    closeModalsIn(this.$el);
+  },
   mounted() {
     this.initCategory();
-    $(this.$refs.category_settings).on(
-      "hidden.bs.modal", this.resetCategorySettings);
+    onModalHidden(this.$refs.category_settings, this.resetCategorySettings);
     this.isMounted = true;
   }
 };
@@ -629,5 +694,15 @@ export default {
 ::placeholder {
   /* Most modern browsers support this now. */
   color: lightgray;
+}
+.solo-icon {
+  color: #8a91a3;
+  padding-right: 0;
+}
+.solo-icon:hover {
+  color: white;
+}
+.solo-icon.on {
+  color: #ffc107;
 }
 </style>

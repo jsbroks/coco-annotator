@@ -1,6 +1,7 @@
 <script>
 import paper from "paper";
 import tool from "@/mixins/toolBar/tool";
+import { TASK_TOOLS } from "@/components/TaskPicker.vue";
 
 export default {
   name: "SelectTool",
@@ -41,6 +42,8 @@ export default {
         annotationText: null
       },
       keypoint: null,
+      // dragging a rotated box: { mode: "move"|"resize", owner, ... }
+      rbboxDrag: null,
       hitOptions: {
         segments: true,
         stroke: true,
@@ -70,28 +73,28 @@ export default {
         let visibilityDesc = this.keypoint.keypoint.getVisibilityDescription();
         let annotationId = this.keypoint.keypoints.annotationId;
         let categoryName = this.keypoint.keypoints.categoryName;
-        string += "Keypoint: " + label + " \n";
-        string += "Visibility: " + visibility + " (" + visibilityDesc + ") \n";
+        string += this.$t("hover.keypoint") + ": " + label + " \n";
+        string += this.$t("hover.visibility") + ": " + visibility + " (" + this.$tr("option", visibilityDesc) + ") \n";
         if (annotationId !== -1) {
           string += "ID: " + annotationId + " \n";
         }
         if (categoryName) {
-          string += "Category: " + categoryName + " \n";
+          string += this.$t("hover.category") + ": " + categoryName + " \n";
         }
         return string.replace(/\n/g, " \n ").slice(0, -2);
       }
 
       if (this.hover.category && this.hover.annotation) {
-        let id = this.hover.textId;
+        let id = this.hover.annotation.annotation.id;
         let category = this.hover.category.category.name;
         string += "ID: " + id + " \n";
-        string += "Category: " + category + " \n";
+        string += this.$t("hover.category") + ": " + category + " \n";
       }
 
       if (this.$store.getters["user/loginEnabled"]) {
         let creator = this.hover.annotation.annotation.creator;
         if (creator != null) {
-          string += "Created by " + creator + "\n\n";
+          string += this.$t("common.createdBy", { name: creator }) + "\n\n";
         }
       }
 
@@ -103,9 +106,9 @@ export default {
       let metadata = this.hover.annotation.$refs.metadata.metadataList;
 
       if (metadata == null || metadata.length === 0) {
-        string += "No Metadata \n";
+        string += this.$t("hover.noMetadata") + " \n";
       } else {
-        string += "Metadata \n";
+        string += this.$t("hover.metadata") + " \n";
         metadata.forEach(element => {
           if (element.key.length !== 0) {
             string += " " + element.key + " = " + element.value + " \n";
@@ -172,16 +175,92 @@ export default {
       if (!paperObject) return false;
       let annotationId = paperObject.data.annotationId;
       let categoryId = paperObject.data.categoryId;
+      if (annotationId == null || categoryId == null) return false;
       let category = this.$parent.getCategory(categoryId);
-      let annotation = category.getAnnotation(annotationId);
-      return annotation.annotation.isbbox;
+      let annotation = category && category.getAnnotation(annotationId);
+      return !!(annotation && annotation.annotation.isbbox);
+    },
+    /** Annotation component of a rotated box under `item`, if any */
+    rotatedBoxAnnotation(item) {
+      if (!item || item.className !== "CompoundPath") return null;
+      let data = item.data || {};
+      if (data.annotationId == null || data.categoryId == null) return null;
+      let category = this.$parent.getCategory(data.categoryId);
+      if (!category) return null;
+      let annotation = category.getAnnotation(data.annotationId);
+      if (!annotation || !annotation.getRotatedBoxCorners()) return null;
+      return annotation;
+    },
+    /**
+     * Rotated boxes stay rectangles: dragging inside moves the box (like a
+     * BBox), dragging a corner resizes it keeping its angle with the
+     * opposite corner fixed. Edges never get extra points.
+     */
+    startRotatedBoxDrag(event, hitResult) {
+      let onOutline =
+        hitResult && (hitResult.type === "segment" || hitResult.type === "stroke");
+      let item = onOutline ? hitResult.item.parent : event.item;
+      let owner = this.rotatedBoxAnnotation(item);
+      if (!owner) return false;
+      if (event.modifiers.shift) return true; // no point removal on boxes
+
+      if (hitResult && hitResult.type === "segment") {
+        let corners = owner.getRotatedBoxCorners();
+        let i = hitResult.segment.index;
+        this.rbboxDrag = { mode: "resize", owner, corners, corner: i, anchor: corners[(i + 2) % 4] };
+      } else {
+        this.rbboxDrag = { mode: "move", owner, last: event.point };
+      }
+      return true;
+    },
+    dragRotatedBox(event) {
+      let d = this.rbboxDrag;
+      let path = d.owner.compoundPath && d.owner.compoundPath.children[0];
+      if (!path) return;
+      if (!d.undoSaved) {
+        d.owner.createUndoAction(d.mode === "move" ? "Move" : "Resize");
+        d.undoSaved = true;
+        path = d.owner.compoundPath.children[0];
+      }
+
+      if (d.mode === "move") {
+        let delta = event.point.subtract(d.last);
+        path.segments.forEach(seg => {
+          seg.point = seg.point.add(delta);
+        });
+        d.last = event.point;
+        return;
+      }
+
+      let [c0, c1, c2] = d.corners;
+      let u = c1.subtract(c0).normalize();
+      let v = c2.subtract(c1).normalize();
+      let diff = event.point.subtract(d.anchor);
+      let w = Math.abs(diff.dot(u));
+      let h = Math.abs(diff.dot(v));
+      if (w < 1 || h < 1) return;
+      let center = d.anchor.add(diff.divide(2));
+      let signs = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+      path.segments.forEach((seg, k) => {
+        seg.point = center
+          .add(u.multiply((signs[k][0] * w) / 2))
+          .add(v.multiply((signs[k][1] * h) / 2));
+      });
     },
     onMouseDown(event) {
+      // start from where the press is: the tool may not have seen the mouse
+      // move here (e.g. picked by holding left + right), and a stale start
+      // point would make the first drag jump
+      this.onMouseMove(event);
+      this.rbboxDrag = null;
+      this.noteTaskToolClick(event);
+
       let hitResult = this.$parent.paper.project.hitTest(
         event.point,
         this.hitOptions
       );
 
+      if (this.startRotatedBoxDrag(event, hitResult)) return;
       if (!hitResult) return;
 
       if (event.modifiers.shift) {
@@ -196,19 +275,24 @@ export default {
         this.segment = hitResult.segment;
         paperObject = path.parent;
       } else if (hitResult.type === "stroke") {
-        let location = hitResult.location;
-        this.segment = path.insert(location.index + 1, event.point);
+        if (this.checkBbox(path.parent)) {
+          // a box keeps its 4 corners: pressing on its edge moves it
+          this.initPoint = event.point;
+          this.moveObject = path.parent;
+          paperObject = path.parent;
+        } else {
+          let location = hitResult.location;
+          this.segment = path.insert(location.index + 1, event.point);
+        }
       } else if (event.item.className == "CompoundPath") {
         this.initPoint = event.point;
         this.moveObject = event.item;
         paperObject = event.item;
       }
       this.isBbox = this.checkBbox(paperObject);
-      if (this.point != null) {
-        this.edit.canMove = this.point.contains(event.point);
-      } else {
-        this.edit.canMove = false;
-      }
+      // a press that hit a corner or an edge drags it (the round marker is
+      // only a hint and can be smaller than the grab distance)
+      this.edit.canMove = !!this.segment;
     },
     clear() {
       this.hover.category = null;
@@ -234,6 +318,10 @@ export default {
       this.point.indicator = true;
     },
     onMouseDrag(event) {
+      if (this.rbboxDrag) {
+        this.dragRotatedBox(event);
+        return;
+      }
       if (this.isBbox && this.moveObject) {
         let delta_x = this.initPoint.x - event.point.x;
         let delta_y = this.initPoint.y - event.point.y;
@@ -273,7 +361,50 @@ export default {
       
     },
 
+    /**
+     * A plain click (no drag) on a shape of the dataset's planned kind (a
+     * rotated box in an OBB dataset, a box in a detection one, ...) goes on
+     * with the dataset's tool for it. Not while Select is only held for a
+     * moment (left + right buttons), and not with Shift.
+     */
+    noteTaskToolClick(event) {
+      this.taskToolClick = null;
+      const parent = this.$parent;
+      const task = parent.dataset && parent.dataset.task;
+      const tool = task && TASK_TOOLS[task];
+      if (!tool || (parent.chord && parent.chord.active) || this.mod(event, "shift")) return;
+      if (parent.toolForShapeAt && parent.toolForShapeAt(event.point) === tool) {
+        const e = event.event || {};
+        this.taskToolClick = { tool, x: e.clientX, y: e.clientY };
+      }
+    },
+    switchAfterClick(event) {
+      const click = this.taskToolClick;
+      this.taskToolClick = null;
+      if (!click || (this.$parent.chord && this.$parent.chord.active)) return;
+      const e = event.event || {};
+      if (Math.hypot((e.clientX ?? click.x) - click.x, (e.clientY ?? click.y) - click.y) > 4) return; // dragged
+      // after the click has selected the shape (the tool needs an annotation)
+      setTimeout(() => {
+        const ref = this.$parent.toolRef(click.tool);
+        if (this.$parent.activeTool === "Select" && ref && !ref.isDisabled) {
+          ref.tool.activate();
+          this.$parent.activeTool = click.tool;
+        }
+      }, 0);
+    },
+    mod(event, key) {
+      const e = event.event;
+      if (e && typeof e.shiftKey === "boolean") return key === "shift" ? e.shiftKey : e.ctrlKey || e.metaKey;
+      const m = event.modifiers || {};
+      return key === "shift" ? !!m.shift : !!(m.control || m.command);
+    },
     onMouseUp(event) {
+      this.switchAfterClick(event);
+      if (this.rbboxDrag && this.rbboxDrag.undoSaved) {
+        this.rbboxDrag.owner.emitModify();
+      }
+      this.rbboxDrag = null;
       this.clear();
     },
 
@@ -372,6 +503,9 @@ export default {
         this.edit.distance = newScale * 40;
         this.edit.indicatorSize = newScale * 10;
         this.edit.indicatorWidth = newScale * 2;
+        // grab corners / edges within 10 screen pixels at any zoom (a fixed
+        // 10 image pixels was 2 px on screen zoomed out, 40 px zoomed in)
+        this.hitOptions.tolerance = newScale * 10;
 
         if (this.edit.center && this.point != null) {
           this.createPoint(this.edit.center);

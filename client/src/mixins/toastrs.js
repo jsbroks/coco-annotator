@@ -1,3 +1,5 @@
+import { tr } from "@/i18n";
+
 export default {
   methods: {
     axiosReqestError(title, message) {
@@ -6,7 +8,7 @@ export default {
         positionClass: "toast-bottom-left"
       };
 
-      this.$toastr.error(message, title, options);
+      this.$toastr.error(tr("toast", message), tr("toast", title), options);
     },
     axiosReqestSuccess(title, message) {
       let options = {
@@ -14,7 +16,7 @@ export default {
         positionClass: "toast-bottom-left"
       };
 
-      this.$toastr.success(message, title, options);
+      this.$toastr.success(tr("toast", message), tr("toast", title), options);
     }
   }
 };

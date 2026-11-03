@@ -3,18 +3,18 @@
     <div style="padding-top: 55px" />
     <div
       class="album py-5 bg-light"
-      style="overflow: auto; height: calc(100vh - 55px)"
+      style="overflow: auto; height: calc(var(--vh) - 55px)"
     >
       <div class="container">
-        <h2 class="text-center">Hello, {{ displayName }}</h2>
+        <h2 class="text-center">{{ $t('user.hello', { name: displayName }) }}</h2>
 
         <br />
         <div style="text-align: left">
-          <h4>Change Password</h4>
+          <h4>{{ $t('user.changePassword') }}</h4>
           <br />
           <form>
-            <div class="form-group">
-              <label>Current Password</label>
+            <div class="mb-3">
+              <label>{{ $t('user.currentPassword') }}</label>
               <input
                 v-model="changePassword.password"
                 type="password"
@@ -22,8 +22,8 @@
                 required
               />
             </div>
-            <div class="form-group">
-              <label>New Password</label>
+            <div class="mb-3">
+              <label>{{ $t('user.newPassword') }}</label>
               <input
                 v-model="changePassword.new_password"
                 :class="inputPasswordClasses(changePassword.new_password)"
@@ -32,11 +32,11 @@
                 required
               />
               <div class="invalid-feedback">
-                Minimum length of 5 characters.
+                {{ $t('user.minimumLengthOf5Characters') }}
               </div>
             </div>
-            <div class="form-group">
-              <label>Confirm Password</label>
+            <div class="mb-3">
+              <label>{{ $t('user.confirmPassword') }}</label>
               <input
                 v-model="changePassword.confirm_password"
                 :class="{
@@ -51,10 +51,10 @@
             </div>
             <button
               type="submit"
-              class="btn btn-primary btn-block"
+              class="btn btn-primary w-100"
               @click.prevent="changeUserPassword"
             >
-              Submit
+              {{ $t('user.submit') }}
             </button>
           </form>
         </div>
@@ -119,7 +119,7 @@ export default {
     },
     displayName() {
       if (this.user == null) return "";
-      if (this.user.name.length == 0) return this.user.username;
+      if (!this.user.name) return this.user.username;
 
       return this.user.name;
     }

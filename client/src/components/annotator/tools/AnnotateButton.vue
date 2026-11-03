@@ -69,7 +69,7 @@ export default {
                 category.name,
                 segmentation,
                 keypoints,
-                isbbox=isbbox
+                isbbox
               );
             });
           })

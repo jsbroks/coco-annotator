@@ -1,28 +1,27 @@
 <template>
   <div v-show="bbox.isActive">
-    <PanelButton name="Delete BBox" @click="bbox.deleteBbox" />
-    <PanelToggle name="Auto Select Color" v-model="bbox.color.auto" />
+    <PanelButton :name="$t('bBoxPanel.deleteBbox')" @click="bbox.deleteBbox" />
+    <PanelToggle :name="$t('bBoxPanel.autoSelectColor')" v-model:value="bbox.color.auto" />
     <PanelToggle
       v-show="bbox.color.auto"
-      name="Only Black or White"
-      v-model="bbox.color.blackOrWhite"
+      :name="$t('bBoxPanel.onlyBlackOrWhite')"
+      v-model:value="bbox.color.blackOrWhite"
     />
     <PanelInputString
-      name="Stroke Color"
-      v-model="bbox.polygon.pathOptions.strokeColor"
+      :name="$t('bBoxPanel.strokeColor')"
+      v-model:value="bbox.polygon.pathOptions.strokeColor"
     />
   </div>
 </template>
 
 <script>
-import PanelButton from "@/components/PanelButton";
-import PanelToggle from "@/components/PanelToggle";
-import PanelInputString from "@/components/PanelInputString";
-import PanelInputNumber from "@/components/PanelInputNumber";
+import PanelButton from "@/components/PanelButton.vue";
+import PanelToggle from "@/components/PanelToggle.vue";
+import PanelInputString from "@/components/PanelInputString.vue";
 
 export default {
   name: "BBoxPanel",
-  components: { PanelButton, PanelToggle, PanelInputString, PanelInputNumber },
+  components: { PanelButton, PanelToggle, PanelInputString },
   props: {
     bbox: {
       type: Object,

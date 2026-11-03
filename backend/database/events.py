@@ -29,7 +29,9 @@ class SessionEvent(Event):
 
         return SessionEvent(
             user=user.username,
-            milliseconds=int((end-start)*1000)
+            milliseconds=int((end-start)*1000),
+            # when the session ended (per-member time, "last 7 days")
+            created_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         )
 
 

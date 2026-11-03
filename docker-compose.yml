@@ -1,57 +1,139 @@
-version: "3"
+# Production setup: docker compose up -d --build
+# Then open http://localhost:5000
+#
+# AI-assisted segmentation (SAM): set SAM to "cpu" (or use
+# docker-compose.gpu.yml for NVIDIA GPUs) and run models/download_sam.sh.
+
+x-backend-env: &backend-env
+  SECRET_KEY: ${SECRET_KEY:-}
+  ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+  TRASH_DAYS: ${TRASH_DAYS:-90}
+  MONGODB_HOST: mongodb://database/flask
+  CELERY_BROKER_URL: amqp://user:password@messageq:5672//
+  CELERY_RESULT_BACKEND: mongodb://database/flask
+
 volumes:
-  mongodb_data:
-    external: false
+  mongodb7_data:
 
 networks:
   cocoannotator:
-    external: false
 
 services:
   webserver:
-    image: jsbroks/coco-annotator:webserver-stable
+    build:
+      context: .
+      target: webserver
+      args:
+        SAM: ${SAM:-none}
+    image: coco-annotator-webserver
     container_name: annotator_webclient
-    restart: always
+    restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
-      - SECRET_KEY=RandomSecretKeyHere
-      - FILE_WATCHER=true
+      <<: *backend-env
+      FILE_WATCHER: "true"
+      # SAM 2.1 base by default; falls back to any SAM checkpoint in ./models
+      SAM_CHECKPOINT: ${SAM_CHECKPOINT:-/models/sam2.1_b.pt}
+      SAM_DEVICE: auto
+      # web terminal (permission "terminal"): SSH to the server itself.
+      # Off unless TERMINAL_ENABLED=true in .env
+      TERMINAL_ENABLED: ${TERMINAL_ENABLED:-false}
+      TERMINAL_SSH_HOST: ${TERMINAL_SSH_HOST:-host.docker.internal}
+      TERMINAL_SSH_PORT: ${TERMINAL_SSH_PORT:-22}
+    # the server itself, as seen from the container
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      - "./datasets:/datasets"
-      - "./models:/models"
+      - "${DATASETS_DIR:-./datasets}:/datasets"
+      - "${MODELS_DIR:-./models}:/models"
     depends_on:
       - database
       - workers
     networks:
       - cocoannotator
+
   workers:
+    build:
+      context: .
+      target: workers
+    image: coco-annotator-workers
     container_name: annotator_workers
-    image: jsbroks/coco-annotator:workers-stable
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
     volumes:
-      - "./datasets:/datasets"
+      - "${DATASETS_DIR:-./datasets}:/datasets"
     depends_on:
       - messageq
       - database
     networks:
       - cocoannotator
-  messageq:
-    image: rabbitmq:3.7.0
-    container_name: annotator_message_q
+
+  # Trains YOLO models from the web page (訓練), one at a time. Same image as
+  # the webserver (needs SAM=cuda or SAM=cpu for Ultralytics; with
+  # docker-compose.gpu.yml it gets the GPU).
+  trainer:
+    image: coco-annotator-webserver
+    # built by the webserver service (never pulled)
+    pull_policy: never
+    container_name: annotator_trainer
+    restart: unless-stopped
+    command: ["python", "-m", "trainer"]
     environment:
-      - RABBITMQ_DEFAULT_USER=user
-      - RABBITMQ_DEFAULT_PASS=password
+      <<: *backend-env
+      MODELS_DIRECTORY: /models
+      # its name on the training page (other servers can train too)
+      TRAINER_NAME: ${TRAINER_NAME:-main}
+    # the training data loaders share memory between processes
+    shm_size: ${TRAIN_SHM:-8gb}
+    volumes:
+      - "${DATASETS_DIR:-./datasets}:/datasets"
+      - "${MODELS_DIR:-./models}:/models"
+    depends_on:
+      - database
+      - webserver
     networks:
       - cocoannotator
-  database:
-    image: mongo:4.0
-    container_name: annotator_mongodb
-    restart: always
+
+  messageq:
+    image: rabbitmq:4.1-alpine
+    container_name: annotator_message_q
+    restart: unless-stopped
     environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - cocoannotator
+
+  database:
+    # Data lives in the "mongodb7_data" volume. The original coco-annotator
+    # used "mongodb_data" (MongoDB 4.0, which MongoDB 7 cannot open); it is
+    # left untouched. Copy it over with scripts/migrate_mongo.sh (UPGRADE.md).
+    image: mongo:7.0
+    container_name: annotator_mongodb
+    restart: unless-stopped
     volumes:
-      - "mongodb_data:/data/db"
-    command: "mongod --smallfiles --logpath=/dev/null"
+      - "mongodb7_data:/data/db"
+    networks:
+      - cocoannotator
+
+  # Daily database backup into ./backups (keeps the newest BACKUP_KEEP).
+  # Restore: see README ("備份與還原").
+  backup:
+    image: mongo:7.0
+    container_name: annotator_backup
+    restart: unless-stopped
+    entrypoint: ["bash", "/backup.sh"]
+    environment:
+      BACKUP_HOUR: ${BACKUP_HOUR:-3}
+      BACKUP_KEEP: ${BACKUP_KEEP:-14}
+      # POSIX form, works without time zone files: CST-8 = UTC+8 (Taiwan)
+      TZ: ${BACKUP_TZ:-CST-8}
+    volumes:
+      - "./scripts/backup.sh:/backup.sh:ro"
+      - "${BACKUP_DIR:-./backups}:/backups"
+    depends_on:
+      - database
     networks:
       - cocoannotator

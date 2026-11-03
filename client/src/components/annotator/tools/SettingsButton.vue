@@ -1,11 +1,11 @@
 <template>
   <div>
     <i
-      v-tooltip.right="name"
+      v-tooltip.right="$tr('toolbar', name)"
       class="fa fa-x fa-cog"
       style="color: white"
-      data-toggle="modal"
-      data-target="#settings"
+      data-bs-toggle="modal"
+      data-bs-target="#settings"
     ></i>
 
     <br />
@@ -21,19 +21,17 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="settingsLabel">Image Settings</h5>
+            <h5 class="modal-title" id="settingsLabel">{{ $t('settingsButton.imageSettings') }}</h5>
             <button
               type="button"
-              class="close"
-              data-dismiss="modal"
+              class="btn-close"
+              data-bs-dismiss="modal"
               aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
+            ></button>
           </div>
           <div class="modal-body">
-            <div class="form-group row">
-              <label class="col-sm-2 col-form-label">Simplify</label>
+            <div class="mb-3 row">
+              <label class="col-sm-2 col-form-label">{{ $t('settingsButton.simplify') }}</label>
               <div class="col-sm-9">
                 <input
                   v-model.number="$parent.simplify"
@@ -43,8 +41,8 @@
               </div>
             </div>
 
-            <div class="form-group row">
-              <label class="col-sm-2 col-form-label">Annotate API</label>
+            <div class="mb-3 row">
+              <label class="col-sm-2 col-form-label">{{ $t('settingsButton.annotateApi') }}</label>
               <div class="col-sm-9">
                 <input
                   type="string"
@@ -56,14 +54,14 @@
 
             <Metadata :metadata="metadata" ref="metadata" />
 
-            <p style="margin: 30px 0 0 0">Keyboard Shortcuts</p>
+            <p style="margin: 30px 0 0 0">{{ $t('settingsButton.keyboardShortcuts') }}</p>
 
             <div class="row">
               <div class="col-sm">
-                <p class="subtitle">Operation</p>
+                <p class="subtitle">{{ $t('settingsButton.operation') }}</p>
               </div>
               <div class="col-sm">
-                <p class="subtitle">Shortcut</p>
+                <p class="subtitle">{{ $t('settingsButton.shortcut') }}</p>
               </div>
             </div>
 
@@ -80,9 +78,9 @@
             <button
               type="button"
               class="btn btn-secondary"
-              data-dismiss="modal"
+              data-bs-dismiss="modal"
             >
-              Close
+              {{ $t('settingsButton.close') }}
             </button>
           </div>
         </div>
@@ -92,8 +90,8 @@
 </template>
 
 <script>
-import Metadata from "@/components/Metadata";
-import CustomShortcut from "@/components/annotator/CustomShortcut";
+import Metadata from "@/components/Metadata.vue";
+import CustomShortcut from "@/components/annotator/CustomShortcut.vue";
 
 export default {
   name: "SettingsButton",
