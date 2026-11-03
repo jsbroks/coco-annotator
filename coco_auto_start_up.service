@@ -8,8 +8,8 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/hunter/coco-annotator
-ExecStart=/usr/bin/docker compose -f docker-compose.gpu.yml up -d
-ExecStop=/usr/bin/docker compose -f docker-compose.gpu.yml down
+ExecStart=/usr/bin/docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.yml -f docker-compose.gpu.yml down
 TimeoutStartSec=0
 
 [Install]
