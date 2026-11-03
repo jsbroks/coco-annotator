@@ -22,6 +22,7 @@ through the same service: see :mod:`webserver.util.mediapipe_models`.
 import logging
 import os
 import threading
+import time
 from collections import OrderedDict
 
 import numpy as np
@@ -36,6 +37,9 @@ logger = logging.getLogger('gunicorn.error')
 
 # Keypoints whose confidence is below this are stored as "not labelled".
 KEYPOINT_MIN_CONF = 0.5
+# official MediaPipe models: tries per download, and the pauses between them
+DOWNLOAD_ATTEMPTS = 4
+DOWNLOAD_BACKOFF = (1, 3, 6)
 
 
 def _polygon_area(flat):
@@ -358,7 +362,7 @@ class YoloService:
             raise ValueError("Unknown official model")
         name = mediapipe_models.catalog_name(entry)
 
-        def write(tmp):
+        def fetch(tmp):
             limit = 100 * 1024 * 1024
             with urllib.request.urlopen(entry["url"], timeout=60) as response, open(tmp, "wb") as out:
                 size = 0
@@ -370,6 +374,19 @@ class YoloService:
                     if size > limit:
                         raise ValueError("Download too large")
                     out.write(chunk)
+
+        def write(tmp):
+            # flaky networks drop connections now and then: try again
+            for attempt in range(DOWNLOAD_ATTEMPTS):
+                try:
+                    return fetch(tmp)
+                except ValueError:
+                    raise
+                except Exception as e:  # URLError, RemoteDisconnected, timeouts, resets
+                    if attempt == DOWNLOAD_ATTEMPTS - 1:
+                        raise OSError(f"download failed after {DOWNLOAD_ATTEMPTS} tries: {e}")
+                    logger.warning(f"Downloading {key} failed ({e}), trying again")
+                    time.sleep(DOWNLOAD_BACKOFF[attempt])
         return self._save_mediapipe(write, name, overwrite)
 
     def delete(self, name):

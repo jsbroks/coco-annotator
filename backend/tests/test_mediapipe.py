@@ -2,6 +2,7 @@
 outputs become the same prediction dicts (no MediaPipe needed here: the
 results are stand-ins with the same fields)."""
 import io
+import os
 import zipfile
 from types import SimpleNamespace as NS
 
@@ -141,3 +142,42 @@ def test_official_models_need_manage_models(world):
     if catalog.status_code == 200:
         names = {m["key"]: m["name"] for m in catalog.get_json()["models"]}
         assert names["hand_landmarker"] == "mediapipe/hand_landmarker.task"
+
+
+def test_official_download_tries_again(tmp_path, monkeypatch):
+    import http.client
+    import urllib.request
+    from webserver.util import yolo as yolo_module
+    from webserver.util.yolo import YoloService
+    monkeypatch.setattr(yolo_module, "DOWNLOAD_BACKOFF", (0, 0, 0))
+    monkeypatch.setattr(mpm, "installed", lambda: True)
+    monkeypatch.setattr(mpm, "detect_kind", lambda path: "segment")
+    monkeypatch.setattr(mpm, "info", lambda path, name: {"name": name, "task": "segment"})
+    calls = []
+
+    class Response(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    def urlopen(url, timeout=None):
+        calls.append(url)
+        if len(calls) < 3:
+            raise http.client.RemoteDisconnected("Remote end closed connection without response")
+        return Response(b"model-bytes")
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+    service = YoloService(str(tmp_path))
+    assert service.install_official("selfie_segmenter")["name"] == "mediapipe/selfie_segmenter.tflite"
+    assert len(calls) == 3
+    assert (tmp_path / "mediapipe" / "selfie_segmenter.tflite").read_bytes() == b"model-bytes"
+    assert [f for f in os.listdir(tmp_path / "mediapipe") if f.startswith(".")] == []
+
+    # always failing: an error after every try, nothing left behind
+    calls.clear()
+    monkeypatch.setattr(urllib.request, "urlopen", lambda url, timeout=None: calls.append(url) or (_ for _ in ()).throw(
+        http.client.RemoteDisconnected("closed")))
+    with pytest.raises(ValueError, match="4 tries"):
+        service.install_official("hair_segmenter")
+    assert len(calls) == 4 and sorted(os.listdir(tmp_path / "mediapipe")) == ["selfie_segmenter.tflite"]
