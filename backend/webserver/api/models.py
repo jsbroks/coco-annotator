@@ -103,6 +103,27 @@ yolo_args.add_argument('class_map', location='json', type=dict, default=None,
                             'other classes go to the category of the same name')
 
 
+yolo_args.add_argument('in_boxes', location='json', type=dict, default=None,
+                       help='{category_id, source: human|any}: run inside the boxes of that category '
+                            '(a crop per box, one prediction kept per box)')
+
+
+def _in_boxes(value, dataset):
+    """The checked in_boxes option, or an error response."""
+    if not value:
+        return None, None
+    try:
+        category_id = int(value.get('category_id'))
+    except (TypeError, ValueError, AttributeError):
+        return None, ({"message": "in_boxes: a category id"}, 400)
+    if category_id not in set(dataset.categories or []):
+        return None, ({"message": f"in_boxes: category {category_id} is not in this dataset"}, 400)
+    source = value.get('source') or 'human'
+    if source not in ('human', 'any'):
+        return None, ({"message": "in_boxes: source human or any"}, 400)
+    return {"category_id": category_id, "source": source}, None
+
+
 def _class_map(value, dataset):
     """The checked class map, or an error response."""
     if not value:
@@ -377,11 +398,14 @@ class YoloImage(Resource):
         class_map, error = _class_map(args.get('class_map'), image.dataset)
         if error:
             return error
+        in_boxes, error = _in_boxes(args.get('in_boxes'), image.dataset)
+        if error:
+            return error
         try:
             result = preannotate.annotate_image(
                 image, args['model'], conf=_conf(args['conf']),
                 create_missing=args['create_categories'] and current_user.has_perm('create_categories'),
-                user=current_user._get_current_object(), class_map=class_map)
+                user=current_user._get_current_object(), class_map=class_map, in_boxes=in_boxes)
         except Exception as e:
             logger.exception("Model prediction failed")
             return {"message": f"Model prediction failed: {e}"}, 500
@@ -409,9 +433,12 @@ class YoloDataset(Resource):
         class_map, error = _class_map(args.get('class_map'), dataset)
         if error:
             return error
+        in_boxes, error = _in_boxes(args.get('in_boxes'), dataset)
+        if error:
+            return error
         return preannotate.annotate_dataset(
             dataset, args['model'], conf=_conf(args['conf']),
             skip_annotated=args['skip_annotated'],
             create_missing=args['create_categories'] and current_user.has_perm('create_categories'),
             user=current_user._get_current_object(),
-            socket=socketio, class_map=class_map)
+            socket=socketio, class_map=class_map, in_boxes=in_boxes)

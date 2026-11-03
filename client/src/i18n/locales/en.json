@@ -386,6 +386,13 @@
     "cannotLoad": "cannot be loaded",
     "classes": "{n} classes:",
     "classesHint": "Green: the dataset has a category with this name. Predictions are matched to categories by name.",
+    "inBoxes": {
+      "label": "Only inside boxes already drawn (one per box)",
+      "human": "People's boxes",
+      "any": "Every box",
+      "hint": "Each box is cropped (15% extra around it) and the model runs on the crop; per box the best-fitting result is added as a new annotation (the box and its keypoints stay as they are). Nobody is missed in crowded pictures, and the results can be compared with people's labels (OKS). Only images with such boxes are processed.",
+      "done": "{boxes} boxes, {n} annotations added"
+    },
     "map": {
       "title": "Category mapping",
       "count": "{n} set",

@@ -1766,7 +1766,9 @@ export default {
             const result = response.data;
             hideModal("#modelRunImage");
             this.$toastr.success(
-              this.$t("modelRun.imageDone", { n: result.created })
+              result.boxes != null
+                ? this.$t("modelRun.inBoxes.done", { boxes: result.boxes, n: result.created })
+                : this.$t("modelRun.imageDone", { n: result.created })
             );
             if (result.skipped_classes && result.skipped_classes.length) {
               this.$toastr.warning(

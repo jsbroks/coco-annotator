@@ -91,12 +91,30 @@
               <div class="form-text">{{ $t('modelRun.confidenceHint') }}</div>
             </div>
 
+            <!-- run inside boxes people drew -->
+            <div class="mb-3 box-option">
+              <div class="form-check mb-1">
+                <input :id="modalId + 'InBoxes'" v-model="options.inBoxes" type="checkbox" class="form-check-input" :disabled="!categories.length" />
+                <label class="form-check-label" :for="modalId + 'InBoxes'">{{ $t('modelRun.inBoxes.label') }}</label>
+              </div>
+              <div v-if="options.inBoxes" class="d-flex gap-2 ms-4">
+                <select v-model="options.boxCategory" class="form-select form-select-sm">
+                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                </select>
+                <select v-model="options.boxSource" class="form-select form-select-sm" style="max-width: 11rem">
+                  <option value="human">{{ $t('modelRun.inBoxes.human') }}</option>
+                  <option value="any">{{ $t('modelRun.inBoxes.any') }}</option>
+                </select>
+              </div>
+              <div class="form-text ms-4 mt-1">{{ $t('modelRun.inBoxes.hint') }}</div>
+            </div>
+
             <div v-if="$store.getters['user/can']('create_categories')" class="form-check">
               <input :id="modalId + 'Create'" v-model="options.createCategories" type="checkbox" class="form-check-input" />
               <label class="form-check-label" :for="modalId + 'Create'">{{ $t('modelRun.createCategories') }}</label>
             </div>
 
-            <div v-if="dataset" class="form-check">
+            <div v-if="dataset && !options.inBoxes" class="form-check">
               <input :id="modalId + 'Skip'" v-model="options.skipAnnotated" type="checkbox" class="form-check-input" />
               <label class="form-check-label" :for="modalId + 'Skip'">{{ $t('modelRun.skipAnnotated') }}</label>
             </div>
@@ -174,7 +192,10 @@ export default {
         model: saved.model || "",
         conf: saved.conf || 0.25,
         createCategories: saved.createCategories !== false,
-        skipAnnotated: saved.skipAnnotated !== false
+        skipAnnotated: saved.skipAnnotated !== false,
+        inBoxes: !!saved.inBoxes,
+        boxCategory: saved.boxCategory || null,
+        boxSource: saved.boxSource || "human"
       }
     };
   },
@@ -185,6 +206,7 @@ export default {
     },
     categories() {
       this.loadClassMap();
+      this.pickBoxCategory();
     }
   },
   computed: {
@@ -196,6 +218,9 @@ export default {
     },
     canRun() {
       return this.installed && this.selected && !this.selected.error;
+    },
+    savedBoxName() {
+      return loadSaved().boxCategoryName || "";
     },
     lowerCategoryNames() {
       return this.categories.map(c => String(c.name).toLowerCase());
@@ -222,6 +247,7 @@ export default {
           }
           this.applyDefaultConf();
           this.loadClassMap();
+          this.pickBoxCategory();
         })
         .finally(() => (this.loading = false));
     },
@@ -261,6 +287,13 @@ export default {
       const labels = (target && target.keypoint_labels) || [];
       if (!labels.length || labels.length === shape[0]) return "";
       return this.$t("modelRun.map.keypoints", { model: shape[0], category: labels.length, name: target.name });
+    },
+    /** the remembered box category if this dataset has it, else the first */
+    pickBoxCategory() {
+      if (!this.categories.some(c => c.id === this.options.boxCategory)) {
+        const named = this.categories.find(c => c.name === this.savedBoxName);
+        this.options.boxCategory = named ? named.id : (this.categories[0] || {}).id || null;
+      }
     },
     loadClassMap() {
       const classes = (this.selected && this.selected.classes) || [];
@@ -307,6 +340,13 @@ export default {
         // storage unavailable: the choice is just not remembered
       }
       this.saveClassMap();
+      const boxCat = this.categories.find(c => c.id === this.options.boxCategory);
+      try {
+        // the box category by name: the same choice in other datasets
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...this.options, boxCategoryName: boxCat ? boxCat.name : "" }));
+      } catch {
+        // not remembered then
+      }
       const classMap = {};
       for (const [c, v] of Object.entries(this.classMap)) {
         if (v === "skip") classMap[c] = null;
@@ -317,7 +357,9 @@ export default {
         conf: this.options.conf,
         create_categories: this.options.createCategories,
         skip_annotated: this.options.skipAnnotated,
-        ...(Object.keys(classMap).length ? { class_map: classMap } : {})
+        ...(Object.keys(classMap).length ? { class_map: classMap } : {}),
+        ...(this.options.inBoxes && this.options.boxCategory
+          ? { in_boxes: { category_id: this.options.boxCategory, source: this.options.boxSource } } : {})
       });
     }
   }
@@ -329,6 +371,10 @@ export default {
   white-space: pre-wrap;
   color: #495057;
   border-left: 3px solid #2a78d6;
+  padding-left: 6px;
+}
+.box-option {
+  border-left: 3px solid #e9ecef;
   padding-left: 6px;
 }
 .class-map {

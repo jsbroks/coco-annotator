@@ -1,6 +1,15 @@
-"""Turn model predictions into annotations (one image or a whole dataset)."""
+"""Turn model predictions into annotations (one image or a whole dataset).
+
+With ``in_boxes`` the model runs inside boxes people already drew (a crop per
+box, a little larger), keeping per box the prediction that fits it best:
+a pose model then needs to find one person per crop (top-down, as keypoint
+benchmarks do with ground-truth boxes) and nobody boxed is missed.
+"""
 import datetime
 import logging
+import math
+import os
+import tempfile
 import threading
 
 from mongoengine import Q
@@ -145,9 +154,82 @@ def apply_predictions(image, predictions, resolver, username=None, task_id=None,
     return created
 
 
-def annotate_image(image, model_name, conf=0.25, create_missing=True, user=None, class_map=None):
+# room around a box for its crop (share of its width / height on each side)
+BOX_PADDING = 0.15
+
+
+def box_annotations(image_id, in_boxes):
+    """The boxes to run in: {category_id, source: human|any} -> [[x, y, w, h]]."""
+    query = AnnotationModel.objects(image_id=image_id, category_id=int(in_boxes['category_id']), deleted=False)
+    if in_boxes.get('source', 'human') == 'human':
+        query = query.filter(source__ne='model')
+    boxes = []
+    for row in query.only('bbox').as_pymongo():
+        bbox = row.get('bbox') or []
+        if len(bbox) == 4 and bbox[2] > 1 and bbox[3] > 1:
+            boxes.append([float(v) for v in bbox])
+    return boxes
+
+
+def shift_prediction(p, dx, dy):
+    """A prediction made on a crop, in the whole image's pixels."""
+    p = dict(p)
+    p["segmentation"] = [[v + (dx if i % 2 == 0 else dy) for i, v in enumerate(poly)] for poly in p["segmentation"]]
+    p["bbox"] = [p["bbox"][0] + dx, p["bbox"][1] + dy, p["bbox"][2], p["bbox"][3]]
+    if p.get("rbbox"):
+        p["rbbox"] = [p["rbbox"][0] + dx, p["rbbox"][1] + dy] + list(p["rbbox"][2:])
+    if p.get("keypoints"):
+        kp = list(p["keypoints"])
+        for i in range(0, len(kp), 3):
+            if kp[i + 2]:
+                kp[i], kp[i + 1] = round(kp[i] + dx, 2), round(kp[i + 1] + dy, 2)
+        p["keypoints"] = kp
+    return p
+
+
+def _iou(a, b):
+    ax2, ay2, bx2, by2 = a[0] + a[2], a[1] + a[3], b[0] + b[2], b[1] + b[3]
+    w, h = min(ax2, bx2) - max(a[0], b[0]), min(ay2, by2) - max(a[1], b[1])
+    if w <= 0 or h <= 0:
+        return 0.0
+    inter = w * h
+    return inter / (a[2] * a[3] + b[2] * b[3] - inter)
+
+
+def predict_in_boxes(model_name, image_path, boxes, conf=0.25):
+    """Run the model on a crop around each box; per box the prediction that
+    overlaps it most (then the most confident), in image coordinates."""
+    from PIL import Image
+    out = []
+    with Image.open(image_path) as pil_image, tempfile.TemporaryDirectory() as tmp:
+        # as stored, no EXIF rotation: annotations use this layout
+        pil_image = pil_image.convert("RGB")
+        width, height = pil_image.size
+        for n, (x, y, w, h) in enumerate(boxes):
+            x0, y0 = max(int(x - w * BOX_PADDING), 0), max(int(y - h * BOX_PADDING), 0)
+            x1 = min(int(math.ceil(x + w + w * BOX_PADDING)), width)
+            y1 = min(int(math.ceil(y + h + h * BOX_PADDING)), height)
+            if x1 - x0 < 2 or y1 - y0 < 2:
+                continue
+            path = os.path.join(tmp, f"box{n}.png")
+            pil_image.crop((x0, y0, x1, y1)).save(path)
+            predictions = [shift_prediction(p, x0, y0) for p in yolo.predict(model_name, path, conf=conf)]
+            if predictions:
+                out.append(max(predictions, key=lambda p: (round(_iou(p["bbox"], [x, y, w, h]), 3), p["score"])))
+    return out
+
+
+def predict(model_name, image, conf=0.25, in_boxes=None):
+    """(predictions, boxes used: None without in_boxes)."""
+    if not in_boxes:
+        return yolo.predict(model_name, image.path, conf=conf), None
+    boxes = box_annotations(image.id, in_boxes)
+    return (predict_in_boxes(model_name, image.path, boxes, conf=conf) if boxes else []), len(boxes)
+
+
+def annotate_image(image, model_name, conf=0.25, create_missing=True, user=None, class_map=None, in_boxes=None):
     dataset = DatasetModel.objects(id=image.dataset_id).first()
-    predictions = yolo.predict(model_name, image.path, conf=conf)
+    predictions, boxes = predict(model_name, image, conf=conf, in_boxes=in_boxes)
     resolver = CategoryResolver(dataset, create_missing=create_missing, user=user, class_map=class_map)
     created = apply_predictions(image, predictions, resolver,
                                 username=user.username if user else None, model_name=model_name)
@@ -163,17 +245,28 @@ def annotate_image(image, model_name, conf=0.25, create_missing=True, user=None,
         "skipped_classes": sorted(resolver.skipped),
         "ignored_classes": sorted(resolver.ignored),
         "keypoints_mismatch": sorted(resolver.keypoints_mismatch),
+        "boxes": boxes,
     }
 
 
 def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
-                 create_missing, user, socket, class_map=None):
+                 create_missing, user, socket, class_map=None, in_boxes=None):
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
     task.update(status="PROGRESS")
 
     images = ImageModel.objects(dataset_id=dataset.id, deleted=False).order_by('file_name')
-    if skip_annotated:
+    if in_boxes:
+        # the images with such boxes (they are annotated: skip_annotated does not apply)
+        boxed = AnnotationModel.objects(dataset_id=dataset.id, category_id=int(in_boxes['category_id']),
+                                        deleted=False)
+        if in_boxes.get('source', 'human') == 'human':
+            boxed = boxed.filter(source__ne='model')
+        images = images.filter(id__in=boxed.distinct('image_id'))
+        category = CategoryModel.objects(id=int(in_boxes['category_id'])).first()
+        task.info(f"Inside the {'people' + chr(39) + 's ' if in_boxes.get('source', 'human') == 'human' else ''}"
+                  f"boxes of {category.name if category else '?'}")
+    elif skip_annotated:
         images = images.filter(Q(annotated=False) | Q(num_annotations=0))
     images = list(images.only('id', 'path', 'file_name', 'category_ids', 'dataset_id'))
 
@@ -188,7 +281,7 @@ def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
     try:
         for i, image in enumerate(images):
             try:
-                predictions = yolo.predict(model_name, image.path, conf=conf)
+                predictions, _ = predict(model_name, image, conf=conf, in_boxes=in_boxes)
                 created = apply_predictions(image, predictions, resolver,
                                             username=user.username if user else None, task_id=task_id,
                                             model_name=model_name)
@@ -213,7 +306,8 @@ def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
 
 
 def annotate_dataset(dataset, model_name, conf=0.25, skip_annotated=True,
-                     create_missing=True, user=None, socket=None, background=True, class_map=None):
+                     create_missing=True, user=None, socket=None, background=True, class_map=None,
+                     in_boxes=None):
     """Start a task that runs the model over the dataset's images."""
     task = TaskModel(
         name=f"Pre-annotating {dataset.name} with {model_name}",
@@ -227,7 +321,8 @@ def annotate_dataset(dataset, model_name, conf=0.25, skip_annotated=True,
     activity.record('auto_annotate', user, dataset_id=dataset.id, task_id=task.id,
                     detail={'model': model_name, 'whole_dataset': True}, text=model_name)
 
-    args = (task.id, dataset.id, model_name, conf, skip_annotated, create_missing, user, socket, class_map)
+    args = (task.id, dataset.id, model_name, conf, skip_annotated, create_missing, user, socket, class_map,
+            in_boxes)
     if background:
         threading.Thread(target=_run_dataset, args=args, daemon=True).start()
     else:
