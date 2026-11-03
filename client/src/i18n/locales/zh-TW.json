@@ -2067,5 +2067,25 @@
     "skipHint": "這個點看不到：先跳過，點下一個",
     "finish": "完成",
     "allDone": "關鍵點都點好了（{n} / {total}）"
+  },
+  "aiCleanup": {
+    "button": "刪除 AI 結果",
+    "title": "刪除 AI 結果：{name}",
+    "none": "這個資料集沒有模型產生的標註。",
+    "total": "模型在這裡產生了 {n} 個標註，其中 {edited} 個之後有人在標註畫面點選或修改過。",
+    "model": "模型",
+    "allModels": "所有模型",
+    "unknownModel": "（舊的，沒有記錄模型）",
+    "category": "類別",
+    "allCategories": "所有類別",
+    "keepEdited": "保留有人點選或修改過的（只刪除模型產生後沒人動過的）",
+    "matching": "會刪除 {n} 個標註（{images} 張圖）。",
+    "nothing": "沒有符合條件的標註。",
+    "trashHint": "刪除的標註會放進垃圾桶，可以從垃圾桶或活動紀錄還原。人工標註不受影響。",
+    "delete": "刪除 {n} 個",
+    "sure": "確定要刪除嗎？",
+    "yes": "確定刪除 {n} 個",
+    "done": "已刪除 {n} 個 AI 標註（{images} 張圖）",
+    "noPermission": "你沒有編輯這個資料集的權限。"
   }
 }

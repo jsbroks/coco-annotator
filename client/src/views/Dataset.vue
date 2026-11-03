@@ -314,6 +314,10 @@
           </div>
           <div v-else><i class="fa fa-rocket" /> {{ $t('modelRun.datasetButton') }}</div>
         </button>
+
+        <button type="button" class="btn btn-outline-light w-100" @click="$refs.aiCleanup.open()">
+          <i class="fa fa-eraser" /> {{ $t('aiCleanup.button') }}
+        </button>
       </div>
       <hr>
       <h6 class="sidebar-title text-center">{{ $t('dataset.subdirectories') }}</h6>
@@ -432,6 +436,14 @@
       :categories="categories"
       @run="runModel"
     />
+    <AiCleanupModal
+      v-if="dataset.id"
+      ref="aiCleanup"
+      modal-id="aiCleanupDataset"
+      :dataset-id="dataset.id"
+      :dataset-name="dataset.name"
+      @deleted="updatePage()"
+    />
     <ChatWidget v-if="dataset.id" :dataset-id="dataset.id" :dataset-name="dataset.name" />
   </div>
 </template>
@@ -448,6 +460,7 @@ import PanelToggle from "@/components/PanelToggle.vue";
 import PanelDropdown from "@/components/PanelInputDropdown.vue"
 import TagsInput from "@/components/TagsInput.vue";
 import ModelRunModal from "@/components/ModelRunModal.vue";
+import AiCleanupModal from "@/components/AiCleanupModal.vue";
 import ExportWizard from "@/components/ExportWizard.vue";
 import ReviewPanel from "@/components/ReviewPanel.vue";
 import TaskPicker from "@/components/TaskPicker.vue";
@@ -499,7 +512,8 @@ export default {
     PanelToggle,
     PanelDropdown,
     TagsInput,
-    ModelRunModal
+    ModelRunModal,
+    AiCleanupModal
   },
   mixins: [toastrs],
   props: {

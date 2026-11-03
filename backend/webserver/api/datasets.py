@@ -1311,3 +1311,93 @@ class DatasetScan(Resource):
         
         return dataset.scan(user=current_user)
 
+
+
+def _ai_annotations(dataset, model=None, category_id=None, image_id=None, keep_edited=True):
+    """Annotations a model made in the dataset (still there). ``keep_edited``
+    leaves out those someone worked on in the annotator since: selecting one
+    there records an editing session (so "touched", even if not moved)."""
+    query = AnnotationModel.objects(dataset_id=dataset.id, deleted=False, source='model')
+    if model:
+        query = query.filter(model=model)
+    if category_id:
+        query = query.filter(category_id=int(category_id))
+    if image_id:
+        query = query.filter(image_id=int(image_id))
+    if keep_edited:
+        query = query.filter(Q(events__size=0) | Q(events__exists=False))
+    return query
+
+
+def _ai_filters(source):
+    def number(key):
+        try:
+            return int(source.get(key)) if source.get(key) not in (None, '', 'null') else None
+        except (TypeError, ValueError):
+            raise ValueError(f"{key}: a number")
+    keep = source.get('keep_edited', True)
+    keep = keep if isinstance(keep, bool) else str(keep).lower() not in ('0', 'false', 'no')
+    return {"model": source.get('model') or None, "category_id": number('category_id'),
+            "image_id": number('image_id'), "keep_edited": keep}
+
+
+@api.route('/<int:dataset_id>/ai')
+class DatasetAiAnnotations(Resource):
+
+    @login_required
+    def get(self, dataset_id):
+        """ How many annotations models made here: per model and category, and
+        how many match the filters (?model, category_id, image_id, keep_edited) """
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {'message': 'Invalid dataset id'}, 400
+        try:
+            filters = _ai_filters(request.args)
+        except ValueError as e:
+            return {'message': str(e)}, 400
+        _mark_sources(dataset.id)  # older runs: mark what models made
+        everything = _ai_annotations(dataset, keep_edited=False)
+        edited = everything.count() - _ai_annotations(dataset).count()
+        models, categories = {}, {}
+        for row in everything.only('model', 'category_id').as_pymongo():
+            models[row.get('model') or ''] = models.get(row.get('model') or '', 0) + 1
+            categories[row['category_id']] = categories.get(row['category_id'], 0) + 1
+        names = {c.id: c.name for c in CategoryModel.objects(id__in=list(categories)).only('id', 'name')}
+        matching = _ai_annotations(dataset, **filters)
+        return {
+            'total': everything.count(), 'edited': edited,
+            'models': [{'name': k, 'count': v} for k, v in sorted(models.items(), key=lambda kv: -kv[1])],
+            'categories': [{'id': k, 'name': names.get(k, str(k)), 'count': v}
+                           for k, v in sorted(categories.items(), key=lambda kv: -kv[1])],
+            'matching': matching.count(), 'matching_images': len(matching.distinct('image_id')),
+            'can_edit': current_user.can_edit(dataset),
+        }
+
+
+@api.route('/<int:dataset_id>/ai/delete')
+class DatasetAiAnnotationsDelete(Resource):
+
+    @login_required
+    def post(self, dataset_id):
+        """ Send annotations models made to the trash (they can be restored);
+        filters as above, in the JSON body """
+        dataset = current_user.datasets.filter(id=dataset_id, deleted=False).first()
+        if dataset is None:
+            return {'message': 'Invalid dataset id'}, 400
+        if not current_user.can_edit(dataset):
+            return {'message': 'You do not have permission to edit this dataset'}, 403
+        try:
+            filters = _ai_filters(request.get_json(silent=True) or {})
+        except ValueError as e:
+            return {'message': str(e)}, 400
+        _mark_sources(dataset.id)
+        query = _ai_annotations(dataset, **filters)
+        image_ids = query.distinct('image_id')
+        count = query.count()
+        if not count:
+            return {'success': True, 'deleted': 0, 'images': 0}
+        from ..util.trash import soft_delete, refresh_image
+        batch = soft_delete(query, current_user)  # one line in the activity log, restorable
+        for image_id in image_ids:
+            refresh_image(image_id)
+        return {'success': True, 'deleted': count, 'images': len(image_ids), 'batch': batch}

@@ -1932,5 +1932,25 @@
     "skipHint": "Can't see this one: skip to the next",
     "finish": "Done",
     "allDone": "All keypoints placed ({n} / {total})"
+  },
+  "aiCleanup": {
+    "button": "Delete AI results",
+    "title": "Delete AI results: {name}",
+    "none": "No annotations made by models in this dataset.",
+    "total": "Models made {n} annotations here; {edited} of them were selected or changed in the annotator since.",
+    "model": "Model",
+    "allModels": "All models",
+    "unknownModel": "(older, model not recorded)",
+    "category": "Category",
+    "allCategories": "All categories",
+    "keepEdited": "Keep those people selected or changed (delete only untouched model results)",
+    "matching": "{n} annotations will be deleted ({images} images).",
+    "nothing": "No annotation matches.",
+    "trashHint": "They go to the trash and can be restored from the trash or the activity log. People's annotations are not touched.",
+    "delete": "Delete {n}",
+    "sure": "Delete them?",
+    "yes": "Delete {n}",
+    "done": "Deleted {n} AI annotations ({images} images)",
+    "noPermission": "You may not edit this dataset."
   }
 }
