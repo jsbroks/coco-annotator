@@ -37,7 +37,7 @@ class TrainRunModel(DynamicDocument):
     worker = StringField(default='')
     #: a remote trainer still has its last finished epoch (last.pt), to resume
     has_last = BooleanField(default=False)
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
     started_at = DateTimeField()
     ended_at = DateTimeField()
 
@@ -87,7 +87,7 @@ class TrainWorkerModel(DynamicDocument):
     name = StringField(primary_key=True)
     token_hash = StringField(required=True)
     created_by = StringField()
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
     last_ip = StringField(default='')
 
     meta = {'collection': 'train_worker'}
@@ -101,7 +101,7 @@ class TrainUploadModel(DynamicDocument):
     kind = StringField(default='pt')           # pt | yaml
     size = IntField(default=0)
     uploader = StringField()
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     meta = {'collection': 'train_upload'}
 

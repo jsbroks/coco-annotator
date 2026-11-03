@@ -261,7 +261,7 @@ def _record_added(name, task, replaced):
     import datetime
     meta = ModelInfoModel.objects(name=name).first() or ModelInfoModel(name=name)
     meta.uploaded_by = current_user.username
-    meta.uploaded_at = datetime.datetime.utcnow()
+    meta.uploaded_at = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
     meta.save()
     from ..util import activity
     activity.record('model_upload', current_user, detail={'name': name, 'task': task, 'replaced': bool(replaced)},

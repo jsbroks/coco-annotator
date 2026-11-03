@@ -626,7 +626,7 @@ def test_other_servers(dataset_directory, tmp_path, monkeypatch):
     import datetime as dt
     lost = t.post("/api/train/", json={"export_id": eid, "epochs": 5, "target": "gpu2"}).get_json()
     assert site.post("claim")["id"] == lost["id"]
-    TrainerStatusModel.objects(key="gpu2").update_one(set__seen_at=dt.datetime.utcnow() - dt.timedelta(minutes=5))
+    TrainerStatusModel.objects(key="gpu2").update_one(set__seen_at=dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) - dt.timedelta(minutes=5))
     assert t.post(f"/api/train/{lost['id']}/stop").get_json()["status"] == "stopped"
     # it comes back later: told to stop, its results are not taken
     assert site.post(f"runs/{lost['id']}/progress", {"lines": ["x"]})["stop"] is True

@@ -11,7 +11,7 @@ class ExportModel(DynamicDocument):
     path = StringField(required=True)
     tags = ListField(default=[])
     categories = ListField(default=[])
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
     
     def get_file(self):
         return

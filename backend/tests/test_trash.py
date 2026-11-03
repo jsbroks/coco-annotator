@@ -127,7 +127,7 @@ def test_visibility_expiry_and_empty(trash_world):
     assert o.get(f"/api/trash/preview?image_id={img}").status_code == 400
 
     # older than TRASH_DAYS: removed for good
-    AnnotationModel.objects(id=ann).update(set__deleted_date=datetime.datetime.utcnow() - datetime.timedelta(days=91))
+    AnnotationModel.objects(id=ann).update(set__deleted_date=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(days=91))
     assert trash.purge_expired(force=True) >= 1
     assert AnnotationModel.objects(id=ann).first() is None
 

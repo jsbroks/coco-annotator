@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 #
 # Targets:
 #   webserver  (default)  Flask API + built web client

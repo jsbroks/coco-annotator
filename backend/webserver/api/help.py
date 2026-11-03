@@ -40,7 +40,7 @@ def _helpers(dataset):
     names = [dataset.owner] + [r for r in (dataset.reviewers or [])
                                if r != dataset.owner and r in (dataset.users or [])]
     users = {u.username: u for u in UserModel.objects(username__in=names).only('username', 'name', 'last_seen')}
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
     out = []
     for name in names:
         if name == current_user.username or name not in users:
@@ -192,7 +192,7 @@ class Reply(Resource):
             return {'message': 'This question was withdrawn'}, 400
         args = reply_args.parse_args()
         message = (args.get('message') or '').strip()[:2000]
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         update = {'set__updated_at': now}
         if message:
             update['push__replies'] = {'user': current_user.username, 'message': message, 'at': now}
@@ -232,7 +232,7 @@ class Cancel(Resource):
         req = HelpModel.objects(id=help_id, user=current_user.username).first()
         if req is None:
             return {'message': 'Invalid id'}, 400
-        req.update(set__status='cancelled', set__updated_at=datetime.datetime.utcnow())
+        req.update(set__status='cancelled', set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         req.reload()
         _push(req.to or [], 'helpReply', req)
         return {'success': True}

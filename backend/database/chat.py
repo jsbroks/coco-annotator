@@ -14,7 +14,7 @@ class ChatMessageModel(DynamicDocument):
     file_name = StringField(default='')
     #: photos sent with it (ChatPhotoModel ids)
     photos = ListField(StringField(), default=list)
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     meta = {'collection': 'chat_message', 'indexes': [('dataset_id', '-id')]}
 
@@ -49,7 +49,7 @@ class ChatPhotoModel(DynamicDocument):
     size = IntField(default=0)
     #: the message it was sent with (None: uploaded, not sent yet)
     message_id = IntField()
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     meta = {'collection': 'chat_photo', 'indexes': ['dataset_id', 'message_id']}
 

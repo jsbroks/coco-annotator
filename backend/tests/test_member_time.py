@@ -40,7 +40,7 @@ def test_time_per_member(dataset_directory):
     # one from 10 days ago
     ImageModel.objects(id=images[1]["id"]).update(
         push__events=SessionEvent(user="tm_mem", milliseconds=30000,
-                                  created_at=datetime.datetime.utcnow() - datetime.timedelta(days=10)))
+                                  created_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(days=10)))
 
     queue_manager = socketio.server.manager
     socketio.server.manager = python_socketio.Manager()

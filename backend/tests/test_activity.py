@@ -78,7 +78,7 @@ def test_scan_and_annotating_merged(act_world):
     # an annotation from an earlier session is changed: "edited"
     from database import ActivityModel
     ActivityModel.objects(action="annotate", image_id=img).update(
-        set__updated_at=datetime.datetime.utcnow() - datetime.timedelta(hours=2))
+        set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(hours=2))
     _save(c, img, w["cats"]["car"], a1, [12, 10, 60, 10, 60, 45, 12, 45])
     lines = [e for e in _log(c, group="annotate")["entries"] if e["image"] and e["image"]["id"] == img]
     assert [l["counts"] for l in lines] == [{"added": 0, "edited": 1}, {"added": 2, "edited": 0}]
@@ -147,7 +147,7 @@ def test_legacy_backfill_visibility_and_expiry(act_world):
     # deleted before the log existed: no batch, no line
     old = AnnotationModel(image_id=img, category_id=w["cats"]["bus"], segmentation=[[1, 1, 9, 1, 9, 9]], area=32)
     old.save()
-    AnnotationModel.objects(id=old.id).update(set__deleted=True, set__deleted_date=datetime.datetime.utcnow())
+    AnnotationModel.objects(id=old.id).update(set__deleted=True, set__deleted_date=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
     activity_api._backfilled[0] = False
     lines = [e for e in _log(c, group="trash")["entries"] if old.id in e["ids"]]
     assert len(lines) == 1 and lines[0]["user"] is None
@@ -161,7 +161,7 @@ def test_legacy_backfill_visibility_and_expiry(act_world):
     assert o.post(f"/api/activity/{lines[0]['id']}/undo").status_code == 400
 
     ActivityModel.objects(id=lines[0]["id"]).update(
-        set__updated_at=datetime.datetime.utcnow() - datetime.timedelta(days=91))
+        set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(days=91))
     trash.purge_expired(force=True)
     assert ActivityModel.objects(id=lines[0]["id"]).first() is None
 

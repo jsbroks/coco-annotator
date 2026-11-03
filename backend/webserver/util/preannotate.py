@@ -301,7 +301,7 @@ def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
         task.info(f"Done: {total_created} annotations created")
         ActivityModel.objects(task_id=task_id, action='auto_annotate').update(
             set__counts={'annotations': total_created, 'images': len(images)},
-            set__updated_at=datetime.datetime.utcnow())
+            set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         task.set_progress(100, socket=socket)
 
 

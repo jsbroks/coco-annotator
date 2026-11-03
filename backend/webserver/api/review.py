@@ -114,7 +114,7 @@ def _int_list(values):
 
 def change_status(images, dataset, action, note='', regions=None):
     """Apply ``action`` to the images. Returns (count, error message or None)."""
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
     me = current_user.username
     if action in ('approve', 'reject'):
         if not dataset.can_review(current_user):

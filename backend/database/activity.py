@@ -17,8 +17,8 @@ class ActivityModel(DynamicDocument):
     image_id = IntField()
     category_id = IntField()
 
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
-    updated_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
+    updated_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     #: numbers shown in the sentence ({"annotations": 3, ...})
     counts = DictField(default={})

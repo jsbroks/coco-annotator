@@ -31,7 +31,7 @@ SCAN_LIMIT = 20000  # deleted items looked at per listing
 
 
 def now():
-    return datetime.datetime.utcnow()
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
 
 # ------------------------------------------------------------- deleting

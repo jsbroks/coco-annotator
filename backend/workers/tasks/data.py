@@ -44,7 +44,7 @@ def export_annotations(task_id, dataset_id, categories, with_empty_images=False,
         task.error(f"Export failed: {e}")
         task.info(traceback.format_exc()[-2000:])
         task.update(status="FAILURE", failed=True, completed=True, progress=100,
-                    end_date=datetime.datetime.utcnow())
+                    end_date=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         if socket is not None:
             socket.emit('taskProgress', {'id': task.id, 'progress': 100, 'failed': True,
                                          'message': str(e)[:300], 'errors': task.errors,
@@ -285,7 +285,7 @@ def _export_annotations(task, socket, dataset_id, categories, with_empty_images,
         set__counts={'images': len(coco.get('images', [])), 'annotations': len(coco.get('annotations', [])),
                      'categories': len(category_names)},
         set__detail__categories=list(category_names)[:50], set__detail__export_id=export.id,
-        set__updated_at=datetime.datetime.utcnow())
+        set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     task.set_progress(100, socket=socket)
 
@@ -803,7 +803,7 @@ def import_annotations(task_id, dataset_id, coco_json, create_categories=True):
         set__counts={'annotations': created_annotations, 'images': len(images_id),
                      'categories': len(created_categories)},
         set__detail__new_categories=created_categories[:50],
-        set__updated_at=datetime.datetime.utcnow())
+        set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     task.set_progress(100, socket=socket)
 

@@ -31,7 +31,7 @@ class SessionEvent(Event):
             user=user.username,
             milliseconds=int((end-start)*1000),
             # when the session ended (per-member time, "last 7 days")
-            created_at=datetime.datetime.utcnow()
+            created_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         )
 
 

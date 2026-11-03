@@ -66,7 +66,7 @@ def _allowed():
 
 def _alive(row):
     return bool(row and row.seen_at and
-                (datetime.datetime.utcnow() - row.seen_at).total_seconds() < TRAINER_ALIVE_SECONDS)
+                (datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - row.seen_at).total_seconds() < TRAINER_ALIVE_SECONDS)
 
 
 def _trainer_alive(name):
@@ -91,7 +91,7 @@ def trainers():
     """Every trainer: this server's and the other servers' (registered, or
     seen in the last day), alive or not."""
     workers = {w.name for w in TrainWorkerModel.objects.only('name')}
-    recent = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    recent = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(days=1)
     rows = {r.key: r for r in TrainerStatusModel.objects}
     out = []
     for key in sorted(set(rows) | workers, key=lambda k: (rows.get(k) is None or rows[k].kind != 'local', k)):
@@ -716,11 +716,11 @@ class TrainRunStop(Resource):
             return {'message': 'Only its creator or an admin can stop it'}, 403
         if run.status == 'queued':
             TrainRunModel.objects(id=run.id, status='queued').update_one(
-                set__status='stopped', set__ended_at=datetime.datetime.utcnow())
+                set__status='stopped', set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         elif run.status == 'running':
             run.update(set__stop_requested=True)
             if not _trainer_alive(run.worker):
                 # its trainer is gone (off, unreachable): nothing will stop it
-                run.update(set__status='stopped', set__ended_at=datetime.datetime.utcnow(),
+                run.update(set__status='stopped', set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
                            set__error='its trainer was not running')
         return TrainRunModel.objects(id=run.id).first().to_dict()

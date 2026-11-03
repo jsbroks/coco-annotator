@@ -269,7 +269,7 @@ def _run(task_id, dataset_id, video_path, original_name, every_seconds, max_fram
             pass
         ActivityModel.objects(task_id=task_id, action='video').update(
             set__counts={'images': created}, set__detail__folder=stem,
-            set__updated_at=datetime.datetime.utcnow())
+            set__updated_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         task.set_progress(100, socket=socket)
 
 

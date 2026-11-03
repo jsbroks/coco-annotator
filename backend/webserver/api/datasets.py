@@ -483,7 +483,7 @@ class DatasetStats(Resource):
 def _time_per_member(images, recent_days=7):
     """Time each person had the dataset's images open in the annotator:
     {username: {seconds, recent_seconds, images, last}}"""
-    since = datetime.datetime.utcnow() - datetime.timedelta(days=recent_days)
+    since = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(days=recent_days)
     out = {}
     for row in images.only('id', 'events').as_pymongo():
         for e in row.get('events') or []:
@@ -939,7 +939,7 @@ class DatasetExports(Resource):
             if getattr(export, 'dataset_ids', None) and export_dataset(export) is None:
                 continue
 
-            time_delta = datetime.datetime.utcnow() - export.created_at
+            time_delta = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - export.created_at
             tags = list(export.tags or [])
             # tags: ["COCO", *categories] or ["YOLO", task, *categories]
             if tags[:1] == ["YOLO"]:

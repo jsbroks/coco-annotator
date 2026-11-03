@@ -46,7 +46,7 @@ class DatasetExports(Resource):
         if dataset is None:
             return {"message": "Invalid dataset ID"}, 400
 
-        time_delta = datetime.datetime.utcnow() - export.created_at
+        time_delta = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - export.created_at
         d = fix_ids(export)
         d['ago'] = query_util.td_format(time_delta)
         return d

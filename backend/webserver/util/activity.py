@@ -36,7 +36,7 @@ GROUPS = {
 
 
 def now():
-    return datetime.datetime.utcnow()
+    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
 
 
 def _name(user):

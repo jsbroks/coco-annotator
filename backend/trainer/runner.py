@@ -312,7 +312,7 @@ class LogFollower:
 def heartbeat(device=None, catalog=None, name=None, kind="local", run_id=False, gpu=False):
     """This trainer is alive (and what it is training: run_id, None = free;
     what its GPU is doing: gpu, None = unknown)."""
-    update = {"set__seen_at": datetime.datetime.utcnow(), "set__kind": kind}
+    update = {"set__seen_at": datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None), "set__kind": kind}
     if gpu is not False:
         update["set__gpu"] = gpu
     if device is not None:
@@ -350,7 +350,7 @@ class LocalIO:
         return _unpack(export, os.path.join(work, "data"), self.run.task)
 
     def fail(self, error):
-        self.run.update(set__status="failed", set__error=error[:1000], set__ended_at=datetime.datetime.utcnow())
+        self.run.update(set__status="failed", set__error=error[:1000], set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
     def poll(self, rows, out, force=False):
         """Every second while training: the output, and every few seconds the
@@ -392,7 +392,7 @@ class LocalIO:
         except Exception as e:  # the run is still done; the page can pack it later
             logger.warning("could not pack run %s: %s", run.id, e)
         run.update(set__status=status, set__metrics=rows, set__epoch=len(rows), set__log_tail=log_tail,
-                   set__model_name=model_name, set__error=error, set__ended_at=datetime.datetime.utcnow(),
+                   set__model_name=model_name, set__error=error, set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None),
                    set__has_last=False)
 
 
@@ -513,7 +513,7 @@ def claim_next(worker=None):
     for first in _db().TrainRunModel.objects(Q(status="queued") & (Q(target__in=["", None]) | Q(target=worker))
                                        ).order_by("id").only("id")[:5]:
         claimed = _db().TrainRunModel.objects(id=first.id, status="queued").update_one(
-            set__status="running", set__started_at=datetime.datetime.utcnow(), set__worker=worker)
+            set__status="running", set__started_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None), set__worker=worker)
         if claimed:
             return _db().TrainRunModel.objects(id=first.id).first()
     return None
@@ -558,7 +558,7 @@ def recover():
             logger.info("run %s resumes after epoch %s", run.id, run.epoch)
         else:
             run.update(set__status="failed", set__error="the trainer restarted during this training",
-                       set__ended_at=datetime.datetime.utcnow())
+                       set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
 
 def serve():
@@ -590,7 +590,7 @@ def serve():
             execute(run)
         except Exception as e:  # pragma: no cover - keep serving the queue
             logger.exception("run %s", run.id)
-            run.update(set__status="failed", set__error=str(e)[:1000], set__ended_at=datetime.datetime.utcnow())
+            run.update(set__status="failed", set__error=str(e)[:1000], set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
 
 def start_embedded():

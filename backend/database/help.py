@@ -23,8 +23,8 @@ class HelpModel(DynamicDocument):
     status = StringField(default='open')  # open | resolved | cancelled
     #: [{user, message, at}]
     replies = ListField(DictField(), default=list)
-    created_at = DateTimeField(default=datetime.datetime.utcnow)
-    updated_at = DateTimeField(default=datetime.datetime.utcnow)
+    created_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
+    updated_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
     resolved_by = StringField()
     #: the asker has seen the answer (it leaves their lists)
     seen = BooleanField(default=False)

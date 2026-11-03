@@ -14,7 +14,7 @@ class ModelInfoModel(DynamicDocument):
     #: confidence the run dialog starts with for this model
     default_conf = FloatField()
     uploaded_by = StringField()
-    uploaded_at = DateTimeField(default=datetime.datetime.utcnow)
+    uploaded_at = DateTimeField(default=lambda: datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
 
 
 __all__ = ["ModelInfoModel"]

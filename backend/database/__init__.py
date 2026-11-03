@@ -19,6 +19,13 @@ from .training import TrainRunModel, TrainerStatusModel, TrainUploadModel, Train
 
 import json
 
+from bson.json_util import LEGACY_JSON_OPTIONS
+
+# What pymongo / mongoengine used when nothing was said (they warn about it):
+# kept, so data written before reads the same
+UUID_REPRESENTATION = "pythonLegacy"
+JSON_OPTIONS = LEGACY_JSON_OPTIONS
+
 
 def connect_mongo(name, host=None):
     if host is None:
@@ -27,9 +34,9 @@ def connect_mongo(name, host=None):
         # In-memory database for tests / local development without MongoDB
         import mongomock
         connect(name, host="mongodb://" + host[len("mongomock://"):],
-                mongo_client_class=mongomock.MongoClient)
+                mongo_client_class=mongomock.MongoClient, uuidRepresentation=UUID_REPRESENTATION)
         return
-    connect(name, host=host)
+    connect(name, host=host, uuidRepresentation=UUID_REPRESENTATION)
 
 
 # https://github.com/MongoEngine/mongoengine/issues/1171
@@ -66,7 +73,7 @@ def ensure_indexes():
 
 
 def fix_ids(q):
-    json_obj = json.loads(q.to_json().replace('\"_id\"', '\"id\"'))
+    json_obj = json.loads(q.to_json(json_options=JSON_OPTIONS).replace('\"_id\"', '\"id\"'))
     return json_obj
 
 

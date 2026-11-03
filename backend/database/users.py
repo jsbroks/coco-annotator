@@ -157,7 +157,7 @@ class UserModel(DynamicDocument, UserMixin):
     def _update_last_seen(self):
         # called on most requests (several times each): write at most once a
         # minute instead of on every image / thumbnail request
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         last = getattr(self, 'last_seen', None)
         if isinstance(last, datetime.datetime) and (now - last).total_seconds() < 60:
             return

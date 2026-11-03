@@ -72,13 +72,13 @@ class TaskModel(DynamicDocument):
 
     def save(self, *args, **kwargs):
         if self.start_date is None:
-            self.start_date = datetime.datetime.utcnow()
+            self.start_date = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         return super().save(*args, **kwargs)
 
     def set_progress(self, percent, socket=None):
 
         if percent >= 100:
-            self.update(progress=int(percent), completed=True, end_date=datetime.datetime.utcnow())
+            self.update(progress=int(percent), completed=True, end_date=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         else:
             self.update(progress=int(percent), completed=False)
 

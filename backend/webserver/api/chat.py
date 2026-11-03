@@ -203,7 +203,7 @@ class DatasetChatPhoto(Resource):
 
 def _clean_unsent():
     """Photos uploaded but never sent, after a day."""
-    old = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    old = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(days=1)
     for p in ChatPhotoModel.objects(message_id=None, created_at__lt=old):
         try:
             os.remove(os.path.join(photo_dir(p.dataset_id), p.filename))

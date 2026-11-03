@@ -1,8 +1,11 @@
 import json
 
+from bson.json_util import LEGACY_JSON_OPTIONS
+
 
 def fix_ids(objs):
-    objects_list = json.loads(objs.to_json().replace('\"_id\"', '\"id\"'))
+    # the legacy format, as before (dates as {"$date": ms}); said, so no warning
+    objects_list = json.loads(objs.to_json(json_options=LEGACY_JSON_OPTIONS).replace('\"_id\"', '\"id\"'))
     return objects_list
 
 

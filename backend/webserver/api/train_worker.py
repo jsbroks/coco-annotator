@@ -140,7 +140,7 @@ class WorkerHello(Resource):
                 queue_resume(run)
             else:
                 run.update(set__status='failed', set__error='the trainer restarted during this training',
-                           set__ended_at=datetime.datetime.utcnow())
+                           set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         return {'name': worker.name}
 
 
@@ -273,7 +273,7 @@ class WorkerFail(Resource):
         run = _run_of(worker, run_id)
         if run is not None:
             error = str((request.get_json(silent=True) or {}).get('error') or 'failed')[:1000]
-            run.update(set__status='failed', set__error=error, set__ended_at=datetime.datetime.utcnow())
+            run.update(set__status='failed', set__error=error, set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         heartbeat(name=worker.name, kind='remote', run_id=None)
         return {}
 
@@ -387,7 +387,7 @@ class WorkerFinish(Resource):
         run.update(set__status=status, set__metrics=rows, set__epoch=len(rows),
                    set__log_tail=str(data.get('log_tail') or '')[-6000:],
                    set__error=str(data.get('error') or '')[:1000], set__model_name=model_name,
-                   set__has_last=bool(data.get('has_last')), set__ended_at=datetime.datetime.utcnow())
+                   set__has_last=bool(data.get('has_last')), set__ended_at=datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None))
         return {'status': status, 'model_name': model_name}
 
 
