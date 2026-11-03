@@ -15,6 +15,9 @@ models/*.pth
 models/*.pt
 models/**/*.pt
 models/.training/
+models/mediapipe/
+models/**/*.task
+models/**/*.tflite
 db/*
 !db/.gitkeep
 mongo-dump-*/
