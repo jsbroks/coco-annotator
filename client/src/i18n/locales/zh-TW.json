@@ -865,13 +865,14 @@
     "categories": "類別",
     "split": "切分",
     "formatHint": {
-      "coco": "一個 .json（切分時為 zip），適合 Detectron2、MMDetection 等",
+      "coco": "一個 .json（切分或附圖片時為 zip），適合 Detectron2、MMDetection 等",
       "yolo": "zip：data.yaml、classes.txt + 自訂資料夾（內含 train/images、train/labels…），給 Ultralytics YOLO 訓練"
     },
     "back": "上一步",
     "next": "下一步",
     "summary": "匯出內容確認",
     "withImages": "附圖片",
+    "cocoWithImages": "附上圖片（改成 zip：images/ + annotations.json，檔案較大）",
     "categoryCount": "{n} 個：{names}",
     "contents": "內容",
     "contentCount": "約 {images} 張圖、{annotations} 個標註",

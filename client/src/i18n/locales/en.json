@@ -730,13 +730,14 @@
     "categories": "Categories",
     "split": "Split",
     "formatHint": {
-      "coco": "One .json (a zip when split), for Detectron2, MMDetection, …",
+      "coco": "One .json (a zip when split or with images), for Detectron2, MMDetection, …",
       "yolo": "Zip: data.yaml, classes.txt + a folder you name (train/images, train/labels, …), for Ultralytics YOLO training"
     },
     "back": "Back",
     "next": "Next",
     "summary": "Review",
     "withImages": "with images",
+    "cocoWithImages": "Include the images (a zip: images/ + annotations.json, larger)",
     "categoryCount": "{n}: {names}",
     "contents": "Contents",
     "contentCount": "about {images} images, {annotations} annotations",

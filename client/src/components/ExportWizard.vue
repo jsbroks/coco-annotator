@@ -106,6 +106,17 @@
               </div>
 
             </template>
+            <div v-else class="form-check d-flex align-items-center gap-2 ps-0">
+              <input
+                id="exportCocoWithImages"
+                type="checkbox"
+                class="form-check-input m-0"
+                :checked="exportWithImages"
+                :disabled="!!exportAugmentPayload"
+                @change="exporting.with_images = $event.target.checked"
+              />
+              <label class="form-check-label mb-0" for="exportCocoWithImages">{{ $t('exportSteps.cocoWithImages') }}</label>
+            </div>
 
           </div>
 
@@ -187,9 +198,10 @@
                 <dt class="col-4">{{ $t('yolo.format') }}</dt>
                 <dd class="col-8">
                   {{ exporting.format.toUpperCase() }}
+                  <template v-if="exporting.format === 'coco' && exportWithImages"> · {{ $t('exportSteps.withImages') }}</template>
                   <template v-if="exporting.format === 'yolo'">
                     · {{ $t('yolo.' + exporting.yolo_task) }}
-                    <template v-if="exporting.with_images"> · {{ $t('exportSteps.withImages') }}</template>
+                    <template v-if="exportWithImages"> · {{ $t('exportSteps.withImages') }}</template>
                     <div class="text-muted">
                       {{ $t('exportSteps.prefixSummary', { image: exportExampleName.image }) }}
                     </div>
@@ -399,7 +411,8 @@ export default {
     /** classify always ships the images (they are the dataset) */
     exportWithImages() {
       // augmented pictures only exist in the export
-      return this.exporting.yolo_task === "classify" || this.exporting.with_images || !!this.exportAugmentPayload;
+      return (this.exporting.format === "yolo" && this.exporting.yolo_task === "classify")
+        || this.exporting.with_images || !!this.exportAugmentPayload;
     },
     exportAugmentPayload() {
       return augmentPayload(this.exporting.augment);
@@ -681,9 +694,9 @@ export default {
       const names = this.exportDatasetNames;
       const options = { format: this.exporting.format };
       if (this.exporting.only_approved) options.only_approved = true;
+      options.with_images = this.exportWithImages;
       if (this.exporting.format === "yolo") {
         options.yolo_task = this.exporting.yolo_task;
-        options.with_images = this.exportWithImages;
         options.folder = this.exportFolderName;
       }
       if (this.exportAugmentPayload) options.augment = JSON.stringify(this.exportAugmentPayload);

@@ -320,8 +320,9 @@ def _write_export(coco, fmt, yolo_task, with_images, subsets, split, classes, da
             task.info(f"Wrote {result['written']} labels ({result['skipped']} annotations "
                       f"could not be converted to {yolo_task})")
         tags = ["YOLO", yolo_task, *category_names]
-    elif aug:
-        # augmented pictures only exist as files: COCO json(s) + images in a zip
+    elif aug or with_images:
+        # images requested (augmented pictures only exist as files anyway):
+        # COCO json(s) + images in a zip
         file_path = f"{directory}coco-{'split-' if subsets else ''}{timestamp}.zip"
         task.info(f"Writing COCO with images to {file_path}")
         written = _write_coco_images_zip(coco, subsets, file_path, task)

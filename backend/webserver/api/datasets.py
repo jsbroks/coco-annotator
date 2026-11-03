@@ -63,7 +63,7 @@ export.add_argument('with_empty_images', type=inputs.boolean, default=False, req
 export.add_argument('format', default='coco', choices=('coco', 'yolo'), help='coco (JSON) or yolo (zip of label files)')
 export.add_argument('yolo_task', default='detect', choices=('detect', 'segment', 'obb', 'pose', 'classify', 'semantic'),
                     help='YOLO task')
-export.add_argument('with_images', type=inputs.boolean, default=False, help='YOLO: put the images in the zip too')
+export.add_argument('with_images', type=inputs.boolean, default=False, help='Put the images in the export (COCO becomes a zip)')
 export.add_argument('split', default='', help='train,val,test percentages, e.g. 80,10,10 (empty: no split)')
 export.add_argument('seed', type=int, default=42, help='Random seed for the split')
 export.add_argument('only_approved', type=inputs.boolean, default=False, help='Only images a reviewer approved')
