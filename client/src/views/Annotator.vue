@@ -304,7 +304,7 @@
     <ModelRunModal
       ref="modelRun"
       modal-id="modelRunImage"
-      :category-names="categories.map(c => c.name)"
+      :categories="categories"
       :running="modelRunning"
       @run="runModelOnImage"
     />

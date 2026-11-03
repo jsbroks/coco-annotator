@@ -98,6 +98,29 @@ yolo_args.add_argument('create_categories', location='json', type=bool, default=
                        help='Create categories for classes the dataset does not have')
 yolo_args.add_argument('skip_annotated', location='json', type=bool, default=True,
                        help='Dataset only: skip images that already have annotations')
+yolo_args.add_argument('class_map', location='json', type=dict, default=None,
+                       help='{model class: dataset category id, or null to leave it out}; '
+                            'other classes go to the category of the same name')
+
+
+def _class_map(value, dataset):
+    """The checked class map, or an error response."""
+    if not value:
+        return None, None
+    out = {}
+    allowed = set(dataset.categories or [])
+    for name, target in value.items():
+        if target is None:
+            out[str(name)] = None
+            continue
+        try:
+            target = int(target)
+        except (TypeError, ValueError):
+            return None, ({"message": f"class_map: {name} -> a category id"}, 400)
+        if target not in allowed:
+            return None, ({"message": f"class_map: category {target} is not in this dataset"}, 400)
+        out[str(name)] = target
+    return out, None
 
 
 def _check_model(name):
@@ -351,11 +374,14 @@ class YoloImage(Resource):
         if not current_user.can_edit(image.dataset):
             return {"message": "You do not have permission to edit this dataset"}, 403
 
+        class_map, error = _class_map(args.get('class_map'), image.dataset)
+        if error:
+            return error
         try:
             result = preannotate.annotate_image(
                 image, args['model'], conf=_conf(args['conf']),
                 create_missing=args['create_categories'] and current_user.has_perm('create_categories'),
-                user=current_user._get_current_object())
+                user=current_user._get_current_object(), class_map=class_map)
         except Exception as e:
             logger.exception("Model prediction failed")
             return {"message": f"Model prediction failed: {e}"}, 500
@@ -380,9 +406,12 @@ class YoloDataset(Resource):
         if not current_user.can_edit(dataset):
             return {"message": "You do not have permission to edit this dataset"}, 403
 
+        class_map, error = _class_map(args.get('class_map'), dataset)
+        if error:
+            return error
         return preannotate.annotate_dataset(
             dataset, args['model'], conf=_conf(args['conf']),
             skip_annotated=args['skip_annotated'],
             create_missing=args['create_categories'] and current_user.has_perm('create_categories'),
             user=current_user._get_current_object(),
-            socket=socketio)
+            socket=socketio, class_map=class_map)

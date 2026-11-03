@@ -429,7 +429,7 @@
       modal-id="modelRunDataset"
       :dataset="true"
       :dataset-name="dataset.name"
-      :category-names="datasetCategoryNames"
+      :categories="categories"
       @run="runModel"
     />
     <ChatWidget v-if="dataset.id" :dataset-id="dataset.id" :dataset-name="dataset.name" />
@@ -953,9 +953,6 @@ export default {
       if (!showAnnotated && !showNotAnnotated) return " ";
 
       return showAnnotated;
-    },
-    datasetCategoryNames() {
-      return this.categories.map(c => c.name);
     },
     categoryTags() {
       let tags = {};

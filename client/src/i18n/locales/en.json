@@ -386,6 +386,16 @@
     "cannotLoad": "cannot be loaded",
     "classes": "{n} classes:",
     "classesHint": "Green: the dataset has a category with this name. Predictions are matched to categories by name.",
+    "map": {
+      "title": "Category mapping",
+      "count": "{n} set",
+      "sameName": "Same name: {name}",
+      "create": "Create “{name}”",
+      "none": "No category of that name (left out)",
+      "skip": "Leave this class out",
+      "hint": "Which dataset category each model class goes to. By default the one with the same name; the choice is remembered and used in other datasets with a category of that name.",
+      "keypoints": "Different number of keypoints: the model has {model}, “{name}” has {category}; keypoints are not added"
+    },
     "close": "Close",
     "confidence": "Minimum confidence",
     "confidenceHint": "Predictions below this score are ignored. Lower finds more objects but also more mistakes.",

@@ -41,16 +41,37 @@
                 </select>
               </div>
               <div v-if="selected && selected.note" class="small note mt-1">{{ selected.note }}</div>
-              <div v-if="selected && selected.classes" class="form-text">
-                {{ $t('modelRun.classes', { n: selected.classes.length }) }}
-                <span
-                  v-for="c in selected.classes.slice(0, 30)"
-                  :key="c"
-                  class="badge me-1"
-                  :class="hasCategory(c) ? 'text-bg-success' : 'text-bg-secondary'"
-                >{{ c }}</span>
-                <span v-if="selected.classes.length > 30">…</span>
-                <div class="mt-1">{{ $t('modelRun.classesHint') }}</div>
+              <div v-if="selected && selected.classes && selected.classes.length" class="form-text">
+                <div class="d-flex align-items-center flex-wrap gap-1">
+                  <span>{{ $t('modelRun.classes', { n: selected.classes.length }) }}</span>
+                  <a href="#" class="ms-auto" @click.prevent="showMap = !showMap">
+                    <i class="fa" :class="showMap ? 'fa-caret-down' : 'fa-caret-right'" />
+                    {{ $t('modelRun.map.title') }}<template v-if="mappedCount"> ({{ $t('modelRun.map.count', { n: mappedCount }) }})</template>
+                  </a>
+                </div>
+                <template v-if="!showMap">
+                  <span
+                    v-for="c in selected.classes.slice(0, 30)"
+                    :key="c"
+                    class="badge me-1"
+                    :class="badgeClass(c)"
+                  >{{ c }}<template v-if="targetOf(c)"> → {{ targetOf(c).name }}</template></span>
+                  <span v-if="selected.classes.length > 30">…</span>
+                  <div class="mt-1">{{ $t('modelRun.classesHint') }}</div>
+                </template>
+                <div v-else class="class-map mt-1">
+                  <div v-for="c in selected.classes" :key="c" class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge text-bg-light border class-name text-truncate" :title="c">{{ c }}</span>
+                    <i class="fa fa-long-arrow-right text-muted" />
+                    <select v-model="classMap[c]" class="form-select form-select-sm">
+                      <option value="">{{ autoLabel(c) }}</option>
+                      <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                      <option value="skip">{{ $t('modelRun.map.skip') }}</option>
+                    </select>
+                    <i v-if="keypointWarning(c)" class="fa fa-exclamation-triangle text-warning" :title="keypointWarning(c)" />
+                  </div>
+                  <div class="mt-1">{{ $t('modelRun.map.hint') }}</div>
+                </div>
               </div>
             </div>
 
@@ -115,10 +136,14 @@ import axios from "axios";
 import { showModal } from "@/libs/modal";
 
 const STORAGE_KEY = "modelRunOptions";
+// per model: class -> category name (or SKIP), so a choice carries over to
+// other datasets that have a category of that name
+const MAP_KEY = "modelRunClassMap";
+const SKIP = "__skip__";
 
-function loadSaved() {
+function loadSaved(key = STORAGE_KEY) {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    return JSON.parse(localStorage.getItem(key)) || {};
   } catch {
     return {};
   }
@@ -131,8 +156,8 @@ export default {
     // true: run over the whole dataset (background task); false: one image
     dataset: { type: Boolean, default: false },
     datasetName: { type: String, default: "" },
-    // names of the categories the dataset already has
-    categoryNames: { type: Array, default: () => [] },
+    // the dataset's categories ({ id, name, keypoint_labels })
+    categories: { type: Array, default: () => [] },
     running: { type: Boolean, default: false }
   },
   emits: ["run"],
@@ -142,6 +167,9 @@ export default {
       loading: false,
       installed: true,
       models: [],
+      // class -> "" (same name / new), a category id, or "skip"
+      classMap: {},
+      showMap: false,
       options: {
         model: saved.model || "",
         conf: saved.conf || 0.25,
@@ -153,6 +181,10 @@ export default {
   watch: {
     "options.model"() {
       this.applyDefaultConf();
+      this.loadClassMap();
+    },
+    categories() {
+      this.loadClassMap();
     }
   },
   computed: {
@@ -166,7 +198,10 @@ export default {
       return this.installed && this.selected && !this.selected.error;
     },
     lowerCategoryNames() {
-      return this.categoryNames.map(n => n.toLowerCase());
+      return this.categories.map(c => String(c.name).toLowerCase());
+    },
+    mappedCount() {
+      return Object.values(this.classMap).filter(v => v !== "").length;
     }
   },
   methods: {
@@ -186,6 +221,7 @@ export default {
             this.options.model = usable ? usable.name : "";
           }
           this.applyDefaultConf();
+          this.loadClassMap();
         })
         .finally(() => (this.loading = false));
     },
@@ -195,6 +231,69 @@ export default {
     },
     hasCategory(name) {
       return this.lowerCategoryNames.includes(name.toLowerCase());
+    },
+    sameName(name) {
+      return this.categories.find(c => String(c.name).toLowerCase() === name.toLowerCase());
+    },
+    /** the category a class goes to (chosen, else the same name), or null */
+    targetOf(name) {
+      const value = this.classMap[name];
+      if (value === "skip") return null;
+      if (value !== "" && value != null) return this.categories.find(c => c.id === value) || null;
+      return null;
+    },
+    badgeClass(name) {
+      if (this.classMap[name] === "skip") return "text-bg-light border text-decoration-line-through";
+      return this.targetOf(name) || this.hasCategory(name) ? "text-bg-success" : "text-bg-secondary";
+    },
+    autoLabel(name) {
+      const same = this.sameName(name);
+      if (same) return this.$t("modelRun.map.sameName", { name: same.name });
+      return this.options.createCategories && this.$store.getters["user/can"]("create_categories")
+        ? this.$t("modelRun.map.create", { name })
+        : this.$t("modelRun.map.none");
+    },
+    /** a pose model's points into a category with another number of points */
+    keypointWarning(name) {
+      const shape = this.selected && this.selected.kpt_shape;
+      if (!shape || !shape[0]) return "";
+      const target = this.targetOf(name) || (this.classMap[name] === "" ? this.sameName(name) : null);
+      const labels = (target && target.keypoint_labels) || [];
+      if (!labels.length || labels.length === shape[0]) return "";
+      return this.$t("modelRun.map.keypoints", { model: shape[0], category: labels.length, name: target.name });
+    },
+    loadClassMap() {
+      const classes = (this.selected && this.selected.classes) || [];
+      const saved = loadSaved(MAP_KEY)[this.options.model] || {};
+      const map = {};
+      for (const c of classes) {
+        const choice = saved[c];
+        if (choice === SKIP) map[c] = "skip";
+        else {
+          const cat = choice && this.categories.find(x => x.name === choice);
+          map[c] = cat ? cat.id : "";
+        }
+      }
+      this.classMap = map;
+      if (classes.length && classes.length <= 12 && Object.values(map).some(v => v !== "")) this.showMap = true;
+    },
+    saveClassMap() {
+      const all = loadSaved(MAP_KEY);
+      const mine = {};
+      for (const [c, v] of Object.entries(this.classMap)) {
+        if (v === "skip") mine[c] = SKIP;
+        else if (v !== "") {
+          const cat = this.categories.find(x => x.id === v);
+          if (cat) mine[c] = cat.name;
+        }
+      }
+      if (Object.keys(mine).length) all[this.options.model] = mine;
+      else delete all[this.options.model];
+      try {
+        localStorage.setItem(MAP_KEY, JSON.stringify(all));
+      } catch {
+        // storage unavailable: the choice is just not remembered
+      }
     },
     taskLabel(task) {
       const key = "modelRun.task." + task;
@@ -207,11 +306,18 @@ export default {
       } catch {
         // storage unavailable: the choice is just not remembered
       }
+      this.saveClassMap();
+      const classMap = {};
+      for (const [c, v] of Object.entries(this.classMap)) {
+        if (v === "skip") classMap[c] = null;
+        else if (v !== "") classMap[c] = v;
+      }
       this.$emit("run", {
         model: this.options.model,
         conf: this.options.conf,
         create_categories: this.options.createCategories,
-        skip_annotated: this.options.skipAnnotated
+        skip_annotated: this.options.skipAnnotated,
+        ...(Object.keys(classMap).length ? { class_map: classMap } : {})
       });
     }
   }
@@ -224,6 +330,14 @@ export default {
   color: #495057;
   border-left: 3px solid #2a78d6;
   padding-left: 6px;
+}
+.class-map {
+  max-height: 260px;
+  overflow-y: auto;
+}
+.class-name {
+  min-width: 90px;
+  max-width: 140px;
 }
 .upload-section {
   margin-top: 1rem;

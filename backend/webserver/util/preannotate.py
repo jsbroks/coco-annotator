@@ -26,12 +26,16 @@ class CategoryResolver:
     them from the model (COCO names/skeleton for 17 keypoints).
     """
 
-    def __init__(self, dataset, create_missing=True, user=None):
+    def __init__(self, dataset, create_missing=True, user=None, class_map=None):
         self.dataset = dataset
         self.create_missing = create_missing
         self.user = user
         self.by_name = {}
         self.skipped = set()
+        self.ignored = set()       # classes the user chose to leave out
+        # class name -> category id (None: leave the class out), chosen in the
+        # run dialog; other classes go by name
+        self.class_map = {str(k).lower(): v for k, v in (class_map or {}).items()}
         self.keypoints_mismatch = set()
         self._dataset_category_ids = list(dataset.categories or [])
         for category in CategoryModel.objects(id__in=self._dataset_category_ids, deleted=False):
@@ -48,6 +52,15 @@ class CategoryResolver:
         key = name.lower()
         if key in self.by_name:
             return self.by_name[key]
+        if key in self.class_map:
+            target = self.class_map[key]
+            category = None
+            if target is not None and target in self._dataset_category_ids:
+                category = CategoryModel.objects(id=target, deleted=False).first()
+            if category is None:
+                self.ignored.add(name)
+            self.by_name[key] = category
+            return category
         if not self.create_missing:
             self.skipped.add(name)
             return None
@@ -132,10 +145,10 @@ def apply_predictions(image, predictions, resolver, username=None, task_id=None,
     return created
 
 
-def annotate_image(image, model_name, conf=0.25, create_missing=True, user=None):
+def annotate_image(image, model_name, conf=0.25, create_missing=True, user=None, class_map=None):
     dataset = DatasetModel.objects(id=image.dataset_id).first()
     predictions = yolo.predict(model_name, image.path, conf=conf)
-    resolver = CategoryResolver(dataset, create_missing=create_missing, user=user)
+    resolver = CategoryResolver(dataset, create_missing=create_missing, user=user, class_map=class_map)
     created = apply_predictions(image, predictions, resolver,
                                 username=user.username if user else None, model_name=model_name)
     if created:
@@ -148,12 +161,13 @@ def annotate_image(image, model_name, conf=0.25, create_missing=True, user=None)
         "predictions": len(predictions),
         "created": created,
         "skipped_classes": sorted(resolver.skipped),
+        "ignored_classes": sorted(resolver.ignored),
         "keypoints_mismatch": sorted(resolver.keypoints_mismatch),
     }
 
 
 def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
-                 create_missing, user, socket):
+                 create_missing, user, socket, class_map=None):
     task = TaskModel.objects.get(id=task_id)
     dataset = DatasetModel.objects.get(id=dataset_id)
     task.update(status="PROGRESS")
@@ -164,7 +178,11 @@ def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
     images = list(images.only('id', 'path', 'file_name', 'category_ids', 'dataset_id'))
 
     task.info(f"Model {model_name}, confidence >= {conf}; {len(images)} images to process")
-    resolver = CategoryResolver(dataset, create_missing=create_missing, user=user)
+    resolver = CategoryResolver(dataset, create_missing=create_missing, user=user, class_map=class_map)
+    if class_map:
+        names = {c.id: c.name for c in CategoryModel.objects(id__in=[v for v in class_map.values() if v])}
+        task.info("Classes: " + ", ".join(f"{k} -> {names.get(v, '?') if v else '(left out)'}"
+                                          for k, v in class_map.items()))
     total_created = 0
 
     try:
@@ -195,7 +213,7 @@ def _run_dataset(task_id, dataset_id, model_name, conf, skip_annotated,
 
 
 def annotate_dataset(dataset, model_name, conf=0.25, skip_annotated=True,
-                     create_missing=True, user=None, socket=None, background=True):
+                     create_missing=True, user=None, socket=None, background=True, class_map=None):
     """Start a task that runs the model over the dataset's images."""
     task = TaskModel(
         name=f"Pre-annotating {dataset.name} with {model_name}",
@@ -209,7 +227,7 @@ def annotate_dataset(dataset, model_name, conf=0.25, skip_annotated=True,
     activity.record('auto_annotate', user, dataset_id=dataset.id, task_id=task.id,
                     detail={'model': model_name, 'whole_dataset': True}, text=model_name)
 
-    args = (task.id, dataset.id, model_name, conf, skip_annotated, create_missing, user, socket)
+    args = (task.id, dataset.id, model_name, conf, skip_annotated, create_missing, user, socket, class_map)
     if background:
         threading.Thread(target=_run_dataset, args=args, daemon=True).start()
     else:
