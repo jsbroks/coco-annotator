@@ -89,3 +89,30 @@ def test_only_the_datasets_categories(world, pose_model):
         assert r.status_code == 400
     finally:
         elsewhere.delete()
+
+
+def test_the_mapping_wins_over_a_category_of_the_same_name(world, pose_model):
+    """The dataset has a "person" category; mapped elsewhere (or left out),
+    "person" predictions must not go into it."""
+    from database import AnnotationModel, CategoryModel, DatasetModel
+    c = world["client"]
+    ds = world["dataset"]["id"]
+    same = CategoryModel(name="person")
+    same.save()
+    target = CategoryModel(name="MapTest_Pose2", keypoint_labels=list(mpm.POSE_KEYPOINTS))
+    target.save()
+    DatasetModel.objects(id=ds).update(push_all__categories=[same.id, target.id])
+    image = _image(world)
+    try:
+        r = c.post(f"/api/model/yolo/image/{image.id}", json={"model": pose_model, "class_map": {"person": target.id}})
+        assert r.get_json()["created"] == 1
+        assert AnnotationModel.objects(image_id=image.id, category_id=target.id, source="model").count() == 1
+        assert AnnotationModel.objects(image_id=image.id, category_id=same.id).count() == 0
+        r = c.post(f"/api/model/yolo/image/{image.id}", json={"model": pose_model, "class_map": {"person": None}})
+        assert r.get_json()["created"] == 0 and r.get_json()["ignored_classes"] == ["person"]
+        assert AnnotationModel.objects(image_id=image.id, category_id=same.id).count() == 0
+    finally:
+        AnnotationModel.objects(image_id=image.id, category_id__in=[same.id, target.id]).delete()
+        DatasetModel.objects(id=ds).update(pull_all__categories=[same.id, target.id])
+        same.delete()
+        target.delete()

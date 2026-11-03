@@ -45,6 +45,7 @@ class CategoryResolver:
         # class name -> category id (None: leave the class out), chosen in the
         # run dialog; other classes go by name
         self.class_map = {str(k).lower(): v for k, v in (class_map or {}).items()}
+        self._mapped = {}          # class -> its chosen category (None: left out)
         self.keypoints_mismatch = set()
         self._dataset_category_ids = list(dataset.categories or [])
         for category in CategoryModel.objects(id__in=self._dataset_category_ids, deleted=False):
@@ -59,17 +60,19 @@ class CategoryResolver:
 
     def get(self, name):
         key = name.lower()
+        # the user's choice first: a category of the same name must not win over it
+        if key in self.class_map:
+            if key not in self._mapped:
+                target = self.class_map[key]
+                category = None
+                if target is not None and target in self._dataset_category_ids:
+                    category = CategoryModel.objects(id=target, deleted=False).first()
+                if category is None:
+                    self.ignored.add(name)
+                self._mapped[key] = category
+            return self._mapped[key]
         if key in self.by_name:
             return self.by_name[key]
-        if key in self.class_map:
-            target = self.class_map[key]
-            category = None
-            if target is not None and target in self._dataset_category_ids:
-                category = CategoryModel.objects(id=target, deleted=False).first()
-            if category is None:
-                self.ignored.add(name)
-            self.by_name[key] = category
-            return category
         if not self.create_missing:
             self.skipped.add(name)
             return None

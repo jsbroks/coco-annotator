@@ -1313,12 +1313,17 @@ class DatasetScan(Resource):
 
 
 
+NO_MODEL = '__none__'  # filter: model results whose model was not recorded (older runs)
+
+
 def _ai_annotations(dataset, model=None, category_id=None, image_id=None, keep_edited=True):
     """Annotations a model made in the dataset (still there). ``keep_edited``
     leaves out those someone worked on in the annotator since: selecting one
     there records an editing session (so "touched", even if not moved)."""
     query = AnnotationModel.objects(dataset_id=dataset.id, deleted=False, source='model')
-    if model:
+    if model == NO_MODEL:
+        query = query.filter(Q(model__exists=False) | Q(model=None) | Q(model=''))
+    elif model:
         query = query.filter(model=model)
     if category_id:
         query = query.filter(category_id=int(category_id))

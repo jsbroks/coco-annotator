@@ -17,7 +17,7 @@
               <label class="form-label small mb-1" :for="modalId + 'Model'">{{ $t('aiCleanup.model') }}</label>
               <select :id="modalId + 'Model'" v-model="filters.model" class="form-select form-select-sm">
                 <option value="">{{ $t('aiCleanup.allModels') }}</option>
-                <option v-for="m in summary.models" :key="m.name" :value="m.name">
+                <option v-for="m in summary.models" :key="m.name || '__none__'" :value="m.name || '__none__'">
                   {{ m.name || $t('aiCleanup.unknownModel') }} ({{ m.count.toLocaleString() }})
                 </option>
               </select>
@@ -81,7 +81,7 @@ export default {
   emits: ["deleted"],
   data() {
     return {
-      summary: null, counting: false, deleting: false, confirming: false,
+      summary: null, counting: false, deleting: false, confirming: false, request: 0,
       filters: { model: "", category_id: "", keep_edited: true }
     };
   },
@@ -102,12 +102,18 @@ export default {
       this.load();
     },
     load() {
+      // filters can change faster than the answers come: only the latest counts
+      const request = (this.request = (this.request || 0) + 1);
       this.counting = true;
       return axios
         .get(`/api/dataset/${this.datasetId}/ai`, { params: this.filters })
-        .then(r => (this.summary = r.data))
+        .then(r => {
+          if (request === this.request) this.summary = r.data;
+        })
         .catch(error => this.$toastr.error(((error.response && error.response.data) || {}).message || String(error)))
-        .finally(() => (this.counting = false));
+        .finally(() => {
+          if (request === this.request) this.counting = false;
+        });
     },
     async remove() {
       this.deleting = true;
